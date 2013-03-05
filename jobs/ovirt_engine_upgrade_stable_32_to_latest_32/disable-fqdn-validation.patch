@@ -1,0 +1,13 @@
+diff --git a/packaging/fedora/setup/engine-setup.py b/packaging/fedora/setup/engine-setup.py
+index 613e4cc..f6b7e78 100755
+--- a/packaging/fedora/setup/engine-setup.py
++++ b/packaging/fedora/setup/engine-setup.py
+@@ -319,7 +319,7 @@ def initConfig():
+                 "USAGE"           :output_messages.INFO_CONF_PARAMS_FQDN_USAGE,
+                 "PROMPT"          :output_messages.INFO_CONF_PARAMS_FQDN_PROMPT,
+                 "OPTION_LIST"     :[],
+-                "VALIDATION_FUNC" :validate.validateFQDN,
++                "VALIDATION_FUNC" :validate.validateStringNotEmpty,
+                 "DEFAULT_VALUE"   :socket.getfqdn(),
+                 "MASK_INPUT"      : False,
+                 "LOOSE_VALIDATION": False,
