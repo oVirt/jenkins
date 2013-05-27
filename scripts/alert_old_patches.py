@@ -20,27 +20,22 @@ def checkForgottenPatches(gerritURL, days, project):
     if rc != 0:
         print("Something wrong happened!\n" + str(err))
         sys.exit(2)
-    obj_array = []
-    patch_array = []
-    patch_list = {}
+    patches = {}
     for line in output.split('\n'):
         if not line:
             continue
-        myobject = json.loads(line)
-        obj_array.append(myobject)
-    for i in obj_array:
-        for k in i.keys():
-            if "number" == k:
-                patch = i[k]
-            if "owner" == k:
-                owner = i[k]
-                email = i[k]["email"]
-                patch_list[patch] = owner
-    return patch_list
+        data = json.loads(line)
+        try:
+            patch = data['number']
+            owner = data['owner']
+            patches[patch] = owner
+        except KeyError:
+            pass
+    return patches
 
 
 def _logExec(argv, input=None):
-#This function executes a given shell command while logging it.
+    " Execute a given shell command while logging it. "
 
     out = None
     err = None
@@ -51,8 +46,8 @@ def _logExec(argv, input=None):
         if input is not None:
             logging.debug(input)
             stdin = subprocess.PIPE
-        p = subprocess.Popen(argv, stdin=stdin, \
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(argv, stdin=stdin, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
         out, err = p.communicate(input)
         rc = p.returncode
         logging.debug(out)
@@ -63,47 +58,28 @@ def _logExec(argv, input=None):
 
 
 if __name__ == "__main__":
-    patchlist = []
     subject = "Forgotten Patches"
     mailserver = smtplib.SMTP('localhost')
     project = sys.argv[1]
     fromaddr = "Patchwatcher@ovirt.org"
-    output = checkForgottenPatches("gerrit.ovirt.org", 30, project)
-    if not output:
-        print("Forgotten patches within the last 7 days were not found")
-        sys.exit(0)
-    for i, k in output.items():
-        txt = 'your patch did not have any activity for over 30 days, please consider ' \
-              'nudging for more attention. : http://gerrit.ovirt.org/%s ' % i
-        msg = 'Subject: %s\n\n%s' %(subject, txt)
-        patchlist.append(i)
-        toaddr = k["email"]
-        mailserver.sendmail(fromaddr, toaddr, msg)
-
-    output = checkForgottenPatches("gerrit.ovirt.org", 60, project)
-    if not output:
-        print("Forgotten patches within the last 60 days were not found")
-        sys.exit(0)
-    for i, k in output.items():
-        txt = 'your patch did not have any activity for over 60 days, please consider ' \
-              'nudging for more attention, or should it be abandoned : http://gerrit.ovirt.org/%s ' % i
-        msg = 'Subject: %s\n\n%s' %(subject, txt)
-        toaddr = k["email"]
-        if i not in patchlist:
-            patchlist.append(i)
-            mailserver.sendmail(fromaddr, toaddr, msg)
-
-    output = checkForgottenPatches("gerrit.ovirt.org", 90, project)
-    if not output:
-        print("Forgotten patches within the last 7 days were not found")
-        sys.exit(0)
-    for i, k in output.items():
-        txt = 'your patch did not have any activity for over 90 days, it may be ' \
-              'abandoned automatically by the system in the near future : http://gerrit.ovirt.org/%s  ' % i
-        msg = 'Subject: %s\n\n%s' %(subject, txt)
-        toaddr = k["email"]
-        if i not in patchlist:
-            patchlist.append(i)
-            mailserver.sendmail(fromaddr, toaddr, msg)
-    mailserver.quit
-    sys.exit(1)
+    patches = []
+    mails = [
+            (90, 'Your patch did not have any activity for over 90 days, it may be '
+                'abandoned automatically by the system in the near future : http://gerrit.ovirt.org/%s.'),
+            (60, 'Your patch did not have any activity for over 60 days, please consider '
+                'nudging for more attention, or should it be abandoned. : http://gerrit.ovirt.org/%s.'),
+            (30, 'Your patch did not have any activity for over 30 days, please consider '
+                'nudging for more attention. : http://gerrit.ovirt.org/%s.'),
+    ]
+    for days, template in mails:
+        output = checkForgottenPatches("gerrit.ovirt.org", days, project)
+        if not output:
+            print("Forgotten patches within the last %d days were not found" %
+                  days)
+        for patch, owner in output.items():
+            if patch not in patches:
+                patches.append(patch)
+                txt = template % patch
+                msg = 'Subject: %s\n\n%s' % (subject, txt)
+                mailserver.sendmail(fromaddr, owner['email'], msg)
+    mailserver.quit()
