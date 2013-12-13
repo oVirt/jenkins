@@ -12,6 +12,7 @@ OVESETUP_CONFIG/firewallManager=str:iptables
 OVESETUP_CONFIG/isoDomainMountPoint=str:/var/lib/exports/iso
 OVESETUP_CONFIG/fqdn=str:CHANGE_HOSTNAME
 OVESETUP_CONFIG/macRangePool=str:00:1A:4A:16:98:92-00:1A:4A:16:98:A1
+OVESETUP_CONFIG/updateFirewall=bool:True
 OVESETUP_PKI/organization=str:ovirt.org
 OVESETUP_SYSTEM/redhatSupportProxyEnabled=bool:False
 OVESETUP_SYSTEM/nfsConfigEnabled=bool:True
