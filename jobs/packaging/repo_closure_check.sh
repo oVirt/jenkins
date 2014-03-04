@@ -16,12 +16,14 @@
 ## Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 LAYOUT=""
+CUSTOM_URL=""
 BASE_URL="http://resources.ovirt.org"
 CENTOS_MIRROR="http://centos.mirror.constant.com/"
 EPEL_MIRROR="http://linux.mirrors.es.net/"
 FEDORA_MIRROR="http://mirrors.kernel.org/"
 GLUSTER_MIRROR="http://download.gluster.org/"
 JPACKAGE_MIRROR="ftp://jpackage.hmdc.harvard.edu/"
+STATIC_RP=""
 
 die() {
 	local m="${1}"
@@ -36,11 +38,12 @@ usage() {
     --layout                   - Layout you want to use [old, new]
     --repo                     - Repository you want to test
     --distribution-version     - Distribution version (6,19)
+    --static-repo              - Use static repo for nightly (needed for a new layout only)
 
     Example:
 	new layout:
-    ${0} --distribution=fc --layout=new --distribution-version=20 --repo=test-repo
-    ${0} --distribution=el --layout=new --distribution-version=6 --repo=test-repo
+    ${0} --distribution=fc --layout=new --distribution-version=20 --repo=ovirt-3.3-snapshot --static-repo=ovirt-3.3-snapshot-static
+    ${0} --distribution=el --layout=new --distribution-version=6 --repo=ovirt-3.3-snapshot --static-repo=ovirt-3.3-snapshot-static
 
     old layout:
     ${0} --distribution=Fedora --layout=old --distribution-version=20 --repo=test-repo
@@ -65,6 +68,9 @@ get_opts() {
 				;;
 			--layout=*)
 				LAYOUT="${v}"
+				;;
+			--static-repo=*)
+				STATIC_REPO="${v}"
 				;;
 			*)
 				usage
@@ -97,15 +103,20 @@ check_layout() {
 	else
 		die "Please provide layout paramter"
 	fi
+	CUSTOM_URL="${BASE_URL}/${REPO_NAME}/rpm/${repo}"
+
+	if [ -n "${STATIC_REPO}" ]; then
+		static_url="${BASE_URL}/${STATIC_REPO}/rpm/${repo}"
+		STATIC_RP="--repofrompath=check-custom-static,${static_url} -l check-custom-static"
+	fi
 }
 
 check_repo_closure() {
 	if [ "${DISTRIBUTION}" = "el" ] \
 		|| [ "${DISTRIBUTION}" = "Centos" ]; then
-		custom_url="${BASE_URL}/${REPO_NAME}/rpm/${repo}"
 		repoclosure \
 			-t \
-			--repofrompath=check-custom,"${custom_url}" \
+			--repofrompath=check-custom,"${CUSTOM_URL}" ${STATIC_RP} \
 			--repofrompath=check-base,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/x86_64/ \
 			--repofrompath=check-base-i386,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/i386/ \
 			--repofrompath=check-updates,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
@@ -126,10 +137,9 @@ check_repo_closure() {
 			-r check-custom
 	elif [ "${DISTRIBUTION}" = "fc" ] \
 		|| [ "${DISTRIBUTION}" = "Fedora" ]; then
-		custom_url="${BASE_URL}/${REPO_NAME}/rpm/${repo}"
 		repoclosure \
 			-t \
-			--repofrompath=check-custom,"${custom_url}" \
+			--repofrompath=check-custom,"${CUSTOM_URL}" ${STATIC_RP} \
 			--repofrompath=check-fedora,"${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
 			--repofrompath=check-updates,"${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
 			--repofrompath=check-updates-testing,"${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
