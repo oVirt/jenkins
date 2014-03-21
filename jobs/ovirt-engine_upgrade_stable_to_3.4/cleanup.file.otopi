@@ -1,0 +1,22 @@
+# action=cleanup
+[environment:default]
+OVESETUP_CORE/engineStop=bool:True
+OVESETUP_CORE/remove=bool:True
+OVESETUP_DB/database=str:engine
+OVESETUP_DB/secured=bool:False
+OVESETUP_DB/host=str:localhost
+OVESETUP_DB/user=str:engine
+OVESETUP_DB/securedHostValidation=bool:False
+OVESETUP_DB/password=str:123456
+OVESETUP_DB/port=str:5432
+OVESETUP_SYSTEM/nfsConfigEnabled=bool:True
+OVESETUP_CONFIG/isoDomainName=str:ISO_DOMAIN
+OVESETUP_CONFIG/isoDomainMountPoint=str:/var/lib/exports/iso
+OVESETUP_CONFIG/firewallManager=str:iptables
+OVESETUP_CONFIG/fqdn=str:CHANGE_HOSTNAME
+OVESETUP_APACHE/configureRootRedirection=bool:True
+OVESETUP_APACHE/configureSsl=bool:True
+OVESETUP_REMOVE/confirmUninstallGroups=bool:True
+OVESETUP_REMOVE/removeAll=bool:True
+OVESETUP_REMOVE/database=bool:True
+OVESETUP_REMOVE/enabledFileGroups=str:,ca_pki,iso_domain,versionlock,ca_config,core,exportfs,ca_pki,exportfs,versionlock,core
