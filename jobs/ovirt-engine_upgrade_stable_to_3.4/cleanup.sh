@@ -99,8 +99,9 @@ get_opts() {
 enable_engine_repos() {
     local disabled_repos_list="${1?}"
     local repo
-    [[ -f "$disabled_repos_list" ]] || return
+    [[ -f "$disabled_repos_list" ]] || return 0
     while read -r repo; do
+        [[ -f "$repo" ]] || continue
         sed -i 's/enabled=0/enabled=1/g' "${repo}"
     done < "$disabled_repos_list"
 }
