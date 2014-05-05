@@ -85,7 +85,7 @@ def main():
         config_opts[key] = val
 
     # add the extra repos passed
-    config_opts['yum.conf'] = '%s' % (config_opts['yum.conf']
+    config_opts['yum.conf'] = '%s' % (config_opts.get('yum.conf', '')
                                       + get_repos(args.extra_repos))
 
     print dumps_dict(config_opts, 'config_opts')
