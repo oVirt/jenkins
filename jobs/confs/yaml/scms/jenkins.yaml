@@ -1,0 +1,17 @@
+##############################################################################
+###   SCM Definitions
+##############################################################################
+- scm:
+    name: jenkins-master-gerrit
+    scm:
+        - git:
+            url: git://gerrit.ovirt.org/jenkins.git
+            branches:
+                - $GERRIT_BRANCH
+            basedir: jenkins
+            scm-name: jenkins
+            name: ''
+            refspec: $GERRIT_REFSPEC
+            choosing-strategy: gerrit
+            clean: true
+            use-author: true

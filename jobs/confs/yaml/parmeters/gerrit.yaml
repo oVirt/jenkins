@@ -1,0 +1,11 @@
+- parameter:
+    name: gerrit_params
+    parameters:
+      - string:
+          name: GERRIT_REFSPEC
+          default: 'refs/heads/{branch}'
+          description: 'Git refspec to build'
+      - string:
+          name: GERRIT_BRANCH
+          default: 'origin/{branch}'
+          description: 'Git branch to build'
