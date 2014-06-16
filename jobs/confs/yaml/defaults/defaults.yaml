@@ -6,4 +6,6 @@
     project-type: freestyle
     concurrent: false
     logrotate:
-      numToKeep: 100
+      numToKeep: 40
+    wrappers:
+      - timestamps

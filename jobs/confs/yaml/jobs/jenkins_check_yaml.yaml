@@ -20,7 +20,7 @@
     scm:
         - jenkins-master-gerrit
     builders:
-        - shell: !include-raw shell-scripts/check_yaml.sh
+        - shell: !include-raw shell-scripts/jenkins_check_yaml.sh
     publishers:
         - archive:
             artifacts: '*.html'

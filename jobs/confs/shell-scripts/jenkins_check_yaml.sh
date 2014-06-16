@@ -27,7 +27,7 @@ else
     jenkins-jobs --conf "$conf_file" $options test -o "$old_xmls_dir" "$yaml_dir"
     echo "########################"
     ## Get the diff
-    git reset --hard $GERRIT_REFSPEC
+    git reset --hard $GERRIT_PATCHSET_REVISION
     changed=false
     diff -u "$old_xmls_dir" "$new_xmls_dir" \
 	| "$WORKSPACE/jenkins/jobs/confs/shell-scripts/htmldiff.sh" \

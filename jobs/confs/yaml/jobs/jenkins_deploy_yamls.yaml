@@ -1,0 +1,23 @@
+- job:
+    name: jenkins_master_deploy-configs_merged
+    node: master
+    parameters:
+      - gerrit_params:
+          branch: master
+    triggers:
+      - gerrit:
+          trigger-on-change-merged-event: true
+          escape-quotes: true
+          successful-message: 'Configuration deployed'
+          projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'jenkins'
+                  branch-compare-type: 'PLAIN'
+                  branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'REG_EXP'
+                        pattern: 'jobs/confs/.*'
+    scm:
+      - jenkins-master-gerrit
+    builders:
+      - shell: !include-raw shell-scripts/jenkins_deploy_yamls.sh
