@@ -1,0 +1,18 @@
+- job:
+    name: system_gerrit-garbage-collect
+    node: master
+    parameters:
+        - string:
+            name: PROJECTS
+            default: 'all'
+            description: 'space separated list of projects to garbage collect'
+    triggers:
+        - timed: "30 00 * * *"
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            [[ "$PROJECTS" == "all" ]] && PROJECTS="--all"
+            ssh jenkins@gerrit.ovirt.org -p 29418 \
+                -o UserKnownHostsFile=/dev/null \
+                -o StrictHostKeyChecking=no \
+                gerrit gc $PROJECTS
