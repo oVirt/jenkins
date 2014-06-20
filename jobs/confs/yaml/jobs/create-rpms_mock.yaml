@@ -1,0 +1,22 @@
+- job-template:
+    name: '{project}_{branch}_create-rpms-{distro}-{arch}_{trigger}'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
+    scm:
+      - '{project}-gerrit'
+      - jenkins:
+          branch: master
+    triggers:
+      - on-patch-{trigger}:
+          project: '{project}'
+          branch: '{branch}'
+    builders:
+      - mock-{mock-build-type}:
+          project: '{project}'
+          distro: '{distro}'
+          arch: '{arch}'
+          extra-packages: '{extra-packages}'
+          extra-configure-options: '{extra-configure-options}'
+    publishers:
+      - exported-artifacts

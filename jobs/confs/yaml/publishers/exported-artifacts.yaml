@@ -1,0 +1,6 @@
+- publisher:
+    name: exported-artifacts
+    publishers:
+      - archive:
+          artifacts: 'exported-artifacts/*'
+          allow-empty: true

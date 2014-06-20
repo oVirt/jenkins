@@ -1,0 +1,52 @@
+This directory contains all the files needed to generate the jobs for the
+jenkins-ovirt.org jenkins instance.
+
+It's organized in directories, being the first level to separate between complete
+yaml files and other files to be included inside the jobs.
+
+The complete yaml files are inside the 'yaml' directory, and for each type of
+files to be included (shell-scripts, groovy-scripts, yaml-scripts, ...) there
+should be a directory with their name on that same level.
+
+Inside the yaml dir, there will be another level separating theyamls by type,
+and one dir for the jobs, job-templates and projects themselves (all that is
+very likely to change to adapt the current needs)
+
+An example of a possible layout:
+
+./
+ |-yaml
+ | |-builders
+ | | |-rpm_mock_builder.yaml
+ | | \-default_rpm_builder.yaml
+ | |-jobs
+ | | \-mycustomjob.yaml
+ | ...
+ |-shell-scripts
+ |  |-cleanup_vdsm.sh
+ |  |-build_rpm.sh
+ |  ...
+ |-groovy-scripts
+ |  |-check_vdsm_functional_tests.groovy
+ |   ...
+ ...
+
+NOTE: You need a patched version of the jenkins-job-builder project, with the
+recursive patch[1], the parallel patch[2] and the include files patch[3].
+
+A better way of getting that modified version will be provided soon.
+
+Make sure you are at this same level when running jenkins-job builder or that you
+have this directory in the include patch for the scripts (see [1] for more info).
+To test:
+> jenkins-jobs --debug test --recursive -o /tmp/outdir yaml
+
+To run:
+> jenkins-jobs --threads 0 --debug --conf path/to/my/config update --recursive yaml
+
+More info about jenkins job builder at [4]
+
+[1] https://review.openstack.org/#/c/85106/
+[2] https://review.openstack.org/#/c/75514/
+[3] https://review.openstack.org/#/c/48783/
+[4] http://ci.openstack.org/jenkins_jobs.html

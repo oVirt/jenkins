@@ -1,6 +1,3 @@
-##############################################################################
-###   SCM Definitions
-##############################################################################
 - scm:
     name: jenkins-master-gerrit
     scm:
@@ -15,3 +12,24 @@
             choosing-strategy: gerrit
             clean: true
             use-author: true
+            wipe-workspace: false
+            skip-tag: true
+            prune: true
+
+
+- scm:
+    name: jenkins
+    scm:
+        - git:
+            url: git://gerrit.ovirt.org/jenkins.git
+            branches:
+                - '{branch}'
+            basedir: jenkins
+            refspec: ''
+            scm-name: jenkins
+            name: ''
+            clean: true
+            use-author: true
+            wipe-workspace: false
+            skip-tag: true
+            prune: true

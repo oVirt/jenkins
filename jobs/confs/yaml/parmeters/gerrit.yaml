@@ -1,5 +1,5 @@
 - parameter:
-    name: gerrit_params
+    name: gerrit-params
     parameters:
       - string:
           name: GERRIT_REFSPEC

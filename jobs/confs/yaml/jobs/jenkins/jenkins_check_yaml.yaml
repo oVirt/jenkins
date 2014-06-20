@@ -2,7 +2,7 @@
     name: jenkins_master_check-yaml_gerrit
     node: master
     parameters:
-        - gerrit_params:
+        - gerrit-params:
             branch: master
     triggers:
         - gerrit:

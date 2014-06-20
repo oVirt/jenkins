@@ -1,0 +1,57 @@
+- trigger:
+    name: on-patch-created
+    triggers:
+      - gerrit:
+            trigger-on-patchset-uploaded-event: true
+            escape-quotes: true
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: '{project}'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: '{branch}'
+
+- trigger:
+    name: on-patch-merged
+    triggers:
+      - gerrit:
+            trigger-on-change-merged-event: true
+            escape-quotes: true
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: '{project}'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: '{branch}'
+
+- trigger:
+    name: on-patch-created-with-files
+    triggers:
+      - gerrit:
+            trigger-on-patchset-uploaded-event: true
+            escape-quotes: true
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: '{project}'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: '{branch}'
+                  file-paths:
+                    - compare-type: REG_EXP
+                      pattern: '{files}'
+
+- trigger:
+    name: on-patch-merged-with-files
+    triggers:
+      - gerrit:
+            trigger-on-change-merged-event: true
+            escape-quotes: true
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: '{project}'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: '{branch}'
+                  file-paths:
+                    - compare-type: REG_EXP
+                      pattern: '{files}'
