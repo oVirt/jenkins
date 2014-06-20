@@ -1,5 +1,5 @@
 - job-template:
-    name: '{project}_{branch}_create-rpms-{distro}-{arch}_{trigger}'
+    name: '{project}_{branch}_install-rpm-sanity-{distro}_{trigger}'
     parameters:
       - gerrit-params:
           branch: '{branch}'
@@ -8,15 +8,21 @@
       - jenkins:
           branch: master
     triggers:
-      - on-patch-{trigger}:
+      - 'on-patch-{trigger}-with-files':
           project: '{project}'
           branch: '{branch}'
+          files: '{trigger-files}'
     builders:
-      - mock-{mock-build-type}:
+      - mock-{mock-build-type}-install:
           project: '{project}'
           distro: '{distro}'
           arch: '{arch}'
           extra-packages: '{extra-packages}'
+          extra-rpmbuild-options: '{extra-rpmbuild-options}'
+          extra-autogen-options: '{extra-autogen-options}'
           extra-configure-options: '{extra-configure-options}'
+          extra-repos: '{extra-repos}'
+          packages: '{packages}'
+          env: '{env}'
     publishers:
       - exported-artifacts

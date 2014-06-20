@@ -19,14 +19,33 @@
 #
 # extra-configure-options
 #     extra options to pass to configure
+#
+# extra-autogen-options
+#     extra options to pass to autogen
+#
+# extra-rpmbuild-options
+#     extra options to pass to rpmbuild as defines, as a spaceseparated list
+#     of key=value pairs
+#
+# extra-repos
+#     List of extra repositories to use when building, in a space separated list
+#     of name,url pairs
+#
+# env
+#     extra env variables to set when building
 
 distro="{distro}"
 arch="{arch}"
 project="{project}"
-extra_packages="{extra-packages}"
-extra_configure_options="{extra-configure-options}"
+extra_packages=({extra-packages})
+extra_configure_options=({extra-configure-options})
+extra_autogen_options=({extra-autogen-options})
+extra_rpmbuild_options=({extra-rpmbuild-options})
+extra_repos=({extra-repos})
+extra_env="{env}"
 
 WORKSPACE=$PWD
+
 
 # Build the src_rpms
 # Get the release suffix
@@ -36,17 +55,23 @@ suffix=".$(date -u +%Y%m%d%H%M%S).git$(git rev-parse --short HEAD)"
 # make sure it's properly clean
 git clean -dxf
 # build tarballs
-./autogen.sh --system
-./configure $extra_configure_options
+./autogen.sh --system "${{extra_autogen_options[@]}}"
+./configure "${{extra_configure_options[@]}}"
 make dist
 mv *.tar.gz "$WORKSPACE"/exported-artifacts/
 popd
 
 ## build src.rpm
+rpmbuild_options=("-D" "release_suffix ${{suffix}}")
+mock_build_options=("--define" "release_suffix ${{suffix}}")
+for option in $extra_rpmbuild_options; do
+    rpmbuild_options+=("-D" "${{option//=/ }}")
+    mock_build_options+=("--define" "${{option//=/ }}")
+done
 rpmbuild \
     -D "_topdir $WORKSPACE/rpmbuild"  \
     -D "_srcrpmdir $WORKSPACE/exported-artifacts"  \
-    -D "release_suffix ${{suffix}}"\
+    "${{rpmbuild_options[@]}}" \
     -ts exported-artifacts/*.gz
 ## we don't need the rpmbuild dir no more
 rm -Rf "$WORKSPACE"/rpmbuild
@@ -60,13 +85,16 @@ case $distro in
     *) echo "Unknown distro $distro"; exit 1;;
 esac
 mock_conf="${{distribution}}-$arch-ovirt-snapshot"
+mock_repos=''
+for mock_repo in "${{extra_repos[@]}}"; do
+    mock_repos+=" --repo=$mock_repo"
+done
 echo "#### Generating mock configuration"
 ./mock_genconfig \
     --name="$mock_conf" \
     --base="$distribution-$arch.cfg" \
     --option="basedir=$WORKSPACE/mock/" \
-    --repo="ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro" \
-    --repo="ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro" \
+    $mock_repos \
 > "$mock_conf.cfg"
 sudo touch /var/cache/mock/*/root_cache/cache.tar.gz || :
 cat "$mock_conf.cfg"
@@ -86,13 +114,23 @@ if [[ -n "$extra_packages" ]]; then
     echo "##### Installing extra dependencies: $extra_packages"
     $my_mock \
 	--no-clean \
-	--install "$extra_packages"
+	--install "${{extra_packages[@]}}"
+fi
+
+### Set any extra env vars if any
+if [[ -n $extra_env ]]; then
+    echo "Configuring custom env variables"
+    $my_mock \
+	--no-clean \
+	--shell <<EOF
+        echo "export $extra_env" >> /etc/profile
+EOF
 fi
 
 ### Build the rpms
 echo "##### Building the rpms"
 $my_mock \
-    --define="release_suffix $suffix" \
+    "${{mock_build_options[@]}}" \
     --rebuild \
     --no-clean \
     --resultdir=$WORKSPACE/exported-artifacts \

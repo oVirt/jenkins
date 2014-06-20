@@ -1,6 +1,7 @@
 - builder:
-    name: mock-onlyrpm
+    name: mock-onlyrpm-install
     builders:
       - shell: !include-raw shell-scripts/mock_setup.sh
       - shell: !include-raw shell-scripts/mock_build_onlyrpm.sh.inc
+      - shell: !include-raw shell-scripts/mock_install.sh
       - shell: !include-raw shell-scripts/mock_cleanup.sh

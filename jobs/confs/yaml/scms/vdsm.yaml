@@ -1,0 +1,16 @@
+- scm:
+    name: vdsm-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/vdsm.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: vdsm
+          scm-name: vdsm
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
