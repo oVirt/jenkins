@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -xe
 ## UPDATE JOBS FROM YAML
 new_xmls_dir="$WORKSPACE/new_xmls"
 old_xmls_dir="$WORKSPACE/old_xmls"
@@ -13,7 +13,12 @@ done
 ## Get new xmls
 echo "Generating new xmls"
 pushd "$confs_dir"
-jenkins-jobs --conf "$conf_file" $options test -o "$new_xmls_dir" "$yaml_dir"
+jenkins-jobs \
+    -l debug \
+    test \
+        --recursive \
+        -o "$new_xmls_dir" \
+        "$yaml_dir"
 echo "########################"
 ## Get old xmls
 echo "Generating previous xmls"
@@ -24,7 +29,12 @@ if ! [[ -d "$confs_dir" ]]; then
     echo "  No previous config"
 else
     pushd "$confs_dir"
-    jenkins-jobs --conf "$conf_file" $options test -o "$old_xmls_dir" "$yaml_dir"
+    jenkins-jobs \
+	-l debug \
+	test \
+	    --recursive \
+	    -o "$old_xmls_dir" \
+	    "$yaml_dir"
     echo "########################"
     ## Get the diff
     git reset --hard $GERRIT_PATCHSET_REVISION
