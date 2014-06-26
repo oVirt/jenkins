@@ -85,6 +85,7 @@ $my_mock \
     --no-clean \
     --shell <<EOF
 rm -f /var/lib/rpm/__db*
+rpm --rebuilddb
 EOF
 
 ### Copy the packages to the chroot
