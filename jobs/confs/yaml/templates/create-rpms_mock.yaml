@@ -23,3 +23,32 @@
           extra-repos: '{extra-repos}'
     publishers:
       - exported-artifacts
+
+## Template for the releng-based jobs
+- job-template:
+    name: '{subproject}_{branch}_create-rpms-{distro}-{arch}_{trigger}'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
+    scm:
+      - '{project}-gerrit'
+      - jenkins:
+          branch: master
+    triggers:
+      - on-patch-{trigger}-with-files:
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+    builders:
+      - mock-{mock-build-type}-releng:
+          project: '{project}'
+          subproject: '{subproject}'
+          distro: '{distro}'
+          arch: '{arch}'
+          extra-packages: '{extra-packages}'
+          extra-build-packages: '{extra-build-packages}'
+          extra-rpmbuild-options: '{extra-rpmbuild-options}'
+          extra-build-options: '{extra-build-options}'
+          extra-repos: '{extra-repos}'
+    publishers:
+      - exported-artifacts
