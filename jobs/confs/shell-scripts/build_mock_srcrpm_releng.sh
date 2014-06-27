@@ -20,6 +20,9 @@
 #     space separated list of extra packages to install, as you would pass to
 #     yum
 #
+# extra-build-options
+#     space separated list of extra options to pass to the build.sh script
+#
 # extra-rpmbuild-options
 #     extra options to pass to rpmbuild as defines, as a spaceseparated list
 #     of key=value pairs
@@ -35,7 +38,8 @@ distro="{distro}"
 arch="{arch}"
 project="{project}"
 subproject="{subproject}"
-extra_packages=({extra-build-packages})
+extra_build_packages=({extra-build-packages})
+extra_build_options=({extra-build-options})
 extra_rpmbuild_options=({extra-rpmbuild-options})
 extra_repos=({extra-repos})
 extra_env="{env}"
@@ -82,11 +86,11 @@ echo "##### Initializing chroot"
 $my_mock --init
 
 ### Install any extra packages if needed
-if [[ -n "$extra_packages" ]]; then
+if [[ -n "$extra_build_packages" ]]; then
     echo "##### Installing extra dependencies: $extra_packages"
     $my_mock \
 	--no-clean \
-	--install "${{extra_packages[@]}}"
+	--install "${{extra_build_packages[@]}}"
 fi
 
 ### Set any extra env vars if any

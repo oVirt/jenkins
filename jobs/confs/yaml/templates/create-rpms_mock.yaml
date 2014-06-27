@@ -47,6 +47,7 @@
           arch: '{arch}'
           extra-packages: '{extra-packages}'
           extra-build-packages: '{extra-build-packages}'
+          extra-build-options: '{extra-build-options}'
           extra-rpmbuild-options: '{extra-rpmbuild-options}'
           extra-build-options: '{extra-build-options}'
           extra-repos: '{extra-repos}'
