@@ -39,8 +39,12 @@ WORKSPACE=$PWD
 
 
 ### Generate the mock configuration
-rpmbuild_options=("-D" "release_suffix ${{suffix}}")
-mock_build_options=("--define" "release_suffix ${{suffix}}")
+rpmbuild_options=()
+mock_build_options=()
+if [[ -n $suffix ]]; then
+    rpmbuild_options+=("-D" "release_suffix ${{suffix}}")
+    mock_build_options+=("--define" "release_suffix ${{suffix}}")
+fi
 for option in $extra_rpmbuild_options; do
     rpmbuild_options+=("-D" "${{option//=/ }}")
     mock_build_options+=("--define" "${{option//=/ }}")
@@ -94,6 +98,12 @@ if [[ -n $extra_env ]]; then
         echo "export $extra_env" >> /etc/profile
 EOF
 fi
+
+### Set custom dist from mock config into rpmmacros for manual builds
+rpm_dist="$(grep 'config_opts\["dist"\]' \
+            $WORKSPACE/jenkins/mock_configs/$mock_conf.cfg)"
+rpm_dist=${{rpm_dist#*=}}
+[[ -n $rpm_dist ]] && mock_build_options+=("--define" "dist .${{rpm_dist//\"/}}")
 
 ### Build the rpms
 echo "##### Building the rpms"

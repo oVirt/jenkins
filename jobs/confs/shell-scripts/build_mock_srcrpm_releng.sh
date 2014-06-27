@@ -103,6 +103,16 @@ if [[ -n $extra_env ]]; then
 EOF
 fi
 
+### Set custom dist from mock config into rpmmacros for manual builds
+rpm_dist="$(grep 'config_opts\["dist"\]' \
+            $WORKSPACE/jenkins/mock_configs/$mock_conf.cfg)"
+rpm_dist=.${{rpm_dist#*=}}
+$my_mock \
+    --no-clean \
+    --shell <<EOF
+echo "%dist $rpm_dist" > ~/.rpmmacros
+EOF
+
 ### Build the srpms
 echo "##### Copying repo into chroot"
 $my_mock \
