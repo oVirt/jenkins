@@ -1,0 +1,18 @@
+- project:
+    name: vdsm-jsonrpc-java_create-rpms
+    project:
+      - vdsm-jsonrpc-java
+    trigger:
+      - merged
+    branch:
+      - master
+    mock-build-type:
+      - onlyrpm
+    distro:
+      - fc19
+      - fc20
+      - el6
+    arch:
+      - x86_64
+    jobs:
+      - '{project}_{branch}_create-rpms-{distro}-{arch}_{trigger}'
