@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-# shell-scripts/jenkins_check_yaml.sh
+echo "shell-scripts/jenkins_check_yaml.sh"
 ## UPDATE JOBS FROM YAML
 new_xmls_dir="$WORKSPACE/new_xmls"
 old_xmls_dir="$WORKSPACE/old_xmls"

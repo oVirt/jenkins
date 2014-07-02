@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-# shel-scripts/global_setup.sh
+echo "shell-scripts/global_setup.sh"
 #
 # Executes all the commands tha must be run on any job
 #

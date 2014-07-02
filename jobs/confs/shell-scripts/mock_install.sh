@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-# shell-scripts/mock_install.sh
+echo "shell-scripts/mock_install.sh"
 # Do some black magic
 # PARAMETERS
 #

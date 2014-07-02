@@ -1,5 +1,5 @@
 #!/bin/bash -ex
-# shell-scripts/jenkins_deploy_yamls.sh
+echo "shell-scripts/jenkins_deploy_yamls.sh"
 ## UPDATE JOBS FROM YAML
 confs_dir="${WORKSPACE}/jenkins/jobs/confs"
 yaml_dir="${confs_dir}/yaml"

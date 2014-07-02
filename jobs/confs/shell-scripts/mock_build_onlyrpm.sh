@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-# shell-scripts/mock_build_onlyrpm.sh
+echo "shell-scripts/mock_build_onlyrpm.sh"
 # PARAMETERS
 #
 # project

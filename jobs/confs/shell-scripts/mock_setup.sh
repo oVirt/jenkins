@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-# shell-scripts/mock_setup.sh
+echo "shell-scripts/mock_setup.sh"
 # cleanup and setup env
 if [[  "$CLEAN_CACHE" == "true" ]]; then
     sudo rm -Rf /var/cache/mock

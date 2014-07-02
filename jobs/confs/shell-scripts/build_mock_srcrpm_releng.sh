@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-# shell-scripts/build_mock_srcrpm_releng.sh
+echo "shell-scripts/build_mock_srcrpm_releng.sh"
 # PARAMETERS
 #
 # subproject

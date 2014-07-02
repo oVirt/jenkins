@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-# shell-scripts/build_local_srcrpm.sh
+echo "shell-scripts/build_local_srcrpm.sh"
 # PARAMETERS
 #
 # project

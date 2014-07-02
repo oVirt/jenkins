@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-# shell-scripts/build_mock_srcrpm.sh
+echo "shell-scripts/build_mock_srcrpm.sh"
 # PARAMETERS
 #
 # project
@@ -20,9 +20,19 @@
 # extra-build-options
 #     space separated list of extra options to pass to the build.sh script
 #
+# extra-configure-options
+#     space separated list of extra options to pass to the configure script
+#
+# extra-autogen-options
+#     space separated list of extra options to pass to the autogen.sh script
+#
 # extra-rpmbuild-options
-#     extra options to pass to rpmbuild as defines, as a space separated list
+#     extra options to pass to rpmbuild as defines, as a spaceseparated list
 #     of key=value pairs
+#
+# extra-srcrpm-build-packages
+#    extra packages to install before building the src.rpm in the mock
+#    chroot
 #
 # extra-repos
 #     List of extra repositories to use when building, in a space separated list
@@ -34,13 +44,14 @@
 distro="{distro}"
 arch="{arch}"
 project="{project}"
-extra_build_packages=({extra-build-packages})
 extra_build_options=({extra-build-options})
+extra_configure_options=({extra-configure-options})
+extra_autogen_options=({extra-autogen-options})
 extra_rpmbuild_options=({extra-rpmbuild-options})
+extra_build_packages=({extra-srcrpm-build-packages})
 extra_repos=({extra-repos})
 extra_env="{env}"
 WORKSPACE=$PWD
-
 
 # Get the release suffix
 pushd "$WORKSPACE/$project"
@@ -117,8 +128,6 @@ EOF
 ### Build the srpms
 echo "##### Copying repo into chroot"
 
-
-
 # Build the src_rpms
 # Get the release suffix
 pushd "$WORKSPACE/$project"
@@ -145,6 +154,7 @@ done
 $my_mock \
     --no-clean \
     --shell <<EOF
+set -e
 cd /tmp/$project
 # build tarballs
 ./autogen.sh --system "${{extra_autogen_options[@]}}"

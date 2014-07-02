@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-# shell-scripts/mock_cleanup.sh
+echo "shell-scripts/mock_cleanup.sh"
 # remove chroot to free space
 sudo rm -Rf mock mock-cache
 # compress logs
