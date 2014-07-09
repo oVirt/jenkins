@@ -21,8 +21,9 @@ BASE_URL="http://resources.ovirt.org"
 CENTOS_MIRROR="http://centos.mirror.constant.com/"
 EPEL_MIRROR="http://linux.mirrors.es.net/"
 FEDORA_MIRROR="http://mirrors.kernel.org/"
-GLUSTER_MIRROR="http://download.gluster.org/"
+GLUSTER_MIRROR="http://download.gluster.org"
 JPACKAGE_MIRROR="ftp://jpackage.hmdc.harvard.edu/"
+COPR="http://copr-be.cloud.fedoraproject.org/results"
 STATIC_RP=""
 
 die() {
@@ -42,7 +43,7 @@ usage() {
 
     Example:
 	new layout:
-    ${0} --distribution=fc --layout=new --distribution-version=20 --repo=ovirt-3.3-snapshot --static-repo=ovirt-3.3-snapshot-static
+    ${0} --distribution=fc --layout=new --distrinbution-version=20 --repo=ovirt-3.3-snapshot --static-repo=ovirt-3.3-snapshot-static
     ${0} --distribution=el --layout=new --distribution-version=6 --repo=ovirt-3.3-snapshot --static-repo=ovirt-3.3-snapshot-static
 
     old layout:
@@ -125,6 +126,7 @@ check_repo_closure() {
 			--repofrompath=check-glusterfs-epel,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-6/x86_64/ \
 			--repofrompath=check-glusterfs-epel-noarch,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-6.4/noarch \
 			--repofrompath=check-jpackage-generic,"${JPACKAGE_MIRROR}"/JPackage/6.0/generic/free \
+                        --repofrompath=check-patternfly,"${COPR}/patternfly/patternfly1/epel-6-x86_64" \
 			-l check-updates \
 			-l check-extras \
 			-l check-epel \
@@ -134,6 +136,7 @@ check_repo_closure() {
 			-l check-base-i386 \
 			-l check-jpackage-rhel5 \
 			-l check-jpackage-generic \
+                        -l check-patternfly \
 			-r check-custom
 	elif [ "${DISTRIBUTION}" = "fc" ] \
 		|| [ "${DISTRIBUTION}" = "Fedora" ]; then
@@ -143,9 +146,11 @@ check_repo_closure() {
 			--repofrompath=check-fedora,"${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
 			--repofrompath=check-updates,"${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
 			--repofrompath=check-updates-testing,"${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
+                        --repofrompath=check-patternfly,""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
 			-l check-fedora \
 			-l check-updates \
 			-l check-updates-testing \
+                        -l check-patternfly \
 			-r check-custom
 	fi
 }
