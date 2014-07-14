@@ -5,8 +5,21 @@
     trigger:
       - merged
     version:
+      - 3.4:
+          branch: ovirt-hosted-engine-ha-1.1
+          extra-repos: |
+            ovirt-3.4-snapshot,http://resources.ovirt.org/pub/ovirt-3.4-snapshot/rpm/$distro
+            ovirt-3.4-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.4-snapshot-static/rpm/$distro
+      - 3.5:
+          branch: ovirt-hosted-engine-ha-1.2
+          extra-repos: |
+            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
+            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
       - master:
-          branch: 'master'
+          extra-repos: |
+            ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
+            ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+          branch: master
     mock-build-type:
       - onlyrpm
     distro:
@@ -22,6 +35,3 @@
               --exec_prefix=/usr \
               --sysconfdir=/etc \
               --localstatedir=/var
-          extra-repos: |
-              ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
-              ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
