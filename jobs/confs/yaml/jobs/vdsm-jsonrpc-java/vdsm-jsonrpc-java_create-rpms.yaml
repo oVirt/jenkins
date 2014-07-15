@@ -4,8 +4,9 @@
       - vdsm-jsonrpc-java
     trigger:
       - merged
-    branch:
-      - master
+    version:
+      - master:
+          branch: master
     mock-build-type:
       - onlyrpm
     distro:
@@ -15,4 +16,4 @@
     arch:
       - x86_64
     jobs:
-      - '{project}_{branch}_create-rpms-{distro}-{arch}_{trigger}'
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'

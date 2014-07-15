@@ -7,8 +7,9 @@
     trigger:
       - created
       - merged
-    branch:
-      - master
+    version:
+      - master:
+          branch: master
     mock-build-type:
       - all
     distro:
@@ -18,5 +19,5 @@
     arch:
       - x86_64
     jobs:
-      - '{subproject}_{branch}_create-rpms-{distro}-{arch}_{trigger}':
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: 'svn'

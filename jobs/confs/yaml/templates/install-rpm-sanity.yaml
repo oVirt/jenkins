@@ -1,5 +1,5 @@
 - job-template:
-    name: '{project}_{branch}_install-rpm-sanity-{distro}_{trigger}'
+    name: '{project}_{version}_install-rpm-sanity-{distro}_{trigger}'
     parameters:
       - gerrit-params:
           branch: '{branch}'

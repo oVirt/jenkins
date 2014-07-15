@@ -4,8 +4,9 @@
       - ovirt-hosted-engine-ha
     trigger:
       - merged
-    branch:
-      - master
+    version:
+      - master:
+          branch: 'master'
     mock-build-type:
       - onlyrpm
     distro:
@@ -15,9 +16,7 @@
     arch:
       - x86_64
     jobs:
-      - '{project}_{branch}_create-rpms-{distro}-{arch}_{trigger}':
-          # Ugly fix until BZ#1111601 is solved
-          extra-packages: 'm2crypto'
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-configure-options: |
               --prefix=/usr \
               --exec_prefix=/usr \
