@@ -27,13 +27,13 @@ COPR="http://copr-be.cloud.fedoraproject.org/results"
 STATIC_RP=""
 
 die() {
-	local m="${1}"
-	echo "FATAL: ${m}"
-	exit 1
+    local msg="${1}"
+    echo "FATAL: ${msg}"
+    exit 1
 }
 
 usage() {
-	cat << __EOF__
+    cat << __EOF__
     ${0} [options]
     --distribution             - Distribution you want to test
     --layout                   - Layout you want to use [old, new]
@@ -42,7 +42,7 @@ usage() {
     --static-repo              - Use static repo for nightly (needed for a new layout only)
 
     Example:
-	new layout:
+        new layout:
     ${0} --distribution=fc --layout=new --distrinbution-version=20 --repo=ovirt-3.3-snapshot --static-repo=ovirt-3.3-snapshot-static
     ${0} --distribution=el --layout=new --distribution-version=6 --repo=ovirt-3.3-snapshot --static-repo=ovirt-3.3-snapshot-static
 
@@ -53,113 +53,115 @@ __EOF__
 }
 
 get_opts() {
-	while [ -n "${1}" ]; do
-		opt="${1}"
-		v="${opt#*=}"
-		shift
-		case "${opt}" in
-			--repo=*)
-				REPO_NAME="${v}"
-				;;
-			--distribution=*)
-				DISTRIBUTION="${v}"
-				;;
-			--distribution-version=*)
-				DISTRIBUTION_VERSION="${v}"
-				;;
-			--layout=*)
-				LAYOUT="${v}"
-				;;
-			--static-repo=*)
-				STATIC_REPO="${v}"
-				;;
-			*)
-				usage
-				die "Wrong option"
-				;;
-		esac
-	done
+    while [[ -n "${1}" ]]; do
+        opt="${1}"
+        val="${opt#*=}"
+        shift
+        case "${opt}" in
+            --repo=*)
+                REPO_NAME="${val}"
+                ;;
+            --distribution=*)
+                DISTRIBUTION="${val}"
+                ;;
+            --distribution-version=*)
+                DISTRIBUTION_VERSION="${val}"
+                ;;
+            --layout=*)
+                LAYOUT="${val}"
+                ;;
+            --static-repo=*)
+                STATIC_REPO="${val}"
+                ;;
+            *)
+                usage
+                die "Wrong option"
+                ;;
+        esac
+    done
 }
 
 validation() {
-	[ -n "${DISTRIBUTION}" ] || die "Please specify --distribution= option"
-	[ -n "${REPO_NAME}" ] || die "Please specify --repo= option"
-	[ -n "${DISTRIBUTION_VERSION}" ] || die "Please specify --distribution-version= option"
-	[ -n "${LAYOUT}" ] || die "Please specify --layout= option"
+    [[ -n "${DISTRIBUTION}" ]] || die "Please specify --distribution= option"
+    [[ -n "${REPO_NAME}" ]] || die "Please specify --repo= option"
+    [[ -n "${DISTRIBUTION_VERSION}" ]] || die "Please specify --distribution-version= option"
+    [[ -n "${LAYOUT}" ]] || die "Please specify --layout= option"
 }
 
 check_layout() {
-	local dist
-	if [ "${LAYOUT}" = "new" ]; then
-		repo="${DISTRIBUTION}${DISTRIBUTION_VERSION}"
-		BASE_URL="${BASE_URL}/pub"
-	elif [ "${LAYOUT}" = "old" ]; then
-		if [ "${DISTRIBUTION}" = "el" ]; then
-			dist="EL"
-		elif [ "${DISTRIBUTION}" = "fc" ]; then
-			dist="Fedora"
-		fi
-		repo="${dist}/${DISTRIBUTION_VERSION}"
-		BASE_URL="${BASE_URL}/releases"
-	else
-		die "Please provide layout paramter"
-	fi
-	CUSTOM_URL="${BASE_URL}/${REPO_NAME}/rpm/${repo}"
+    local dist distver static_url repo
+    if [[ "${LAYOUT}" == "new" ]]; then
+        repo="${DISTRIBUTION}${DISTRIBUTION_VERSION}"
+        BASE_URL="${BASE_URL}/pub"
+    elif [[ "${LAYOUT}" == "old" ]]; then
+        if [ "${DISTRIBUTION}" = "el" ]; then
+            dist="EL"
+        elif [ "${DISTRIBUTION}" = "fc" ]; then
+            dist="Fedora"
+        fi
+        repo="${dist}/${DISTRIBUTION_VERSION}"
+        BASE_URL="${BASE_URL}/releases"
+    else
+        die "Please provide layout paramter"
+    fi
+    CUSTOM_URL="${BASE_URL}/${REPO_NAME}/rpm/${repo}"
 
-	if [ -n "${STATIC_REPO}" ]; then
-		static_url="${BASE_URL}/${STATIC_REPO}/rpm/${repo}"
-		STATIC_RP="--repofrompath=check-custom-static,${static_url} -l check-custom-static"
-	fi
+    if [[ -n "${STATIC_REPO}" ]]; then
+        static_url="${BASE_URL}/${STATIC_REPO}/rpm/${repo}"
+        distver="$DISTRIBUTION$DISTRIBUTION_VERSION"
+        STATIC_RP="--repofrompath=check-custom-static-$distver,${static_url} -l check-custom-static-$distver"
+    fi
 }
 
 check_repo_closure() {
-	if [ "${DISTRIBUTION}" = "el" ] \
-		|| [ "${DISTRIBUTION}" = "Centos" ]; then
-		repoclosure \
-			-t \
-			--repofrompath=check-custom,"${CUSTOM_URL}" ${STATIC_RP} \
-			--repofrompath=check-base,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/x86_64/ \
-			--repofrompath=check-base-i386,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/i386/ \
-			--repofrompath=check-updates,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
-			--repofrompath=check-extras,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
-			--repofrompath=check-epel,"${EPEL_MIRROR}"/fedora-epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
-			--repofrompath=check-glusterfs-epel,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-6/x86_64/ \
-			--repofrompath=check-glusterfs-epel-noarch,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-6.4/noarch \
-			--repofrompath=check-jpackage-generic,"${JPACKAGE_MIRROR}"/JPackage/6.0/generic/free \
-                        --repofrompath=check-patternfly,"${COPR}/patternfly/patternfly1/epel-6-x86_64" \
-			-l check-updates \
-			-l check-extras \
-			-l check-epel \
-			-l check-glusterfs-epel \
-			-l check-glusterfs-noarch-epel\
-			-l check-base \
-			-l check-base-i386 \
-			-l check-jpackage-rhel5 \
-			-l check-jpackage-generic \
-                        -l check-patternfly \
-			-r check-custom
-	elif [ "${DISTRIBUTION}" = "fc" ] \
-		|| [ "${DISTRIBUTION}" = "Fedora" ]; then
-		repoclosure \
-			-t \
-			--repofrompath=check-custom,"${CUSTOM_URL}" ${STATIC_RP} \
-			--repofrompath=check-fedora,"${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
-			--repofrompath=check-updates,"${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
-			--repofrompath=check-updates-testing,"${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
-                        --repofrompath=check-patternfly,""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
-			-l check-fedora \
-			-l check-updates \
-			-l check-updates-testing \
-                        -l check-patternfly \
-			-r check-custom
-	fi
+    local distid="$DISTRIBUTION$DISTRIBUTION_VERSION"
+    if [[ "${DISTRIBUTION}" == "el" ]] \
+        || [[ "${DISTRIBUTION}" == "Centos" ]]; then
+        repoclosure \
+            --tempcache \
+            --repofrompath=check-custom-$distid,"${CUSTOM_URL}" ${STATIC_RP} \
+            --repofrompath=check-base-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/x86_64/ \
+            --repofrompath=check-base-i386-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/i386/ \
+            --repofrompath=check-updates-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
+            --repofrompath=check-extras-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
+            --repofrompath=check-epel-$distid,"${EPEL_MIRROR}"/fedora-epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
+            --repofrompath=check-glusterfs-epel-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-6/x86_64/ \
+            --repofrompath=check-glusterfs-epel-noarch-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-6.4/noarch \
+            --repofrompath=check-jpackage-generic-$distid,"${JPACKAGE_MIRROR}"/JPackage/6.0/generic/free \
+            --repofrompath=check-patternfly-$distid,"${COPR}/patternfly/patternfly1/epel-6-x86_64" \
+            --lookaside check-updates-$distid \
+            --lookaside check-extras-$distid \
+            --lookaside check-epel-$distid \
+            --lookaside check-glusterfs-epel-$distid \
+            --lookaside check-glusterfs-noarch-epel-$distid \
+            --lookaside check-base-$distid \
+            --lookaside check-base-i386-$ditsid \
+            --lookaside check-jpackage-rhel5-$distid \
+            --lookaside check-jpackage-generic-$distid \
+            --lookaside check-patternfly-$distid \
+            --repoid check-custom-$distid
+    elif [ "${DISTRIBUTION}" == "fc" ] \
+        || [ "${DISTRIBUTION}" == "Fedora" ]; then
+        repoclosure \
+            --tempcache \
+            --repofrompath=check-custom-$distid,"${CUSTOM_URL}" ${STATIC_RP} \
+            --repofrompath=check-fedora-$distid,"${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
+            --repofrompath=check-updates-$distid,"${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
+            --repofrompath=check-updates-testing-$distid,"${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
+            --repofrompath=check-patternfly-$distid,""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
+            --lookaside check-fedora-$distid \
+            --lookaside check-updates-$distid \
+            --lookaside check-updates-testing-$distid \
+            --lookaside check-patternfly-$distid \
+            --repoid check-custom-$distid
+    fi
 }
 
 main() {
-	get_opts "${@}"
-	validation
-	check_layout
-	check_repo_closure
+    get_opts "${@}"
+    validation
+    check_layout
+    check_repo_closure
 }
 
 main "${@}"
