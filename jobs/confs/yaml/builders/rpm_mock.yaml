@@ -15,6 +15,14 @@
       - shell: !include-raw shell-scripts/mock_cleanup.sh
 
 - builder:
+    name: mock-all
+    builders:
+      - shell: !include-raw shell-scripts/mock_setup.sh
+      - shell: !include-raw shell-scripts/build_mock_srcrpm.sh
+      - shell: !include-raw shell-scripts/mock_build_onlyrpm.sh
+      - shell: !include-raw shell-scripts/mock_cleanup.sh
+
+- builder:
     name: mock-all-releng
     builders:
       - shell: !include-raw shell-scripts/mock_setup.sh

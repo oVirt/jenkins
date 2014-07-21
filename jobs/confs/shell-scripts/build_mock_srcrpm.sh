@@ -1,16 +1,13 @@
 #!/bin/bash -xe
-# shell-scripts/build_mock_srcrpm_releng.sh
+# shell-scripts/build_mock_srcrpm.sh
 # PARAMETERS
-#
-# subproject
-#     Internal subproject in releng repo to build
 #
 # project
 #     Name of the project it runs on, specifically the dir where the code
 #     has been cloned
 #
 # distro
-#     Distribution it should cre%ate the repms for (usually el6, el7, fc19 or
+#     Distribution it should create the rpms for (usually el6, el7, fc19 or
 #     fc20)
 #
 # arch
@@ -24,7 +21,7 @@
 #     space separated list of extra options to pass to the build.sh script
 #
 # extra-rpmbuild-options
-#     extra options to pass to rpmbuild as defines, as a spaceseparated list
+#     extra options to pass to rpmbuild as defines, as a space separated list
 #     of key=value pairs
 #
 # extra-repos
@@ -37,7 +34,6 @@
 distro="{distro}"
 arch="{arch}"
 project="{project}"
-subproject="{subproject}"
 extra_build_packages=({extra-build-packages})
 extra_build_options=({extra-build-options})
 extra_rpmbuild_options=({extra-rpmbuild-options})
@@ -115,17 +111,49 @@ EOF
 
 ### Build the srpms
 echo "##### Copying repo into chroot"
+
+
+
+# Build the src_rpms
+# Get the release suffix
+pushd "$WORKSPACE/$project"
+suffix=".$(date -u +%Y%m%d%H%M%S).git$(git rev-parse --short HEAD)"
+
+# make sure it's properly clean
+git clean -dxf
+popd
+
+
 $my_mock \
     --no-clean \
-    --copyin "$WORKSPACE"/$project/specs/$subproject /tmp/$subproject
+    --copyin "$WORKSPACE"/$project /tmp/$project
 
 echo "##### Building the srpms"
+if [[ -n ${{suffix}} ]]; then
+    rpmbuild_options=("-D" "release_suffix ${{suffix}}")
+else
+    rpmbuild_options=()
+fi
+for option in "${{extra_rpmbuild_options[@]}}"; do
+    rpmbuild_options+=("-D" "${{option//=/ }}")
+done
 $my_mock \
     --no-clean \
     --shell <<EOF
-cd /tmp/$subproject
-./build.sh "${{extra_build_options[@]}}"
+cd /tmp/$project
+# build tarballs
+./autogen.sh --system "${{extra_autogen_options[@]}}"
+./configure "${{extra_configure_options[@]}}"
+make dist
+
+# build src.rpm
+rpmbuild \
+    -D "_srcrpmdir ."  \
+    "${{rpmbuild_options[@]}}" \
+    -ts *.gz
+
 mkdir /tmp/SRCRPMS
+mv *.tar.gz /tmp/SRCRPMS/
 mv *src.rpm /tmp/SRCRPMS/
 EOF
 
