@@ -1,0 +1,16 @@
+- scm:
+    name: ovirt-iso-uploader-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/ovirt-iso-uploader.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: ovirt-iso-uploader
+          scm-name: ovirt-iso-uploader
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
