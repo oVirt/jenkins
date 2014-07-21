@@ -1,0 +1,16 @@
+- scm:
+    name: ovirt-image-uploader-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/ovirt-image-uploader.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: ovirt-image-uploader
+          scm-name: ovirt-image-uploader
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
