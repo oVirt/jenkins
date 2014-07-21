@@ -1,0 +1,16 @@
+- scm:
+    name: ovirt-reports-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/ovirt-reports.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: ovirt-reports
+          scm-name: ovirt-reports
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false

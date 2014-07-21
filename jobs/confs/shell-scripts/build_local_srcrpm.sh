@@ -35,8 +35,12 @@ suffix=".$(date -u +%Y%m%d%H%M%S).git$(git rev-parse --short HEAD)"
 # make sure it's properly clean
 git clean -dxf
 # build tarballs
-./autogen.sh --system "${{extra_autogen_options[@]}}"
-./configure "${{extra_configure_options[@]}}"
+if [[ -x autogen.sh ]]; then
+    ./autogen.sh --system "${{extra_autogen_options[@]}}"
+fi
+if [[ -x configure ]]; then
+    ./configure "${{extra_configure_options[@]}}"
+fi
 make dist
 mv *.tar.gz "$WORKSPACE"/exported-artifacts/
 popd
