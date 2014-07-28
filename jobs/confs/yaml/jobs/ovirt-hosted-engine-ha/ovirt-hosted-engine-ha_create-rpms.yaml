@@ -4,12 +4,12 @@
       - ovirt-hosted-engine-ha
     trigger:
       - merged
+    distro:
+      - fc19
+      - fc20
+      - el6
+      - el7
     version:
-      - 3.4:
-          branch: ovirt-hosted-engine-ha-1.1
-          extra-repos: |
-            ovirt-3.4-snapshot,http://resources.ovirt.org/pub/ovirt-3.4-snapshot/rpm/$distro
-            ovirt-3.4-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.4-snapshot-static/rpm/$distro
       - 3.5:
           branch: ovirt-hosted-engine-ha-1.2
           extra-repos: |
@@ -22,10 +22,37 @@
           branch: master
     mock-build-type:
       - onlyrpm
+    arch:
+      - x86_64
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+          extra-configure-options: |
+              --prefix=/usr \
+              --exec_prefix=/usr \
+              --sysconfdir=/etc \
+              --localstatedir=/var
+
+## jjb does not allow discarding variable combination when exploding
+## the template, so if we don't want el7 for branch 3.4, we have to
+## create a separated template for it
+- project:
+    name: ovirt-hosted-engine-ha_3.4_create-rpms
+    project:
+      - ovirt-hosted-engine-ha
+    trigger:
+      - merged
     distro:
       - fc19
       - fc20
       - el6
+    version:
+      - 3.4:
+          branch: ovirt-hosted-engine-ha-1.1
+          extra-repos: |
+            ovirt-3.4-snapshot,http://resources.ovirt.org/pub/ovirt-3.4-snapshot/rpm/$distro
+            ovirt-3.4-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.4-snapshot-static/rpm/$distro
+    mock-build-type:
+      - onlyrpm
     arch:
       - x86_64
     jobs:
