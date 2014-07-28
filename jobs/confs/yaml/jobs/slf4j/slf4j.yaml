@@ -1,0 +1,24 @@
+- project:
+    name: slf4j_create-rpms
+    project:
+      - releng-tools
+    subproject:
+      - slf4j
+    trigger:
+      - created
+      - merged
+    version:
+      - master:
+          branch: master
+    mock-build-type:
+      - all
+    distro:
+      - el6:
+          extra-repos: ci-tools,http://resources.ovirt.org/repos/ci-tools/el6
+          extra-packages: maven3
+    arch:
+      - x86_64
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+          extra-build-packages: |
+            rpmdevtools
