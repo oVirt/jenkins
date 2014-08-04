@@ -12,7 +12,11 @@
     distro:
       - fc19
       - fc20
-      - el6
+      - el6:
+          extra-repos: |
+            ci-tools,http://resources.ovirt.org/repos/ci-tools/el6
+          extra-packages: |
+            maven3
     arch:
       - x86_64
     jobs:
