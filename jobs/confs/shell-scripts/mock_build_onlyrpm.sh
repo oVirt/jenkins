@@ -37,6 +37,9 @@ extra_repos=({extra-repos})
 extra_env="{env}"
 WORKSPACE=$PWD
 
+### Import the suffix if any
+[[ -f "${{WORKSPACE}}/tmp/rpm_suffix.inc" ]] \
+&& source "${{WORKSPACE}}/tmp/rpm_suffix.inc"
 
 ### Generate the mock configuration
 rpmbuild_options=()

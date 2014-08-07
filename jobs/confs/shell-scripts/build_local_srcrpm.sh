@@ -31,6 +31,8 @@ WORKSPACE=$PWD
 # Get the release suffix
 pushd "$WORKSPACE/$project"
 suffix=".$(date -u +%Y%m%d%H%M%S).git$(git rev-parse --short HEAD)"
+# We store the suffix so it can be used on other scripts
+echo "suffix='${{suffix}}'" > "${{WORKSPACE}}/tmp/rpm_suffix.inc"
 
 # make sure it's properly clean
 git clean -dxf

@@ -42,6 +42,11 @@ extra_env="{env}"
 WORKSPACE=$PWD
 
 
+# Get the release suffix
+pushd "$WORKSPACE/$project"
+suffix=".$(date -u +%Y%m%d%H%M%S).git$(git rev-parse --short HEAD)"
+echo "suffix='${{suffix}}'" > "$WORKSPACE/tmp/rpm_suffix.inc"
+
 ### Generate the mock configuration
 rpmbuild_options=("-D" "release_suffix ${{suffix}}")
 mock_build_options=("--define" "release_suffix ${{suffix}}")
