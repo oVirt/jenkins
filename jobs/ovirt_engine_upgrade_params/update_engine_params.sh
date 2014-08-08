@@ -26,70 +26,73 @@ validate()
 init_postgres()
 {
     local res=0
-       if rpm -q postgresql-server; then
-                service postgresql stop
-                yum remove -y postgresql-server
-        fi
-        ## rm -rf does not complain if the file does not exist
-        rm -rf /var/lib/pgsql/data
-        yum -y install postgresql-server
-        postgresql-setup initdb || res=$(($res + $?))
-        ## ugly fig for the tests to work
-        cat >/var/lib/pgsql/data/pg_hba.conf <<EOF
+    if rpm -q postgresql-server; then
+        service postgresql stop
+        yum remove -y postgresql-server
+    fi
+    ## rm -rf does not complain if the file does not exist
+    rm -rf /var/lib/pgsql/data
+    yum -y install postgresql-server
+    postgresql-setup initdb || res=$(($res + $?))
+    ## ugly fig for the tests to work
+    cat >/var/lib/pgsql/data/pg_hba.conf <<EOF
 host    all            all        127.0.0.1/0    trust
 host    all            all        ::1/128    trust
 local   all            all        trust
 EOF
-        cat /var/lib/pgsql/data/pg_hba.conf
-        service postgresql start || res=$(($res + $?))
-        psql -h 127.0.0.1 postgres postgres \
-                -c "CREATE USER engine WITH PASSWORD '123456';" \
+    cat /var/lib/pgsql/data/pg_hba.conf
+    service postgresql start || res=$(($res + $?))
+    # Wait a few seconds to give time for the database to start up on
+    # slow systems
+    sleep 30
+    psql -h 127.0.0.1 postgres postgres \
+        -c "CREATE USER engine WITH PASSWORD '123456';" \
         || res=$(($res + $?))
-        psql -h 127.0.0.1 postgres postgres \
-                -c "CREATE DATABASE engine;" \
+    psql -h 127.0.0.1 postgres postgres \
+        -c "CREATE DATABASE engine;" \
         || res=$(($res + $?))
-        psql -h 127.0.0.1 postgres postgres \
-                -c "GRANT ALL PRIVILEGES ON DATABASE engine TO engine;" \
+    psql -h 127.0.0.1 postgres postgres \
+        -c "GRANT ALL PRIVILEGES ON DATABASE engine TO engine;" \
         || res=$(($res + $?))
-        if [[ "${res}" -ne 0 ]]; then
-                echo "Failed to init postgres"
-                exit 1
-        fi
+    if [[ "${res}" -ne 0 ]]; then
+        echo "Failed to init postgres"
+        exit 1
+    fi
 }
 
 
 pre_clean()
 {
-        echo "----- Cleaning old rpms... ----"
-        sed -i "s/CHANGE_HOSTNAME/$HOSTNAME/g" "${CLEANUP_FILE}"
-        # Clean engine rpms
-        if rpm -q ovirt-engine; then
-                engine-cleanup -u \
-                        || engine-cleanup --config-append="${CLEANUP_FILE}"
-        fi
-        yum -y remove ovirt-engine\* vdsm\* httpd mod_ssl
-        rm -rf /etc/httpd/*
-        rm -f "${WORKSPACE}"/*log "${WORKSPACE}"/*txt
-        echo "" > /etc/exports
-        rm -rf /var/lib/exports/iso
+    echo "----- Cleaning old rpms... ----"
+    sed -i "s/CHANGE_HOSTNAME/$HOSTNAME/g" "${CLEANUP_FILE}"
+    # Clean engine rpms
+    if rpm -q ovirt-engine; then
+        engine-cleanup -u \
+            || engine-cleanup --config-append="${CLEANUP_FILE}"
+    fi
+    yum -y remove ovirt-engine\* vdsm\* httpd mod_ssl
+    rm -rf /etc/httpd/*
+    rm -f "${WORKSPACE}"/*log "${WORKSPACE}"/*txt
+    echo "" > /etc/exports
+    rm -rf /var/lib/exports/iso
 }
 
 
 disable_engine_repos()
 {
-        for repo in /etc/yum.repos.d/*; do
-                grep -qi ovirt "$repo" \
-                && sed -i 's/enabled=1/enabled=0/g' "$repo"
-        done
+    for repo in /etc/yum.repos.d/*; do
+        grep -qi ovirt "$repo" \
+            && sed -i 's/enabled=1/enabled=0/g' "$repo"
+    done
 }
 
 
 enable_engine_repos()
 {
-        for repo in /etc/yum.repos.d/*; do
-                grep -qi ovirt "$repo" \
-                sed -i 's/enabled=0/enabled=1/g' "$repo"
-        done
+    for repo in /etc/yum.repos.d/*; do
+        grep -qi ovirt "$repo" \
+            sed -i 's/enabled=0/enabled=1/g' "$repo"
+    done
 }
 
 
