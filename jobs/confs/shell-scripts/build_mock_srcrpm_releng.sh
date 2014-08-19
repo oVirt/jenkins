@@ -10,7 +10,7 @@ echo "shell-scripts/build_mock_srcrpm_releng.sh"
 #     has been cloned
 #
 # distro
-#     Distribution it should cre%ate the repms for (usually el6, el7, fc19 or
+#     Distribution it should create the rpms for (usually el6, el7, fc19 or
 #     fc20)
 #
 # arch
@@ -24,7 +24,7 @@ echo "shell-scripts/build_mock_srcrpm_releng.sh"
 #     space separated list of extra options to pass to the build.sh script
 #
 # extra-rpmbuild-options
-#     extra options to pass to rpmbuild as defines, as a spaceseparated list
+#     extra options to pass to rpmbuild as defines, as a space separated list
 #     of key=value pairs
 #
 # extra-repos

@@ -8,7 +8,7 @@ echo "shell-scripts/mock_install.sh"
 #     has been cloned
 #
 # distro
-#     Distribution it should cre%ate the repms for (usually el6, el7, fc19 or
+#     Distribution it should create the rpms for (usually el6, el7, fc19 or
 #     fc20)
 #
 # arch
@@ -22,7 +22,7 @@ echo "shell-scripts/mock_install.sh"
 #     of name,url pairs
 #
 # env
-#     Extra envionment variables
+#     Extra environment variables
 #
 
 distro="{distro}"

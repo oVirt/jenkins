@@ -7,7 +7,7 @@ echo "shell-scripts/mock_build_onlyrpm.sh"
 #     has been cloned
 #
 # distro
-#     Distribution it should cre%ate the repms for (usually el6, el7, fc19 or
+#     Distribution it should create the rpms for (usually el6, el7, fc19 or
 #     fc20)
 #
 # arch
@@ -18,7 +18,7 @@ echo "shell-scripts/mock_build_onlyrpm.sh"
 #     yum
 #
 # extra-rpmbuild-options
-#     extra options to pass to rpmbuild as defines, as a spaceseparated list
+#     extra options to pass to rpmbuild as defines, as a space separated list
 #     of key=value pairs
 #
 # extra-repos
