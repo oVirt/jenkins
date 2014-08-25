@@ -19,7 +19,7 @@ LAYOUT=""
 CUSTOM_URL=""
 BASE_URL="http://resources.ovirt.org"
 CENTOS_MIRROR="http://centos.mirror.constant.com/"
-EPEL_MIRROR="http://linux.mirrors.es.net/"
+EPEL_MIRROR="http://mirror.switch.ch/ftp/mirror"
 FEDORA_MIRROR="http://mirrors.kernel.org/"
 GLUSTER_MIRROR="http://download.gluster.org"
 JPACKAGE_MIRROR="ftp://jpackage.hmdc.harvard.edu/"
@@ -125,7 +125,7 @@ check_repo_closure() {
                 --repofrompath=check-base-i386-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/i386/ \
                 --repofrompath=check-updates-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
                 --repofrompath=check-extras-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
-                --repofrompath=check-epel-$distid,"${EPEL_MIRROR}"/fedora-epel/beta/"${DISTRIBUTION_VERSION}"/x86_64/ \
+                --repofrompath=check-epel-$distid,"${EPEL_MIRROR}"/epel/beta/"${DISTRIBUTION_VERSION}"/x86_64/ \
                 --repofrompath=check-glusterfs-epel-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
                 --repofrompath=check-glusterfs-epel-noarch-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
                 --repofrompath=check-patternfly-$distid,"${COPR}/patternfly/patternfly1/epel-${DISTRIBUTION_VERSION}-x86_64" \
@@ -146,7 +146,7 @@ check_repo_closure() {
                 --repofrompath=check-base-i386-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/i386/ \
                 --repofrompath=check-updates-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
                 --repofrompath=check-extras-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
-                --repofrompath=check-epel-$distid,"${EPEL_MIRROR}"/fedora-epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
+                --repofrompath=check-epel-$distid,"${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
                 --repofrompath=check-glusterfs-epel-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
                 --repofrompath=check-glusterfs-epel-noarch-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
                 --repofrompath=check-jpackage-generic-$distid,"${JPACKAGE_MIRROR}"/JPackage/6.0/generic/free \
