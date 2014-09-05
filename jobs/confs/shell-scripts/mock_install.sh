@@ -61,8 +61,8 @@ pkg_array=()
 for package in "${{packages[@]}}"; do
     [[ -f "$package" ]] \
     || {{
-	echo "ERROR: Package $package not found!"
-	exit 1
+        echo "ERROR: Package $package not found!"
+        exit 1
     }}
 done
 
@@ -77,6 +77,15 @@ my_mock+=" --root=$mock_conf"
 ## init the chroot
 $my_mock \
     --init
+
+### Configure extra yum vars
+echo "Configuring custom env variables for repo urls"
+$my_mock \
+    --no-clean \
+    --shell <<EOF
+        mkdir -p /etc/yum/vars
+        echo "$distro" > /etc/yum/vars/distro
+EOF
 
 ## Needed when running shell on different arch than the host, because rpmdb is
 ## copied from it when creating the chroot and x86_64 rpmdb is not compatible on

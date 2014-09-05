@@ -30,15 +30,11 @@ echo "shell-scripts/build_mock_srcrpm.sh"
 #     extra options to pass to rpmbuild as defines, as a spaceseparated list
 #     of key=value pairs
 #
-# extra-srcrpm-build-packages
-#    extra packages to install before building the src.rpm in the mock
-#    chroot
-#
 # extra-repos
 #     List of extra repositories to use when building, in a space separated list
 #     of name,url pairs
 #
-# env
+# extra-env
 #     extra env variables to set when building
 
 distro="{distro}"
@@ -48,9 +44,9 @@ extra_build_options=({extra-build-options})
 extra_configure_options=({extra-configure-options})
 extra_autogen_options=({extra-autogen-options})
 extra_rpmbuild_options=({extra-rpmbuild-options})
-extra_build_packages=({extra-srcrpm-build-packages})
+extra_build_packages=({extra-build-packages})
 extra_repos=({extra-repos})
-extra_env="{env}"
+extra_env=({extra-env})
 WORKSPACE=$PWD
 
 # Get the release suffix
@@ -77,12 +73,18 @@ mock_repos=''
 for mock_repo in "${{extra_repos[@]}}"; do
     mock_repos+=" --repo=$mock_repo"
 done
+### Set any extra env vars if any
+mock_envs=''
+for env_opt in "${{extra_env[@]}}"; do
+    mock_envs+=" --option=environment.$env_opt"
+done
 echo "#### Generating mock configuration"
 ./mock_genconfig \
     --name="$mock_conf" \
     --base="$distribution-$arch.cfg" \
     --option="basedir=$WORKSPACE/mock/" \
     $mock_repos \
+    $mock_envs \
 > "$mock_conf.cfg"
 sudo touch /var/cache/mock/*/root_cache/cache.tar.gz || :
 cat "$mock_conf.cfg"
@@ -96,6 +98,18 @@ my_mock+=" --root=$mock_conf"
 ## init the chroot
 echo "##### Initializing chroot"
 $my_mock --init
+$my_mock \
+    --no-clean \
+    --scrub=yum-cache
+
+### Configure extra yum vars
+echo "Configuring custom env variables for repo urls"
+$my_mock \
+    --no-clean \
+    --shell <<EOF
+        mkdir -p /etc/yum/vars
+        echo "$distro" > /etc/yum/vars/distro
+EOF
 
 ### Install any extra packages if needed
 if [[ -n "$extra_build_packages" ]]; then
@@ -105,15 +119,6 @@ if [[ -n "$extra_build_packages" ]]; then
         --install "${{extra_build_packages[@]}}"
 fi
 
-### Set any extra env vars if any
-if [[ -n $extra_env ]]; then
-    echo "Configuring custom env variables"
-    $my_mock \
-        --no-clean \
-        --shell <<EOF
-        echo "export $extra_env" >> /etc/profile
-EOF
-fi
 
 ### Set custom dist from mock config into rpmmacros for manual builds
 rpm_dist="$(grep 'config_opts\["dist"\]' \

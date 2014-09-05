@@ -19,12 +19,9 @@
       - x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
-          extra-srcrpm-build-packages: |
+          extra-build-packages: |
             autoreconf
             gettext-devel
             automake
-            glib2-devel
-            yajl-devel
-          extra-build-packages: |
             glib2-devel
             yajl-devel
