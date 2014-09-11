@@ -177,6 +177,8 @@ pre_clean() {
     yum -y remove ovirt-engine\* vdsm\* httpd mod_ssl || :
     yum clean all --enablerepo=upgrade_*
     echo "" > /etc/exports
+    rm -rf /etc/ovirt-engine
+    rm -rf /etc/ovirt-engine-setup.conf.d
     rm -rf /etc/httpd/*
     rm -f "${workspace}"/*log "${workspace}"/*txt
     rm -rf /var/lib/exports/iso
