@@ -46,8 +46,13 @@ enabled=1
 def dumps_dict(to_dump, dict_name):
     result_lines = []
     for key, value in to_dump.iteritems():
-        result_lines.append("%s[%s]=%s" % (dict_name,
-                                           json.dumps(key),
+        if key != 'yum.conf':
+            keys = key.split('.')
+        else:
+            keys = [key]
+        key = '"]["'.join(keys)
+        result_lines.append('%s["%s"]=%s' % (dict_name,
+                                           key,
                                            json.dumps(value)))
     return '\n'.join(result_lines)
 
@@ -64,7 +69,10 @@ def main():
                         help='extra repository to add')
     parser.add_argument('--option', dest='options', action='append',
                         default=[],
-                        help='extra options to set in the the config')
+                        help='extra options to set in the the config, they can '
+                        'have multiple levels so for example '
+                        'environment.MYVAR=MYVALUE will end up as '
+                        'config_opts["environment"]["MYVAR"]="MYVALUE"')
     parser.add_argument('--base', dest='base_config', required=True,
                         help='path to the configuration to use as base')
     parser.add_argument('--name', dest='name', required=True,
