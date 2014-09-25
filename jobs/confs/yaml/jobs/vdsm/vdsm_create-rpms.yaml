@@ -10,11 +10,13 @@
           extra-repos: |
             ovirt-3.4-snapshot,http://resources.ovirt.org/pub/ovirt-3.4-snapshot/rpm/$distro
             ovirt-3.4-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.4-snapshot-static/rpm/$distro
+            ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
       - 3.5:
           branch: ovirt-3.5
           extra-repos: |
             ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
             ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
+            ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
     mock-build-type: all
     distro:
       - fc19
