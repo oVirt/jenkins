@@ -1,0 +1,16 @@
+- scm:
+    name: mom-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/mom.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: mom
+          scm-name: mom
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false

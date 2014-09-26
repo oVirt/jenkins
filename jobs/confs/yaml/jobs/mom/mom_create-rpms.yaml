@@ -1,0 +1,26 @@
+- project:
+    name: mom_create-rpms
+    project:
+      - mom
+    trigger:
+      - merged
+    version:
+      - master:
+          branch: master
+    mock-build-type:
+      - all
+    distro:
+      - fc19
+      - fc20
+      - fc21
+      - el6
+      - el7
+    arch:
+      - x86_64
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+          extra-build-packages: |
+            autoreconf
+            gettext-devel
+            automake
+            glib2-devel
