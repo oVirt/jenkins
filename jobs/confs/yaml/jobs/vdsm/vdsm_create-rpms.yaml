@@ -71,6 +71,7 @@
       python-pep8
     extra-env: |
       NOSE_EXCLUDE=.*
+    extra-rpmbuild-options: 'with_hooks=1'
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
