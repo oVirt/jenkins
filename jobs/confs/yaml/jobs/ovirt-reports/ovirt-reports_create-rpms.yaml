@@ -1,15 +1,14 @@
 - project:
-    name: ovirt-reports_create-rpms
+    name: ovirt-reports_master_create-rpms
     project:
       - ovirt-reports
     trigger:
       - merged
+    distro:
+      - fc20
+      - fc21
+      - el6
     version:
-      - 3.5:
-          branch: ovirt-engine-reports-3.5
-          extra-repos: |
-            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
-            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
       - master:
           extra-repos: |
             ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
@@ -17,11 +16,30 @@
           branch: master
     mock-build-type:
       - onlyrpm
+    arch:
+      - x86_64
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+
+- project:
+    name: ovirt-reports_3.5_create-rpms
+    project:
+      - ovirt-reports
+    trigger:
+      - merged
     distro:
       - fc19:
           node-filter: 'fc19 || fc20 || el6 || el7'
       - fc20
       - el6
+    version:
+      - 3.5:
+          branch: ovirt-engine-reports-3.5
+          extra-repos: |
+            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
+            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
+    mock-build-type:
+      - onlyrpm
     arch:
       - x86_64
     jobs:
