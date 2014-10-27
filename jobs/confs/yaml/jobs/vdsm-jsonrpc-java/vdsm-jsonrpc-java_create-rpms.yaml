@@ -1,12 +1,12 @@
 - project:
-    name: vdsm-jsonrpc-java_create-rpms
+    name: vdsm-jsonrpc-java_create-rpms_3.5
     project:
       - vdsm-jsonrpc-java
     trigger:
       - merged
     version:
-      - master:
-          branch: master
+      - 3.5:
+          branch: ovirt-3.5
     mock-build-type:
       - onlyrpm
     distro:
@@ -18,6 +18,33 @@
             ci-tools,http://resources.ovirt.org/repos/ci-tools/el6
           extra-packages: |
             maven3
+    arch:
+      - x86_64
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+
+- project:
+    name: vdsm-jsonrpc-java_create-rpms
+    project:
+      - vdsm-jsonrpc-java
+    trigger:
+      - merged
+    version:
+      - master:
+          branch: master
+    mock-build-type:
+      - onlyrpm
+    distro:
+      - fc20
+      - fc21
+      - el6:
+          extra-repos: |
+            ci-tools,http://resources.ovirt.org/repos/ci-tools/el6
+          extra-packages: |
+            maven3
+      - el7:
+          extra-packages: |
+            maven
     arch:
       - x86_64
     jobs:
