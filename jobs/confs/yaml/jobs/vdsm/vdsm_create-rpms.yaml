@@ -5,18 +5,33 @@
     trigger:
       - merged
     version:
-      - 3.5:
-          branch: ovirt-3.5
+      - 3.5
+    branch: ovirt-3.5
+    mock-build-type: all
+    distro:
+      - fc19:
+          extra-repos: |
+            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
+            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+            ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
+          node_filter: '!fc21'
+      - fc20:
+          extra-repos: |
+            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
+            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+            ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
+      - el6:
           extra-repos: |
             ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
             ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
             ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
-    mock-build-type: all
-    distro:
-      - fc19
-      - fc20
-      - el6
-      - el7
+            gluster-epel6,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-6/\\$basearch
+      - el7:
+          extra-repos: |
+            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
+            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
+            ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
+            gluster-epel7,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-7/\\$basearch
     arch:
       - x86_64
       # PPC64 is not available yet
