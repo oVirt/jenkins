@@ -1,6 +1,6 @@
 - job-template:
     name: '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
-    node: '{node_filter}'
+    node: '{node-filter}'
     parameters:
       - gerrit-params:
           branch: '{branch}'
@@ -30,7 +30,7 @@
 ## Template for the releng-based jobs
 - job-template:
     name: '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}'
-    node: '{node_filter}'
+    node: '{node-filter}'
     parameters:
       - gerrit-params:
           branch: '{branch}'
