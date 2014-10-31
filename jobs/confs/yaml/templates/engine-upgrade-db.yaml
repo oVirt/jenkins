@@ -1,0 +1,53 @@
+#
+# Parameters:
+#
+# version
+#   Version tag of the job, as 3.5, 3.4, master...
+#
+# to-version
+#   Version tag to upgrade to, usually version + 1
+#
+# trigger
+#   Type of trigger event, should be created or merged (to trigger on
+#   patchset created or patchset merged respectively)
+#
+# branch
+#   Full name of the branch to build from, for example ovirt-3.5
+#
+# test-branch
+#   Full name of the destination branch to upsgreade to ro from, for
+#   example ovirt-3.6
+#
+# trigger-files
+#    regext for the files this job should trigger on
+#
+# action
+#    What to do with test-branch, upgrade from or to it (values: from|to)
+#
+- job-template:
+    name: 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{trigger}'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
+    scm:
+      - gerrit:
+          project: 'ovirt-engine'
+      - jenkins:
+          branch: master
+    triggers:
+      - on-patch-{trigger}-with-files-whitelist:
+          project: 'ovirt-engine'
+          branch: '{branch}'
+          files: '.*/packaging/dbscripts/.*'
+    builders:
+      - whitelist
+      - ovirt-engine_upgrade-db:
+          test-branch: '{test-branch}'
+          action: '{action}'
+    publishers:
+      - whitelist
+      - post-tasks:
+          - matches:
+              - log-text: '.*INFO::DATABASE CREATED.*'
+                operator: AND
+            script: !include-raw shell-scripts/ovirt-engine_upgrade-db.cleanup.sh

@@ -1,0 +1,23 @@
+# Gerrit aware scm
+#
+# Parameters:
+#
+# project
+#   Name of the project to clone
+#
+- scm:
+    name: gerrit
+    scm:
+      - git:
+          url: 'git://gerrit.ovirt.org/{project}.git'
+          branches:
+            - $GERRIT_BRANCH
+          basedir: '{project}'
+          scm-name: '{project}'
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false

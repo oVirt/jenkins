@@ -1,0 +1,11 @@
+# Fails the build if the commiter is not in the whitelist, does
+# nothing otherwise or if not started by gerrit.
+#
+# You should use the whitelist publisher and a whitelist aware trigger
+# to get the full functionality (set status as aborted, and send a
+# message to gerrit)
+#
+- builder:
+    name: whitelist
+    builders:
+        - shell: !include-raw shell-scripts/whitelist-filter.sh
