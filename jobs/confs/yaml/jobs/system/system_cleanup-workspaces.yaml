@@ -1,0 +1,10 @@
+- job:
+    name: system_cleanup-workspaces
+    node: master
+    triggers:
+        - timed: "30 * * * *"
+    builders:
+        - system-groovy:
+            command: !include-raw groovy-scripts/cleanup_workspaces.groovy
+    publishers:
+        - groovy-postbuild: !include-raw groovy-scripts/cleanup_workspaces.postbuild.groovy
