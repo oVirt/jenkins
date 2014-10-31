@@ -15,6 +15,8 @@ done
 echo "Generating new xmls"
 pushd "$confs_dir"
 jenkins-jobs \
+    --workers 0 \
+    --allow-empty-variables \
     -l debug \
     test \
         --recursive \
@@ -31,11 +33,13 @@ if ! [[ -d "$confs_dir" ]]; then
 else
     pushd "$confs_dir"
     jenkins-jobs \
-	-l debug \
-	test \
-	    --recursive \
-	    -o "$old_xmls_dir" \
-	    "$yaml_dir"
+        --workers 0 \
+        --allow-empty-variables \
+        -l debug \
+        test \
+            --recursive \
+            -o "$old_xmls_dir" \
+            "$yaml_dir"
     echo "########################"
     ## Get the diff
     git reset --hard $GERRIT_PATCHSET_REVISION
