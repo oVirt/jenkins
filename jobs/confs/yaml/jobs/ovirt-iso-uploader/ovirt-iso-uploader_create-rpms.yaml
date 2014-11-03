@@ -17,6 +17,7 @@
           node-filter: 'fc19 || fc20 || el6 || el7'
       - fc20
       - el6
+      - el7
     arch:
       - x86_64
     jobs:
@@ -41,7 +42,9 @@
       - onlyrpm
     distro:
       - fc20
+      - fc21
       - el6
+      - el7
     arch:
       - x86_64
     jobs:

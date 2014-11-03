@@ -13,6 +13,7 @@
     mock-build-type: onlyrpm
     distro:
       - fc20
+      - fc21
       - el6:
           extra-build-packages: |
             otopi-devtools

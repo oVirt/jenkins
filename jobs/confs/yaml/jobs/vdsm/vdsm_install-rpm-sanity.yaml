@@ -14,6 +14,8 @@
       - onlyrpm
     distro:
       - fc20
+      - fc21
+      - el7
       - el6:
           extra-repos: |
               ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro

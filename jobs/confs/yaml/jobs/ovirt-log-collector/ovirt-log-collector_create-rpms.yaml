@@ -17,6 +17,7 @@
           node-filter: 'fc19 || fc20 || el6 || el7'
       - fc20
       - el6
+      - el7
     arch:
       - x86_64
     jobs:
@@ -40,8 +41,10 @@
     mock-build-type:
       - onlyrpm
     distro:
+      - fc21
       - fc20
       - el6
+      - el7
     arch:
       - x86_64
     jobs:

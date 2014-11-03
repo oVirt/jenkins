@@ -14,6 +14,7 @@
       - onlyrpm
     distro:
       - el6
+      - el7
       # engine is not build for f19 anymore on master branch, if we
       # want to keep building it we have to use 3.5
       - fc19:
@@ -22,6 +23,7 @@
             ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
           node-filter: 'fc19 || fc20 || el6 || el7'
       - fc20
+      - fc21
     arch:
       - x86_64
     jobs:
