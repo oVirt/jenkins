@@ -22,7 +22,7 @@ CENTOS_MIRROR="http://centos.mirror.constant.com/"
 EPEL_MIRROR="http://mirror.switch.ch/ftp/mirror"
 FEDORA_MIRROR="http://mirrors.kernel.org/"
 GLUSTER_MIRROR="http://download.gluster.org"
-JPACKAGE_MIRROR="ftp://jpackage.hmdc.harvard.edu/"
+JPACKAGE_MIRROR="http://ftp.heanet.ie/pub"
 COPR="http://copr-be.cloud.fedoraproject.org/results"
 STATIC_RP=""
 
@@ -149,7 +149,7 @@ check_repo_closure() {
                 --repofrompath=check-epel-$distid,"${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
                 --repofrompath=check-glusterfs-epel-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
                 --repofrompath=check-glusterfs-epel-noarch-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
-                --repofrompath=check-jpackage-generic-$distid,"${JPACKAGE_MIRROR}"/JPackage/6.0/generic/free \
+                --repofrompath=check-jpackage-generic-$distid,"${JPACKAGE_MIRROR}"/jpackage/6.0/generic/free \
                 --repofrompath=check-patternfly-$distid,"${COPR}/patternfly/patternfly1/epel-6-x86_64" \
                 --lookaside check-updates-$distid \
                 --lookaside check-extras-$distid \
