@@ -18,6 +18,9 @@
             ci-tools,http://resources.ovirt.org/repos/ci-tools/el6
           extra-packages: |
             maven3
+      - el7:
+          extra-packages: |
+            maven
     arch:
       - x86_64
     jobs:
