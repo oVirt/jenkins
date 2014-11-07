@@ -38,7 +38,7 @@
       - on-patch-{trigger}-with-files-whitelist:
           project: 'ovirt-engine'
           branch: '{branch}'
-          files: '.*/packaging/dbscripts/.*'
+          files: '(.*/)?packaging/dbscripts/.*'
     builders:
       - whitelist
       - ovirt-engine_upgrade-db:

@@ -7,6 +7,7 @@
       - ovirt-engine
     trigger:
       - merged
+      - created
     version:
       - master:
           branch: 'master'

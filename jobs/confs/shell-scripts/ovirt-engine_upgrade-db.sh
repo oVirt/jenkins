@@ -17,6 +17,9 @@ ACTION="${{ACTION?No action passed}}"
 
 cd "$WORKSPACE"/ovirt-engine
 
+### Make sure we have all the remote info up to date
+git fetch --all --tags
+
 ### get current HEAD ###
 cur_head="$(git rev-parse HEAD)"
 
