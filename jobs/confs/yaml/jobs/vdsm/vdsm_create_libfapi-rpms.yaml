@@ -1,0 +1,74 @@
+- project:
+    name: vdsm_master-libfapi_create-rpms
+    project:
+      - vdsm
+    trigger:
+      - merged
+    version:
+      - master-libfapi:
+          branch: master
+    mock-build-type: all
+    arch:
+      - x86_64
+    distro:
+      - fc20:
+          extra-repos: |
+            ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
+            ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+            updates-testing,http://download.fedoraproject.org/pub/fedora/linux/updates/testing/$releasever/\\$basearch
+      - fc21:
+          extra-repos: |
+            ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
+            ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+            updates-testing,http://download.fedoraproject.org/pub/fedora/linux/updates/testing/$releasever/\\$basearch
+      - el6:
+          extra-repos: |
+            ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
+            ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+            epel-testing,http://download.fedoraproject.org/pub/epel/testing/6/\\$basearch
+            gluster-epel6,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-6/\\$basearch
+      - el7:
+          extra-repos: |
+            ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
+            ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+            epel-testing,http://download.fedoraproject.org/pub/epel/testing/7/\\$basearch
+            gluster-epel7,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-7/\\$basearch
+    extra-build-packages: |
+      autoreconf
+      gettext-devel
+      make
+      automake
+      pyflakes
+      python-pep8
+      libvirt-python
+      python-devel
+      python-nose
+      sanlock-python
+      python-ordereddict
+      python-pthreading
+      libselinux-python
+      python-ethtool
+      m2crypto
+      python-dmidecode
+      python-netaddr
+      python-inotify
+      python-argparse
+      git
+      python-cpopen
+      bridge-utils
+      libguestfs-tools-c
+      pyparted
+      openssl
+      libnl
+      libtool
+      gettext-devel
+      python-ioprocess
+    extra-packages: |
+      pyflakes
+      python-pep8
+    extra-env: |
+      NOSE_EXCLUDE=.*
+    cherry-pick: |
+      refs/changes/68/33768/2
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'

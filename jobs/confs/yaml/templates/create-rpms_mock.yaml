@@ -24,6 +24,7 @@
           extra-configure-options: '{extra-configure-options}'
           extra-repos: '{extra-repos}'
           extra-env: '{extra-env}'
+          cherry-pick: '{cherry-pick}'
     publishers:
       - mock-cleanup
       - exported-artifacts
@@ -57,6 +58,7 @@
           extra-build-options: '{extra-build-options}'
           extra-repos: '{extra-repos}'
           extra-env: '{extra-env}'
+          cherry-pick: '{cherry-pick}'
     publishers:
       - mock-cleanup
       - exported-artifacts

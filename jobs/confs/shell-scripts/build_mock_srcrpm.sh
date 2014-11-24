@@ -36,6 +36,9 @@ echo "shell-scripts/build_mock_srcrpm.sh"
 #
 # extra-env
 #     extra env variables to set when building
+#
+# cherry-pick
+#     List of refspecs to cherry-pick before creating the src.rpm
 
 distro="{distro}"
 arch="{arch}"
@@ -51,10 +54,18 @@ extra_build_packages=(
 )
 extra_repos=({extra-repos})
 extra_env=({extra-env})
+to_cherry_pick=({cherry-pick})
 WORKSPACE=$PWD
 
 # Get the release suffix
 pushd "$WORKSPACE/$project"
+
+# Cherry pick now all the required patches
+for patch in "${{to_cherry_pick[@]}}"; do
+    git fetch origin "$patch"
+    git cherry-pick FETCH_HEAD
+done
+
 suffix=".$(date -u +%Y%m%d%H%M%S).git$(git rev-parse --short HEAD)"
 echo "suffix='${{suffix}}'" > "$WORKSPACE/tmp/rpm_suffix.inc"
 
