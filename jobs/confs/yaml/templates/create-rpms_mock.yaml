@@ -25,6 +25,7 @@
           extra-repos: '{extra-repos}'
           extra-env: '{extra-env}'
     publishers:
+      - mock-cleanup
       - exported-artifacts
 
 ## Template for the releng-based jobs
@@ -57,4 +58,5 @@
           extra-repos: '{extra-repos}'
           extra-env: '{extra-env}'
     publishers:
+      - mock-cleanup
       - exported-artifacts
