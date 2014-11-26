@@ -32,6 +32,26 @@ fi
 DBNAME="${{JOB_NAME//[\/=]/_}}_${{BUILD_NUMBER}}"
 
 echo "INFO::CREATING DATABASE"
+# make sure it does not yet exist and the user is there.
+sudo -u postgres \
+    psql \
+        -d template1 \
+        -c "create role engine;" \
+&>/dev/null \
+|| :
+
+sudo -u postgres \
+    psql \
+        -d template1 \
+        -c "ALTER ROLE engine WITH login" \
+&>/dev/null \
+|| :
+
+sudo -u postgres \
+    dropdb engine \
+&>/dev/null \
+|| :
+
 sudo -u postgres createdb \
     "$DBNAME" \
     -e \
