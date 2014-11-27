@@ -48,6 +48,13 @@ sudo -u postgres \
 || :
 
 sudo -u postgres \
+    psql \
+        -d template1 \
+        -c "ALTER USER engine CREATEDB" \
+&>/dev/null \
+|| :
+
+sudo -u postgres \
     dropdb engine \
 &>/dev/null \
 || :
@@ -66,10 +73,17 @@ echo "INFO::DATABASE CREATED"
 # make sure we have user and access
 
 echo "INFO::POPULATING DATABASE"
-./packaging/dbscripts/schema.sh \
-    -c apply \
-    -u engine \
-    -d "$DBNAME"
+if [[ -e  ./packaging/dbscripts/schema.sh ]]; then
+    ./packaging/dbscripts/schema.sh \
+        -c apply \
+        -u engine \
+        -d "$DBNAME"
+else
+    echo "WARN:Using old script create_db.sh, make sure this is from <3.5"
+    ./packaging/dbscripts/create_db.sh \
+        -u engine \
+        -d "$DBNAME"
+fi
 echo "INFO::DATABASE POPULATED"
 
 ### upgrade ####

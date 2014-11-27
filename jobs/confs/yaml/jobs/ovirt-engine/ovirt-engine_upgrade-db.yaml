@@ -20,3 +20,21 @@
       - from
     jobs:
       - 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{trigger}'
+
+- project:
+    name: ovirt-engine_upgrade-db_3.5
+    project:
+      - ovirt-engine
+    trigger:
+      - merged
+      - created
+    version:
+      - 3.5:
+          branch: 'ovirt-engine-3.5'
+    test-version:
+      - 3.4:
+          test-branch: 'ovirt-engine-3.4'
+    action:
+      - from
+    jobs:
+      - 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{trigger}'
