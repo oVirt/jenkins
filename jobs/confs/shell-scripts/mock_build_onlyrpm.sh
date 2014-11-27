@@ -120,9 +120,12 @@ rpm_dist=${{rpm_dist#*=}}
 
 ### Build the rpms
 echo "##### Building the rpms"
-$my_mock \
-    "${{mock_build_options[@]}}" \
-    --rebuild \
-    --no-clean \
-    --resultdir=$WORKSPACE/exported-artifacts \
-    "$WORKSPACE"/exported-artifacts/*.src.rpm
+for srcrpm in "$WORKSPACE"/exported-artifacts/*.src.rpm; do
+    echo "     Building $srcrpm"
+    $my_mock \
+        "${{mock_build_options[@]}}" \
+        --rebuild \
+        --no-clean \
+        --resultdir=$WORKSPACE/exported-artifacts \
+        "$srcrpm"
+done
