@@ -1,0 +1,31 @@
+- project:
+    name: ovirt-host-deploy_create-rpms
+    project:
+      - ovirt-host-deploy
+    trigger:
+      - merged
+    version:
+      - master:
+          extra-repos: |
+            ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
+            ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+          branch: master
+    mock-build-type:
+      - all
+    distro:
+      - el6
+      - el7
+      - fc19
+      - fc20
+      - fc21
+    arch:
+      - x86_64
+    extra-configure-options: |
+      --with-otopi-sources=/dev/null
+    extra-build-packages: |
+      gettext-devel
+      automake
+      autoreconf
+      make
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'

@@ -44,7 +44,11 @@ extra_build_options=({extra-build-options})
 extra_configure_options=({extra-configure-options})
 extra_autogen_options=({extra-autogen-options})
 extra_rpmbuild_options=({extra-rpmbuild-options})
-extra_build_packages=({extra-build-packages})
+extra_build_packages=(
+    autoconf
+    make
+    {extra-build-packages}
+)
 extra_repos=({extra-repos})
 extra_env=({extra-env})
 WORKSPACE=$PWD
@@ -163,9 +167,15 @@ $my_mock \
 set -e
 cd /tmp/$project
 # build tarballs
-./autogen.sh --system "${{extra_autogen_options[@]}}"
+if [[ -e autogen.sh ]]; then
+    ./autogen.sh --system "${{extra_autogen_options[@]}}"
+else
+    autoreconf -ivf
+fi
 ./configure "${{extra_configure_options[@]}}"
 make dist
+echo "Really ugly hack for the host-dpeloy job"
+make offline-tarball || :
 
 # build src.rpm
 rpmbuild \

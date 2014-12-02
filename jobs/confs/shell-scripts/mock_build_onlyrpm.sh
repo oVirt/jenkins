@@ -126,6 +126,7 @@ for srcrpm in "$WORKSPACE"/exported-artifacts/*.src.rpm; do
         "${{mock_build_options[@]}}" \
         --rebuild \
         --no-clean \
+        --no-cleanup-after \
         --resultdir=$WORKSPACE/exported-artifacts \
         "$srcrpm"
 done
