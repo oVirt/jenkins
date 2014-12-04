@@ -166,15 +166,15 @@ $my_mock \
     --shell <<EOF
 set -e
 cd /tmp/$project
-# build tarballs
-if [[ -e autogen.sh ]]; then
+if [[ -x autogen.sh ]]; then
     ./autogen.sh --system "${{extra_autogen_options[@]}}"
-else
+elif [[ -e Makefile.am ]]; then
     autoreconf -ivf
 fi
-./configure "${{extra_configure_options[@]}}"
+[[ -x configure  ]] &&
+    ./configure "${{extra_configure_options[@]}}"
 make dist
-echo "Really ugly hack for the host-dpeloy job"
+echo "Really ugly hack for the host-deploy job"
 make offline-tarball || :
 
 # build src.rpm
