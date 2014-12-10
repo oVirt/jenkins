@@ -1,0 +1,20 @@
+##############################################################################
+###   Job Templates
+##############################################################################
+- job-template:
+    name: 'ovirt-node_{version}_create-iso-{distro}_{trigger}'
+    node : '{distro}'
+    builders :
+          - ovirt-node_create-iso:
+              distro: '{distro}'
+    scm :
+          - ovirt-node
+          - ovirt-node-iso
+    triggers:
+      - on-patch-{trigger}:
+          project: '{project}'
+          branch: '{branch}'
+    publishers:
+      - ovirt-node-cleanup:
+          distro: '{distro}'
+      - exported-artifacts

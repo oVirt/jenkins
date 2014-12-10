@@ -1,0 +1,8 @@
+##############################################################################
+###   Builder Definitions
+##############################################################################
+- builder:
+    name: ovirt-node_create-iso
+    builders :
+        - shell:
+            !include-raw shell-scripts/build-local-ovirt-node.sh

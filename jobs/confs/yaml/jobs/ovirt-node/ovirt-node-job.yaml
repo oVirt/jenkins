@@ -1,0 +1,13 @@
+##############################################################################
+###   Projects
+##############################################################################
+- project:
+    name: 'ovirt-node'
+    trigger:
+      - merged
+    distro :
+      - fc20
+    version :
+      - master
+    jobs:
+      - 'ovirt-node_{version}_create-iso-{distro}_{trigger}'

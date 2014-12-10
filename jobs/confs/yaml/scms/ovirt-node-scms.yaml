@@ -1,0 +1,23 @@
+##############################################################################
+###   SCM Definitions
+##############################################################################
+- scm:
+    name: ovirt-node
+    scm:
+        - git:
+            url: http://gerrit.ovirt.org/p/ovirt-node.git
+            branches:
+              - origin/master
+            scm-name: node
+            wipe-workspace: true
+            basedir : "ovirt-node"
+- scm:
+    name: ovirt-node-iso
+    scm:
+        - git:
+            url: http://gerrit.ovirt.org/p/ovirt-node-iso.git
+            branches:
+              - origin/master
+            scm-name: node-iso
+            wipe-workspace: true
+            basedir : "ovirt-node-iso"
