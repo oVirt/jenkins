@@ -87,40 +87,43 @@ my_mock="/usr/bin/mock"
 my_mock+=" --configdir=$WORKSPACE/jenkins/mock_configs"
 my_mock+=" --root=$mock_conf"
 
-## init the chroot
-echo "##### Initializing chroot"
-$my_mock --init
-$my_mock \
-    --no-clean \
-    --scrub=yum-cache
-
-### Configure extra yum vars
-echo "Configuring custom env variables for repo urls"
-$my_mock \
-    --no-clean \
-    --shell <<EOF
-        mkdir -p /etc/yum/vars
-        echo "$distro" > /etc/yum/vars/distro
-EOF
-
-### Install any extra packages if needed
-if [[ -n "$extra_packages" ]]; then
-    echo "##### Installing extra dependencies: $extra_packages"
-    $my_mock \
-        --no-clean \
-        --install "${{extra_packages[@]}}"
-fi
-
-### Set custom dist from mock config into rpmmacros for manual builds
-rpm_dist="$(grep 'config_opts\["dist"\]' \
-            $WORKSPACE/jenkins/mock_configs/$mock_conf.cfg)"
-rpm_dist="${{rpm_dist//[\'\"]/}}"
-rpm_dist=${{rpm_dist#*=}}
-[[ -n $rpm_dist ]] && mock_build_options+=("--define" "dist .${{rpm_dist//\"/}}")
-
 ### Build the rpms
 echo "##### Building the rpms"
 for srcrpm in "$WORKSPACE"/exported-artifacts/*.src.rpm; do
+
+    ## init the chroot
+    echo "##### Initializing chroot for ${{srcrpm##*/}}"
+    $my_mock --init
+    $my_mock \
+        --no-clean \
+        --scrub=yum-cache
+
+    ### Configure extra yum vars
+    echo "Configuring custom env variables for repo urls for ${{srcrpm##*/}}"
+    $my_mock \
+        --no-clean \
+        --shell <<EOF
+            mkdir -p /etc/yum/vars
+            echo "$distro" > /etc/yum/vars/distro
+EOF
+
+    ### Install any extra packages if needed
+    if [[ -n "$extra_packages" ]]; then
+        echo "##### Installing extra dependencies: " \
+             "$extra_packages for ${{srcrpm##*/}}"
+        $my_mock \
+        --no-clean \
+            --install "${{extra_packages[@]}}"
+    fi
+
+    ### Set custom dist from mock config into rpmmacros for manual builds
+    rpm_dist="$(grep 'config_opts\["dist"\]' \
+                $WORKSPACE/jenkins/mock_configs/$mock_conf.cfg)"
+    rpm_dist="${{rpm_dist//[\'\"]/}}"
+    rpm_dist=${{rpm_dist#*=}}
+    [[ -n $rpm_dist ]] \
+    && mock_build_options+=("--define" "dist .${{rpm_dist//\"/}}")
+
     echo "     Building $srcrpm"
     $my_mock \
         "${{mock_build_options[@]}}" \
