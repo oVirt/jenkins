@@ -69,6 +69,7 @@
     extra-env: |
       NOSE_EXCLUDE=.*
     cherry-pick: |
-      refs/changes/68/33768/2
+      refs/changes/37/36237/1
+      refs/changes/68/33768/3
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
