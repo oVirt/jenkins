@@ -1,11 +1,11 @@
 - project:
-    name: vdsm_master-libfapi_create-rpms
+    name: vdsm_master-libgfapi_create-rpms
     project:
       - vdsm
     trigger:
       - merged
     version:
-      - master-libfapi:
+      - master-libgfapi:
           branch: master
     mock-build-type: all
     arch:
