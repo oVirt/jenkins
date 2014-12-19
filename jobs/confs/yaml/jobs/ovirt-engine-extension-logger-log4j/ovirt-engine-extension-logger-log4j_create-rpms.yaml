@@ -4,6 +4,7 @@
       - ovirt-engine-extension-logger-log4j
     trigger:
       - merged
+      - created
     version:
       - master:
           extra-repos: |

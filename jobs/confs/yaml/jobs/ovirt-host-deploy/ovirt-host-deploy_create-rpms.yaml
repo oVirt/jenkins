@@ -4,6 +4,7 @@
       - ovirt-host-deploy
     trigger:
       - merged
+      - created
     version:
       - master:
           extra-repos: |

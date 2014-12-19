@@ -4,6 +4,7 @@
       - ovirt-engine-extension-aaa-misc
     trigger:
       - merged
+      - created
     version:
       - master:
           extra-repos: |

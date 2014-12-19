@@ -4,6 +4,7 @@
       - ovirt-iso-uploader
     trigger:
       - merged
+      - created
     version:
       - 3.5:
           branch: ovirt-iso-uploader-3.5
@@ -30,6 +31,7 @@
       - ovirt-iso-uploader
     trigger:
       - merged
+      - created
     version:
       - master:
           extra-repos: |

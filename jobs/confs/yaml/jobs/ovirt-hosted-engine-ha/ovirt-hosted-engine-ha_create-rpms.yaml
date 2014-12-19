@@ -4,6 +4,7 @@
       - ovirt-hosted-engine-ha
     trigger:
       - merged
+      - created
     distro:
       - fc20
       - fc21
@@ -33,6 +34,7 @@
       - ovirt-hosted-engine-ha
     trigger:
       - merged
+      - created
     distro:
       - fc20
       - el6

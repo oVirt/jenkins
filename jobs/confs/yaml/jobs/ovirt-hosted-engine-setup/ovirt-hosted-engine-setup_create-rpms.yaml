@@ -4,6 +4,7 @@
       - ovirt-hosted-engine-setup
     trigger:
       - merged
+      - created
     version:
       - master:
           extra-repos: |
@@ -32,6 +33,7 @@
       - ovirt-hosted-engine-setup
     trigger:
       - merged
+      - created
     version:
       - 3.5:
           branch: ovirt-hosted-engine-setup-1.2

@@ -4,6 +4,7 @@
       - ioprocess
     trigger:
       - merged
+      - created
     version:
       - master:
           branch: master

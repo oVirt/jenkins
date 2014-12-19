@@ -4,6 +4,7 @@
       - ovirt-engine-extension-aaa-ldap
     trigger:
       - merged
+      - created
     version:
       - master:
           extra-repos: |
