@@ -1,3 +1,6 @@
+## jjb does not allow discarding variable combination when exploding
+## the template, so if we don't want fc21 for branch 3.5, we have to
+## create a separated template for it
 - project:
     name: ovirt-log-collector_create-rpms
     project:
@@ -13,8 +16,6 @@
     mock-build-type:
       - onlyrpm
     distro:
-      - fc19:
-          node-filter: 'fc19 || fc20 || el6 || el7'
       - fc20
       - el6
       - el7
@@ -23,9 +24,6 @@
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
-## jjb does not allow discarding variable combination when exploding
-## the template, so if we don't want fc19 for branch master, we have to
-## create a separated template for it
 - project:
     name: ovirt-log-collector_master_create-rpms
     project:

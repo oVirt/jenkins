@@ -34,8 +34,6 @@
     trigger:
       - merged
     distro:
-      - fc19:
-          node-filter: 'fc19 || fc20 || el6 || el7'
       - fc20
       - el6
       - el7

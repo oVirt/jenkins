@@ -40,8 +40,6 @@
             ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
     mock-build-type: onlyrpm
     distro:
-      - fc19:
-          node-filter: 'fc19 || fc20 || el6 || el7'
       - fc20
       - el6:
           extra-build-packages: |

@@ -20,7 +20,6 @@
     distro:
       - el6
       - el7
-      - fc19
       - fc20
       - fc21
     arch:

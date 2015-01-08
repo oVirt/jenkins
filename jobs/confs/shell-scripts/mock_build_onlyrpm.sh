@@ -7,8 +7,8 @@ echo "shell-scripts/mock_build_onlyrpm.sh"
 #     has been cloned
 #
 # distro
-#     Distribution it should create the rpms for (usually el6, el7, fc19 or
-#     fc20)
+#     Distribution it should create the rpms for (usually el6, el7, fc20 or
+#     fc21)
 #
 # arch
 #     Architecture to build the packages for
