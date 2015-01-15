@@ -1,0 +1,16 @@
+- scm:
+    name: repoman-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/repoman.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: repoman
+          scm-name: repoman
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false

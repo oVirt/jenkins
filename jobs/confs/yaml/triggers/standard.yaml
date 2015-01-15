@@ -1,0 +1,38 @@
+- trigger:
+    name: build-artifacts_trigger
+    triggers:
+      - gerrit:
+            trigger-on-change-merged-event: true
+            escape-quotes: true
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: '{project}'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: '{branch}'
+
+- trigger:
+    name: check-patch_trigger
+    triggers:
+      - gerrit:
+            trigger-on-patchset-uploaded-event: true
+            escape-quotes: true
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: '{project}'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: '{branch}'
+
+- trigger:
+    name: check-merged_trigger
+    triggers:
+      - gerrit:
+            trigger-on-change-merged-event: true
+            escape-quotes: true
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: '{project}'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: '{branch}'
