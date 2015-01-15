@@ -21,7 +21,9 @@ function set_env {{
 set_env
 
 clean_failed=false
-sudo rm -rf "$CACHE"
+sudo rm -rf \
+    "$CACHE" \
+    "$HOME/rpmbuild"
 cd "$OVIRT_NODE_BASE"/ovirt-node
 make distclean \
     || clean_failed=true
