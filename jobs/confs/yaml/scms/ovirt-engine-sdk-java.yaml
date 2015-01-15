@@ -1,0 +1,16 @@
+- scm:
+    name: ovirt-engine-sdk-java-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/ovirt-engine-sdk-java.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: ovirt-engine-sdk-java
+          scm-name: ovirt-engine-sdk-java
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
