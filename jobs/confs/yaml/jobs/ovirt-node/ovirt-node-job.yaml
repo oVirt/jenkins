@@ -7,6 +7,7 @@
       - merged
     distro :
       - fc20
+      - el7
     version :
       - master
     jobs:
