@@ -87,16 +87,6 @@ $my_mock \
         echo "$distro" > /etc/yum/vars/distro
 EOF
 
-## Needed when running shell on different arch than the host, because rpmdb is
-## copied from it when creating the chroot and x86_64 rpmdb is not compatible on
-## i686
-$my_mock \
-    --no-clean \
-    --shell <<EOF
-rm -f /var/lib/rpm/__db*
-rpm --rebuilddb
-EOF
-
 ### Copy the packages to the chroot
 $my_mock \
     --no-clean \
@@ -107,6 +97,16 @@ $my_mock \
     --no-clean \
     --install \
         yum
+
+## Needed when running yum inside the chroot on different distro than the host,
+## because rpmdb is first generated with the host yum when creating the chroot
+## and sometimes is not compatible with the chroot installed yum version
+$my_mock \
+    --no-clean \
+    --shell <<EOF
+rm -f /var/lib/rpm/__db*
+rpm --rebuilddb
+EOF
 
 ### Install the packages
 echo "##### Installing ${{packages[@]}}"
