@@ -1,23 +1,23 @@
 - scm:
-    name: vdsm
+    name: ovirt-engine
     scm:
         - git:
-            url: git://gerrit.ovirt.org/vdsm.git
+            url: git://gerrit.ovirt.org/ovirt-engine.git
             branches:
               - "origin/{branch}"
-            basedir: vdsm
-            scm-name: vdsm
+            basedir: ovirt-engine
+            scm-name: ovirt-engine
             wipe-workspace: false
 
 - scm:
-    name: vdsm-gerrit
+    name: ovirt-engine-gerrit
     scm:
       - git:
-          url: git://gerrit.ovirt.org/vdsm.git
+          url: git://gerrit.ovirt.org/ovirt-engine.git
           branches:
             - $GERRIT_BRANCH
-          basedir: vdsm
-          scm-name: vdsm
+          basedir: ovirt-engine
+          scm-name: ovirt-engine
           name: ''
           refspec: $GERRIT_REFSPEC
           choosing-strategy: gerrit

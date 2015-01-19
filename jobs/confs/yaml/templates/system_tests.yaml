@@ -1,0 +1,39 @@
+- job-template:
+    name: '{project}_{version}_system-tests-{distro}-{arch}_{trigger}'
+    node: '{node-filter}'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
+    triggers:
+      - on-patch-{trigger}:
+          project: '{project}'
+          branch: '{branch}'
+    scm:
+      - '{project}-gerrit':
+          branch: '{branch}'
+      - '{other-project}':
+          branch: '{other-branch}'
+    builders:
+      - system-tests:
+          project: '{project}'
+          version: '{version}'
+          distro: '{distro}'
+    publishers:
+      - junit:
+          results: 'jenkins-deployment-$BUILD_NUMBER/nosetests*.xml'
+      - post-tasks:
+          - matches:
+              - log-text: '.*INIT_OK.*'
+                operator: AND
+            script: !include-raw shell-scripts/system_tests.cleanup.sh
+          - matches:
+              - log-text: '.*'
+                operator: AND
+            script: !include-raw shell-scripts/system_tests.collect_logs.sh
+      - archive:
+          artifacts: 'exported-archives.tar.gz'
+          allow-empty: true
+      - email:
+          recipients: '{email-to}'
+          notify-every-unstable-build: false # FIXME
+          send-to-individuals: false  # FIXME

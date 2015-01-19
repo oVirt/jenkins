@@ -127,3 +127,24 @@
             ovirt dot org.
           skip-vote:
             notbuilt: true
+
+- trigger:
+    name: on-approved
+    triggers:
+      - gerrit:
+          trigger-on:
+            - comment-added-event:
+                approval-category: 'CRVW'
+                approval-value: 2
+          escape-quotes: true
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'PLAIN'
+                  branch-pattern: '{branch}'
+              file-paths:
+                - compare-type: REG_EXP
+                  pattern: '{files}'
+          server-name: gerrit
+          silent: true # FIXME
