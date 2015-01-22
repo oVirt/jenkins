@@ -3,12 +3,14 @@
 ##############################################################################
 - project:
     name: 'ovirt-node'
+    project: 'ovirt-node'
     trigger:
       - merged
     distro :
       - fc20
       - el7
     version :
-      - master
+      - master:
+          branch: master
     jobs:
       - 'ovirt-node_{version}_create-iso-{distro}_{trigger}'

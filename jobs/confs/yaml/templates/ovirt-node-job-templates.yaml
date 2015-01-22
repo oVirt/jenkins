@@ -11,8 +11,7 @@
           - ovirt-node
           - ovirt-node-iso
     triggers:
-      - on-patch-{trigger}:
-          project: '{project}'
+      - ovirt-node-{trigger}:
           branch: '{branch}'
     publishers:
       - ovirt-node-cleanup:
