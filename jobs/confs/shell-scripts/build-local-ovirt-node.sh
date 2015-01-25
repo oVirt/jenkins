@@ -25,28 +25,37 @@ function set_env {{
 #parameters
 #      1 : parameter to indicate the extra ks file to run
 function build_iso {{
+    pushd .
+    cd "$OVIRT_NODE_BASE"
+    cat > extra-recipe.ks <<EOF_ks
+%packages --excludedocs --nobase
+ovirt-node-plugin-vdsm
+ovirt-node-plugin-hosted-engine
+%end
+EOF_ks
     cd "$OVIRT_NODE_BASE"/ovirt-node-iso
     ./autogen.sh \
         --with-recipe=../ovirt-node/recipe \
-        "$EXTRA_RECIPE"
+        --with-extra-recipe=../extra-recipe.ks
     if  ! make iso publish ; then
         die "ISO build failed"
     fi
     if ! cp ovirt-node-image.ks "$OVIRT_CACHE_DIR"/ ; then
         die "can't find source kick start , you should never reach here"
     fi
-    cd "$OVIRT_NODE_BASE"
+    popd
 }}
 
 
 #builds the node
 function build_node {{
+    pushd .
     cd "$OVIRT_NODE_BASE"/ovirt-node
     ./autogen.sh --with-image-minimizer
     if ! make publish ; then
         die "Node building failed"
     fi
-    cd "$OVIRT_NODE_BASE"
+    popd
 }}
 
 
