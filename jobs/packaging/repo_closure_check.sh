@@ -1,6 +1,7 @@
 #!/bin/sh
 
 ## Copyright (C) 2014 Red Hat, Inc., Kiril Nesenko <knesenko@redhat.com>
+## Copyright (C) 2015 Red Hat, Inc., Sandro Bonazzola <sbonazzo@redhat.com>
 ### This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
 ## the Free Software Foundation; either version 2 of the License, or
@@ -172,10 +173,14 @@ check_repo_closure() {
             --repofrompath=check-updates-$distid,"${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
             --repofrompath=check-updates-testing-$distid,"${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
             --repofrompath=check-patternfly-$distid,""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
+            --repofrompath=check-glusterfs-fedora-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/x86_64/ \
+            --repofrompath=check-glusterfs-fedora-noarch-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/noarch \
             --lookaside check-fedora-$distid \
             --lookaside check-updates-$distid \
             --lookaside check-updates-testing-$distid \
             --lookaside check-patternfly-$distid \
+            --lookaside check-glusterfs-fedora-$distid \
+            --lookaside check-glusterfs-noarch-fedora-$distid \
             --repoid check-custom-$distid
     fi
 }

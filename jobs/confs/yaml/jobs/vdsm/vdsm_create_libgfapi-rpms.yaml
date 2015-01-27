@@ -16,11 +16,13 @@
             ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
             ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
             updates-testing,http://download.fedoraproject.org/pub/fedora/linux/updates/testing/$releasever/\\$basearch
+            gluster-fc20,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-20/\\$basearch
       - fc21:
           extra-repos: |
             ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
             ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
             updates-testing,http://download.fedoraproject.org/pub/fedora/linux/updates/testing/$releasever/\\$basearch
+            gluster-fc21,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-21/\\$basearch
       - el6:
           extra-repos: |
             ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
