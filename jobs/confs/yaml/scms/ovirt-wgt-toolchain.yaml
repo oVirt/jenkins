@@ -1,0 +1,16 @@
+- scm:
+    name: ovirt-wgt-toolchain-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/ovirt-wgt-toolchain.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: ovirt-wgt-toolchain
+          scm-name: ovirt-wgt-toolchain
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
