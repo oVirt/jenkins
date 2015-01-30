@@ -98,6 +98,7 @@ echo "#### Generating mock configuration"
     --name="$mock_conf" \
     --base="$distribution-$arch.cfg" \
     --option="basedir=$WORKSPACE/mock/" \
+    --try-proxy \
     $mock_repos \
     $mock_envs \
 > "$mock_conf.cfg"
@@ -109,6 +110,7 @@ popd
 my_mock="/usr/bin/mock"
 my_mock+=" --configdir=$WORKSPACE/jenkins/mock_configs"
 my_mock+=" --root=$mock_conf"
+my_mock+=" --resultdir=$WORKSPACE"
 
 ## init the chroot
 echo "##### Initializing chroot"

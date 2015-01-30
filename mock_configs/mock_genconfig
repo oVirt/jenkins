@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 import re
+import os
 import argparse
 import json
+import logging
+
+import requests
 
 
 class WrongOptionFormat(Exception):
@@ -58,6 +62,32 @@ def dumps_dict(to_dump, dict_name):
     return '\n'.join(result_lines)
 
 
+def check_proxy(proxy_url, test_url='http://proxy.phx.ovirt.org:5000/'):
+    try:
+        res = requests.get(test_url, proxies={'http': proxy_url}, timeout=5)
+    except Exception as exc:
+        logging.warn("Failed to contact proxy at %s",proxy_url)
+        logging.warn(exc)
+        return False
+    if not res.ok:
+        logging.warn("Failed to contact proxy at %s", proxy_url)
+        logging.warn(
+            "test_url: %s\nrepsonse code: %d\nresponse data:%s",
+            res.url,
+            res.status_code,
+            res.text
+        )
+    return res.ok
+
+
+def get_from_conf(what, conf_file):
+    with open(conf_file) as cf_fd:
+        for line in cf_fd:
+            if line.strip().startswith(what + '='):
+                return line.strip().split('=', 1)[-1]
+    return False
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='This program generates a new mock configuration file from'
@@ -80,12 +110,31 @@ def main():
                         help='path to the configuration to use as base')
     parser.add_argument('--name', dest='name', required=True,
                         help='new name for the config')
+    parser.add_argument('--try-proxy', action='store_true',
+                        help='Try using the proxied config first')
     args = parser.parse_args()
 
     config_opts = {}
 
+    base_config = args.base_config
+    if args.try_proxy:
+        proxied_config = args.base_config.replace('.cfg', '_proxied.cfg')
+        if not os.path.exists(proxied_config):
+            logging.warn("No proxied configuration found for %s", base_config)
+        proxy_url = get_from_conf('proxy', proxied_config)
+        if not proxy_url:
+            logging.warn(
+                "Unable to find proxy it in the config %s",
+                proxied_config
+            )
+        repo_url = get_from_conf('baseurl', proxied_config)
+        if check_proxy(proxy_url, repo_url):
+            base_config = proxied_config
+        else:
+            logging.warn("Not using proxied configuration")
+
     # load base configuration
-    execfile(args.base_config)
+    execfile(base_config)
 
     # modify the base configuration to fit the new name
     config_opts['root'] = args.name
@@ -102,8 +151,10 @@ def main():
     # add the extra repos passed
     config_opts['yum.conf'] = '%s' % (config_opts.get('yum.conf', '')
                                       + get_repos(args.extra_repos))
+
     print dumps_dict(config_opts, 'config_opts')
 
 
 if __name__ == '__main__':
+    logging.basicConfig()
     main()

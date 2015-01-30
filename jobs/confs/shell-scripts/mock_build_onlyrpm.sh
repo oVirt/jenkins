@@ -75,6 +75,7 @@ echo "#### Generating mock configuration"
     --name="$mock_conf" \
     --base="$distribution-$arch.cfg" \
     --option="basedir=$WORKSPACE/mock/" \
+    --try-proxy \
     $mock_repos \
     $mock_envs \
 > "$mock_conf.cfg"
@@ -83,9 +84,10 @@ cat "$mock_conf.cfg"
 popd
 
 ## prepare the command line
-my_mock="/usr/bin/mock"
-my_mock+=" --configdir=$WORKSPACE/jenkins/mock_configs"
-my_mock+=" --root=$mock_conf"
+build_mock="/usr/bin/mock"
+build_mock+=" --configdir=$WORKSPACE/jenkins/mock_configs"
+build_mock+=" --root=$mock_conf"
+temp_mock="$build_mock --resultdir=$WORKSPACE"
 
 ### Build the rpms
 echo "##### Building the rpms"
@@ -93,14 +95,15 @@ for srcrpm in "$WORKSPACE"/exported-artifacts/*.src.rpm; do
 
     ## init the chroot
     echo "##### Initializing chroot for ${{srcrpm##*/}}"
-    $my_mock --init
-    $my_mock \
+    $temp_mock \
+        --init
+    $temp_mock \
         --no-clean \
         --scrub=yum-cache
 
     ### Configure extra yum vars
     echo "Configuring custom env variables for repo urls for ${{srcrpm##*/}}"
-    $my_mock \
+    $temp_mock \
         --no-clean \
         --shell <<EOF
             mkdir -p /etc/yum/vars
@@ -111,9 +114,9 @@ EOF
     if [[ -n "$extra_packages" ]]; then
         echo "##### Installing extra dependencies: " \
              "$extra_packages for ${{srcrpm##*/}}"
-        $my_mock \
+        $temp_mock \
         --no-clean \
-            --install "${{extra_packages[@]}}"
+        --install "${{extra_packages[@]}}"
     fi
 
     ### Set custom dist from mock config into rpmmacros for manual builds
@@ -125,7 +128,7 @@ EOF
     && mock_build_options+=("--define" "dist .${{rpm_dist//\"/}}")
 
     echo "     Building $srcrpm"
-    $my_mock \
+    $build_mock \
         "${{mock_build_options[@]}}" \
         --rebuild \
         --no-clean \

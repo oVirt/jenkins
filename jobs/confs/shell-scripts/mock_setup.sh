@@ -24,6 +24,7 @@ for chroot in "${{chroots[@]}}"; do
         --name="$mock_conf" \
         --base="$base_conf.cfg" \
         --option="basedir=$WORKSPACE/mock/" \
+        --try-proxy \
     > "$mock_conf.cfg"
     cat "$mock_conf.cfg"
     popd
@@ -31,6 +32,7 @@ for chroot in "${{chroots[@]}}"; do
     my_mock="/usr/bin/mock"
     my_mock+=" --configdir=$WORKSPACE/jenkins/mock_configs"
     my_mock+=" --root=$mock_conf"
+    my_mock+=" --resultdir=$WORKSPACE"
 
     echo "Killing all mock orphan processes, if any."
     $my_mock \

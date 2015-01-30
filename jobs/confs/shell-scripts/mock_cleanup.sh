@@ -35,6 +35,7 @@ for chroot in "${chroots[@]}"; do
     my_mock="/usr/bin/mock"
     my_mock+=" --configdir=$WORKSPACE/jenkins/mock_configs"
     my_mock+=" --root=$mock_conf"
+    my_mock+=" --resultdir=$WORKSPACE"
 
     #TODO: investigate why mock --clean fails to umount certain dirs sometimes,
     #so we can use it instead of manually doing all this.
