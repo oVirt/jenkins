@@ -1,85 +1,197 @@
 #!/usr/bin/python
+"""Alert/Abandon old Gerrit patches
+Any patch with no activity for 30 days
+send an email to author and cc all parties.
+If author not from RedHat, cc iheim@ and
+bazulay@.
 
+Any patch with no acticity for 60 days
+abandoned with comment "Abandoned due
+to no activity - please restore if
+still relevant"
+"""
 
 from __future__ import print_function
+from email.mime.text import MIMEText
 import json
 import subprocess
 import sys
 import logging
 import traceback
 import smtplib
+import argparse
+import os
+
+CC_EMAIL = "iheim@redhat.com,bazulay@redhat.com"
+SSH = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 
-def checkForgottenPatches(gerritURL, days, project):
-    gerrit_call = ('ssh -o StrictHostKeyChecking=no -o \
-            UserKnownHostsFile=/dev/null -p 29418 %s gerrit \
-            query --format=JSON status:open --dependencies \
-            age:%sd project:%s' % (gerritURL, days, project))
+def check_forgotten_patches(days, t_project):
+    "Return list of commits inactive for the given days."
+    gerrit_call = (
+        "%s gerrit query --format=JSON status:open "
+        "--dependencies age:%sd project:%s"
+        ) % (SSH, days, t_project)
     shell_command = ["bash", "-c", gerrit_call]
-    output, err, rc = _logExec(shell_command)
-    if rc != 0:
-        print("Something wrong happened!\n" + str(err))
-        sys.exit(2)
-    patches = {}
-    for line in output.split('\n'):
+    shell_output = log_exec(shell_command)
+    f_patches = {}
+    for line in shell_output.split('\n'):
         if not line:
             continue
         data = json.loads(line)
         try:
-            patch = data['number']
-            owner = data['owner']
-            patches[patch] = owner
+            f_patch = data['number']
+            fp_owner = data['owner']
+            f_patches[f_patch] = fp_owner
         except KeyError:
             pass
-    return patches
+    return f_patches
 
 
-def _logExec(argv, input=None):
-    " Execute a given shell command while logging it. "
+def abandon_patch(commit):
+    "Abandon the patch with comment."
+    message = "Abandoned due to no activity - \
+            please restore if still relevant"
+    gerrit_call = (
+        "%s gerrit review --format=JSON "
+        "--abandon %s --message %s"
+        ) % (SSH, commit, message)
+    shell_command = ["bash", "-c", gerrit_call]
+    return log_exec(shell_command)
 
+
+def log_exec(argv, custom_input=None):
+    "Execute a given shell command while logging it."
     out = None
     err = None
-    rc = None
+    rcode = None
     try:
         logging.debug(argv)
         stdin = None
-        if input is not None:
-            logging.debug(input)
+        if custom_input is not None:
+            logging.debug(custom_input)
             stdin = subprocess.PIPE
-        p = subprocess.Popen(argv, stdin=stdin, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-        out, err = p.communicate(input)
-        rc = p.returncode
+        proc = subprocess.Popen(
+            argv, stdin=stdin,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        out, err = proc.communicate(custom_input)
+        rcode = proc.returncode
         logging.debug(out)
         logging.debug(err)
-    except:
+    except EnvironmentError:
         logging.error(traceback.format_exc())
-    return (out, err, rc)
-
+    if rcode != 0:
+        print("Error executing \"%s\"\n" % " ".join(argv))
+        print("Output: %s\n" % str(out))
+        print("Error: %s\n" % str(err))
+        print("Return code: %s\n" % str(rcode))
+        sys.exit(2)
+    else:
+        return out
 
 if __name__ == "__main__":
-    subject = "Forgotten Patches"
-    mailserver = smtplib.SMTP('localhost')
-    project = sys.argv[1]
-    fromaddr = "Patchwatcher@ovirt.org"
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "projects", help="List of projects",
+        nargs='+')
+    parser.add_argument(
+        "--server", help="Gerrit server, default: gerrit.ovirt.org",
+        default="gerrit.ovirt.org")
+    parser.add_argument(
+        "--port", help="SSH Port,default: 29418",
+        default="29418")
+    parser.add_argument(
+        "--user", help="SSH User, default: %s" % os.environ["USER"],
+        default=os.environ["USER"])
+    parser.add_argument("--key", help="SSH Key file path")
+    parser.add_argument(
+        "--mail", help="Mail server, default: localhost",
+        default="localhost")
+    parser.add_argument(
+        "--cc", help="CC mail id's for non-redhat emails",
+        nargs='+')
+    parser.add_argument(
+            "--warning-days-limit", help="Number of days, default: 30",
+            default=30, dest='warning_days')
+    parser.add_argument(
+            "--abandon-days-limit", help="Number of days, default 60",
+            default=60, dest='abandon_days')
+    parser.add_argument(
+            "--dry-run", help="Show what would have been abandoned",
+            action="store_true", dest='dry_run')
+
+    ARGS = parser.parse_args()
+
+    # Construct ssh command based on ssh key file
+    if ARGS.key:
+        SSH += " -i %s -p %s %s@%s" % (
+            ARGS.key, ARGS.port, ARGS.user, ARGS.server)
+    else:
+        SSH += " -p %s %s@%s" % (ARGS.port, ARGS.user, ARGS.server)
+
+    MAIL_SERVER_HOST = ARGS.mail
+    SUBJECT = "Forgotten Patches"
+    MAILSERVER = smtplib.SMTP(MAIL_SERVER_HOST)
+    FROMADDR = "noreply+patchwatcher@ovirt.org"
+    if ARGS.cc:
+        CCADDR = ",".join(ARGS.cc)
+    else:
+        CCADDR = CC_EMAIL
+
     patches = []
-    mails = [
-            (90, 'Your patch did not have any activity for over 90 days, it may be '
-                'abandoned automatically by the system in the near future : http://gerrit.ovirt.org/%s.'),
-            (60, 'Your patch did not have any activity for over 60 days, please consider '
-                'nudging for more attention, or should it be abandoned. : http://gerrit.ovirt.org/%s.'),
-            (30, 'Your patch did not have any activity for over 30 days, please consider '
-                'nudging for more attention. : http://gerrit.ovirt.org/%s.'),
-    ]
-    for days, template in mails:
-        output = checkForgottenPatches("gerrit.ovirt.org", days, project)
-        if not output:
-            print("Forgotten patches within the last %d days were not found" %
-                  days)
-        for patch, owner in output.items():
-            if patch not in patches:
-                patches.append(patch)
-                txt = template % patch
-                msg = 'Subject: %s\n\n%s' % (subject, txt)
-                mailserver.sendmail(fromaddr, owner['email'], msg)
-    mailserver.quit()
+    DAYS = [ARGS.abandon_days, ARGS.warning_days]
+    WARN_TEMPLATE = (
+        "Your patch did not have any activity for over 30 days, "
+        "please consider nudging for more attention."
+        ": http://gerrit.ovirt.org/%s")
+    ABANDON_TEMPLATE = (
+        "Patch http://gerrit.ovirt.org/%s abandoned"
+        "due to no activity - please restore if relevant")
+
+    for project in ARGS.projects:
+        for day in DAYS:
+            output = check_forgotten_patches(day, project)
+            if not output:
+                print (
+                    "No forgotten patches within the last "
+                    "%d days were found in project %s"
+                    % (day, project))
+            for patch, owner in output.items():
+                if patch not in patches:
+                    patches.append(patch)
+                    if day == ARGS.abandon_days:
+                        if not ARGS.dry_run:
+                            try:
+                                abandon_patch(patch)
+                                txt = ABANDON_TEMPLATE % patch
+                                msg = MIMEText(
+                                    'Subject: %s\n\n%s' % (SUBJECT, txt))
+                                msg['To'] = owner['email']
+                                if "@redhat.com" not in owner['email']:
+                                    msg['CC'] = CCADDR
+                                MAILSERVER.sendmail(
+                                    FROMADDR, owner['email'],
+                                    msg.as_string())
+                            except EnvironmentError:
+                                print("Error abandoning patch %s" % patch)
+                        else:
+                            print(
+                                "Patch %s would have been abandoned"
+                                % patch)
+                    else:
+                        txt = WARN_TEMPLATE % patch
+                        msg = MIMEText('Subject: %s\n\n%s' % (SUBJECT, txt))
+                        msg['To'] = owner['email']
+                        if "@redhat.com" not in owner['email']:
+                            msg['CC'] = CCADDR
+                        if not ARGS.dry_run:
+                            MAILSERVER.sendmail(
+                                FROMADDR, owner['email'],
+                                msg.as_string())
+                        else:
+                            print(
+                                "%s would have been emailed to nudge patch %s"
+                                % (owner['email'], patch))
+    MAILSERVER.quit()
