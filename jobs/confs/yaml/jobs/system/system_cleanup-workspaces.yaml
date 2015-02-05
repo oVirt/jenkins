@@ -3,6 +3,14 @@
     node: master
     triggers:
         - timed: "30 * * * *"
+    parameters:
+        - string:
+            name: SKIP_JOBS
+            description: Comma or space separated list of job namess to skip
+            default: ovirt_live_create_iso
+        - string:
+            name: SKIP_NODES
+            description: Comma or space separated list of nodes to skip
     builders:
         - system-groovy:
             command: !include-raw groovy-scripts/cleanup_workspaces.groovy

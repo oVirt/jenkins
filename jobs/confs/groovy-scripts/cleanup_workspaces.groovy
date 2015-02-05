@@ -6,6 +6,7 @@ import jenkins.model.*;
 import hudson.FilePath.FileCallable;
 import hudson.slaves.OfflineCause;
 import hudson.node_monitors.*;
+import hudson.model.queue.Executables;
 
 
 def runOnSlave(node, cmd, workspace='/tmp') {
@@ -46,12 +47,31 @@ def workspaceIsIn(ws, wsList) {
 
 
 curJobURL = build.getEnvironment(listener)['BUILD_URL']
+jobSkipList = build.getEnvironment(listener)['SKIP_JOBS']
+jobSkipList = jobSkipList.replace(',', ' ').split(' ')
+nodeSkipList = build.getEnvironment(listener)['SKIP_NODES']
+nodeSkipList = nodeSkipList.replace(',', ' ').split(' ')
 
 for (node in Jenkins.instance.nodes) {
-  computer = node.toComputer()
-  // Skip disconnected nodes
-  if (computer.getChannel() == null) continue
+  // Sometimes node is not what we expect
+  try {
+    computer = node.toComputer()
+  } catch (Exception exc) {
+    exc.printStackTrace()
+    continue
+  }
+  // Skip disconnected node
+  if (computer.getChannel() == null) {
+    println("\n======")
+    println("INFO::Skipping ${node.getDisplayName()}, not connected.")
+    continue
+  }
 
+  if (node.getDisplayName() in nodeSkipList) {
+    println("\n======")
+    println("INFO::Skipping ${node.getDisplayName()}, in the skip list.")
+    continue
+  }
   rootPath = node.getRootPath()
 
   size = DiskSpaceMonitor.DESCRIPTOR.get(computer).size
@@ -74,18 +94,63 @@ for (node in Jenkins.instance.nodes) {
     }
 
     // get the list of currently used workspaces (to avoid deleting them)
+    //add also the workspaces of the skipped jobs, if any
     lockedWorkspaces = []
+    println('getting executors')
     executors = computer.getExecutors()
+    println('got executors')
     if (executors != null) {
       for (executor in executors) {
-        try {
-          curWorkspace = executor.getCurrentWorkspace()
-          if (curWorkspace != null) {
-            lockedWorkspaces.add(curWorkspace)
-            println("INFO::CURRENTLY RUNNING::${curWorkspace.toURI().getPath()}")
+        //try {
+          if (executor == null){
+            println('Empty executor!')
+            continue
           }
-        } catch (all) {
-        }
+          if (executor.isIdle()) {
+            continue
+          }
+          println('getting build')
+          println(executor)
+          println(executor.getDisplayName())
+          try {
+            build = executor.getCurrentExecutable()
+          } catch (all) {
+            println('Exception getting build from executor')
+            println(executor)
+            println(all)
+            throw all
+          }
+          println('got build')
+          if (build == null) {
+            continue
+          }
+          parent = Executables.getParentOf(build)
+          println('got parent')
+          if (parent == null) {
+            continue
+          }
+          task = parent.getOwnerTask()
+          println('got task')
+          if (task == null) {
+            continue
+          }
+          name = task.getName()
+          println('got name')
+          curWorkspace = executor.getCurrentWorkspace()
+          if (name in jobSkipList) {
+            lockedWorkspaces.add(curWorkspace)
+            println("INFO::SKIPPING::IN JOB SKIP LIST::${curWorkspace.toURI().getPath()}")
+            continue
+          }
+          if (curWorkspace == null) {
+            continue
+          }
+          lockedWorkspaces.add(curWorkspace)
+          println("INFO::SKIPPING::CURRENTLY RUNNING::${curWorkspace.toURI().getPath()}")
+//        } catch (all) {
+//          println('Got exception!!!!!!')
+//          println(all)
+//        }
       }
     }
     // one off executors also have workspace
@@ -106,6 +171,7 @@ for (node in Jenkins.instance.nodes) {
       }
     }
 
+
     baseWorkspace = rootPath.child('workspace')
     mounts = 'not_checked'
     for (jobWorkspace in baseWorkspace.listDirectories()) {
@@ -115,7 +181,7 @@ for (node in Jenkins.instance.nodes) {
         continue
       }
       if (workspaceIsIn(jobWorkspace, lockedWorkspaces)) {
-        println("INFO::" + jobWorkspace + "::SKIPPING:: Currently in use")
+        continue
       } else {
         try {
           println("INFO::${jobWorkspace}:: Wiping out")
@@ -156,4 +222,4 @@ for (node in Jenkins.instance.nodes) {
     }
   }
 }
-println("======")
+
