@@ -8,7 +8,6 @@
     distro:
       - fc20
       - fc21
-      - el6
       - el7
     version:
       - master:
