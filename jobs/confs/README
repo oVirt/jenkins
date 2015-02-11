@@ -14,39 +14,73 @@ very likely to change to adapt the current needs)
 
 An example of a possible layout:
 
-./
- |-yaml
- | |-builders
- | | |-rpm_mock_builder.yaml
- | | \-default_rpm_builder.yaml
- | |-jobs
- | | \-mycustomjob.yaml
- | ...
- |-shell-scripts
- |  |-cleanup_vdsm.sh
- |  |-build_rpm.sh
- |  ...
- |-groovy-scripts
- |  |-check_vdsm_functional_tests.groovy
- |   ...
- ...
+  ./
+   |-yaml
+   | |-builders
+   | | |-rpm_mock_builder.yaml
+   | | \-default_rpm_builder.yaml
+   | |-jobs
+   | | \-mycustomjob.yaml
+   | ...
+   |-shell-scripts
+   |  |-cleanup_vdsm.sh
+   |  |-build_rpm.sh
+   |  ...
+   |-groovy-scripts
+   |  |-check_vdsm_functional_tests.groovy
+   |   ...
+   ...
+
 
 NOTE: You need a patched version of the jenkins-job-builder project, with the
-recursive patch[1], the parallel patch[2] and the include files patch[3].
+[parallelization patch] and the [empty vars patch].
 
-A better way of getting that modified version will be provided soon.
+[parallelization patch] https://review.openstack.org/#/c/75514
+[empty vars patch] https://review.openstack.org/#/c/101580
 
-Make sure you are at this same level when running jenkins-job builder or that you
-have this directory in the include patch for the scripts (see [1] for more info).
+You can find a packaged version of the tool in out [ci-tools repo].
+
+    [ci-tools repo] http://resources.ovirt.org/repos/ci-tools
+
+A recommended configuration file for oVirt would be something like:
+
+    $ cat ~/.jenkinsjobsrc
+    [jenkins]
+    user=youruser
+    password=longapikeyfromjenkins
+    url=http://jenkins.ovirt.org
+    
+    [job_builder]
+    keep_descriptions=True
+    recursive=True
+
+
+**NOTE**: Make sure you are at this same level (`jobs/confs`) when running
+jenkins-job builder or that you have this directory in the include patch for
+the scripts (see the [openstack page] for more info).
+
+**NOTE**: Make sure you specify the --conf option or that you have your config
+at `/etc/jenkins_jobs/jenkins_jobs.ini`
+
 To test:
-> jenkins-jobs --debug test --recursive -o /tmp/outdir yaml
 
-To run:
-> jenkins-jobs --threads 0 --debug --conf path/to/my/config update --recursive yaml
+  > jenkins-jobs --workers 0 -l debug --conf path/to/my/config \
+  >     test -o path/for/output/dir --recursive yaml
 
-More info about jenkins job builder at [4]
 
-[1] https://review.openstack.org/#/c/85106/
-[2] https://review.openstack.org/#/c/75514/
-[3] https://review.openstack.org/#/c/48783/
-[4] http://ci.openstack.org/jenkins_jobs.html
+To update:
+
+  > jenkins-jobs --workers 0 -l debug --conf path/to/my/config \
+  >     update --recursive yaml
+
+
+You can also test/update just a set of jobs using glob syntax:
+
+  > jenkins-jobs --workers 0 -l debug --conf path/to/my/config \
+  >     update --recursive yaml \
+  >     vdsm*master*merged
+
+
+More info about jenkins job builder at the [openstack page]
+
+    [openstack page] http://ci.openstack.org/jenkins_jobs.html
