@@ -116,6 +116,8 @@ fi
 ### Set custom dist from mock config into rpmmacros for manual builds
 rpm_dist="$(grep 'config_opts\["dist"\]' \
             $WORKSPACE/jenkins/mock_configs/$mock_conf.cfg)"
+#unquote the dist
+rpm_dist="${{rpm_dist//[\'\"]/}}"
 rpm_dist=.${{rpm_dist#*=}}
 $my_mock \
     --no-clean \
