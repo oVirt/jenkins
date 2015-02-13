@@ -85,9 +85,9 @@ if [[ -n "$extra_packages" ]]; then
         --install "${{extra_packages[@]}}"
 fi
 ## from project requirements file
-build_deps_file="repoman/automation/check-patch.req.${{distro}}"
+build_deps_file="$project/automation/check-patch.req.${{distro}}"
 [[ -f "$build_deps_file" ]] \
-|| build_deps_file="repoman/automation/check-patch.req"
+|| build_deps_file="$project/automation/check-patch.req"
 if [[ -f  "$build_deps_file" ]]; then
     echo "##### Installing extra dependencies from $build_deps_file"
     packages=($(cat "$build_deps_file"))
@@ -139,7 +139,7 @@ $my_mock \
 set -e
 SCRIPT="/tmp/run/$project/$script"
 export HOME=/tmp/run
-cd \$HOME/repoman
+cd \$HOME/$project
 chmod +x \$SCRIPT
 \$SCRIPT
 echo -e "\n\n"
@@ -149,7 +149,7 @@ EOFMAKINGTHISHARDTOMATCH
 
 mkdir -p "$WORKSPACE"/exported-artifacts
 sudo chown -R $USER:$USER "$WORKSPACE/exported-artifacts"
-if [[ -d "$WORKSPACE/$project/exported-artifacts" ]]; then
+if ls "$WORKSPACE/$project/exported-artifacts/*" &>/dev/null; then
     sudo mv "$WORKSPACE/$project/exported-artifacts/"* \
             "$WORKSPACE/exported-artifacts/"
 fi

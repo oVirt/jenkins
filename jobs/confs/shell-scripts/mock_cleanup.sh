@@ -3,6 +3,18 @@ echo "shell-scripts/mock_cleanup.sh"
 
 shopt -s nullglob
 
+
+# Make clear this is the cleanup, helps reading the jenkins logs
+cat <<EOC
+_______________________________________________________________________
+#######################################################################
+#                                                                     #
+#                               CLEANUP                               #
+#                                                                     #
+#######################################################################
+EOC
+
+
 # Archive the logs, we want them anyway
 pushd "$WORKSPACE"/exported-artifacts
 logs=(*log *_pkgs "$WORKSPACE"/*log)

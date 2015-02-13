@@ -1,0 +1,16 @@
+- scm:
+    name: infra-docs-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/infra-docs.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: infra-docs
+          scm-name: infra-docs
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
