@@ -50,8 +50,8 @@ echo "#### Generating mock configuration"
 ./mock_genconfig \
     --name="$mock_conf" \
     --base="$distribution-$arch.cfg" \
+    --try-proxy \
     --option="basedir=$WORKSPACE/mock/" \
-    --option="resultdir=$WORKSPACE/exported-artifacts" \
     "${{mock_repos[@]}}" \
 > "$mock_conf.cfg"
 sudo touch /var/cache/mock/*/root_cache/cache.tar.gz &>/dev/null || :
@@ -62,6 +62,7 @@ popd
 my_mock="/usr/bin/mock"
 my_mock+=" --configdir=$WORKSPACE/jenkins/mock_configs"
 my_mock+=" --root=$mock_conf"
+my_mock+=" --resultdir=$WORKSPACE/exported-artifacts"
 
 ## init the chroot
 $my_mock \
@@ -119,6 +120,7 @@ echo "#### Generating mock configuration with workspace mounted"
 ./mock_genconfig \
     --name="$mock_conf" \
     --base="$distribution-$arch.cfg" \
+    --try-proxy \
     --option="basedir=$WORKSPACE/mock/" \
     --option="resultdir=$WORKSPACE/exported-artifacts" \
     --option="plugin_conf.bind_mount_enable=True" \
@@ -149,8 +151,9 @@ EOFMAKINGTHISHARDTOMATCH
 
 mkdir -p "$WORKSPACE"/exported-artifacts
 sudo chown -R $USER:$USER "$WORKSPACE/exported-artifacts"
-if ls "$WORKSPACE/$project/exported-artifacts/*" &>/dev/null; then
+if ls "$WORKSPACE/$project/exported-artifacts/"* &>/dev/null; then
     sudo mv "$WORKSPACE/$project/exported-artifacts/"* \
             "$WORKSPACE/exported-artifacts/"
+    sudo rmdir "$WORKSPACE/$project/exported-artifacts/"
 fi
 exit 0
