@@ -13,6 +13,7 @@
           project: '{project}'
           branch: '{branch}'
     builders:
+      - cleanup-slave
       - mock-{mock-build-type}:
           project: '{project}'
           distro: '{distro}'
@@ -46,6 +47,7 @@
           branch: '{branch}'
           files: 'specs/{subproject}/.*'
     builders:
+      - cleanup-slave
       - mock-{mock-build-type}-releng:
           project: '{project}'
           subproject: '{subproject}'

@@ -1,12 +1,10 @@
-##############################################################################
-###   Job Templates
-##############################################################################
 - job-template:
     name: 'ovirt-node_{version}_create-iso-{distro}_{trigger}'
     node : '{distro}'
     builders :
-          - ovirt-node_create-iso:
-              distro: '{distro}'
+      - cleanup-slave
+      - ovirt-node_create-iso:
+          distro: '{distro}'
     scm :
           - ovirt-node
           - ovirt-node-iso

@@ -13,6 +13,7 @@
           branch: '{branch}'
           files: '{trigger-files}'
     builders:
+      - cleanup-slave
       - mock-{mock-build-type}-install:
           project: '{project}'
           distro: '{distro}'

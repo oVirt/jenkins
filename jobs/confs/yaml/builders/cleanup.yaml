@@ -1,0 +1,4 @@
+- builder:
+    name: cleanup-slave
+    builders:
+        - shell: !include-raw shell-scripts/cleanup_slave.sh

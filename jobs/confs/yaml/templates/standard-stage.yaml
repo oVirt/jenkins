@@ -13,6 +13,7 @@
           project: '{project}'
           branch: '{branch}'
     builders:
+      - cleanup-slave
       - '{stage}_builder':
           project: '{project}'
           distro: '{distro}'

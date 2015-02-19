@@ -41,6 +41,7 @@
           files: '(.*/)?packaging/dbscripts/.*'
     builders:
       - whitelist
+      - cleanup-slave
       - ovirt-engine_upgrade-db:
           test-branch: '{test-branch}'
           action: '{action}'
