@@ -1,5 +1,7 @@
 This directory contains all the files needed to generate the jobs for the
-jenkins-ovirt.org jenkins instance.
+[jenkins.ovirt.org] jenkins instance.
+
+  [jenkins.ovirt.org] https://jenkins.ovirt.org
 
 It's organized in directories, being the first level to separate between complete
 yaml files and other files to be included inside the jobs.
@@ -38,7 +40,7 @@ NOTE: You need a patched version of the jenkins-job-builder project, with the
 [parallelization patch] https://review.openstack.org/#/c/75514
 [empty vars patch] https://review.openstack.org/#/c/101580
 
-You can find a packaged version of the tool in out [ci-tools repo].
+You can find a packaged version of the tool in our [ci-tools repo].
 
     [ci-tools repo] http://resources.ovirt.org/repos/ci-tools
 
