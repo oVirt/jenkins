@@ -1,0 +1,16 @@
+- scm:
+    name: pthreading-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/pthreading.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: pthreading
+          scm-name: pthreading
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
