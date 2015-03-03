@@ -5,4 +5,9 @@
     name: ovirt-node_create-iso
     builders :
         - shell:
+            !include-raw shell-scripts/build-local-ovirt-node-iso.sh
+- builder:
+    name: ovirt-node_create
+    builders :
+        - shell:
             !include-raw shell-scripts/build-local-ovirt-node.sh

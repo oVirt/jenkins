@@ -2,7 +2,7 @@
 ###   Projects
 ##############################################################################
 - project:
-    name: 'ovirt-node'
+    name: 'ovirt-node-iso-builder'
     project: 'ovirt-node'
     trigger:
       - merged
@@ -15,3 +15,18 @@
           branch: master
     jobs:
       - 'ovirt-node_{version}_create-iso-{distro}_{trigger}'
+
+- project:
+    name: 'ovirt-node-rpm-builder'
+    project: 'ovirt-node'
+    trigger:
+      - merged
+    distro :
+      - fc20
+      - el7
+      - el6
+    version :
+      - master:
+          branch: master
+    jobs:
+      - 'ovirt-node_{version}_create-rpms-{distro}_{trigger}'

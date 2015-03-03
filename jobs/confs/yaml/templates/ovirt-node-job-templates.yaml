@@ -3,11 +3,39 @@
     node : '{distro}'
     builders :
       - cleanup-slave
+      - ovirt-node_create:
+          distro: '{distro}'
+          clean_pre: 'true'
+          publish_rpms: 'false'
       - ovirt-node_create-iso:
           distro: '{distro}'
+          clean_pre: 'false'
+          publish_rpms: 'true'
     scm :
           - ovirt-node
           - ovirt-node-iso
+    triggers:
+      - ovirt-node-{trigger}:
+          branch: '{branch}'
+    publishers:
+      - ovirt-node-cleanup:
+          distro: '{distro}'
+      - exported-artifacts
+      - email:
+          recipients: tlitovsk@redhat.com
+          send-to-individuals: true
+
+- job-template:
+    name: 'ovirt-node_{version}_create-rpms-{distro}_{trigger}'
+    node : '{distro}'
+    builders :
+      - cleanup-slave
+      - ovirt-node_create:
+          distro: '{distro}'
+          clean_pre: 'true'
+          publish_rpms: 'true'
+    scm :
+          - ovirt-node
     triggers:
       - ovirt-node-{trigger}:
           branch: '{branch}'

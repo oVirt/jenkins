@@ -25,36 +25,51 @@ function set_env {{
 }}
 
 
-#builds the node
-function build_node {{
+# builds the iso
+#parameters
+#      1 : parameter to indicate the extra ks file to run
+function build_iso {{
     pushd .
-    cd "$OVIRT_NODE_BASE"/ovirt-node
-    ./autogen.sh --with-image-minimizer
-    if ! make publish ; then
-        die "Node building failed"
+    cd "$OVIRT_NODE_BASE"
+    cat > extra-recipe.ks <<EOF_ks
+%packages --excludedocs --nobase
+ovirt-node-plugin-vdsm
+ovirt-node-plugin-hosted-engine
+%end
+EOF_ks
+    cd "$OVIRT_NODE_BASE"/ovirt-node-iso
+    ./autogen.sh \
+        --with-recipe=../ovirt-node/recipe \
+        --with-extra-recipe=../extra-recipe.ks
+    if  ! make iso publish ; then
+        die "ISO build failed"
+    fi
+    if ! cp ovirt-node-image.ks "$OVIRT_CACHE_DIR"/ ; then
+        die "can't find source kick start , you should never reach here"
     fi
     popd
 }}
-
 
 #the prereqs
 function check_pre {{
     if [[ ! -d $OVIRT_NODE_BASE/ovirt-node ]] ; then
         die "No node base found"
     fi
+    if [[ ! -d $OVIRT_NODE_BASE/ovirt-node-iso ]] ; then
+        die "No node-ISO base found"
+    fi
 }}
 
-
-function clean_node {{
+function clean_iso {{
     pushd .
     local clean_failed=false
     sudo rm -rf "$CACHE"
-    cd "$OVIRT_NODE_BASE"/ovirt-node
+    cd "$OVIRT_NODE_BASE"/ovirt-node-iso
     # get rid of old makefiles
     git clean -dfx
     # generate new makefiles
     ./autogen.sh
-    make distclean \
+    make clean \
         || clean_failed=true
     popd
     if $clean_failed; then
@@ -73,15 +88,15 @@ for dir in exported-artifacts; do
     mkdir -p "$dir"
 done
 
+
 if $do_clean; then
-    clean_node
+    clean_iso
 fi
 
 if $do_build; then
-    build_node
+    build_iso
 fi
 
 if $do_publish_rpms; then
-    cp "$OVIRT_CACHE_DIR"/ovirt/RPMS/noarch/ovirt-node*.rpm exported-artifacts/
+    cp "$OVIRT_CACHE_DIR"/ovirt/binary/*.iso exported-artifacts/
 fi
-
