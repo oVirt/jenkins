@@ -28,5 +28,8 @@
     version :
       - master:
           branch: master
+      - ovirt-3.5:
+          branch: ovirt-3.5
     jobs:
       - 'ovirt-node_{version}_create-rpms-{distro}_{trigger}'
+

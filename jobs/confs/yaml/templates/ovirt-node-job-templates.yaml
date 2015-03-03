@@ -12,8 +12,10 @@
           clean_pre: 'false'
           publish_rpms: 'true'
     scm :
-          - ovirt-node
-          - ovirt-node-iso
+          - ovirt-node:
+              branch: '{version}'
+          - ovirt-node-iso:
+              branch: '{version}'
     triggers:
       - ovirt-node-{trigger}:
           branch: '{branch}'
@@ -35,7 +37,8 @@
           clean_pre: 'true'
           publish_rpms: 'true'
     scm :
-          - ovirt-node
+      - ovirt-node:
+          branch: '{version}'
     triggers:
       - ovirt-node-{trigger}:
           branch: '{branch}'

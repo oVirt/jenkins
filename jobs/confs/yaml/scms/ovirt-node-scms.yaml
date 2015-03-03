@@ -7,7 +7,7 @@
         - git:
             url: git://gerrit.ovirt.org/ovirt-node.git
             branches:
-              - origin/master
+              - origin/{branch}
             scm-name: node
             wipe-workspace: true
             basedir : "ovirt-node"
@@ -17,7 +17,7 @@
         - git:
             url: git://gerrit.ovirt.org/ovirt-node-iso.git
             branches:
-              - origin/master
+              - origin/{branch}
             scm-name: node-iso
             wipe-workspace: true
             basedir : "ovirt-node-iso"
