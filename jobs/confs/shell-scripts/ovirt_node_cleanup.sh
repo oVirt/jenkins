@@ -24,15 +24,19 @@ clean_failed=false
 sudo rm -rf \
     "$CACHE" \
     "$HOME/rpmbuild"
-cd "$OVIRT_NODE_BASE"/ovirt-node
-make distclean \
-    || clean_failed=true
-cd "$OVIRT_NODE_BASE"/ovirt-node-iso
-make clean \
-    || clean_failed=true
-
+if [[ -d "$OVIRT_NODE_BASE"/ovirt-node ]]; then
+    cd "$OVIRT_NODE_BASE"/ovirt-node
+    make distclean \
+        || clean_failed=true
+fi
+if [[ -d "$OVIRT_NODE_BASE"/ovirt-node-iso ]]; then
+    cd "$OVIRT_NODE_BASE"/ovirt-node-iso
+    make clean \
+        || clean_failed=true
+fi
 if $clean_failed; then
     exit 1
 else
     exit 0
 fi
+
