@@ -82,6 +82,7 @@ if $do_build; then
 fi
 
 if $do_publish_rpms; then
+    rm -rf "$OVIRT_CACHE_DIR"/ovirt/RPMS/noarch/ovirt-node-plugin-rhn*.rpm
     cp "$OVIRT_CACHE_DIR"/ovirt/RPMS/noarch/ovirt-node*.rpm exported-artifacts/
 fi
 
