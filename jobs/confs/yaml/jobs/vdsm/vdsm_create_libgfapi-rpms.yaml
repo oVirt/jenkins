@@ -10,18 +10,21 @@
     mock-build-type: all
     arch:
       - x86_64
+      # PPC64 is not available yet
+      # - ppc64
+    # Build usually require latest ioprocess rpms from testing repositories
     distro:
       - fc20:
           extra-repos: |
             ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
             ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
-            updates-testing,http://download.fedoraproject.org/pub/fedora/linux/updates/testing/$releasever/\\$basearch
+            updates-testing,http://proxy.phx.ovirt.org:5000/fedora-updates-testing/20/\\$basearch
             gluster-fc20,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-20/\\$basearch
       - fc21:
           extra-repos: |
             ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
             ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
-            updates-testing,http://download.fedoraproject.org/pub/fedora/linux/updates/testing/$releasever/\\$basearch
+            updates-testing,http://proxy.phx.ovirt.org:5000/fedora-updates-testing/21/\\$basearch
             gluster-fc21,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-21/\\$basearch
       - el6:
           extra-repos: |
@@ -70,6 +73,7 @@
       python-pep8
     extra-env: |
       NOSE_EXCLUDE=.*
+    extra-rpmbuild-options: 'with_hooks=1'
     cherry-pick: |
       refs/changes/37/36237/1
       refs/changes/68/33768/3
