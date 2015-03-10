@@ -1,0 +1,24 @@
+- project:
+    name: qemu_create-rpms
+    project:
+      - releng-tools
+    subproject:
+      - qemu
+    trigger:
+      - created
+      - merged
+    version:
+      - master:
+          branch: master
+    mock-build-type:
+      - all
+    distro:
+      - el7:
+          extra-repos: |
+              glusterfs-epel,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-\\$releasever/\\$basearch
+              glusterfs-noarch-epel,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-\\$releasever/noarch
+    arch:
+      - x86_64
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+          extra-build-packages: 'wget'
