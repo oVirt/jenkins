@@ -33,3 +33,11 @@
     jobs:
       - 'ovirt-node_{version}_create-rpms-{distro}_{trigger}'
 
+
+- project:
+    name: 'livecd-tools-builder'
+    project: 'ovirt-node'
+    jobs:
+      - 'livecd-tools-el7'
+
+

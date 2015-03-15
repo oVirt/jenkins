@@ -21,3 +21,13 @@
             scm-name: node-iso
             wipe-workspace: true
             basedir : "ovirt-node-iso"
+- scm:
+    name: livecd-tools
+    scm:
+        - git:
+            url: git://pkgs.fedoraproject.org/livecd-tools.git
+            branches:
+              - origin/{branch}
+            scm-name: livecd-tools-rpm
+            wipe-workspace: true
+            basedir : "livecd-tools-rpm"
