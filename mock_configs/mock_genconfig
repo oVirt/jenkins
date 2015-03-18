@@ -43,6 +43,7 @@ name={name}
 baseurl={url}
 gpgcheck=0
 enabled=1
+metadata_expire=30m
 '''.format(name=name, url=url)
     return repos_str
 
