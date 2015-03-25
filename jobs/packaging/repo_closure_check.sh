@@ -121,67 +121,69 @@ check_repo_closure() {
         if [[ "${DISTRIBUTION_VERSION}" == "7" ]]; then
             repoclosure \
                 --tempcache \
-                --repofrompath=check-custom-$distid,"${CUSTOM_URL}" ${STATIC_RP} \
-                --repofrompath=check-base-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/x86_64/ \
-                --repofrompath=check-base-i386-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/i386/ \
-                --repofrompath=check-updates-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
-                --repofrompath=check-extras-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
-                --repofrompath=check-epel-$distid,"${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
-                --repofrompath=check-glusterfs-epel-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
-                --repofrompath=check-glusterfs-epel-noarch-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
-                --repofrompath=check-patternfly-$distid,"${COPR}/patternfly/patternfly1/epel-${DISTRIBUTION_VERSION}-x86_64" \
-                --lookaside check-updates-$distid \
-                --lookaside check-extras-$distid \
-                --lookaside check-epel-$distid \
-                --lookaside check-glusterfs-epel-$distid \
-                --lookaside check-glusterfs-noarch-epel-$distid \
-                --lookaside check-base-$distid \
-                --lookaside check-base-i386-$ditsid \
-                --lookaside check-patternfly-$distid \
-                --repoid check-custom-$distid
+                --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
+                --repofrompath=check-base-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/x86_64/ \
+                --repofrompath=check-updates-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
+                --repofrompath=check-extras-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
+                --repofrompath=check-epel-"${distid}","${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
+                --repofrompath=check-glusterfs-epel-"${distid}"-nightly,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/nightly/glusterfs/epel-"${DISTRIBUTION_VERSION}"-x86_64/ \
+                --repofrompath=check-glusterfs-epel-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
+                --repofrompath=check-glusterfs-epel-noarch-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
+                --repofrompath=check-patternfly-"${distid}","${COPR}/patternfly/patternfly1/epel-${DISTRIBUTION_VERSION}-x86_64" \
+                --lookaside check-updates-"${distid}" \
+                --lookaside check-extras-"${distid}" \
+                --lookaside check-epel-"${distid}" \
+                --lookaside check-glusterfs-epel-"${distid}"-nightly \
+                --lookaside check-glusterfs-epel-"${distid}" \
+                --lookaside check-glusterfs-noarch-epel-"${distid}" \
+                --lookaside check-base-"${distid}" \
+                --lookaside check-patternfly-"${distid}" \
+                --repoid check-custom-"${distid}"
         else
             repoclosure \
                 --tempcache \
-                --repofrompath=check-custom-$distid,"${CUSTOM_URL}" ${STATIC_RP} \
-                --repofrompath=check-base-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/x86_64/ \
-                --repofrompath=check-base-i386-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/i386/ \
-                --repofrompath=check-updates-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
-                --repofrompath=check-extras-$distid,"${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
-                --repofrompath=check-epel-$distid,"${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
-                --repofrompath=check-glusterfs-epel-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
-                --repofrompath=check-glusterfs-epel-noarch-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
-                --repofrompath=check-jpackage-generic-$distid,"${JPACKAGE_MIRROR}"/jpackage/6.0/generic/free \
-                --repofrompath=check-patternfly-$distid,"${COPR}/patternfly/patternfly1/epel-6-x86_64" \
-                --lookaside check-updates-$distid \
-                --lookaside check-extras-$distid \
-                --lookaside check-epel-$distid \
-                --lookaside check-glusterfs-epel-$distid \
-                --lookaside check-glusterfs-noarch-epel-$distid \
-                --lookaside check-base-$distid \
-                --lookaside check-base-i386-$ditsid \
-                --lookaside check-jpackage-rhel5-$distid \
-                --lookaside check-jpackage-generic-$distid \
-                --lookaside check-patternfly-$distid \
-                --repoid check-custom-$distid
+                --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
+                --repofrompath=check-base-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/x86_64/ \
+                --repofrompath=check-updates-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
+                --repofrompath=check-extras-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
+                --repofrompath=check-epel-"${distid}","${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
+                --repofrompath=check-glusterfs-epel-"${distid}"-nightly,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/nightly/glusterfs/epel-"${DISTRIBUTION_VERSION}"-x86_64/ \
+                --repofrompath=check-glusterfs-epel-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
+                --repofrompath=check-glusterfs-epel-noarch-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
+                --repofrompath=check-jpackage-generic-"${distid}","${JPACKAGE_MIRROR}"/jpackage/6.0/generic/free \
+                --repofrompath=check-patternfly-"${distid}","${COPR}/patternfly/patternfly1/epel-6-x86_64" \
+                --lookaside check-updates-"${distid}" \
+                --lookaside check-extras-"${distid}" \
+                --lookaside check-epel-"${distid}" \
+                --lookaside check-glusterfs-epel-"${distid}"-nightly \
+                --lookaside check-glusterfs-epel-"${distid}" \
+                --lookaside check-glusterfs-noarch-epel-"${distid}" \
+                --lookaside check-base-"${distid}" \
+                --lookaside check-jpackage-rhel5-"${distid}" \
+                --lookaside check-jpackage-generic-"${distid}" \
+                --lookaside check-patternfly-"${distid}" \
+                --repoid check-custom-"${distid}"
         fi
     elif [ "${DISTRIBUTION}" == "fc" ] \
         || [ "${DISTRIBUTION}" == "Fedora" ]; then
         repoclosure \
             --tempcache \
-            --repofrompath=check-custom-$distid,"${CUSTOM_URL}" ${STATIC_RP} \
-            --repofrompath=check-fedora-$distid,"${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
-            --repofrompath=check-updates-$distid,"${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
-            --repofrompath=check-updates-testing-$distid,"${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
-            --repofrompath=check-patternfly-$distid,""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
-            --repofrompath=check-glusterfs-fedora-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/x86_64/ \
-            --repofrompath=check-glusterfs-fedora-noarch-$distid,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/noarch \
-            --lookaside check-fedora-$distid \
-            --lookaside check-updates-$distid \
-            --lookaside check-updates-testing-$distid \
-            --lookaside check-patternfly-$distid \
-            --lookaside check-glusterfs-fedora-$distid \
-            --lookaside check-glusterfs-noarch-fedora-$distid \
-            --repoid check-custom-$distid
+            --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
+            --repofrompath=check-fedora-"${distid}","${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
+            --repofrompath=check-updates-"${distid}","${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
+            --repofrompath=check-updates-testing-"${distid}","${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
+            --repofrompath=check-patternfly-"${distid}",""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
+            --repofrompath=check-glusterfs-fedora-"${distid}"-nightly,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/nightly/glusterfs/fedora-"${DISTRIBUTION_VERSION}"-x86_64/ \
+            --repofrompath=check-glusterfs-fedora-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/x86_64/ \
+            --repofrompath=check-glusterfs-fedora-noarch-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/noarch \
+            --lookaside check-fedora-"${distid}" \
+            --lookaside check-updates-"${distid}" \
+            --lookaside check-updates-testing-"${distid}" \
+            --lookaside check-patternfly-"${distid}" \
+            --lookaside check-glusterfs-fedora-$distid-nightly \
+            --lookaside check-glusterfs-fedora-"${distid}" \
+            --lookaside check-glusterfs-noarch-fedora-"${distid}" \
+            --repoid check-custom-"${distid}"
     fi
 }
 
