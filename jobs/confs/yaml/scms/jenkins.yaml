@@ -10,7 +10,9 @@
             name: ''
             refspec: $GERRIT_REFSPEC
             choosing-strategy: gerrit
-            clean: true
+            clean:
+              before: true
+              after: false
             use-author: true
             wipe-workspace: false
             skip-tag: true
@@ -28,7 +30,9 @@
             refspec: ''
             scm-name: jenkins
             name: ''
-            clean: true
+            clean:
+              before: true
+              after: false
             use-author: true
             wipe-workspace: false
             skip-tag: true

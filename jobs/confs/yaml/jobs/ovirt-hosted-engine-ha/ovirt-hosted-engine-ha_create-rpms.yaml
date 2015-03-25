@@ -15,10 +15,8 @@
             ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
             ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
           branch: master
-    mock-build-type:
-      - onlyrpm
-    arch:
-      - x86_64
+    mock-build-type: onlyrpm
+    arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-configure-options: |
@@ -44,10 +42,8 @@
           extra-repos: |
             ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
             ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
-    mock-build-type:
-      - onlyrpm
-    arch:
-      - x86_64
+    mock-build-type: onlyrpm
+    arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-configure-options: |

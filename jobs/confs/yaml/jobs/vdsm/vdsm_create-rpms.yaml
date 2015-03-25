@@ -31,8 +31,7 @@
             ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
             ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
             gluster-epel7,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-7/\\$basearch
-    arch:
-      - x86_64
+    arch: x86_64
       # PPC64 is not available yet
       # - ppc64
     extra-build-packages: |
@@ -85,8 +84,7 @@
       - master:
           branch: master
     mock-build-type: all
-    arch:
-      - x86_64
+    arch: x86_64
       # PPC64 is not available yet
       # - ppc64
     # Build usually require latest ioprocess rpms from testing repositories

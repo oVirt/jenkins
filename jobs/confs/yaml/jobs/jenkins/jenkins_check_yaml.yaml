@@ -6,14 +6,16 @@
             branch: master
     triggers:
         - gerrit:
-            trigger-on-patchset-uploaded-event: true
+            trigger-on:
+                - patchset-created-event
             escape-quotes: true
             successful-message: 'You can check the diff in the job summary'
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'jenkins'
-                  branch-compare-type: 'PLAIN'
-                  branch-pattern: 'master'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'REG_EXP'
                         pattern: 'jobs/confs/.*'

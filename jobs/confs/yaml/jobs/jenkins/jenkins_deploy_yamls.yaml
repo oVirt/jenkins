@@ -6,17 +6,19 @@
           branch: master
     triggers:
       - gerrit:
-          trigger-on-change-merged-event: true
+          trigger-on:
+              - change-merged-event
           escape-quotes: true
           successful-message: 'Configuration deployed'
           projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'jenkins'
-                  branch-compare-type: 'PLAIN'
-                  branch-pattern: 'master'
-                  file-paths:
-                      - compare-type: 'REG_EXP'
-                        pattern: 'jobs/confs/.*'
+              - project-compare-type: 'PLAIN'
+                project-pattern: 'jenkins'
+                branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'master'
+                file-paths:
+                    - compare-type: 'REG_EXP'
+                      pattern: 'jobs/confs/.*'
     scm:
       - jenkins-master-gerrit
     builders:

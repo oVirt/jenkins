@@ -11,8 +11,7 @@
             ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
             ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
           branch: master
-    mock-build-type:
-      - onlyrpm
+    mock-build-type: onlyrpm
     distro:
       - el6
       - el7

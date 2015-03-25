@@ -8,8 +8,7 @@
     version:
       - 3.5:
           branch: ovirt-3.5
-    mock-build-type:
-      - onlyrpm
+    mock-build-type: onlyrpm
     distro:
       - fc20
       - el6:
@@ -20,8 +19,7 @@
       - el7:
           extra-packages: |
             maven
-    arch:
-      - x86_64
+    arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
@@ -35,8 +33,7 @@
     version:
       - master:
           branch: master
-    mock-build-type:
-      - onlyrpm
+    mock-build-type: onlyrpm
     distro:
       - fc20
       - fc21
@@ -48,7 +45,6 @@
       - el7:
           extra-packages: |
             maven
-    arch:
-      - x86_64
+    arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'

@@ -1,7 +1,6 @@
 - project:
     name: python-windows
-    project:
-      - ovirt-wgt-toolchain
+    project: ovirt-wgt-toolchain
     subproject:
       - python-windows
     trigger:
@@ -10,12 +9,9 @@
     version:
       - master:
           branch: master
-    mock-build-type:
-      - all
-    distro:
-      - fc21
-    arch:
-      - x86_64
+    mock-build-type: all
+    distro: fc21
+    arch: x86_64
     extra-build-packages: |
       rpmdevtools
     jobs:

@@ -1,7 +1,6 @@
 - project:
     name: ebay-cors-filter_create-rpms
-    project:
-      - releng-tools
+    project: releng-tools
     subproject:
       - ebay-cors-filter
     trigger:
@@ -10,8 +9,7 @@
     version:
       - master:
           branch: master
-    mock-build-type:
-      - all
+    mock-build-type: all
     distro:
       - fc20
       - fc21
@@ -19,8 +17,7 @@
       - el6:
           extra-repos: ci-tools,http://resources.ovirt.org/repos/ci-tools/el6
           extra-packages: maven3
-    arch:
-      - x86_64
+    arch: x86_64
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: |

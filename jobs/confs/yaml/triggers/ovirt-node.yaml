@@ -2,11 +2,12 @@
     name: ovirt-node-merged
     triggers:
       - gerrit:
-            trigger-on-change-merged-event: true
-            escape-quotes: true
-            projects:
-                - project-compare-type: 'REG_EXP'
-                  project-pattern: 'ovirt-node(-iso)?'
-                  branches:
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: '{branch}'
+          trigger-on:
+              - change-merged-event
+          escape-quotes: true
+          projects:
+              - project-compare-type: 'REG_EXP'
+                project-pattern: 'ovirt-node(-iso)?'
+                branches:
+                  - branch-compare-type: 'PLAIN'
+                    branch-pattern: '{branch}'

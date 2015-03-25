@@ -9,8 +9,7 @@
           branch: master
       - 3.5:
           branch: sdk_3.5
-    mock-build-type:
-      - all
+    mock-build-type: all
     distro:
       - fc21
       - fc20
@@ -20,8 +19,7 @@
           extra-packages: |
             maven3
       - el7
-    arch:
-      - x86_64
+    arch: x86_64
     extra-build-packages: |
       git
       python

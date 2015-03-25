@@ -7,8 +7,7 @@
     version:
       - master:
           branch: master
-    mock-build-type:
-      - onlyrpm
+    mock-build-type: onlyrpm
     distro:
       - fc20:
           extra-repos: |
@@ -38,8 +37,7 @@
               glusterfs-epel-nightly,http://download.gluster.org/pub/gluster/glusterfs/nightly/glusterfs/epel-\\$releasever-\\$basearch
               glusterfs-epel,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-\\$releasever/\\$basearch
               glusterfs-noarch-epel,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-\\$releasever/noarch
-    arch:
-      - x86_64
+    arch: x86_64
     jobs:
       - '{project}_{version}_install-rpm-sanity-{distro}_{trigger}':
           trigger-files: 'vdsm.spec.in'

@@ -11,8 +11,9 @@ fi
 cd "$confs_dir"
 jenkins-jobs \
     -l debug \
-    --allow-empty-variables \
-    --workers 0 \
+    --allow-empty \
     --conf "$conf_file" \
     $options \
-    update "$yaml_dir"
+    update \
+        --workers 0 \
+        "$yaml_dir"

@@ -1,7 +1,6 @@
 - project:
     name: kexec-tools_create-rpms
-    project:
-      - releng-tools
+    project: releng-tools
     subproject:
       - kexec-tools
     trigger:
@@ -10,15 +9,13 @@
     version:
       - master:
           branch: master
-    mock-build-type:
-      - all
+    mock-build-type: all
     distro:
       - el6:
           extra-build-options: el6
       - el7:
           extra-build-options: el7
-    arch:
-      - x86_64
+    arch: x86_64
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: 'wget'

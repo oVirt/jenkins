@@ -1,7 +1,6 @@
 - project:
     name: unboundid-ldapsdk_create-rpms
-    project:
-      - releng-tools
+    project: releng-tools
     subproject:
       - unboundid-ldapsdk
     trigger:
@@ -10,15 +9,13 @@
     version:
       - master:
           branch: master
-    mock-build-type:
-      - all
+    mock-build-type: all
     distro:
       - fc20
       - fc21
       - el6
       - el7
-    arch:
-      - x86_64
+    arch: x86_64
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: 'svn'

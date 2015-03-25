@@ -2,103 +2,109 @@
     name: on-patch-created
     triggers:
       - gerrit:
-            trigger-on-patchset-uploaded-event: true
-            escape-quotes: true
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: '{project}'
-                  branches:
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: '{branch}'
+          trigger-on:
+            - patchset-created-event
+          escape-quotes: true
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'PLAIN'
+                  branch-pattern: '{branch}'
 
 - trigger:
     name: on-patch-merged
     triggers:
       - gerrit:
-            trigger-on-change-merged-event: true
-            escape-quotes: true
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: '{project}'
-                  branches:
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: '{branch}'
+          trigger-on:
+            - change-merged-event
+          escape-quotes: true
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'PLAIN'
+                  branch-pattern: '{branch}'
 
 - trigger:
     name: on-patch-created-with-files
     triggers:
       - gerrit:
-            trigger-on-patchset-uploaded-event: true
-            escape-quotes: true
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: '{project}'
-                  branches:
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: '{branch}'
-                  file-paths:
-                    - compare-type: REG_EXP
-                      pattern: '{files}'
+          trigger-on:
+            - patchset-created-event
+          escape-quotes: true
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'PLAIN'
+                  branch-pattern: '{branch}'
+              file-paths:
+                - compare-type: REG_EXP
+                  pattern: '{files}'
 
 - trigger:
     name: on-patch-merged-with-files
     triggers:
       - gerrit:
-            trigger-on-change-merged-event: true
-            escape-quotes: true
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: '{project}'
-                  branches:
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: '{branch}'
-                  file-paths:
-                    - compare-type: REG_EXP
-                      pattern: '{files}'
+          trigger-on:
+            - change-merged-event
+          escape-quotes: true
+          projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'PLAIN'
+                    branch-pattern: '{branch}'
+                file-paths:
+                  - compare-type: REG_EXP
+                    pattern: '{files}'
 
 - trigger:
     name: on-patch-created-with-files-whitelist
     triggers:
       - gerrit:
-            trigger-on-patchset-uploaded-event: true
-            escape-quotes: true
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: '{project}'
-                  branches:
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: '{branch}'
-                  file-paths:
-                    - compare-type: REG_EXP
-                      pattern: '{files}'
-            notbuilt-message: |
-              To avoid overloading the infrastructure, a whitelist for
-              running gerrit triggered jobs has been set in place, if
-              you feel like you should be in it, please contact infra at
-              ovirt dot org.
-            skip-vote:
-              notbuilt: true
+          trigger-on:
+            - patchset-created-event
+          escape-quotes: true
+          projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'PLAIN'
+                    branch-pattern: '{branch}'
+                file-paths:
+                  - compare-type: REG_EXP
+                    pattern: '{files}'
+          notbuilt-message: |
+            To avoid overloading the infrastructure, a whitelist for
+            running gerrit triggered jobs has been set in place, if
+            you feel like you should be in it, please contact infra at
+            ovirt dot org.
+          skip-vote:
+            notbuilt: true
 
 
 - trigger:
     name: on-patch-merged-with-files-whitelist
     triggers:
       - gerrit:
-            trigger-on-change-merged-event: true
-            escape-quotes: true
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: '{project}'
-                  branches:
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: '{branch}'
-                  file-paths:
-                    - compare-type: REG_EXP
-                      pattern: '{files}'
-            notbuilt-message: |
-              To avoid overloading the infrastructure, a whitelist for
-              running gerrit triggered jobs has been set in place, if
-              you feel like you should be in it, please contact infra at
-              ovirt dot org.
-            skip-vote:
-              notbuilt: true
+          trigger-on:
+            - change-merged-event
+          escape-quotes: true
+          projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'PLAIN'
+                    branch-pattern: '{branch}'
+                file-paths:
+                  - compare-type: REG_EXP
+                    pattern: '{files}'
+          notbuilt-message: |
+            To avoid overloading the infrastructure, a whitelist for
+            running gerrit triggered jobs has been set in place, if
+            you feel like you should be in it, please contact infra at
+            ovirt dot org.
+          skip-vote:
+            notbuilt: true

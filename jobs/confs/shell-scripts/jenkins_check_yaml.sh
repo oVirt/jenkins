@@ -15,10 +15,11 @@ done
 echo "Generating new xmls"
 pushd "$confs_dir"
 jenkins-jobs \
-    --workers 0 \
-    --allow-empty-variables \
+    --allow-empty \
     -l debug \
+    --conf "$conf_file" \
     test \
+        --workers 0 \
         --recursive \
         -o "$new_xmls_dir" \
         "$yaml_dir"
@@ -33,10 +34,11 @@ if ! [[ -d "$confs_dir" ]]; then
 else
     pushd "$confs_dir"
     jenkins-jobs \
-        --workers 0 \
-        --allow-empty-variables \
+        --allow-empty \
         -l debug \
+        --conf "$conf_file" \
         test \
+            --workers 0 \
             --recursive \
             -o "$old_xmls_dir" \
             "$yaml_dir"
@@ -45,13 +47,13 @@ else
     git reset --hard $GERRIT_PATCHSET_REVISION
     changed=false
     diff -u "$old_xmls_dir" "$new_xmls_dir" \
-	| "$WORKSPACE/jenkins/jobs/confs/shell-scripts/htmldiff.sh" \
-	> "$WORKSPACE/differences.html" \
+    | "$WORKSPACE/jenkins/jobs/confs/shell-scripts/htmldiff.sh" \
+    > "$WORKSPACE/differences.html" \
     || changed=true
 
     if $changed; then
-	echo "WARNING: #### XML CHANGED ####"
-	echo "Changed files:"
-	diff -q "$old_xmls_dir" "$new_xmls_dir" | awk '{ print $2 }' || :
+    echo "WARNING: #### XML CHANGED ####"
+    echo "Changed files:"
+    diff -q "$old_xmls_dir" "$new_xmls_dir" | awk '{ print $2 }' || :
     fi
 fi

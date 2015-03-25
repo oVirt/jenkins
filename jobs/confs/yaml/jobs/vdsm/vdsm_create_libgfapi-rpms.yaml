@@ -8,8 +8,7 @@
       - master-libgfapi:
           branch: master
     mock-build-type: all
-    arch:
-      - x86_64
+    arch: x86_64
       # PPC64 is not available yet
       # - ppc64
     # Build usually require latest ioprocess rpms from testing repositories
