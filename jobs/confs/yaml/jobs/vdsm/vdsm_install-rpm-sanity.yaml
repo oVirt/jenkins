@@ -1,9 +1,7 @@
 - project:
     name: vdsm_install-rpm-sanity
-    project:
-      - vdsm
-    trigger:
-      - created
+    project: vdsm
+    trigger: created
     version:
       - master:
           branch: master

@@ -61,6 +61,26 @@
                     pattern: '{files}'
 
 - trigger:
+    name: on-patch-created-with-files-voting
+    triggers:
+      - gerrit:
+          override-votes: true
+          gerrit-build-unstable-verified-value: -1
+          gerrit-build-failed-verified-value: -1
+          trigger-on:
+            - patchset-created-event
+          escape-quotes: true
+          projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'PLAIN'
+                    branch-pattern: '{branch}'
+                file-paths:
+                  - compare-type: REG_EXP
+                    pattern: '{files}'
+
+- trigger:
     name: on-patch-created-with-files-whitelist
     triggers:
       - gerrit:
@@ -83,7 +103,6 @@
             ovirt dot org.
           skip-vote:
             notbuilt: true
-
 
 - trigger:
     name: on-patch-merged-with-files-whitelist

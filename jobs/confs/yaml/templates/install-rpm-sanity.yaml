@@ -8,7 +8,7 @@
       - jenkins:
           branch: master
     triggers:
-      - 'on-patch-{trigger}-with-files':
+      - 'on-patch-{trigger}-with-files-voting':
           project: '{project}'
           branch: '{branch}'
           files: '{trigger-files}'
