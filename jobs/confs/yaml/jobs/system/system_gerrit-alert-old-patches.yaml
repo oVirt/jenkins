@@ -1,0 +1,51 @@
+- job:
+    name: system_gerrit-alert-old-patches
+    node: master
+    triggers:
+        - timed: "@weekly"
+    parameters:
+        - bool:
+            name: DRY_RUN
+            default: false
+            description: "Turn on dry-run mode. Default is false."
+        - string:
+            name: WARNING
+            default: "300"
+            description: "Age in days for warning limit."
+        - string:
+            name: ABANDON
+            default: "600"
+            description: "Age in days for abandoning limit."
+        - string:
+            name: TEST_EMAIL
+            default: None
+            description: "Optional email address to use with dry-run. Default is None."
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            user="jenkins_ro"
+            projects="vdsm,ovirt-engine"
+            if $DRY_RUN; then
+                if "$TEST_EMAIL" == "None"; then
+                    dry="--dry-run"
+                else
+                    dry="--dry-run --with-email $TEST_EMAIL"
+                fi
+            fi
+            $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug "$dry" --projects "$projects"
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '106ec229-f1a1-4a0b-ac4f-38395556b6ad'
+    scm:
+        - jenkins:
+            branch: master
+    publishers:
+        - email-ext:
+            recipients: dcaro@redhat.com, eedri@redhat.com, iheim@redhat.com, vishnu.srkmr@gmail.com
+            content-type: text
+            subject: Alert-Old-Patches Build ${BUILD_NUMBER}
+            attach-build-log: true
+            send-to:
+                - recipients
