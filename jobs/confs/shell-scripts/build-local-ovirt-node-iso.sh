@@ -1,13 +1,8 @@
 #!/bin/bash -xe
-echo "shell-scripts/build-local-ovirt-node.sh"
+echo "shell-scripts/build-local-ovirt-node-iso.sh"
 #this scripts build ovirt-node and ovirt-node-is projects
 
 DISTRO="{distro}"
-
-do_build=true
-do_clean={clean_pre}
-
-do_publish_rpms={publish_rpms}
 
 # the die on error function
 function die {{
@@ -21,7 +16,7 @@ function set_env {{
     export CACHE="$PWD"/build
     export OVIRT_NODE_BASE="$PWD"
     export OVIRT_CACHE_DIR="$CACHE/$DISTRO"
-    export OVIRT_LOCAL_REPO=file://"$OVIRT_CACHE_DIR"/ovirt
+    export PATH=$PATH:/usr/sbin
 }}
 
 
@@ -31,16 +26,10 @@ function set_env {{
 function build_iso {{
     pushd .
     cd "$OVIRT_NODE_BASE"
-    cat > extra-recipe.ks <<EOF_ks
-%packages --excludedocs --nobase
-ovirt-node-plugin-vdsm
-ovirt-node-plugin-hosted-engine
-%end
-EOF_ks
     cd "$OVIRT_NODE_BASE"/ovirt-node-iso
-    ./autogen.sh \
-        --with-recipe=../ovirt-node/recipe \
-        --with-extra-recipe=../extra-recipe.ks
+    ./autogen.sh
+    chmod +x recepie-downloader.sh
+    ./recepie-downloader.sh install
     if  ! make iso publish ; then
         die "ISO build failed"
     fi
@@ -52,9 +41,6 @@ EOF_ks
 
 #the prereqs
 function check_pre {{
-    if [[ ! -d $OVIRT_NODE_BASE/ovirt-node ]] ; then
-        die "No node base found"
-    fi
     if [[ ! -d $OVIRT_NODE_BASE/ovirt-node-iso ]] ; then
         die "No node-ISO base found"
     fi
@@ -69,6 +55,9 @@ function clean_iso {{
     git clean -dfx
     # generate new makefiles
     ./autogen.sh
+    chmod +x recepie-downloader.sh
+    ./recepie-downloader.sh remove
+    ./recepie-downloader.sh remove-repo
     make clean \
         || clean_failed=true
     popd
@@ -88,15 +77,7 @@ for dir in exported-artifacts; do
     mkdir -p "$dir"
 done
 
+clean_iso
+build_iso
 
-if $do_clean; then
-    clean_iso
-fi
-
-if $do_build; then
-    build_iso
-fi
-
-if $do_publish_rpms; then
-    cp "$OVIRT_CACHE_DIR"/ovirt/binary/*.iso exported-artifacts/
-fi
+cp "$OVIRT_CACHE_DIR"/ovirt/binary/*.iso exported-artifacts/

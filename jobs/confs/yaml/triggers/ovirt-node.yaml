@@ -7,7 +7,21 @@
           escape-quotes: true
           projects:
               - project-compare-type: 'REG_EXP'
-                project-pattern: 'ovirt-node(-iso)?'
+                project-pattern: 'ovirt-node?'
+                branches:
+                  - branch-compare-type: 'PLAIN'
+                    branch-pattern: '{branch}'
+
+- trigger:
+    name: ovirt-node-iso-merged
+    triggers:
+      - gerrit:
+          trigger-on:
+              - change-merged-event
+          escape-quotes: true
+          projects:
+              - project-compare-type: 'REG_EXP'
+                project-pattern: 'ovirt-node-iso?'
                 branches:
                   - branch-compare-type: 'PLAIN'
                     branch-pattern: '{branch}'

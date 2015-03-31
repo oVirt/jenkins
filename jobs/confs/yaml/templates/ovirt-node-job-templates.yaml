@@ -3,22 +3,15 @@
     node : '{distro}'
     builders :
       - cleanup-slave
-      - ovirt-node_create:
-          distro: '{distro}'
-          clean_pre: 'true'
-          publish_rpms: 'false'
       - ovirt-node_create-iso:
           distro: '{distro}'
-          clean_pre: 'false'
-          publish_rpms: 'true'
     scm :
-          - ovirt-node:
-              branch: '{version}'
-          - ovirt-node-iso:
-              branch: '{version}'
+      - ovirt-node-iso:
+          branch: '{version}'
     triggers:
-      - ovirt-node-{trigger}:
-          branch: '{branch}'
+      - ovirt-node-iso-{trigger}:
+           branch: '{branch}'
+      - timed: '@daily'
     publishers:
       - ovirt-node-cleanup:
           distro: '{distro}'

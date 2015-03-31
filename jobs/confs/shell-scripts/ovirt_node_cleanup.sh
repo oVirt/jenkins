@@ -29,11 +29,17 @@ if [[ -d "$OVIRT_NODE_BASE"/ovirt-node ]]; then
     make distclean \
         || clean_failed=true
 fi
+
 if [[ -d "$OVIRT_NODE_BASE"/ovirt-node-iso ]]; then
     cd "$OVIRT_NODE_BASE"/ovirt-node-iso
     make clean \
         || clean_failed=true
+    ./recepie-downloader.sh remove \
+        || clean_failed=true
+    ./recepie-downloader.sh remove-repo \
+        || clean_failed=true
 fi
+
 if $clean_failed; then
     exit 1
 else
