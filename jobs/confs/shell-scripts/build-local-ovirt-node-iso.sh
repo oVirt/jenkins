@@ -81,3 +81,4 @@ clean_iso
 build_iso
 
 cp "$OVIRT_CACHE_DIR"/ovirt/binary/*.iso exported-artifacts/
+cp "$OVIRT_CACHE_DIR"/ovirt/noarch/*.rpm exported-artifacts/
