@@ -15,6 +15,7 @@
     distro:
       - fc20
       - fc21
+      - fc22
       - el7
     arch: x86_64
     jobs:

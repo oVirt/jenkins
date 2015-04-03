@@ -13,6 +13,7 @@
     distro:
       - fc20
       - fc21
+      - fc22
       - el7
       - el6:
           extra-repos: ci-tools,http://resources.ovirt.org/repos/ci-tools/el6

@@ -12,6 +12,7 @@
         - el7
         - fc20
         - fc21
+        - fc22
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -26,7 +27,7 @@
     stage:
       - check-patch
       - check-merged
-    distro: fc21
+    distro: fc22
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'

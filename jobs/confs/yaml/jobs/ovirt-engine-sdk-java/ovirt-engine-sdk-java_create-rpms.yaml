@@ -11,6 +11,7 @@
           branch: sdk_3.5
     mock-build-type: all
     distro:
+      - fc22
       - fc21
       - fc20
       - el6:

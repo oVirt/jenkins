@@ -8,6 +8,7 @@
     distro:
       - fc20
       - fc21
+      - fc22
       - el7
       - el6:
           extra-repos: jpackage-6.0-generic,http://ftp.heanet.ie/pub/jpackage/6.0/generic/free
