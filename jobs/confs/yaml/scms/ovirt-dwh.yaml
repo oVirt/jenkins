@@ -1,0 +1,16 @@
+- scm:
+    name: ovirt-dwh-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/ovirt-dwh.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: ovirt-dwh
+          scm-name: ovirt-dwh
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
