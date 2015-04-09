@@ -1,0 +1,23 @@
+- project:
+    name: jasper-reports_create-rpms
+    project: releng-tools
+    subproject:
+      - jasperreports-server
+    trigger:
+      - created
+      - merged
+    version:
+      - master:
+          branch: master
+    mock-build-type: all
+    distro:
+      - el6
+      - el7
+      - fc20
+      - fc21
+      - fc22
+    arch: x86_64
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+          extra-build-packages: |
+            rpmdevtools
