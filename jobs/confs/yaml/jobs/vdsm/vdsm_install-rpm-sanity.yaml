@@ -14,6 +14,7 @@
               glusterfs-fedora-nightly,http://download.gluster.org/pub/gluster//glusterfs/nightly/glusterfs/fedora-\\$releasever-\\$basearch
               glusterfs-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/\\$basearch
               glusterfs-noarch-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/noarch
+              fedora-virt-preview,http://fedorapeople.org/groups/virt/virt-preview/fedora-\\$releasever/\\$basearch
       - fc21:
           extra-repos: |
               ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
@@ -21,6 +22,7 @@
               glusterfs-fedora-nightly,http://download.gluster.org/pub/gluster//glusterfs/nightly/glusterfs/fedora-\\$releasever-\\$basearch
               glusterfs-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/\\$basearch
               glusterfs-noarch-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/noarch
+              fedora-virt-preview,http://fedorapeople.org/groups/virt/virt-preview/fedora-\\$releasever/\\$basearch
       - fc22:
           extra-repos: |
               ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
@@ -28,6 +30,7 @@
               glusterfs-fedora-nightly,http://download.gluster.org/pub/gluster//glusterfs/nightly/glusterfs/fedora-\\$releasever-\\$basearch
               glusterfs-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/\\$basearch
               glusterfs-noarch-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/noarch
+              fedora-virt-preview,http://fedorapeople.org/groups/virt/virt-preview/fedora-\\$releasever/\\$basearch
       - el7:
           extra-repos: |
               ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
