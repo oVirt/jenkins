@@ -1,3 +1,5 @@
+# ebay-cors-filter is included in Fedora >= 22
+
 - project:
     name: ebay-cors-filter_create-rpms
     project: releng-tools
@@ -13,7 +15,6 @@
     distro:
       - fc20
       - fc21
-      - fc22
       - el7
       - el6:
           extra-repos: ci-tools,http://resources.ovirt.org/repos/ci-tools/el6
