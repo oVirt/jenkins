@@ -1,0 +1,38 @@
+- project:
+    name: ovirt-engine-sdk_build
+    project:
+      - ovirt-engine-sdk
+    version:
+      - master:
+          branch: master
+      - 3.5:
+          branch: sdk_3.5
+    stage:
+      - build-artifacts
+    distro:
+        - el6
+        - el7
+        - fc20
+        - fc21
+        - fc22
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: ovirt-engine-sdk_checks
+    project:
+      - ovirt-engine-sdk
+    version:
+      - master:
+          branch: master
+      - 3.5:
+          branch: sdk_3.5
+    stage:
+      - check-merged
+      - check-patch
+    distro:
+        - fc22
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
