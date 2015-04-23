@@ -126,7 +126,7 @@ check_repo_closure() {
                 --repofrompath=check-updates-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
                 --repofrompath=check-extras-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
                 --repofrompath=check-epel-"${distid}","${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
-                --repofrompath=check-glusterfs-epel-"${distid}"-nightly,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/nightly/glusterfs/epel-"${DISTRIBUTION_VERSION}"-x86_64/ \
+                --repofrompath=check-glusterfs-epel-"${distid}"-nightly,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/nightly/glusterfs-3.7/epel-"${DISTRIBUTION_VERSION}"-x86_64/ \
                 --repofrompath=check-glusterfs-epel-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
                 --repofrompath=check-glusterfs-epel-noarch-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
                 --repofrompath=check-patternfly-"${distid}","${COPR}/patternfly/patternfly1/epel-${DISTRIBUTION_VERSION}-x86_64" \
@@ -147,7 +147,7 @@ check_repo_closure() {
                 --repofrompath=check-updates-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
                 --repofrompath=check-extras-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
                 --repofrompath=check-epel-"${distid}","${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
-                --repofrompath=check-glusterfs-epel-"${distid}"-nightly,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/nightly/glusterfs/epel-"${DISTRIBUTION_VERSION}"-x86_64/ \
+                --repofrompath=check-glusterfs-epel-"${distid}"-nightly,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/nightly/glusterfs-3.7/epel-"${DISTRIBUTION_VERSION}"-x86_64/ \
                 --repofrompath=check-glusterfs-epel-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
                 --repofrompath=check-glusterfs-epel-noarch-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
                 --repofrompath=check-jpackage-generic-"${distid}","${JPACKAGE_MIRROR}"/jpackage/6.0/generic/free \
@@ -173,7 +173,7 @@ check_repo_closure() {
             --repofrompath=check-updates-"${distid}","${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
             --repofrompath=check-updates-testing-"${distid}","${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
             --repofrompath=check-patternfly-"${distid}",""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
-            --repofrompath=check-glusterfs-fedora-"${distid}"-nightly,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/nightly/glusterfs/fedora-"${DISTRIBUTION_VERSION}"-x86_64/ \
+            --repofrompath=check-glusterfs-fedora-"${distid}"-nightly,"${GLUSTER_MIRROR}"/pub/gluster/glusterfs/nightly/glusterfs-3.7/fedora-"${DISTRIBUTION_VERSION}"-x86_64/ \
             --repofrompath=check-glusterfs-fedora-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/x86_64/ \
             --repofrompath=check-glusterfs-fedora-noarch-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/noarch \
             --lookaside check-fedora-"${distid}" \
