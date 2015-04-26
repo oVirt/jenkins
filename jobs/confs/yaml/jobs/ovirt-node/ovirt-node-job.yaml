@@ -6,15 +6,16 @@
     project: 'ovirt-node'
     trigger:
       - merged
-    distro :
-      - fc20
-      - el7
-      - el6
     version :
       - master:
           branch: master
+          distro : el7
       - ovirt-3.5:
           branch: ovirt-3.5
+          distro : el7
+      - ovirt-3.5:
+          branch: ovirt-3.5
+          distro : el6
     jobs:
       - 'ovirt-node_{version}_create-iso-{distro}_{trigger}'
 
@@ -23,23 +24,18 @@
     project: 'ovirt-node'
     trigger:
       - merged
-    distro :
-      - fc20
-      - el7
-      - el6
     version :
       - master:
           branch: master
+          distro : el7
       - ovirt-3.5:
           branch: ovirt-3.5
+          distro : el7
+      - ovirt-3.5:
+          branch: ovirt-3.5
+          distro : el6
     jobs:
       - 'ovirt-node_{version}_create-rpms-{distro}_{trigger}'
 
-
-- project:
-    name: 'livecd-tools-builder'
-    project: 'ovirt-node'
-    jobs:
-      - 'livecd-tools-el7'
 
 
