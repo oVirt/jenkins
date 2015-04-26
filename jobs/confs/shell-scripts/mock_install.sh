@@ -114,5 +114,5 @@ echo "##### Installing ${{packages[@]}}"
 $my_mock \
     --no-clean \
     --shell <<EOF
-yum localinstall -y /tmp/*rpm
+yum install -y /tmp/*rpm
 EOF
