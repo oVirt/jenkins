@@ -7,27 +7,14 @@
           branch: master
     stage:
       - build-artifacts
-    distro:
-        - el6
-        - el7
-        - fc20
-        - fc21
-        - fc22
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
-
-- project:
-    name: repoman
-    project:
-      - repoman
-    version:
-      - master:
-          branch: master
-    stage:
       - check-patch
       - check-merged
-    distro: fc22
+    distro:
+      - el6
+      - el7
+      - fc20
+      - fc21
+      - fc22
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
