@@ -143,6 +143,7 @@
       libtool
       gettext-devel
       python-ioprocess
+      python-six
     extra-packages: |
       pyflakes
       python-pep8
