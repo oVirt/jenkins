@@ -71,7 +71,7 @@ echo "suffix='${{suffix}}'" > "$WORKSPACE/tmp/rpm_suffix.inc"
 ### Generate the mock configuration
 rpmbuild_options=("-D" "release_suffix ${{suffix}}")
 mock_build_options=("--define" "release_suffix ${{suffix}}")
-for option in $extra_rpmbuild_options; do
+for option in "${{extra_rpmbuild_options[@]}}"; do
     rpmbuild_options+=("-D" "${{option//=/ }}")
     mock_build_options+=("--define" "${{option//=/ }}")
 done

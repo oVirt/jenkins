@@ -47,7 +47,7 @@ if [[ -n $suffix ]]; then
     rpmbuild_options+=("-D" "release_suffix ${{suffix}}")
     mock_build_options+=("--define" "release_suffix ${{suffix}}")
 fi
-for option in $extra_rpmbuild_options; do
+for option in "${{extra_rpmbuild_options[@]}}"; do
     rpmbuild_options+=("-D" "${{option//=/ }}")
     mock_build_options+=("--define" "${{option//=/ }}")
 done
