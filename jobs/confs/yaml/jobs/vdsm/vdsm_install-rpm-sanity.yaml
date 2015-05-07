@@ -44,6 +44,8 @@
           trigger-files: 'vdsm.spec.in'
           # Ugly fix until BZ#1111601 is solved
           extra-packages: 'm2crypto'
-          extra-rpmbuild-options: 'with_check=0'
+          extra-rpmbuild-options: |
+            'with_check=0'
+            'with_hooks=1'
           packages: 'exported-artifacts/vdsm-*rpm'
           env: 'NOSE_EXCLUDE=.*'
