@@ -114,5 +114,10 @@ echo "##### Installing ${{packages[@]}}"
 $my_mock \
     --no-clean \
     --shell <<EOF
-yum install -y /tmp/*rpm
+
+yum_command=\$(which yum-deprecated) \
+ || yum_command=\$(which yum)
+
+\$yum_command install -y /tmp/*rpm
+
 EOF
