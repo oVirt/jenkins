@@ -30,7 +30,7 @@ echo "shell-scripts/mock_build_onlyrpm.sh"
 distro="{distro}"
 arch="{arch}"
 project="{project}"
-extra_packages=({extra-packages})
+extra_packages=(vim-minimal {extra-packages})
 extra_rpmbuild_options=({extra-rpmbuild-options})
 extra_repos=({extra-repos})
 extra_env=({extra-env})
