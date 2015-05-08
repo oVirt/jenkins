@@ -1,0 +1,5 @@
+[gerrit]
+host=gerrit.ovirt.org
+port=29418
+project=jenkins.git
+defaultbranch=master
