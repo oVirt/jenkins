@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 3.5:
+          branch: ovirt-3.5
     mock-build-type: onlyrpm
     distro:
       - fc20:
@@ -39,6 +41,9 @@
               glusterfs-epel,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-\\$releasever/\\$basearch
               glusterfs-noarch-epel,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-\\$releasever/noarch
     arch: x86_64
+    exclude:
+      - version: 3.5
+        distro: fc22
     jobs:
       - '{project}_{version}_install-rpm-sanity-{distro}_{trigger}':
           trigger-files: 'vdsm.spec.in'
