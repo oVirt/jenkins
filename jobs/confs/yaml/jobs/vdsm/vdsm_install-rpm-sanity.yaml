@@ -47,8 +47,7 @@
     jobs:
       - '{project}_{version}_install-rpm-sanity-{distro}_{trigger}':
           trigger-files: 'vdsm.spec.in'
-          # Ugly fix until BZ#1111601 is solved
-          extra-packages: 'm2crypto'
+          extra-packages: ''
           extra-rpmbuild-options: |
             'with_check=0'
             'with_hooks=1'
