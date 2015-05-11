@@ -2,6 +2,10 @@
     name: jenkins_master_deploy-configs_merged
     node: master
     parameters:
+      - bool:
+          name: ARCHIVE_JOBS
+          default: true
+          description: "Archive jobs removed from yaml"
       - gerrit-params:
           branch: master
     triggers:
@@ -23,3 +27,9 @@
       - jenkins-master-gerrit
     builders:
       - shell: !include-raw shell-scripts/jenkins_deploy_yamls.sh
+      - shell: !include-raw shell-scripts/jenkins_cleanup_yaml.sh
+      - system-groovy:
+          command: !include-raw groovy-scripts/archive_jobs.groovy
+    publishers:
+      - groovy-postbuild: !include-raw groovy-scripts/archive_jobs.postbuild.groovy
+
