@@ -19,7 +19,6 @@ jenkins-jobs \
     -l debug \
     --conf "$conf_file" \
     test \
-        --workers 0 \
         --recursive \
         -o "$new_xmls_dir" \
         "$yaml_dir"
@@ -38,7 +37,6 @@ else
         -l debug \
         --conf "$conf_file" \
         test \
-            --workers 0 \
             --recursive \
             -o "$old_xmls_dir" \
             "$yaml_dir"
