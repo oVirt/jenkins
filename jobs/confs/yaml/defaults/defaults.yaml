@@ -10,6 +10,14 @@
     name: global
     project-type: freestyle
     concurrent: false
+    # to enable the throttle plugin, you also need to set concurrent: true
+    properties:
+      - throttle:
+          enabled: false
+          max-per-node: 1
+          max-total: 3
+          option: project
+
     logrotate:
       numToKeep: 40
     wrappers:
