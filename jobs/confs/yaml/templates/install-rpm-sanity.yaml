@@ -1,8 +1,16 @@
 - job-template:
     name: '{project}_{version}_install-rpm-sanity-{distro}_{trigger}'
+    concurrent: true
     parameters:
       - gerrit-params:
           branch: '{branch}'
+    properties:
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          max-total: 3
+          option: project
+
     scm:
       - '{project}-gerrit'
       - jenkins:
