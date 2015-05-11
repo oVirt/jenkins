@@ -38,6 +38,10 @@ echo "shell-scripts/build_mock_srcrpm.sh"
 #
 # cherry-pick
 #     List of refspecs to cherry-pick before creating the src.rpm
+#
+# extra-make-targets
+#     extra make targets to be built
+#
 
 distro="{distro}"
 arch="{arch}"
@@ -54,6 +58,7 @@ extra_build_packages=(
 extra_repos=({extra-repos})
 extra_env=({extra-env})
 to_cherry_pick=({cherry-pick})
+make_targets=(dist {extra-make-targets})
 WORKSPACE=$PWD
 
 # Get the release suffix
@@ -144,7 +149,7 @@ rpm_dist=.${{rpm_dist#*=}}
 $my_mock \
     --no-clean \
     --shell <<EOF
-echo "%dist $rpm_dist" > ~/.rpmmacros
+        echo "%dist $rpm_dist" > ~/.rpmmacros
 EOF
 
 ### Build the srpms
@@ -176,28 +181,27 @@ done
 $my_mock \
     --no-clean \
     --shell <<EOF
-set -e
-cd /tmp/$project
-if [[ -x autogen.sh ]]; then
-    ./autogen.sh --system "${{extra_autogen_options[@]}}"
-elif [[ -e Makefile.am ]]; then
-    autoreconf -ivf
-fi
-[[ -x configure  ]] &&
-    ./configure "${{extra_configure_options[@]}}"
-make dist
-echo "Really ugly hack for the host-deploy job"
-make offline-tarball || :
+        set -e
+        cd /tmp/$project
+        if [[ -x autogen.sh ]]; then
+            ./autogen.sh --system "${{extra_autogen_options[@]}}"
+        elif [[ -e Makefile.am ]]; then
+            autoreconf -ivf
+        fi
+        [[ -x configure  ]] &&
+            ./configure "${{extra_configure_options[@]}}"
+        # Build extra make targets, like offline-tarball for ovirt-host-deploy
+        make ${{make_targets[@]}}
 
-# build src.rpm
-rpmbuild \
-    -D "_srcrpmdir ."  \
-    "${{rpmbuild_options[@]}}" \
-    -ts *.gz
+        # build src.rpm
+        rpmbuild \
+            -D "_srcrpmdir ."  \
+            "${{rpmbuild_options[@]}}" \
+            -ts *.gz
 
-mkdir /tmp/SRCRPMS
-mv *.tar.gz /tmp/SRCRPMS/
-mv *src.rpm /tmp/SRCRPMS/
+        mkdir /tmp/SRCRPMS
+        mv *.tar.gz /tmp/SRCRPMS/
+        mv *src.rpm /tmp/SRCRPMS/
 EOF
 
 echo "#### Archiving the results"

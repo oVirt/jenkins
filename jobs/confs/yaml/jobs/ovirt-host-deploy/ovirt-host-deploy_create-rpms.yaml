@@ -31,5 +31,7 @@
       automake
       autoreconf
       make
+    extra-make-targets: |
+      offline-tarball
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'

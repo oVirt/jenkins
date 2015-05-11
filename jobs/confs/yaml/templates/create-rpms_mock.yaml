@@ -25,6 +25,7 @@
           extra-configure-options: '{extra-configure-options}'
           extra-repos: '{extra-repos}'
           extra-env: '{extra-env}'
+          extra-make-targets: '{extra-make-targets}'
           cherry-pick: '{cherry-pick}'
     publishers:
       - mock-cleanup
@@ -60,6 +61,7 @@
           extra-build-options: '{extra-build-options}'
           extra-repos: '{extra-repos}'
           extra-env: '{extra-env}'
+          extra-make-targets: '{extra-make-targets}'
           cherry-pick: '{cherry-pick}'
     publishers:
       - mock-cleanup
