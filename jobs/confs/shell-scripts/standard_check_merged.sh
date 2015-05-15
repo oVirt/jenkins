@@ -90,11 +90,15 @@ build_deps_file="$project/automation/check-merged.req.${{distro}}"
 [[ -f "$build_deps_file" ]] \
 || build_deps_file="$project/automation/check-merged.req"
 if [[ -f  "$build_deps_file" ]]; then
-    echo "##### Installing extra dependencies from $build_deps_file"
     packages=($(cat "$build_deps_file"))
-    $my_mock \
-        --no-clean \
-        --install "${{packages[@]}}"
+    if [[ -n "${{packages}}" ]]; then
+        echo "##### Installing extra dependencies from $build_deps_file"
+        $my_mock \
+            --no-clean \
+            --install "${{packages[@]}}"
+    else
+        echo "#### WARN: empty req file found $build_deps_file"
+    fi
 fi
 
 ## Needed when running yum inside the chroot on different distro than the host,
