@@ -44,6 +44,8 @@
     exclude:
       - version: 3.5
         distro: fc22
+      - version: master
+        distro: fc20
     jobs:
       - '{project}_{version}_install-rpm-sanity-{distro}_{trigger}':
           trigger-files: 'vdsm.spec.in'
