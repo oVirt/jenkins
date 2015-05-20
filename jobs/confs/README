@@ -86,3 +86,57 @@ You can also test/update just a set of jobs using glob syntax:
 More info about jenkins job builder at the [openstack page]
 
     [openstack page] http://ci.openstack.org/jenkins_jobs.html
+
+
+== How to verify you changes for oVirt CI
+
+As of right now we don't have an easy way to do that, so you'll need the help
+of someone with admin rights on jenkins (asking the maintainers or dropping a
+line on infra at ovint dot org mailing list is a good start).
+
+In any case, there is a job that will running and will show you the diffenences
+you patch introduces at xml level, and you should go through them carefuly as a
+first check.
+
+=== For deleted jobs
+
+These are the easiest to check, verifying that the diff only shows deleted jobs
+is good enough to verify the patch.
+
+NOTE: A deleted job is shown right now as one line like this:
+
+  Only in /var/lib/jenkins/workspace/jenkins_master_check-yaml_gerrit/old_xmls
+
+where the key is the only in ... old_xmls.
+
+
+=== For new jobs
+
+For those you'll only see a similar line to the above, but it will have
+new_xmls in the path instead of old_xmls. So to verify you'll need something
+more, for now you con deploy those jobs manually and run them once to make sure
+they behave as expected, delete them afterwards.
+
+If it's a new project, you should also add it to the 'master branch per
+project' and 'not merged per project' views so it's easy to see all the jobs
+for that project.
+
+=== For modified jobs
+
+These are the trickiest, to check these, the current way to do it is to
+manually deploy the modified job (repeat the whole process for each modified
+job), run it, and revert the configuration change once you run starts, that
+will avoid next triggers from using the modified config. You should also add to
+the build description that it's a test with the link to the patch.
+
+It may happen that between starting your build and reverting the config, the
+job started other builds, it that case, cancel those and retrigger with the
+original config.
+
+You don't have to test all the modified jobs, just enough to make sure that the
+change will not break anything (that depends a lot on the nature of the
+change).
+
+
+Once that is done, verify the job and add the test runs to the comment in
+gerrit (not that important though).
