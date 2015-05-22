@@ -19,7 +19,6 @@
     mock-build-type: all
     distro:
       - el7
-      - fc20
       - fc21
       - fc22
     arch: x86_64
@@ -35,7 +34,7 @@
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
-# On EL6 build ovirt-host-deploy-offline only on 3.5 branch
+# On EL6 and FC20 build ovirt-host-deploy-offline only on 3.5 branch
 - project:
     name: ovirt-host-deploy_create-rpms_el6
     project:
@@ -59,6 +58,7 @@
     mock-build-type: all
     distro:
       - el6
+      - fc20
     arch: x86_64
     extra-configure-options: |
       --with-otopi-sources=/dev/null
