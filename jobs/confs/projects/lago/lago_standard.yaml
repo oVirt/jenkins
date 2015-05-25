@@ -1,0 +1,21 @@
+- project:
+    name: lago_checks_standard
+    project:
+      - lago
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+      - check-patch:
+          node-filter: 'nested && fc21'
+      - check-merged:
+          node-filter: 'nested && fc21'
+    distro:
+      - fc21
+      - fc22
+      - el7
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'

@@ -1,0 +1,6 @@
+- scm:
+    name: lago-gerrit
+    scm:
+      - gerrit:
+          project: 'lago'
+          git-server: '{git-server}'
