@@ -53,21 +53,20 @@ for option in "${{extra_rpmbuild_options[@]}}"; do
     mock_build_options+=("--define" "${{option//=/ }}")
 done
 pushd "$WORKSPACE"/jenkins/mock_configs
-arch="{arch}"
 case $distro in
     fc*) distribution="fedora-${{distro#fc}}";;
     el*) distribution="epel-${{distro#el}}";;
     *) echo "Unknown distro $distro"; exit 1;;
 esac
 mock_conf="${{distribution}}-$arch-custom"
-mock_repos=''
+mock_repos=()
 for mock_repo in "${{extra_repos[@]}}"; do
-    mock_repos+=" --repo=$mock_repo"
+    mock_repos+=("--repo=$mock_repo")
 done
 ### Set any extra env vars if any
-mock_envs=''
+mock_envs=()
 for env_opt in "${{extra_env[@]}}"; do
-    mock_envs+=" --option=environment.$env_opt"
+    mock_envs+=("--option=environment.$env_opt")
 done
 echo "#### Generating mock configuration"
 ./mock_genconfig \
@@ -75,8 +74,8 @@ echo "#### Generating mock configuration"
     --base="$distribution-$arch.cfg" \
     --option="basedir=$WORKSPACE/mock/" \
     --try-proxy \
-    $mock_repos \
-    $mock_envs \
+    "${{mock_repos[@]}}" \
+    "${{mock_envs[@]}}" \
 > "$mock_conf.cfg"
 sudo touch /var/cache/mock/*/root_cache/cache.tar.gz || :
 cat "$mock_conf.cfg"

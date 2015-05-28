@@ -66,3 +66,41 @@
     publishers:
       - mock-cleanup
       - exported-artifacts
+
+
+- job-template:
+    name: 'ovirt-engine_{version}_create-rpms-{distro}-{arch}_{trigger}'
+    node: '{node-filter}'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
+    scm:
+      - '{project}-gerrit'
+      - jenkins:
+          branch: master
+    triggers:
+      - timed: "H */6 * * *"
+    wrappers:
+      - copy-to-slave:
+          includes:
+            - 'artifactory-ovirt-org-settings.xml'
+          relative-to: 'userContent'
+    builders:
+      - cleanup-slave
+      - mock-{mock-build-type}:
+          project: '{project}'
+          distro: '{distro}'
+          arch: '{arch}'
+          extra-packages: '{extra-packages}'
+          extra-build-packages: '{extra-build-packages}'
+          extra-rpmbuild-options: '{extra-rpmbuild-options}'
+          extra-autogen-options: '{extra-autogen-options}'
+          extra-configure-options: '{extra-configure-options}'
+          extra-repos: '{extra-repos}'
+          extra-env: '{extra-env}'
+          extra-make-targets: '{extra-make-targets}'
+          cherry-pick: '{cherry-pick}'
+          copy-in: '{copy-in}'
+    publishers:
+      - mock-cleanup
+      - exported-artifacts

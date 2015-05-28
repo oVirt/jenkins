@@ -26,6 +26,9 @@ echo "shell-scripts/mock_build_onlyrpm.sh"
 #
 # extra-env
 #     extra env variables to set when building
+#
+# copy-in
+#     list of files to copy into the chroot before building the rpm
 
 distro="{distro}"
 arch="{arch}"
@@ -34,6 +37,7 @@ extra_packages=(vim-minimal {extra-packages})
 extra_rpmbuild_options=({extra-rpmbuild-options})
 extra_repos=({extra-repos})
 extra_env=({extra-env})
+copy_in=({copy-in})
 WORKSPACE=$PWD
 
 ### Import the suffix if any
@@ -52,7 +56,6 @@ for option in "${{extra_rpmbuild_options[@]}}"; do
     mock_build_options+=("--define" "${{option//=/ }}")
 done
 pushd "$WORKSPACE"/jenkins/mock_configs
-arch="{arch}"
 case $distro in
     fc*) distribution="fedora-${{distro#fc}}";;
     el*) distribution="epel-${{distro#el}}";;
@@ -60,14 +63,14 @@ case $distro in
 esac
 mock_conf="${{distribution}}-$arch-ovirt-snapshot"
 ### Set extra repos if any
-mock_repos=''
+mock_repos=()
 for mock_repo in "${{extra_repos[@]}}"; do
-    mock_repos+=" --repo=$mock_repo"
+    mock_repos+=("--repo=$mock_repo")
 done
 ### Set any extra env vars if any
-mock_envs=''
+mock_envs=()
 for env_opt in "${{extra_env[@]}}"; do
-    mock_envs+=" --option=environment.$env_opt"
+    mock_envs+=("--option=environment.$env_opt")
 done
 echo "#### Generating mock configuration"
 ./mock_genconfig \
@@ -75,8 +78,8 @@ echo "#### Generating mock configuration"
     --base="$distribution-$arch.cfg" \
     --option="basedir=$WORKSPACE/mock/" \
     --try-proxy \
-    $mock_repos \
-    $mock_envs \
+    "${{mock_repos[@]}}" \
+    "${{mock_envs[@]}}" \
 > "$mock_conf.cfg"
 sudo touch /var/cache/mock/*/root_cache/cache.tar.gz || :
 cat "$mock_conf.cfg"
@@ -117,6 +120,26 @@ EOF
         --no-clean \
         --install "${{extra_packages[@]}}"
     fi
+
+    ### Copy files if any
+    for fname in "${{copy_in[@]}}"; do
+        if [[ "$fname" =~ ^.*: ]]; then
+            dest="${{fname#*:}}"
+            fname="${{fname%:*}}"
+        else
+            dest="/root"
+        fi
+        fname="$PWD/$fname"
+        if ! [[ -r "$fname" ]]; then
+            echo "ERROR::Unable to read file $fname"
+            exit 1
+        fi
+        $temp_mock \
+            --no-clean \
+            --copyin \
+            "$fname" \
+            "$dest"
+    done
 
     ### Set custom dist from mock config into rpmmacros for manual builds
     rpm_dist="$(grep 'config_opts\["dist"\]' \
