@@ -37,3 +37,77 @@
           recipients: '{email-to}'
           notify-every-unstable-build: false # FIXME
           send-to-individuals: false  # FIXME
+
+- job-template:
+    name: 'ovirt_{deployment}_system-tests-{distro}-{arch}_developer'
+    node: '{node-filter}'
+    parameters:
+      - string:
+          name: VDSM_GERRIT_REFSPEC
+          default: 'refs/heads/master'
+          description: 'VDSM Git refspec to build'
+      - string:
+          name: VDSM_GERRIT_BRANCH
+          default: 'origin/master'
+          description: 'VDSM Git branch to build'
+      - string:
+          name: ENGINE_GERRIT_REFSPEC
+          default: 'refs/heads/master'
+          description: 'Engine Git refspec to build'
+      - string:
+          name: ENGINE_GERRIT_BRANCH
+          default: 'origin/master'
+          description: 'Engine Git branch to build'
+
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/vdsm.git
+          branches:
+            - $VDSM_GERRIT_BRANCH
+          basedir: vdsm
+          scm-name: vdsm
+          name: ''
+          refspec: $VDSM_GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
+      - git:
+          url: git://gerrit.ovirt.org/ovirt-engine.git
+          branches:
+            - $ENGINE_GERRIT_BRANCH
+          basedir: ovirt-engine
+          scm-name: ovirt-engine
+          name: ''
+          refspec: $ENGINE_GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
+
+    builders:
+      - system-tests-{deployment}:
+          project: 'vdsm-engine'
+          version: 'master'
+          distro: '{distro}'
+    publishers:
+      - junit:
+          results: 'jenkins-deployment-$BUILD_NUMBER/nosetests*.xml'
+      - post-tasks:
+          - matches:
+              - log-text: '.*INIT_OK.*'
+                operator: AND
+            script: !include-raw shell-scripts/system_tests.cleanup.sh
+          - matches:
+              - log-text: '.*'
+                operator: AND
+            script: !include-raw shell-scripts/system_tests.collect_logs.sh
+      - archive:
+          artifacts: 'exported-archives.tar.gz'
+          allow-empty: true
+      - email:
+          recipients: '{email-to}'
+          notify-every-unstable-build: false # FIXME
+          send-to-individuals: false  # FIXME

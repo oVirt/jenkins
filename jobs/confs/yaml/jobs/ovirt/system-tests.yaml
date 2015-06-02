@@ -28,3 +28,15 @@
       - container
     other-project: ovirt-engine
     <<: *system-tests-common
+
+- project:
+    name: engine-vdsm-system-tests
+    deployment :
+      - std
+      - container
+    node-filter: integ-tests
+    distro: el7
+    arch: x86_64
+    email-to: dkuznets@redhat.com bazulay@redhat.com
+    jobs:
+      - 'ovirt_{deployment}_system-tests-{distro}-{arch}_developer'
