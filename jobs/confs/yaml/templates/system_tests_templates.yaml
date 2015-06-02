@@ -1,5 +1,5 @@
 - job-template:
-    name: '{project}_{version}_system-tests-{distro}-{arch}_{trigger}'
+    name: '{project}_{deployment}_{version}_system-tests-{distro}-{arch}_{trigger}'
     node: '{node-filter}'
     parameters:
       - gerrit-params:
@@ -14,7 +14,7 @@
       - '{other-project}':
           branch: '{other-branch}'
     builders:
-      - system-tests:
+      - system-tests-{deployment}:
           project: '{project}'
           version: '{version}'
           distro: '{distro}'

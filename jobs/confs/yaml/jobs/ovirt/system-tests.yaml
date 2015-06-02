@@ -11,16 +11,20 @@
       arch: x86_64
       email-to: dkuznets@redhat.com bazulay@redhat.com
       jobs:
-        - '{project}_{version}_system-tests-{distro}-{arch}_{trigger}'
+        - '{project}_{deployment}_{version}_system-tests-{distro}-{arch}_{trigger}'
 
 - project:
     name: ovirt-engine-system-tests
     project: ovirt-engine
     other-project: vdsm
+    deployment : std
     <<: *system-tests-common
 
 - project:
     name: vdsm-system-tests
     project: vdsm
+    deployment:
+      - std
+      - container
     other-project: ovirt-engine
     <<: *system-tests-common

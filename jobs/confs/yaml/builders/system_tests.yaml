@@ -1,4 +1,0 @@
-- builder:
-    name: system-tests
-    builders:
-      - shell: !include-raw shell-scripts/system_tests_common.sh
