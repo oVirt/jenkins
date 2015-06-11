@@ -64,7 +64,11 @@ testenvcli shell engine engine-patch.sh
 # Start testing
 testenvcli ovirt runtest \
     "${{OVIRT_CONTRIB?}}/test_scenarios/bootstrap.py"
+testenvcli ovirt collect --output "${{PREFIX?}}/test_logs/post_bootstrap"
+
 testenvcli ovirt runtest \
     "${{OVIRT_CONTRIB?}}/test_scenarios/create_clean_snapshot.py"
+
 testenvcli ovirt runtest \
     "${{OVIRT_CONTRIB?}}/test_scenarios/basic_sanity.py"
+testenvcli ovirt collect --output "${{PREFIX?}}/test_logs/post_basic_sanity"
