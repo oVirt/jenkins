@@ -18,4 +18,4 @@
     arch: x86_64
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
-          extra-build-packages: 'svn'
+          extra-build-packages: 'rpmdevtools'
