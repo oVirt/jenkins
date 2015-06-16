@@ -185,7 +185,7 @@ $my_mock \
         cd /tmp/$project
         if [[ -x autogen.sh ]]; then
             ./autogen.sh --system "${{extra_autogen_options[@]}}"
-        elif [[ -e Makefile.am ]]; then
+        elif [[ -e configure.ac ]]; then
             autoreconf -ivf
         fi
         [[ -x configure  ]] &&
