@@ -30,7 +30,7 @@ def check_forgotten_patches(days, t_project):
     "Return list of commits inactive for the given days."
     gerrit_call = (
         "%s gerrit query --format=JSON status:open "
-        "--dependencies age:%sd project:%s"
+        "--dependencies age:%dd project:%s"
         ) % (SSH, days, t_project)
     shell_command = ["bash", "-c", gerrit_call]
     shell_output = log_exec(shell_command)
@@ -94,8 +94,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "projects", help="List of projects",
-        nargs='+')
+        "--projects", help="Comma separated list of projects",
+        metavar="PROJECT1,PROJECT2,..", required=True)
     parser.add_argument(
         "--server", help="Gerrit server, default: gerrit.ovirt.org",
         default="gerrit.ovirt.org")
@@ -114,10 +114,10 @@ if __name__ == "__main__":
         nargs='+')
     parser.add_argument(
             "--warning-days-limit", help="Number of days, default: 30",
-            default=30, dest='warning_days')
+            default=30, dest='warning_days',type=int)
     parser.add_argument(
             "--abandon-days-limit", help="Number of days, default 60",
-            default=60, dest='abandon_days')
+            default=60, dest='abandon_days',type=int)
     parser.add_argument(
             "--dry-run", help="Show what would have been abandoned",
             action="store_true", dest='dry_run')
@@ -133,7 +133,11 @@ if __name__ == "__main__":
 
     MAIL_SERVER_HOST = ARGS.mail
     SUBJECT = "Forgotten Patches"
-    MAILSERVER = smtplib.SMTP(MAIL_SERVER_HOST)
+    if not ARGS.dry_run:
+        MAILSERVER = smtplib.SMTP(MAIL_SERVER_HOST)
+    else:
+        MAILSERVER = None
+
     FROMADDR = "noreply+patchwatcher@ovirt.org"
     if ARGS.cc:
         CCADDR = ",".join(ARGS.cc)
@@ -150,7 +154,7 @@ if __name__ == "__main__":
         "Patch http://gerrit.ovirt.org/%s abandoned"
         "due to no activity - please restore if relevant")
 
-    for project in ARGS.projects:
+    for project in ARGS.projects.split(','):
         for day in DAYS:
             output = check_forgotten_patches(day, project)
             if not output:
@@ -194,4 +198,5 @@ if __name__ == "__main__":
                             print(
                                 "%s would have been emailed to nudge patch %s"
                                 % (owner['email'], patch))
-    MAILSERVER.quit()
+    if MAILSERVER:
+        MAILSERVER.quit()
