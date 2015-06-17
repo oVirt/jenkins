@@ -1,0 +1,52 @@
+- builder:
+    name: copy-create-job-artifact
+    builders:
+      - copyartifact:
+          project: "{project}"
+          filter: exported-artifacts/*
+          target: artifacts
+          flatten: true
+          which-build: last-successful
+          stable: true
+
+- builder:
+    name: copy-create-job-artifact-engine-platforms
+    builders:
+      - copy-create-job-artifact:
+          project: "{project-prefix}el6-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}el7-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc20-x86_64{project-suffix}"
+
+- builder:
+    name: copy-create-job-artifact-older-platforms
+    builders:
+      - copy-create-job-artifact:
+          project: "{project-prefix}el6-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}el7-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc20-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc21-x86_64{project-suffix}"
+
+- builder:
+    name: copy-create-job-artifact-all-platforms
+    builders:
+      - copy-create-job-artifact-older-platforms:
+          project-prefix: "{project-prefix}"
+          project-suffix: "{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc22-x86_64{project-suffix}"
+
+- builder:
+    name: copy-create-job-artifact-vdsm-platforms
+    builders:
+      - copy-create-job-artifact:
+          project: "{project-prefix}el7-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc21-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc22-x86_64{project-suffix}"
+
