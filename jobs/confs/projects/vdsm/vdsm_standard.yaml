@@ -1,0 +1,14 @@
+- project:
+    name: vdsm_standard
+    project:
+      - vdsm
+    version:
+      - master:
+          branch: master
+    stage: check-patch
+    distro:
+      - fc22
+    arch: x86_64
+    trigger: 'on-change'
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
