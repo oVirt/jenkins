@@ -52,3 +52,21 @@
       - x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: ovirt-node-plugin-vdsm_master-build
+    project:
+      - ovirt-node-plugin-vdsm
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+      - check-merged
+      - check-patch
+    distro:
+      - el7
+    arch:
+      - x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'

@@ -29,6 +29,23 @@
             prune: true
 
 - scm:
+    name: ovirt-node-plugin-vdsm-gerrit
+    scm:
+        - git:
+            url: git://gerrit.ovirt.org/ovirt-node-plugin-vdsm.git
+            branches:
+              - origin/{branch}
+            scm-name: ''
+            wipe-workspace: false
+            basedir : "ovirt-node-plugin-vdsm"
+            refspec: $GERRIT_REFSPEC
+            choosing-strategy: gerrit
+            use-author: true
+            skip-tag: true
+            prune: true
+
+
+- scm:
     name: ovirt-node-iso
     scm:
         - git:
