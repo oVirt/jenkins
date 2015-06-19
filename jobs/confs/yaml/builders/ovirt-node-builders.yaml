@@ -11,9 +11,3 @@
     builders :
         - shell:
             !include-raw shell-scripts/build-local-ovirt-node.sh
-
-- builder:
-    name: livecd-tools_create
-    builders :
-        - shell:
-            !include-raw shell-scripts/build_livecd_tools.sh

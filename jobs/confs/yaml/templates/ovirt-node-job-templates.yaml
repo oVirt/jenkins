@@ -42,17 +42,3 @@
       - email:
           recipients: tlitovsk@redhat.com
           send-to-individuals: true
-
-- job-template:
-    name: 'livecd-tools-el7'
-    scm:
-       - livecd-tools:
-           branch: 'epel7'
-    node: el7
-    builders :
-       - livecd-tools_create
-    publishers:
-       - exported-artifacts
-       - email:
-           recipients: tlitovsk@redhat.com
-           send-to-individuals: true
