@@ -70,3 +70,25 @@
       - x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: ovirt-node-plugin-hosted-engine_master-build
+    project:
+      - ovirt-node-plugin-hosted-engine
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+      - check-merged
+      - check-patch
+    distro:
+      - el7:
+          extra-repos: >
+                       ovirt,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/el7/,
+                       gluster,https://download.gluster.org/pub/gluster/glusterfs/3.7/LATEST/CentOS/epel-7/x86_64/
+    arch:
+      - x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
