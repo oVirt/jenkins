@@ -16,7 +16,6 @@
       - el6
       - el7
       - fc20
-      - fc21
       - fc22
     arch: x86_64
     jobs:
