@@ -29,9 +29,11 @@ SSH = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 def check_forgotten_patches(days, t_project):
     "Return list of commits inactive for the given days."
     gerrit_call = (
-        "%s gerrit query --format=JSON status:open "
-        "--dependencies age:%dd project:%s"
+        "%s gerrit query --format=JSON --dependencies "
+        "status:open age:%dd project:%s"
         ) % (SSH, days, t_project)
+    if ARGS.debug:
+        print (gerrit_call)
     shell_command = ["bash", "-c", gerrit_call]
     shell_output = log_exec(shell_command)
     f_patches = {}
@@ -40,24 +42,62 @@ def check_forgotten_patches(days, t_project):
             continue
         data = json.loads(line)
         try:
-            f_patch = data['number']
-            fp_owner = data['owner']
-            f_patches[f_patch] = fp_owner
+            fp_patch = data['number']
+            fp_email = data['owner']['email']
+            if fp_patch and fp_email:
+                if fp_email not in f_patches.keys():
+                    f_patches[fp_email] = [fp_patch]
+                else:
+                    f_patches[fp_email].append(fp_patch)
         except KeyError:
             pass
     return f_patches
 
 
-def abandon_patch(commit):
+def abandon_patch(commit, project):
     "Abandon the patch with comment."
     message = "Abandoned due to no activity - \
             please restore if still relevant"
     gerrit_call = (
-        "%s gerrit review --format=JSON "
-        "--abandon %s --message %s"
-        ) % (SSH, commit, message)
+        "%s gerrit review --project=%s "
+        "--message %s --abandon %s"
+        ) % (SSH, project, message, commit)
     shell_command = ["bash", "-c", gerrit_call]
     return log_exec(shell_command)
+
+
+def gen_warning_email_body(day, patches):
+    "Generate warning email body from list of patches."
+    body = (
+        "The following patches did not have any activity for over %d days, "
+        "please consider nudging for more attention." % day)
+    for patch in patches:
+        body += "\nhttp://gerrit.ovirt.org/%s" % patch
+    return body
+
+
+def abandon_patch_and_gen_email_body(day, patches, project):
+    "Abandon the patch and generate abandon email body from list of patches"
+    body = (
+        "The following patches were abandoned "
+        "due to no activity for over %d days, "
+        "please restore if relevant" % day)
+    for patch in patches:
+        try:
+            abandon_patch(patch, project)
+        except EnvironmentError:
+            print("Error abandoning patch %s" % patch)
+            pass
+        body += "\nhttp://gerrit.ovirt.org/%s" % patch
+    return body
+
+
+def dry_run_message_gen(patches):
+    "Generate dry run output message from list of patches"
+    body = ""
+    for patch in patches:
+        body += "http://gerrit.ovirt.org/%s\n" % patch
+    return body
 
 
 def log_exec(argv, custom_input=None):
@@ -113,14 +153,20 @@ if __name__ == "__main__":
         "--cc", help="CC mail id's for non-redhat emails",
         nargs='+')
     parser.add_argument(
-            "--warning-days-limit", help="Number of days, default: 30",
-            default=30, dest='warning_days',type=int)
+        "--warning-days-limit", help="Number of days, default: 30",
+        default=30, dest='warning_days', type=int)
     parser.add_argument(
-            "--abandon-days-limit", help="Number of days, default 60",
-            default=60, dest='abandon_days',type=int)
+        "--abandon-days-limit", help="Number of days, default 60",
+        default=60, dest='abandon_days', type=int)
     parser.add_argument(
-            "--dry-run", help="Show what would have been abandoned",
-            action="store_true", dest='dry_run')
+        "--dry-run", help="Show what would have been abandoned",
+        action="store_true", dest='dry_run')
+    parser.add_argument(
+        "--debug", help="Print the gerrit commands",
+        action="store_true", dest='debug')
+    parser.add_argument(
+        "--with-email", help="Email address to send the dry run output",
+        default=None, dest='with_email')
 
     ARGS = parser.parse_args()
 
@@ -133,10 +179,10 @@ if __name__ == "__main__":
 
     MAIL_SERVER_HOST = ARGS.mail
     SUBJECT = "Forgotten Patches"
-    if not ARGS.dry_run:
-        MAILSERVER = smtplib.SMTP(MAIL_SERVER_HOST)
-    else:
+    if ARGS.dry_run and not ARGS.with_email:
         MAILSERVER = None
+    else:
+        MAILSERVER = smtplib.SMTP(MAIL_SERVER_HOST)
 
     FROMADDR = "noreply+patchwatcher@ovirt.org"
     if ARGS.cc:
@@ -144,15 +190,7 @@ if __name__ == "__main__":
     else:
         CCADDR = CC_EMAIL
 
-    patches = []
-    DAYS = [ARGS.abandon_days, ARGS.warning_days]
-    WARN_TEMPLATE = (
-        "Your patch did not have any activity for over 30 days, "
-        "please consider nudging for more attention."
-        ": http://gerrit.ovirt.org/%s")
-    ABANDON_TEMPLATE = (
-        "Patch http://gerrit.ovirt.org/%s abandoned"
-        "due to no activity - please restore if relevant")
+    DAYS = [int(ARGS.abandon_days), int(ARGS.warning_days)]
 
     for project in ARGS.projects.split(','):
         for day in DAYS:
@@ -162,41 +200,46 @@ if __name__ == "__main__":
                     "No forgotten patches within the last "
                     "%d days were found in project %s"
                     % (day, project))
-            for patch, owner in output.items():
-                if patch not in patches:
-                    patches.append(patch)
-                    if day == ARGS.abandon_days:
-                        if not ARGS.dry_run:
-                            try:
-                                abandon_patch(patch)
-                                txt = ABANDON_TEMPLATE % patch
-                                msg = MIMEText(
-                                    'Subject: %s\n\n%s' % (SUBJECT, txt))
-                                msg['To'] = owner['email']
-                                if "@redhat.com" not in owner['email']:
-                                    msg['CC'] = CCADDR
-                                MAILSERVER.sendmail(
-                                    FROMADDR, owner['email'],
-                                    msg.as_string())
-                            except EnvironmentError:
-                                print("Error abandoning patch %s" % patch)
+            else:
+                for email, patches in output.items():
+                    if ARGS.dry_run:
+                        if day == ARGS.abandon_days:
+                            notice_txt = (
+                                "The following patches from %s "
+                                "would have been abandoned" % email)
                         else:
-                            print(
-                                "Patch %s would have been abandoned"
-                                % patch)
-                    else:
-                        txt = WARN_TEMPLATE % patch
-                        msg = MIMEText('Subject: %s\n\n%s' % (SUBJECT, txt))
-                        msg['To'] = owner['email']
-                        if "@redhat.com" not in owner['email']:
-                            msg['CC'] = CCADDR
-                        if not ARGS.dry_run:
+                            notice_txt = (
+                                "%s would have been emailed "
+                                "to nudge the following patches" % email)
+                        notice = (
+                            "%s \n %s" % (
+                                notice_txt, dry_run_message_gen(patches)))
+                        if ARGS.with_email:
+                            msg = MIMEText(notice)
+                            msg['Subject'] = SUBJECT
+                            msg['To'] = ARGS.with_email
+                            msg['From'] = FROMADDR
                             MAILSERVER.sendmail(
-                                FROMADDR, owner['email'],
-                                msg.as_string())
+                                    FROMADDR, ARGS.with_email,
+                                    msg.as_string())
                         else:
-                            print(
-                                "%s would have been emailed to nudge patch %s"
-                                % (owner['email'], patch))
+                            print(notice)
+                    else:
+                        if day == ARGS.abandon_days:
+                            txt = abandon_patch_and_gen_email_body(
+                                    day, patches, project)
+                        else:
+                            txt = gen_warning_email_body(day, patches)
+                        msg = MIMEText(txt)
+                        msg['Subject'] = SUBJECT
+                        msg['To'] = email
+                        msg['From'] = FROMADDR
+                        if "@redhat.com" not in email:
+                            msg['CC'] = CCADDR
+                            email += "," + CCADDR
+                        MAILSERVER.sendmail(
+                            FROMADDR, [email],
+                            msg.as_string())
+
     if MAILSERVER:
         MAILSERVER.quit()
