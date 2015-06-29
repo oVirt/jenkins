@@ -83,10 +83,7 @@
       - check-merged
       - check-patch
     distro:
-      - el7:
-          extra-repos: >
-                       ovirt,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/el7/,
-                       gluster,https://download.gluster.org/pub/gluster/glusterfs/3.7/LATEST/CentOS/epel-7/x86_64/
+      - el7
     arch:
       - x86_64
     jobs:

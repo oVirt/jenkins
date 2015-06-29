@@ -10,10 +10,8 @@
       - check-patch
       - check-merged
     distro:
-      - el6:
-          extra-repos: "ovirt-ci-tools,http://resources.ovirt.org/repos/ci-tools/el6/"
-      - el7:
-          extra-repos: "ovirt-ci-tools,http://resources.ovirt.org/repos/ci-tools/el7/"
+      - el6
+      - el7
       - fc21
       - fc22
     arch: x86_64

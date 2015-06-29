@@ -18,12 +18,6 @@
           project: '{project}'
           distro: '{distro}'
           arch: '{arch}'
-          extra-packages: '{extra-packages}'
-          extra-build-packages: '{extra-build-packages}'
-          extra-rpmbuild-options: '{extra-rpmbuild-options}'
-          extra-autogen-options: '{extra-autogen-options}'
-          extra-configure-options: '{extra-configure-options}'
-          extra-repos: '{extra-repos}'
           extra-env: '{extra-env}'
           cherry-pick: '{cherry-pick}'
     publishers:

@@ -4,6 +4,8 @@ echo "shell-scripts/mock_cleanup.sh"
 shopt -s nullglob
 
 
+WORKSPACE="$PWD"
+
 # Make clear this is the cleanup, helps reading the jenkins logs
 cat <<EOC
 _______________________________________________________________________
@@ -16,37 +18,26 @@ EOC
 
 
 # Archive the logs, we want them anyway
-pushd "$WORKSPACE"/exported-artifacts
-logs=(*log *_pkgs "$WORKSPACE"/*log)
+logs=(
+    ./*log
+    ./*/logs
+)
 if [[ "$logs" ]]; then
-    tar cvzf logs.tgz "${logs[@]}"
-    rm -f *log *_pkgs
+    tar cvzf exported-artifacts/logs.tgz "${logs[@]}"
+    rm -rf "${logs[@]}"
 fi
-popd
 
-failed=false
-
-mock_dir="$WORKSPACE/mock"
 # stop any processes running inside the chroot
-chroots=("$WORKSPACE"/mock/*)
-for chroot in "${chroots[@]}"; do
-    echo "Cleaning up chroot $chroot"
-    ### Generate the mock configuration
-    pushd "$WORKSPACE"/jenkins/mock_configs
-    mock_conf="${chroot##*/}"
-    base_conf="${mock_conf%%x86_64*}x86_64"
-    echo "#### Generating mock configuration"
-    ./mock_genconfig \
-        --name="$mock_conf" \
-        --base="$base_conf.cfg" \
-        --option="basedir=$WORKSPACE/mock/" \
-    > "$mock_conf.cfg"
-    cat "$mock_conf.cfg"
-    popd
-
+failed=false
+mock_confs=("$WORKSPACE"/*/mocker*)
+for mock_conf_file in "${mock_confs[@]}"; do
+    [[ "$mock_conf_file" ]] || continue
+    echo "Cleaning up mock $mock_conf"
+    mock_root="${mock_conf_file##*/}"
+    mock_root="${mock_root%.*}"
     my_mock="/usr/bin/mock"
-    my_mock+=" --configdir=$WORKSPACE/jenkins/mock_configs"
-    my_mock+=" --root=$mock_conf"
+    my_mock+=" --configdir=${mock_conf_file%/*}"
+    my_mock+=" --root=${mock_root}"
     my_mock+=" --resultdir=$WORKSPACE"
 
     #TODO: investigate why mock --clean fails to umount certain dirs sometimes,
@@ -59,7 +50,13 @@ for chroot in "${chroots[@]}"; do
         failed=true
     }
 
-    mounts=($(mount | awk '{print $3}' | grep "$chroot")) || :
+    mock_root="$(\
+        grep \
+            -Po "(?=<config_opts\['root'\] = ')[^']*" \
+            "$mock_conf_file" \
+    )" || :
+    [[ "$mock_root" ]] || continue
+    mounts=($(mount | awk '{print $3}' | grep "$mock_root")) || :
     if [[ "$mounts" ]]; then
         echo "Found mounted dirs inside the chroot $chroot. Trying to umount."
     fi
@@ -76,7 +73,6 @@ if $failed; then
     echo "Aborting."
     exit 1
 fi
-sudo rm -Rf mock mock-cache
 
 # remove mock system cache, we will setup proxies to do the caching and this
 # takes lots of space between runs
