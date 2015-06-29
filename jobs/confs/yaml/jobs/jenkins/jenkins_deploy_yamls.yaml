@@ -11,8 +11,9 @@
     triggers:
       - gerrit:
           trigger-on:
-              - change-merged-event
-          escape-quotes: true
+              - change-merged-event:
+                  exclude-drafts: true
+                  escape-quotes: true
           successful-message: 'Configuration deployed'
           projects:
               - project-compare-type: 'PLAIN'

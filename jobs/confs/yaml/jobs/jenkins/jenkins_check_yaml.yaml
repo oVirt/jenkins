@@ -7,7 +7,9 @@
     triggers:
         - gerrit:
             trigger-on:
-                - patchset-created-event
+                - patchset-created-event:
+                    exclude-drafts: true
+                    exclude-no-code-change: true
             escape-quotes: true
             successful-message: 'You can check the diff in the job summary'
             projects:

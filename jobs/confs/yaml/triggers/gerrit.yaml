@@ -3,7 +3,9 @@
     triggers:
       - gerrit:
           trigger-on:
-            - patchset-created-event
+            - patchset-created-event:
+                exclude-drafts: true
+                exclude-no-code-change: true
           escape-quotes: true
           projects:
             - project-compare-type: 'PLAIN'
@@ -17,7 +19,9 @@
     triggers:
       - gerrit:
           trigger-on:
-            - change-merged-event
+            - change-merged-event:
+                exclude-drafts: true
+                exclude-no-code-change: true
           escape-quotes: true
           projects:
             - project-compare-type: 'PLAIN'
@@ -31,7 +35,9 @@
     triggers:
       - gerrit:
           trigger-on:
-            - patchset-created-event
+            - patchset-created-event:
+                exclude-drafts: true
+                exclude-no-code-change: true
           escape-quotes: true
           projects:
             - project-compare-type: 'PLAIN'
@@ -48,7 +54,9 @@
     triggers:
       - gerrit:
           trigger-on:
-            - change-merged-event
+            - change-merged-event:
+                exclude-drafts: true
+                exclude-no-code-change: true
           escape-quotes: true
           projects:
               - project-compare-type: 'PLAIN'
@@ -68,7 +76,10 @@
           gerrit-build-unstable-verified-value: -1
           gerrit-build-failed-verified-value: -1
           trigger-on:
-            - patchset-created-event
+            - patchset-created-event:
+                exclude-drafts: true
+                exclude-no-code-change: true
+
           escape-quotes: true
           projects:
               - project-compare-type: 'PLAIN'
@@ -85,7 +96,9 @@
     triggers:
       - gerrit:
           trigger-on:
-            - patchset-created-event
+            - patchset-created-event:
+                exclude-drafts: true
+                exclude-no-code-change: true
           escape-quotes: true
           projects:
               - project-compare-type: 'PLAIN'
@@ -109,7 +122,9 @@
     triggers:
       - gerrit:
           trigger-on:
-            - change-merged-event
+            - change-merged-event:
+                exclude-drafts: true
+                exclude-no-code-change: true
           escape-quotes: true
           projects:
               - project-compare-type: 'PLAIN'
@@ -134,6 +149,8 @@
       - gerrit:
           trigger-on:
             - comment-added-event:
+                exclude-drafts: true
+                exclude-no-code-change: true
                 approval-category: 'CRVW'
                 approval-value: 2
           escape-quotes: true
