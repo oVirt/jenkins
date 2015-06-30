@@ -3,10 +3,7 @@
     triggers:
       - gerrit:
           trigger-on:
-              - change-merged-event:
-                  exclude-drafts: true
-                  exclude-no-code-change: true
-
+              - change-merged-event
           escape-quotes: true
           projects:
               - project-compare-type: 'PLAIN'
@@ -36,9 +33,7 @@
     triggers:
       - gerrit:
           trigger-on:
-              - change-merged-event:
-                  exclude-drafts: true
-                  exclude-no-code-change: true
+              - change-merged-event
           escape-quotes: true
           projects:
               - project-compare-type: 'PLAIN'

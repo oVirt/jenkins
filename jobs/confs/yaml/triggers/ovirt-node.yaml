@@ -3,9 +3,7 @@
     triggers:
       - gerrit:
           trigger-on:
-              - change-merged-event:
-                  exclude-drafts: true
-                  exclude-no-code-change: true
+              - change-merged-event
           escape-quotes: true
           projects:
               - project-compare-type: 'REG_EXP'
@@ -19,9 +17,7 @@
     triggers:
       - gerrit:
           trigger-on:
-              - change-merged-event:
-                  exclude-drafts: true
-                  exclude-no-code-change: true
+              - change-merged-event
           escape-quotes: true
           projects:
               - project-compare-type: 'REG_EXP'
