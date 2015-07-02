@@ -89,11 +89,6 @@
           project-suffix: _merged
 
       - copy-create-job-artifact:
-          project: kexec-tools_master_create-rpms-el6-x86_64_merged
-      - copy-create-job-artifact:
-          project: kexec-tools_master_create-rpms-el7-x86_64_merged
-
-      - copy-create-job-artifact:
           project: ovirt-engine_master_create-rpms_merged
       - copy-create-job-artifact:
           project: ovirt-engine-cli_master_create-rpms_merged
