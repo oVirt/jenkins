@@ -18,6 +18,7 @@
             ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
             epel6,http://download.fedoraproject.org/pub/epel/6/\\$basearch
             jpackage-6.0-generic,http://ftp.heanet.ie/pub/jpackage/6.0/generic/free
+            jpackage-6.0-generic-devel,http://ftp.heanet.ie/pub/jpackage/6.0/generic/devel
             ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
       - el7:
           extra-repos: |
