@@ -20,6 +20,9 @@
           extra-packages: |
             maven3
       - el7
+    exclude:
+      - version: master
+        distro: fc20
     arch: x86_64
     extra-build-packages: |
       git

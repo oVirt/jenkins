@@ -59,6 +59,9 @@
     distro:
       - el6
       - fc20
+    exclude:
+      - version: master
+        distro: fc20
     arch: x86_64
     extra-configure-options: |
       --with-otopi-sources=/dev/null

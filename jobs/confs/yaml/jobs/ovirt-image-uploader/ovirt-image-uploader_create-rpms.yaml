@@ -37,7 +37,6 @@
           branch: master
     mock-build-type: onlyrpm
     distro:
-      - fc20
       - fc21
       - fc22
       - el6

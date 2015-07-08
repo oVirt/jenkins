@@ -14,8 +14,6 @@
           extra-repos: "ovirt-ci-tools,http://resources.ovirt.org/repos/ci-tools/el6/"
       - el7:
           extra-repos: "ovirt-ci-tools,http://resources.ovirt.org/repos/ci-tools/el7/"
-      - fc20:
-          extra-repos: "ovirt-ci-tools,http://resources.ovirt.org/repos/ci-tools/fc20/"
       - fc21
       - fc22
     arch: x86_64

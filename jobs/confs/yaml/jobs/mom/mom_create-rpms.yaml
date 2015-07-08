@@ -10,7 +10,6 @@
           branch: master
     mock-build-type: all
     distro:
-      - fc20
       - fc21
       - fc22
       - el6

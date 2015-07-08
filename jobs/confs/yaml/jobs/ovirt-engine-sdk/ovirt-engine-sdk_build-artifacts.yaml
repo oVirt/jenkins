@@ -15,6 +15,9 @@
         - fc20
         - fc21
         - fc22
+    exclude:
+      - version: master
+        distro: fc20
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
