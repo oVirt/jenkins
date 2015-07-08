@@ -13,7 +13,6 @@
           branch: master
     mock-build-type: onlyrpm
     distro:
-      - fc21
       - fc22
       - el7
     arch: x86_64
