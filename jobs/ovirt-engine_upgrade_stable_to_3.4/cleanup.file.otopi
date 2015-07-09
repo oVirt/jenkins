@@ -20,3 +20,4 @@ OVESETUP_REMOVE/confirmUninstallGroups=bool:True
 OVESETUP_REMOVE/removeAll=bool:True
 OVESETUP_REMOVE/database=bool:True
 OVESETUP_REMOVE/enabledFileGroups=str:,ca_pki,iso_domain,versionlock,ca_config,core,exportfs,ca_pki,exportfs,versionlock,core
+CORE/randomizeEvents=bool:True

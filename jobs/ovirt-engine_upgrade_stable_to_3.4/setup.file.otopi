@@ -34,3 +34,4 @@ OVESETUP_DB/port=int:5432
 OVESETUP_PROVISIONING/postgresProvisioningEnabled=bool:True
 OVESETUP_CORE/engineStop=bool:True
 OSETUP_RPMDISTRO/requireRollback=bool:False
+CORE/randomizeEvents=bool:True
