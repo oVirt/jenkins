@@ -799,7 +799,7 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
         if [[ -n "$1" ]]; then
             mocks=("$@")
         else
-            mocks=("${MOCKS[@]} ")
+            mocks=("${MOCKS[@]}")
         fi
         for mock_env in "${mocks[@]}"; do
             full_mock_env="$(resolve_mock "$mock_env")" \
