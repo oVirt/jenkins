@@ -1,0 +1,31 @@
+- project:
+    name: ovirt-setup-lib_build
+    project:
+      - ovirt-setup-lib
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+    distro:
+        - el6
+        - el7
+        - fc22
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: ovirt-setup-lib_checks
+    project:
+      - ovirt-setup-lib
+    version:
+      - master:
+          branch: master
+    stage:
+      - check-patch
+    distro:
+        - fc22
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
