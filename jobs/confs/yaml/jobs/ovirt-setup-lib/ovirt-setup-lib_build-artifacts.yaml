@@ -25,6 +25,7 @@
     stage:
       - check-patch
     distro:
+        - el6
         - fc22
     arch: x86_64
     jobs:
