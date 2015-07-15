@@ -11,13 +11,13 @@
     distro:
       - fc20:
           extra-repos: |
-            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
-            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
+            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
             ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
       - fc21:
           extra-repos: |
-            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
-            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
+            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
             ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
       - el6:
           extra-repos: |
