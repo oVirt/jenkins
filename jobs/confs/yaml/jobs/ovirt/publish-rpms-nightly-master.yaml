@@ -88,6 +88,10 @@
           project-prefix: ovirt-hosted-engine-setup_master_create-rpms-
           project-suffix: _merged
 
+      - copy-create-job-artifact-engine-and-hosted-platforms:
+          project-prefix: ovirt-setup-lib_master_build-artifacts-
+          project-suffix: ""
+
       - copy-create-job-artifact:
           project: ovirt-engine_master_create-rpms_merged
       - copy-create-job-artifact:
