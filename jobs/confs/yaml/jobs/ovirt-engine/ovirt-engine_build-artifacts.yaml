@@ -1,0 +1,18 @@
+- project:
+    name: ovirt-engine_build
+    project:
+      - ovirt-engine
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+    distro:
+      - el6
+      - el7
+      - fc22
+    trigger: 'timed'
+    trigger-times: 'H H/6 * * *'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
