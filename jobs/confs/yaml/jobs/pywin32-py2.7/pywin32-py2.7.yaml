@@ -1,0 +1,18 @@
+- project:
+    name: pywin32-py2.7
+    project: ovirt-wgt-toolchain
+    subproject:
+        - pywin32-py2.7
+    trigger:
+      - created
+      - merged
+    version:
+      - master:
+          branch: master
+    mock-build-type: all
+    distro: fc22
+    arch: x86_64
+    extra-build-packages: |
+      rpmdevtools
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}'
