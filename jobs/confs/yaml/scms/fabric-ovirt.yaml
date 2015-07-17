@@ -1,0 +1,5 @@
+- scm:
+    name: fabric-ovirt-gerrit
+    scm:
+      - gerrit:
+          project: 'fabric-ovirt'

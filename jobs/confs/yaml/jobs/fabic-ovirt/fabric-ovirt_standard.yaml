@@ -1,0 +1,19 @@
+- project:
+    name: fabric-ovirt_build
+    project:
+      - fabric-ovirt
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+      - check-patch
+      - check-merged
+    distro:
+      - el6
+      - el7
+      - fc21
+      - fc22
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
