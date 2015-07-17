@@ -114,6 +114,8 @@
           project: ovirt-node-plugin-vdsm_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-node-plugin-hosted-engine_master_build-artifacts-el7-x86_64
+      - copy-create-job-artifact:
+          project: ovirt-register_master_build-artifacts-el7-x86_64
     publishers:
       - email:
           recipients: 'infra@ovirt.org'
