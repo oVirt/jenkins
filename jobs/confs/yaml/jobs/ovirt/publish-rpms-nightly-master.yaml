@@ -60,9 +60,6 @@
           project-prefix: ovirt-log-collector_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine-platforms:
-          project-prefix: ovirt-reports_master_create-rpms-
-          project-suffix: _merged
-      - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-engine-extension-aaa-ldap_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine-platforms:
@@ -77,6 +74,9 @@
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-engine-extension-aaa-jdbc_master_create-rpms-
           project-suffix: _merged
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-setup-lib_master_build-artifacts-
+          project-suffix: ""
 
       - copy-create-job-artifact-vdsm-platforms:
           project-prefix: vdsm_master_create-rpms-
@@ -87,10 +87,6 @@
       - copy-create-job-artifact-hosted-engine-platforms:
           project-prefix: ovirt-hosted-engine-setup_master_create-rpms-
           project-suffix: _merged
-
-      - copy-create-job-artifact-engine-and-hosted-platforms:
-          project-prefix: ovirt-setup-lib_master_build-artifacts-
-          project-suffix: ""
 
       - copy-create-job-artifact:
           project: ovirt-engine_master_create-rpms_merged
@@ -116,6 +112,13 @@
           project: ovirt-node-plugin-hosted-engine_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-register_master_build-artifacts-el7-x86_64
+
+      - copy-create-job-artifact:
+          project: ovirt-reports_master_create-rpms-el6-x86_64_merged
+      - copy-create-job-artifact:
+          project: ovirt-reports_master_create-rpms-el7-x86_64_merged
+
+
     publishers:
       - email:
           recipients: 'infra@ovirt.org'
