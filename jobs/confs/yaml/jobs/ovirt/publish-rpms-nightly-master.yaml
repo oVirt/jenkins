@@ -42,20 +42,20 @@
       - copy-create-job-artifact-all-platforms:
           project-prefix: ovirt-vmconsole_master_create-rpms-
           project-suffix: _merged
+      - copy-create-job-artifact-all-platforms:
+          project-prefix: ovirt-engine-sdk-java_master_create-rpms-
+          project-suffix: _merged
 
       - copy-create-job-artifact-older-platforms:
           project-prefix: unboundid-ldapsdk_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-older-platforms:
-          project-prefix: ovirt-image-uploader_master_create-rpms-
-          project-suffix: _merged
-      - copy-create-job-artifact-older-platforms:
+
+      - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-iso-uploader_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-older-platforms:
-          project-prefix: ovirt-engine-sdk-java_master_create-rpms-
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-image-uploader_master_create-rpms-
           project-suffix: _merged
-
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-log-collector_master_create-rpms-
           project-suffix: _merged
