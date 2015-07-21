@@ -575,7 +575,7 @@ run_script() {
             chmod +x $script
             runner_GID="$(id -g)"
             runner_GROUP="$(id -n -g)"
-            if ! getent "\\\$runner_GROUP" &>/dev/null; then
+            if ! getent group "\\\$runner_GROUP" &>/dev/null; then
                 groupadd \\
                     --gid "\\\$runner_GID" \\
                     "\\\$runner_GROUP"
@@ -609,7 +609,7 @@ EOC
             chmod +x $script
             runner_GID="$(id -g)"
             runner_GROUP="$(id -n -g)"
-            if ! getent "\$runner_GROUP" &>/dev/null; then
+            if ! getent group "\$runner_GROUP" &>/dev/null; then
                 groupadd \
                     --gid "\$runner_GID" \
                     "\$runner_GROUP"
