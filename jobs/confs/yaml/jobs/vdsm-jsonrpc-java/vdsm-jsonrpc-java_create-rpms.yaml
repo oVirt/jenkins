@@ -40,9 +40,10 @@
       - el6:
           extra-repos: |
             ci-tools,http://resources.ovirt.org/repos/ci-tools/el6
-            jpackage-6.0-generic,http://ftp.heanet.ie/pub/jpackage/6.0/generic/free
           extra-packages: |
             maven3
+            http://ftp.heanet.ie/pub/jpackage/6.0/generic/free/RPMS/cal10n-0.7.4-5.jpp6.noarch.rpm
+            http://ftp.heanet.ie/pub/jpackage/6.0/generic/free/RPMS/slf4j-1.6.1-5.jpp6.noarch.rpm
       - el7:
           extra-packages: |
             maven
