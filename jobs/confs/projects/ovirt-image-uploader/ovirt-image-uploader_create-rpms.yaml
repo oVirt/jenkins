@@ -1,0 +1,46 @@
+## jjb does not allow discarding variable combination when exploding
+## the template, so if we don't want fc21 for branch 3.5, we have to
+## create a separated template for it
+- project:
+    name: ovirt-image-uploader_create-rpms
+    project:
+      - ovirt-image-uploader
+    trigger:
+      - merged
+      - created
+    version:
+      - 3.5:
+          branch: ovirt-image-uploader-3.5
+          extra-repos: |
+            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
+            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
+    mock-build-type: onlyrpm
+    distro:
+      - fc20
+      - el6
+      - el7
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+
+- project:
+    name: ovirt-image-uploader_master_create-rpms
+    project:
+      - ovirt-image-uploader
+    trigger:
+      - merged
+    version:
+      - master:
+          extra-repos: |
+            ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
+            ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
+          branch: master
+    mock-build-type: onlyrpm
+    distro:
+      - fc21
+      - fc22
+      - el6
+      - el7
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'

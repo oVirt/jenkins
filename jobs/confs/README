@@ -17,12 +17,14 @@ very likely to change to adapt the current needs)
 An example of a possible layout:
 
   ./
+   |-projects
+   | |-myproj
+   | | | -myprj_job1.yaml
+   | | ...
    |-yaml
    | |-builders
    | | |-rpm_mock_builder.yaml
    | | \-default_rpm_builder.yaml
-   | |-jobs
-   | | \-mycustomjob.yaml
    | ...
    |-shell-scripts
    |  |-cleanup_vdsm.sh
@@ -67,19 +69,19 @@ at `/etc/jenkins_jobs/jenkins_jobs.ini`
 To test:
 
   > jenkins-jobs --workers 0 -l debug --conf path/to/my/config \
-  >     test -o path/for/output/dir --recursive yaml
+  >     test -o path/for/output/dir --recursive yaml:projects
 
 
 To update:
 
   > jenkins-jobs --workers 0 -l debug --conf path/to/my/config \
-  >     update --recursive yaml
+  >     update --recursive yaml:projects
 
 
 You can also test/update just a set of jobs using glob syntax:
 
   > jenkins-jobs --workers 0 -l debug --conf path/to/my/config \
-  >     update --recursive yaml \
+  >     update --recursive yaml:projects \
   >     vdsm*master*merged
 
 

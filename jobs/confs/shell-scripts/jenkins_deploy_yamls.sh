@@ -2,7 +2,7 @@
 echo "shell-scripts/jenkins_deploy_yamls.sh"
 ## UPDATE JOBS FROM YAML
 confs_dir="${WORKSPACE}/jenkins/jobs/confs"
-yaml_dir="${confs_dir}/yaml"
+yaml_dir="${confs_dir}/yaml:${confs_dir}/projects"
 conf_file="${HOME}/.jenkinsjobsrc"
 ### Flush the cache if specified
 if [[ "$FLUSH_CACHE" == "true" ]]; then

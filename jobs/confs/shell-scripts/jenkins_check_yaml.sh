@@ -3,7 +3,7 @@ echo "shell-scripts/jenkins_check_yaml.sh"
 ## UPDATE JOBS FROM YAML
 new_xmls_dir="$WORKSPACE/new_xmls"
 old_xmls_dir="$WORKSPACE/old_xmls"
-confs_dir="${WORKSPACE}/jenkins/jobs/confs/"
+confs_dir="${WORKSPACE}/jenkins/jobs/confs"
 yaml_dir="${confs_dir}/yaml"
 conf_file="${HOME}/.jenkinsjobsrc"
 ## cleanup
@@ -14,6 +14,10 @@ done
 ## Get new xmls
 echo "Generating new xmls"
 pushd "$confs_dir"
+# Needed for that commit where we check old dir structure vs new
+[[ -d "${confs_dir}/projects" ]] \
+&& yaml_dir_extended="$yaml_dir:${confs_dir}/projects" \
+|| yaml_dir_extended="$yaml_dir"
 jenkins-jobs \
     --allow-empty \
     -l debug \
@@ -21,7 +25,7 @@ jenkins-jobs \
     test \
         --recursive \
         -o "$new_xmls_dir" \
-        "$yaml_dir"
+        "$yaml_dir_extended"
 echo "########################"
 ## Get old xmls
 echo "Generating previous xmls"
@@ -32,6 +36,10 @@ if ! [[ -d "$confs_dir" ]]; then
     echo "  No previous config"
 else
     pushd "$confs_dir"
+    # Needed for that commit where we check old dir structure vs new
+    [[ -d "${confs_dir}/projects" ]] \
+    && yaml_dir_extended="$yaml_dir:${confs_dir}/projects" \
+    || yaml_dir_extended="$yaml_dir"
     jenkins-jobs \
         --allow-empty \
         -l debug \
@@ -39,7 +47,7 @@ else
         test \
             --recursive \
             -o "$old_xmls_dir" \
-            "$yaml_dir"
+            "$yaml_dir_extended"
     echo "########################"
     ## Get the diff
     git reset --hard $GERRIT_PATCHSET_REVISION
