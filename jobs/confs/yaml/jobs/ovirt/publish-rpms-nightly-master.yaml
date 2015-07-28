@@ -89,7 +89,12 @@
           project-suffix: _merged
 
       - copy-create-job-artifact:
-          project: ovirt-engine_master_create-rpms_merged
+          project: ovirt-engine_master_build-artifacts-el6-x86_64
+      - copy-create-job-artifact:
+          project: ovirt-engine_master_build-artifacts-el7-x86_64
+      - copy-create-job-artifact:
+          project: ovirt-engine_master_build-artifacts-fc22-x86_64
+
       - copy-create-job-artifact:
           project: ovirt-engine-cli_master_create-rpms_merged
       - copy-create-job-artifact:
