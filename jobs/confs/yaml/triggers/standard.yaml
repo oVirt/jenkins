@@ -1,5 +1,5 @@
 - trigger:
-    name: build-artifacts_trigger
+    name: build-artifacts_trigger_on-change
     triggers:
       - gerrit:
           trigger-on:
@@ -13,7 +13,7 @@
                     branch-pattern: '{branch}'
 
 - trigger:
-    name: check-patch_trigger
+    name: check-patch_trigger_on-change
     triggers:
       - gerrit:
           trigger-on:
@@ -29,7 +29,7 @@
                     branch-pattern: '{branch}'
 
 - trigger:
-    name: check-merged_trigger
+    name: check-merged_trigger_on-change
     triggers:
       - gerrit:
           trigger-on:
@@ -41,3 +41,18 @@
                 branches:
                   - branch-compare-type: 'PLAIN'
                     branch-pattern: '{branch}'
+
+- trigger:
+    name: build-artifacts_trigger_timed
+    triggers:
+      - timed: '{trigger-times}'
+
+- trigger:
+    name: check-patch_trigger_timed
+    triggers:
+      - timed: '{trigger-times}'
+
+- trigger:
+    name: check-merged_trigger_timed
+    triggers:
+      - timed: '{trigger-times}'

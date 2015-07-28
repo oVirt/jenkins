@@ -11,6 +11,7 @@
         - el6
         - el7
         - fc22
+    trigger: 'on-change'
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -27,6 +28,7 @@
     distro:
         - el6
         - fc22
+    trigger: 'on-change'
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'

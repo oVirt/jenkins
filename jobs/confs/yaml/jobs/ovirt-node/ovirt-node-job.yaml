@@ -48,6 +48,7 @@
       - check-patch
     distro:
       - el7
+    trigger: 'on-change'
     arch:
       - x86_64
     jobs:
@@ -66,6 +67,7 @@
       - check-patch
     distro:
       - el7
+    trigger: 'on-change'
     arch:
       - x86_64
     jobs:
@@ -84,6 +86,7 @@
       - check-patch
     distro:
       - el7
+    trigger: 'on-change'
     arch:
       - x86_64
     jobs:

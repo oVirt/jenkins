@@ -9,9 +9,10 @@
       - jenkins:
           branch: master
     triggers:
-      - '{stage}_trigger':
+      - '{stage}_trigger_{trigger}':
           project: '{project}'
           branch: '{branch}'
+          trigger-times: '{trigger-times}'
     builders:
       - cleanup-slave
       - '{stage}_builder':

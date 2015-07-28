@@ -9,6 +9,7 @@
           branch: sdk_3.5
     stage:
       - build-artifacts
+    trigger: 'on-change'
     distro:
         - el6
         - el7
@@ -34,6 +35,7 @@
     stage:
       - check-merged
       - check-patch
+    trigger: 'on-change'
     distro:
         - fc22
     arch: x86_64

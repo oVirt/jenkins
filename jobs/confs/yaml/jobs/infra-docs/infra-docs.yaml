@@ -5,6 +5,7 @@
     version:
       - master:
           branch: master
+    trigger: 'on-change'
     stage:
       - check-patch
       - check-merged
