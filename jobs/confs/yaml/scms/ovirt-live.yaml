@@ -1,0 +1,16 @@
+- scm:
+    name: ovirt-live-gerrit
+    scm:
+      - git:
+          url: git://gerrit.ovirt.org/ovirt-live.git
+          branches:
+            - $GERRIT_BRANCH
+          basedir: ovirt-live
+          scm-name: ovirt-live
+          name: ''
+          refspec: $GERRIT_REFSPEC
+          choosing-strategy: gerrit
+          use-author: true
+          skip-tag: true
+          prune: true
+          wipe-workspace: false
