@@ -123,6 +123,8 @@
       - copy-create-job-artifact:
           project: ovirt-reports_master_create-rpms-el7-x86_64_merged
 
+      - copy-create-job-artifact:
+          project: ovirt-live_master_build-artifacts-el7-x86_64
 
     publishers:
       - email:
