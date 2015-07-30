@@ -11,6 +11,7 @@ OVESETUP_APACHE/configureSsl=bool:True
 OVESETUP_CONFIG/adminPassword=str:123456
 OVESETUP_CONFIG/applicationMode=str:both
 OVESETUP_CONFIG/firewallManager=str:iptables
+OVESETUP_CONFIG/fqdn=str:CHANGE_HOSTNAME
 OVESETUP_CONFIG/isoDomainACL=str:0.0.0.0/0.0.0.0(rw)
 OVESETUP_CONFIG/isoDomainMountPoint=str:/var/lib/exports/iso
 OVESETUP_CONFIG/isoDomainName=str:ISO_DOMAIN
