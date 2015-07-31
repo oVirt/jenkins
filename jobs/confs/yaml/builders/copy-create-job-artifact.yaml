@@ -26,17 +26,15 @@
           project: "{project-prefix}el6-x86_64{project-suffix}"
       - copy-create-job-artifact:
           project: "{project-prefix}el7-x86_64{project-suffix}"
-      - copy-create-job-artifact:
-          project: "{project-prefix}fc21-x86_64{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-all-platforms
     builders:
-      - copy-create-job-artifact-older-platforms:
+      - copy-create-job-artifact-engine-platforms:
           project-prefix: "{project-prefix}"
           project-suffix: "{project-suffix}"
       - copy-create-job-artifact:
-          project: "{project-prefix}fc22-x86_64{project-suffix}"
+          project: "{project-prefix}fc21-x86_64{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-vdsm-platforms

@@ -21,21 +21,13 @@
           rm -rf $WORKSPACE/artifacts
           mkdir $WORKSPACE/artifacts
 
-      - copy-create-job-artifact-all-platforms:
-          project-prefix: vdsm-jsonrpc-java_master_create-rpms-
-          project-suffix: _merged
-      - copy-create-job-artifact-all-platforms:
-          project-prefix: ioprocess_master_create-rpms-
-          project-suffix: _merged
+
       - copy-create-job-artifact-all-platforms:
           project-prefix: ovirt-host-deploy_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-all-platforms:
           project-prefix: ovirt-engine-sdk_master_build-artifacts-
           project-suffix: ""
-      - copy-create-job-artifact-all-platforms:
-          project-prefix: mom_master_create-rpms-
-          project-suffix: _merged
       - copy-create-job-artifact-all-platforms:
           project-prefix: otopi_master_create-rpms-
           project-suffix: _merged
@@ -77,23 +69,29 @@
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-setup-lib_master_build-artifacts-
           project-suffix: ""
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: vdsm-jsonrpc-java_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-engine_master_build-artifacts-
+          project-suffix: ""
 
+      - copy-create-job-artifact-vdsm-platforms:
+          project-prefix: ioprocess_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-vdsm-platforms:
+          project-prefix: mom_master_create-rpms-
+          project-suffix: _merged
       - copy-create-job-artifact-vdsm-platforms:
           project-prefix: vdsm_master_create-rpms-
           project-suffix: _merged
+
       - copy-create-job-artifact-hosted-engine-platforms:
           project-prefix: ovirt-hosted-engine-ha_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-hosted-engine-platforms:
           project-prefix: ovirt-hosted-engine-setup_master_create-rpms-
           project-suffix: _merged
-
-      - copy-create-job-artifact:
-          project: ovirt-engine_master_build-artifacts-el6-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-engine_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-engine_master_build-artifacts-fc22-x86_64
 
       - copy-create-job-artifact:
           project: ovirt-engine-cli_master_create-rpms_merged

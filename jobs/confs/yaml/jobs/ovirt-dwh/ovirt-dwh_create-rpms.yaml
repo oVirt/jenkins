@@ -6,7 +6,6 @@
       - merged
       - created
     distro:
-      - fc21
       - fc22
       - el7
       - el6:
