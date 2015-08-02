@@ -1,0 +1,56 @@
+#
+# Upgrade ovirt-engine from 'from-version' to 'version'
+#
+- project:
+    name: 'ovirt-engine_upgrade'
+    project: ovirt-engine
+    trigger:
+      - merged
+    version: master
+    branch: 'master'
+    test-version:
+      - 'master'
+      - '3.6'
+    repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot,
+        http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static'
+    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot,
+        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static'
+    distro: el7
+    jobs:
+      - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'
+
+- project:
+    name: 'ovirt-engine_upgrade_3.6'
+    project: ovirt-engine
+    trigger:
+      - merged
+    version: 3.6
+    branch: 'ovirt-engine-3.6'
+    test-version:
+      - '3.6':
+          repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot,
+              http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static'
+      - '3.5':
+          repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}'
+    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot,
+        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static'
+    distro: el6
+    jobs:
+      - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'
+
+- project:
+    name: 'ovirt-engine_upgrade_3.5'
+    project: ovirt-engine
+    trigger:
+      - merged
+    version: 3.5
+    branch: 'ovirt-engine-3.5'
+    test-version:
+      - '3.5'
+      - '3.4'
+    repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}'
+    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot,
+        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static'
+    distro: el6
+    jobs:
+      - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'

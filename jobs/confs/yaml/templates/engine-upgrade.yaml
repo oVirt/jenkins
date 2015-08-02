@@ -1,0 +1,65 @@
+#
+# Parameters:
+#
+# branch
+#   Full name of the branch to upgrade to, for example ovirt-3.5
+#
+# version
+#   Version tag of the job, as 3.5, 3.4, master...
+#
+# test-version
+#   Version tag to upgrade from
+#
+# trigger
+#   Type of trigger event, should be  merged (to trigger on patchset merged)
+#
+
+- job-template:
+    name: 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
+      - string:
+          name: REPOS_FROM
+          default: '{repos-from}'
+          description: 'Comma separated list of urls for repos to use
+              when installing engine for the first time'
+      - string:
+          name: REPOS_TO
+          default: '{repos-to}'
+          description: 'Comma sepparated list of extra repos to use when
+              upgrading after the first engine setup (appart from the one
+              that will be created with the generated rpms)'
+    scm:
+      - gerrit:
+          project: 'ovirt-engine'
+      - jenkins:
+          branch: 'master'
+    node: '{distro}'
+    triggers:
+      - on-patch-{trigger}:
+          project: '{project}'
+          branch: '{branch}'
+    wrappers:
+      - copy-to-slave:
+          includes:
+            - 'artifactory-ovirt-org-settings.xml'
+          relative-to: 'userContent'
+    builders:
+      - ovirt-engine_upgrade-engine:
+          version: '{version}'
+          test-version: '{test-version}'
+    publishers:
+      - engine-upgrade-cleanup:
+          version: '{version}'
+          test-version: '{test-version}'
+      - archive:
+          artifacts: 'logs/*'
+          allow-empty: true
+      - email-ext:
+          recipients: 'infra@ovirt.org'
+          unstable: true
+          failure: true
+          send-to:
+            - developers
+            - recipients

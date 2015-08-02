@@ -1,0 +1,21 @@
+# Upgrades the ovirt engine from one branch to another
+#
+# The original branch should be already in the $WORKSPACE/ovirt-engine
+# directory, probably using the scm plugin
+#
+## Parameters:
+#
+# version
+#
+#   version to upgrade to
+#
+# test-version
+#
+#   version to upgrade from
+#
+
+- builder:
+    name: ovirt-engine_upgrade-engine
+    builders:
+      - shell: "sudo puppet agent --disable"
+      - shell: !include-raw shell-scripts/ovirt-engine_upgrade-engine.sh

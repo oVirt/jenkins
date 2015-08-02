@@ -1,0 +1,9 @@
+- publisher:
+    name: engine-upgrade-cleanup
+    publishers:
+      - post-tasks:
+          - matches:
+              - log-text: '.*'
+                operator: AND
+            escalate-status: true
+            script: !include-raw shell-scripts/ovirt-engine_upgrade-engine.cleanup.sh
