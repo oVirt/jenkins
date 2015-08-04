@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 3.6:
+          branch: ovirt-live-3.6
     stage:
       - build-artifacts
     trigger: 'on-change'
@@ -21,6 +23,8 @@
     version:
       - master:
           branch: master
+      - 3.6:
+          branch: ovirt-live-3.6
     stage:
       - check-patch
     trigger: 'on-change'

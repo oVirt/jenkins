@@ -1,0 +1,159 @@
+- job:
+    name: 'ovirt_3.6_publish-rpms_nightly'
+    description: >
+      Collects RPMs from all oVirt projects (3.6 branches) and publish them
+      to ovirt.org yum repository.<br>
+      This job is automatically updated by jenkins job builder, any manual
+      change will be lost in the next update. If you want to make permanent
+      changes, check out the <a href="http://gerrit.ovirt.org/gitweb?p=jenkins.git;a=tree;h=refs/heads/master;hb=refs/heads/master">
+      jenkins</a> repo.
+    logrotate:
+      numToKeep: 10
+    node: master
+    triggers:
+      - timed: "H(20-40) 0 * * *"
+    wrappers:
+      - workspace-cleanup
+      - timeout:
+          timeout: 900
+          type: absolute
+          write-description: true
+          fail: true
+      - timestamps
+    builders:
+      - shell: |
+          rm -rf $WORKSPACE/artifacts
+          mkdir $WORKSPACE/artifacts
+
+
+      - copy-create-job-artifact-all-platforms:
+          project-prefix: ovirt-host-deploy_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-all-platforms:
+          project-prefix: ovirt-engine-sdk_master_build-artifacts-
+          project-suffix: ""
+      - copy-create-job-artifact-all-platforms:
+          project-prefix: otopi_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-all-platforms:
+          project-prefix: ovirt-vmconsole_master_create-rpms-
+          project-suffix: _merged
+
+      - copy-create-job-artifact-older-platforms:
+          project-prefix: unboundid-ldapsdk_master_create-rpms-
+          project-suffix: _merged
+
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-iso-uploader_3.6_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-log-collector_3.6_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-engine-extension-aaa-ldap_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-engine-extension-aaa-misc_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-engine-extension-logger-log4j_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-dwh_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-engine-extension-aaa-jdbc_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-setup-lib_master_build-artifacts-
+          project-suffix: ""
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: vdsm-jsonrpc-java_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-engine_master_build-artifacts-
+          project-suffix: ""
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-engine-sdk-java_master_create-rpms-
+          project-suffix: _merged
+
+      - copy-create-job-artifact-vdsm-platforms:
+          project-prefix: ioprocess_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-vdsm-platforms:
+          project-prefix: mom_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-vdsm-platforms:
+          project-prefix: vdsm_master_create-rpms-
+          project-suffix: _merged
+
+      - copy-create-job-artifact-hosted-engine-platforms:
+          project-prefix: ovirt-hosted-engine-ha_master_create-rpms-
+          project-suffix: _merged
+      - copy-create-job-artifact-hosted-engine-platforms:
+          project-prefix: ovirt-hosted-engine-setup_master_create-rpms-
+          project-suffix: _merged
+
+      - copy-create-job-artifact:
+          project: ovirt-engine-cli_master_create-rpms_merged
+      - copy-create-job-artifact:
+          project: ovirt-scheduler-proxy_master_create-rpms_merged
+      - copy-create-job-artifact:
+          project: ovirt-optimizer_master_create-rpms_merged
+      - copy-create-job-artifact:
+          project: httpcomponents-client_master_create-rpms_merged
+      - copy-create-job-artifact:
+          project: httpcomponents-core_master_create-rpms_merged
+      - copy-create-job-artifact:
+          project: qemu_master_create-rpms-el7-x86_64_merged
+      - copy-create-job-artifact:
+          project: ovirt-node_master_build-artifacts-el7-x86_64
+      - copy-create-job-artifact:
+          project: ovirt-node_master_create-iso-el7_merged
+      - copy-create-job-artifact:
+          project: ovirt-node-plugin-vdsm_master_build-artifacts-el7-x86_64
+      - copy-create-job-artifact:
+          project: ovirt-node-plugin-hosted-engine_master_build-artifacts-el7-x86_64
+      - copy-create-job-artifact:
+          project: ovirt-register_master_build-artifacts-el7-x86_64
+
+      - copy-create-job-artifact:
+          project: ovirt-reports_master_create-rpms-el6-x86_64_merged
+      - copy-create-job-artifact:
+          project: ovirt-reports_master_create-rpms-el7-x86_64_merged
+
+      - copy-create-job-artifact:
+          project: ovirt-live_3.6_build-artifacts-el7-x86_64
+
+      - copy-create-job-artifact:
+          project: py2exe-py2.7_master_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: pywin32-py2.7_master_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: python-windows_master_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: vcredist-x86_master_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: spice-qxl_master_create-rpms-fc22-x86_64_merged
+
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-image-uploader_3.6_build-artifacts-
+
+    publishers:
+      - email:
+          recipients: 'infra@ovirt.org'
+          notify-every-unstable-build: true
+          send-to-individuals: false
+      - ssh:
+          site: ovirt.org
+          source: '**/*.rpm, **/*.tar.gz, **/*.iso **/*.ova **/*.exe'
+          target: ovirt-master-snapshot.tmp
+          command: |
+            mkdir -p artifacts/ovirt-master-snapshot.tmp
+            rm -rf artifacts/ovirt-master-snapshot.tmp/*
+            mv ovirt-master-snapshot.tmp/* artifacts/ovirt-master-snapshot.tmp
+            mv  artifacts/ovirt-master-snapshot.tmp  artifacts/ovirt-master-snapshot.ready
+
+            rm -rf ovirt-master-snapshot.tmp
+
+
