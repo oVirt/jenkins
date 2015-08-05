@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 3.6:
+          branch: ovirt-engine-3.6
     stage:
       - build-artifacts
     distro:
