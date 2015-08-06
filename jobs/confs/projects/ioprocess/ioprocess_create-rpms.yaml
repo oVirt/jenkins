@@ -10,16 +10,36 @@
           branch: master
     mock-build-type: all
     distro:
-      - fc21
-      - fc22
-      - el6
-      - el7
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - fc21:
           extra-build-packages: |
             autoreconf
             gettext-devel
             automake
             glib2-devel
             yajl-devel
+            python3-devel
+      - fc22:
+          extra-build-packages: |
+            autoreconf
+            gettext-devel
+            automake
+            glib2-devel
+            yajl-devel
+            python3-devel
+      - el7:
+          extra-build-packages: |
+            autoreconf
+            gettext-devel
+            automake
+            glib2-devel
+            yajl-devel
+      - el6:
+          extra-build-packages: |
+            autoreconf
+            gettext-devel
+            automake
+            glib2-devel
+            yajl-devel
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
