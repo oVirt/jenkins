@@ -39,7 +39,10 @@ git clean -dxf
 # build tarballs
 if [[ -x autogen.sh ]]; then
     ./autogen.sh --system "${{extra_autogen_options[@]}}"
+elif [[ -e configure.ac ]]; then
+    autoreconf -ivf
 fi
+
 if [[ -x configure ]]; then
     ./configure "${{extra_configure_options[@]}}"
 fi
