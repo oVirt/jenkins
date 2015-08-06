@@ -1,0 +1,20 @@
+- project:
+    name: ovirt-hosted-engine-setup_build
+    project:
+      - ovirt-hosted-engine-setup
+    version:
+      - master:
+          branch: master
+      - 3.6:
+          branch: ovirt-hosted-engine-setup-1.3
+    stage:
+      - build-artifacts
+      - check-patch
+      - check-merged
+    distro:
+      - el7
+      - fc22
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
