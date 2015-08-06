@@ -1,14 +1,19 @@
-- project:
-    name: ioprocess_create-rpms
+- ioprocess_defaults: &ioprocess_defaults
+    name: 'ioprocess-defaults'
     project:
       - ioprocess
     trigger:
       - merged
       - created
+    mock-build-type: all
+    arch: x86_64
+
+- project:
+    name: ioprocess_create-rpms-master
+    <<: *ioprocess_defaults
     version:
       - master:
           branch: master
-    mock-build-type: all
     distro:
       - fc21:
           extra-build-packages: |
@@ -33,13 +38,25 @@
             automake
             glib2-devel
             yajl-devel
-      - el6:
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+
+- project:
+    name: ioprocess_create-rpms-0.15.0
+    <<: *ioprocess_defaults
+    version:
+      - 0.15.0:
+          branch: ioprocess-0.15.0
+    distro:
+      - el6
+      - el7
+      - fc21
+      - fc22
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: |
             autoreconf
             gettext-devel
             automake
             glib2-devel
             yajl-devel
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'

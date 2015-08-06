@@ -41,6 +41,9 @@
       - copy-create-job-artifact-all-platforms:
           project-prefix: mom_master_create-rpms-
           project-suffix: _merged
+      - copy-create-job-artifact-all-platforms:
+          project-prefix: ioprocess_0.15.0_create-rpms-
+          project-suffix: _merged
 
       - copy-create-job-artifact-older-platforms:
           project-prefix: unboundid-ldapsdk_master_create-rpms-
@@ -72,9 +75,6 @@
           project-prefix: ovirt-engine-sdk-java_3.5_create-rpms-
           project-suffix: _merged
 
-      - copy-create-job-artifact-vdsm-platforms:
-          project-prefix: ioprocess_master_create-rpms-
-          project-suffix: _merged
       - copy-create-job-artifact-older-platforms:
           project-prefix: vdsm_3.5_create-rpms-
           project-suffix: _merged
