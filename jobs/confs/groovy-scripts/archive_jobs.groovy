@@ -4,7 +4,7 @@ import hudson.model.*
 import jenkins.model.*
 
 String workspace = build.workspace.toString()
-File jobsFile = new File( workspace + "/jenkins/jobs/confs/xml_diff.txt" )
+File jobsFile = new File( workspace + "/xml_diff.txt" )
 boolean archive_jobs = build.buildVariableResolver.resolve("ARCHIVE_JOBS").toString().toBoolean()
 
 if( !jobsFile.exists() ) {

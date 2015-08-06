@@ -9,6 +9,9 @@ if [[ "$FLUSH_CACHE" == "true" ]]; then
     options="$options  --flush-cache"
 fi
 cd "$confs_dir"
+[[ -d "${confs_dir}/projects" ]] \
+&& yaml_dir_extended="$yaml_dir:${confs_dir}/projects" \
+|| yaml_dir_extended="$yaml_dir"
 jenkins-jobs \
     -l debug \
     --allow-empty \
@@ -16,4 +19,4 @@ jenkins-jobs \
     $options \
     update \
         --workers 0 \
-        "$yaml_dir"
+        "$yaml_dir_extended"
