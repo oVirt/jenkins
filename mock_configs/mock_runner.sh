@@ -51,7 +51,7 @@ help() {
         -p|--patch-only
             Run/Prepare for the check-patch script only
 
-        -m|--merge-only
+        -m|--merged-only
             Run/Prepare for the check-merged script only
 
         -b|--build-only
@@ -89,7 +89,7 @@ help() {
     > $0 --build-only fc21:fedora-21-x86_64 fc22:fedora-22-x86_64
 
     To open a shell to debug the check-merged script on el7
-    > $0 --merge-only --shell el7:epel-7-x86_64
+    > $0 --merged-only --shell el7:epel-7-x86_64
 
 EOH
     return 0
