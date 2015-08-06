@@ -147,13 +147,13 @@
       - ssh:
           site: ovirt.org
           source: '**/*.rpm, **/*.tar.gz, **/*.iso **/*.ova **/*.exe'
-          target: ovirt-master-snapshot.tmp
+          target: ovirt-3.6-snapshot.tmp
           command: |
-            mkdir -p artifacts/ovirt-master-snapshot.tmp
-            rm -rf artifacts/ovirt-master-snapshot.tmp/*
-            mv ovirt-master-snapshot.tmp/* artifacts/ovirt-master-snapshot.tmp
-            mv  artifacts/ovirt-master-snapshot.tmp  artifacts/ovirt-master-snapshot.ready
+            mkdir -p artifacts/ovirt-3.6-snapshot.tmp
+            rm -rf artifacts/ovirt-3.6-snapshot.tmp/*
+            mv ovirt-3.6-snapshot.tmp/* artifacts/ovirt-3.6-snapshot.tmp
+            mv  artifacts/ovirt-3.6-snapshot.tmp  artifacts/ovirt-3.6-snapshot.ready
 
-            rm -rf ovirt-master-snapshot.tmp
+            rm -rf ovirt-3.6-snapshot.tmp
 
 
