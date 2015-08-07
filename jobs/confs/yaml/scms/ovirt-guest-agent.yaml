@@ -1,0 +1,5 @@
+- scm:
+    name: ovirt-guest-agent-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-guest-agent

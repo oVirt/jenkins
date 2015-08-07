@@ -1,0 +1,15 @@
+- project:
+    name: ovirt-guest-agent_build
+    project:
+      - ovirt-guest-agent
+    version:
+      - master:
+          branch: master
+    stage:
+      - check-patch
+    distro:
+      - fc22
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
