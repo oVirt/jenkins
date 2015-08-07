@@ -92,7 +92,7 @@
           project-suffix: _merged
       - copy-create-job-artifact-hosted-engine-platforms:
           project-prefix: ovirt-hosted-engine-setup_master_build-artifacts-
-          project-suffix: _merged
+          project-suffix: ""
 
       - copy-create-job-artifact:
           project: ovirt-engine-cli_master_create-rpms_merged
