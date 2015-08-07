@@ -1,0 +1,18 @@
+- project:
+    name: nsis-simple-service-plugin
+    project: ovirt-wgt-toolchain
+    subproject:
+      - nsis-simple-service-plugin
+    trigger:
+      - created
+      - merged
+    version:
+      - master:
+          branch: master
+    mock-build-type: all
+    distro: fc22
+    arch: x86_64
+    extra-build-packages: |
+      rpmdevtools
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}'

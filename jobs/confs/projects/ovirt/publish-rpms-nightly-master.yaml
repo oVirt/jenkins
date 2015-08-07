@@ -135,6 +135,8 @@
           project: vcredist-x86_master_create-rpms-fc22-x86_64_merged
       - copy-create-job-artifact:
           project: spice-qxl_master_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: nsis-simple-service-plugin_master_create-rpms-fc22-x86_64_merged
 
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-image-uploader_master_build-artifacts-
