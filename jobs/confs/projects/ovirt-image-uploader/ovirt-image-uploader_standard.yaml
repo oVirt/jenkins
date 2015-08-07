@@ -32,7 +32,6 @@
     distro:
       - el6
       - el7
-      - fc20
     trigger: 'on-change'
     arch: x86_64
     jobs:

@@ -14,12 +14,8 @@
     distro:
       - el6
       - el7
-      - fc20
       - fc21
       - fc22
-    exclude:
-      - version: master
-        distro: fc20
     arch: x86_64
     extra-build-packages: |
       gettext-devel

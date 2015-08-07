@@ -30,7 +30,6 @@
       - merged
       - created
     distro:
-      - fc20
       - el6
       - el7
     version:

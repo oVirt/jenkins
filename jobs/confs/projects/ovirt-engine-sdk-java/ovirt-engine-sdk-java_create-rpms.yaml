@@ -12,16 +12,12 @@
     mock-build-type: all
     distro:
       - fc22
-      - fc20
       - el6:
           extra-repos: |
             ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
           extra-packages: |
             maven3
       - el7
-    exclude:
-      - version: master
-        distro: fc20
     arch: x86_64
     extra-build-packages: |
       git

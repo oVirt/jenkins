@@ -20,11 +20,8 @@
     distro:
       - el6
       - el7
-      - fc20
       - fc22
     exclude:
-      - version: master
-        distro: fc20
       - version: 3.5
         distro: fc22
     arch: x86_64
