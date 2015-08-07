@@ -20,5 +20,6 @@
 
     logrotate:
       numToKeep: 40
+      artifactNumToKeep: 20
     wrappers:
       - timestamps
