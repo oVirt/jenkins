@@ -82,3 +82,14 @@ build_iso
 
 cp "$OVIRT_CACHE_DIR"/ovirt/binary/*.iso exported-artifacts/
 cp "$OVIRT_CACHE_DIR"/ovirt/noarch/*.rpm exported-artifacts/
+
+
+#lets extract staff
+iso=$(find "$OVIRT_CACHE_DIR/ovirt/binary" -mindepth 1 -maxdepth 1 -type f -name '*.iso' -print -quit)
+rm -rf "./tmp*"
+mount_dir=$(mktemp -d -p "$WORKSPACE")
+sudo mount -t iso9660 -o loop "$iso" "$mount_dir"
+cp $mount_dir/isolinux/manifest-srpm.txt exported-artifacts/
+cp $mount_dir/isolinux/manifest-rpm.txt exported-artifacts/
+sudo umount "$mount_dir"
+rm -rf "$WORKSPACE/$mount_dir"
