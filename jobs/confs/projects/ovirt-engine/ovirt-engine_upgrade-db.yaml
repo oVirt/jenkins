@@ -12,10 +12,30 @@
       - master:
           branch: 'master'
     test-version:
-      - 3.5:
-          test-branch: 'ovirt-engine-3.5'
+      - 3.6:
+          test-branch: 'ovirt-engine-3.6'
       - master:
           test-branch: 'master'
+    action:
+      - from
+    jobs:
+      - 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{trigger}'
+
+- project:
+    name: ovirt-engine_upgrade-db_3.6
+    project:
+      - ovirt-engine
+    trigger:
+      - merged
+      - created
+    version:
+      - 3.6:
+          branch: 'ovirt-engine-3.6'
+    test-version:
+      - 3.5:
+          test-branch: 'ovirt-engine-3.5'
+      - 3.6:
+          test-branch: 'ovirt-engine-3.6'
     action:
       - from
     jobs:
@@ -32,8 +52,8 @@
       - 3.5:
           branch: 'ovirt-engine-3.5'
     test-version:
-      - 3.4:
-          test-branch: 'ovirt-engine-3.4'
+      - 3.5:
+          test-branch: 'ovirt-engine-3.5'
     action:
       - from
     jobs:
