@@ -1,16 +1,18 @@
 - job-template:
     name: 'ovirt-node_{version}_create-iso-{distro}_{trigger}'
-    node : '{distro}'
-    builders :
+    node: '{distro}'
+    builders:
       - cleanup-slave
       - ovirt-node_create-iso:
           distro: '{distro}'
-    scm :
+    scm:
       - ovirt-node-iso:
           branch: '{version}'
+          git-server: '{git-server}'
     triggers:
       - ovirt-node-iso-{trigger}:
-           branch: '{branch}'
+          branch: '{branch}'
+          gerrit-server: '{gerrit-server}'
       - timed: '@daily'
     publishers:
       - ovirt-node-cleanup:
@@ -22,19 +24,21 @@
 
 - job-template:
     name: 'ovirt-node_{version}_create-rpms-{distro}_{trigger}'
-    node : '{distro}'
-    builders :
+    node: '{distro}'
+    builders:
       - cleanup-slave
       - ovirt-node_create:
           distro: '{distro}'
           clean_pre: 'true'
           publish_rpms: 'true'
-    scm :
+    scm:
       - ovirt-node:
           branch: '{version}'
+          git-server: '{git-server}'
     triggers:
       - ovirt-node-{trigger}:
           branch: '{branch}'
+          gerrit-server: '{gerrit-server}'
     publishers:
       - ovirt-node-cleanup:
           distro: '{distro}'

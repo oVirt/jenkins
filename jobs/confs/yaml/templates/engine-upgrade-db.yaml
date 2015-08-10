@@ -32,13 +32,16 @@
     scm:
       - gerrit:
           project: 'ovirt-engine'
+          git-server: '{git-server}'
       - jenkins:
           branch: master
+          git-server: '{git-server}'
     triggers:
       - on-patch-{trigger}-with-files-whitelist:
           project: 'ovirt-engine'
           branch: '{branch}'
           files: '(.*/)?packaging/dbscripts/.*'
+          gerrit-server: '{gerrit-server}'
     builders:
       - whitelist
       - cleanup-slave

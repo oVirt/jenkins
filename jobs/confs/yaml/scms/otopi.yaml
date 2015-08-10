@@ -1,16 +1,6 @@
 - scm:
     name: otopi-gerrit
     scm:
-      - git:
-          url: git://gerrit.ovirt.org/otopi.git
-          branches:
-            - $GERRIT_BRANCH
-          basedir: otopi
-          scm-name: otopi
-          name: ''
-          refspec: $GERRIT_REFSPEC
-          choosing-strategy: gerrit
-          use-author: true
-          skip-tag: true
-          prune: true
-          wipe-workspace: false
+      - gerrit:
+          project: otopi
+          git-server: '{git-server}'

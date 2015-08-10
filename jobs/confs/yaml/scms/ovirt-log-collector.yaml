@@ -1,16 +1,6 @@
 - scm:
     name: ovirt-log-collector-gerrit
     scm:
-      - git:
-          url: git://gerrit.ovirt.org/ovirt-log-collector.git
-          branches:
-            - $GERRIT_BRANCH
-          basedir: ovirt-log-collector
-          scm-name: ovirt-log-collector
-          name: ''
-          refspec: $GERRIT_REFSPEC
-          choosing-strategy: gerrit
-          use-author: true
-          skip-tag: true
-          prune: true
-          wipe-workspace: false
+      - gerrit:
+          project: ovirt-log-collector
+          git-server: '{git-server}'

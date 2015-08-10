@@ -5,14 +5,18 @@
       - gerrit-params:
           branch: '{branch}'
     scm:
-      - '{project}-gerrit'
+      - '{project}-gerrit':
+          git-server: '{git-server}'
+      # Non-gerrit scm, me have to specify the branch
       - jenkins:
           branch: master
+          git-server: '{git-server}'
     triggers:
       - '{stage}_trigger_{trigger}':
           project: '{project}'
           branch: '{branch}'
           trigger-times: '{trigger-times}'
+          gerrit-server: '{gerrit-server}'
     builders:
       - cleanup-slave
       - '{stage}_builder':

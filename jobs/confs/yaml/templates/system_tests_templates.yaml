@@ -5,16 +5,19 @@
       - gerrit-params:
           branch: '{branch}'
     triggers:
-      - on-patch-{trigger}:
+      - 'on-patch-{trigger}':
+          gerrit-server: '{gerrit-server}'
           project: '{project}'
           branch: '{branch}'
     scm:
       - '{project}-gerrit':
           branch: '{branch}'
+          git-server: '{git-server}'
       - '{other-project}':
           branch: '{other-branch}'
+          git-server: '{git-server}'
     builders:
-      - system-tests-{deployment}:
+      - 'system-tests-{deployment}':
           project: '{project}'
           version: '{version}'
           distro: '{distro}'
@@ -61,7 +64,7 @@
 
     scm:
       - git:
-          url: git://gerrit.ovirt.org/vdsm.git
+          url: 'git://{git-server}/vdsm.git'
           branches:
             - $VDSM_GERRIT_BRANCH
           basedir: vdsm
@@ -74,7 +77,7 @@
           prune: true
           wipe-workspace: false
       - git:
-          url: git://gerrit.ovirt.org/ovirt-engine.git
+          url: 'git://{git-server}/ovirt-engine.git'
           branches:
             - $ENGINE_GERRIT_BRANCH
           basedir: ovirt-engine
@@ -88,7 +91,7 @@
           wipe-workspace: false
 
     builders:
-      - system-tests-{deployment}:
+      - 'system-tests-{deployment}':
           project: 'vdsm-engine'
           version: 'master'
           distro: '{distro}'

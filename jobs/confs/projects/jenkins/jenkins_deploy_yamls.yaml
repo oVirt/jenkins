@@ -23,7 +23,8 @@
                     - compare-type: 'REG_EXP'
                       pattern: 'jobs/confs/.*'
     scm:
-      - jenkins-master-gerrit
+      - jenkins-gerrit:
+          git-server: 'gerrit.ovirt.org'
     builders:
       - shell: !include-raw shell-scripts/jenkins_deploy_yamls.sh
       - shell: !include-raw shell-scripts/jenkins_cleanup_yaml.sh

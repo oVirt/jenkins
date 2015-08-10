@@ -5,69 +5,41 @@
     name: ovirt-node
     scm:
         - git:
-            url: git://gerrit.ovirt.org/ovirt-node.git
+            url: 'git://{git-server}/ovirt-node.git'
             branches:
-              - origin/{branch}
-            scm-name: node
+              - 'origin/{branch}'
+            scm-name: ovirt-node
             wipe-workspace: true
-            basedir : "ovirt-node"
+            basedir : 'ovirt-node'
 
 - scm:
     name: ovirt-node-gerrit
     scm:
-        - git:
-            url: git://gerrit.ovirt.org/ovirt-node.git
-            branches:
-              - origin/{branch}
-            scm-name: ''
-            wipe-workspace: false
-            basedir : "ovirt-node"
-            refspec: $GERRIT_REFSPEC
-            choosing-strategy: gerrit
-            use-author: true
-            skip-tag: true
-            prune: true
+      - gerrit:
+          project: ovirt-node
+          git-server: '{git-server}'
 
 - scm:
     name: ovirt-node-plugin-vdsm-gerrit
     scm:
-        - git:
-            url: git://gerrit.ovirt.org/ovirt-node-plugin-vdsm.git
-            branches:
-              - origin/{branch}
-            scm-name: ''
-            wipe-workspace: false
-            basedir : "ovirt-node-plugin-vdsm"
-            refspec: $GERRIT_REFSPEC
-            choosing-strategy: gerrit
-            use-author: true
-            skip-tag: true
-            prune: true
+      - gerrit:
+          project: ovirt-node-plugin-vdsm
+          git-server: '{git-server}'
 
 - scm:
     name: ovirt-node-plugin-hosted-engine-gerrit
     scm:
-        - git:
-            url: git://gerrit.ovirt.org/ovirt-node-plugin-hosted-engine.git
-            branches:
-              - origin/{branch}
-            scm-name: ''
-            wipe-workspace: false
-            basedir : "ovirt-node-plugin-hosted-engine"
-            refspec: $GERRIT_REFSPEC
-            choosing-strategy: gerrit
-            use-author: true
-            skip-tag: true
-            prune: true
-
+      - gerrit:
+          project: ovirt-node-plugin-hosted-engine
+          git-server: '{git-server}'
 
 - scm:
     name: ovirt-node-iso
     scm:
         - git:
-            url: git://gerrit.ovirt.org/ovirt-node-iso.git
+            url: 'git://{git-server}/ovirt-node-iso.git'
             branches:
-              - origin/{branch}
-            scm-name: node-iso
+              - 'origin/{branch}'
+            scm-name: ovirt-node-iso
             wipe-workspace: true
-            basedir : "ovirt-node-iso"
+            basedir : 'ovirt-node-iso'

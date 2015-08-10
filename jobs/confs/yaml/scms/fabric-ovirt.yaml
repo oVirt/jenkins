@@ -2,4 +2,5 @@
     name: fabric-ovirt-gerrit
     scm:
       - gerrit:
-          project: 'fabric-ovirt'
+          project: fabric-ovirt
+          git-server: '{git-server}'

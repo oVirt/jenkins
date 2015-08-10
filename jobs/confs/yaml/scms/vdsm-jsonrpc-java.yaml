@@ -1,16 +1,6 @@
 - scm:
     name: vdsm-jsonrpc-java-gerrit
     scm:
-      - git:
-          url: git://gerrit.ovirt.org/vdsm-jsonrpc-java.git
-          branches:
-            - $GERRIT_BRANCH
-          basedir: vdsm-jsonrpc-java
-          scm-name: vdsm-jsonrpc-java
-          name: ''
-          refspec: $GERRIT_REFSPEC
-          choosing-strategy: gerrit
-          use-author: true
-          skip-tag: true
-          prune: true
-          wipe-workspace: false
+      - gerrit:
+          project: vdsm-jsonrpc-java
+          git-server: '{git-server}'

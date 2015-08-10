@@ -2,6 +2,7 @@
     name: build-artifacts_trigger_on-change
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
               - change-merged-event
           escape-quotes: true
@@ -16,6 +17,7 @@
     name: check-patch_trigger_on-change
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
               - patchset-created-event:
                   exclude-drafts: true
@@ -32,6 +34,7 @@
     name: check-merged_trigger_on-change
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
               - change-merged-event
           escape-quotes: true

@@ -12,14 +12,17 @@
           option: project
 
     scm:
-      - '{project}-gerrit'
+      - '{project}-gerrit':
+          git-server: '{git-server}'
       - jenkins:
           branch: master
+          git-server: '{git-server}'
     triggers:
       - 'on-patch-{trigger}-with-files-voting':
           project: '{project}'
           branch: '{branch}'
           files: '{trigger-files}'
+          gerrit-server: '{gerrit-server}'
     builders:
       - cleanup-slave
       - mock-{mock-build-type}-install:

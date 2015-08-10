@@ -2,29 +2,30 @@
     name: jenkins_master_check-yaml_gerrit
     node: master
     parameters:
-        - gerrit-params:
-            branch: master
+      - gerrit-params:
+          branch: master
     triggers:
-        - gerrit:
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: true
-                    exclude-no-code-change: true
-            escape-quotes: true
-            successful-message: 'You can check the diff in the job summary'
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'jenkins'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'master'
-                  file-paths:
-                      - compare-type: 'REG_EXP'
-                        pattern: 'jobs/confs/.*'
+      - gerrit:
+          trigger-on:
+              - patchset-created-event:
+                  exclude-drafts: true
+                  exclude-no-code-change: true
+          escape-quotes: true
+          successful-message: 'You can check the diff in the job summary'
+          projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: 'jenkins'
+                branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'master'
+                file-paths:
+                    - compare-type: 'REG_EXP'
+                      pattern: 'jobs/confs/.*'
     scm:
-        - jenkins-master-gerrit
+      - jenkins-gerrit:
+          git-server: 'gerrit.ovirt.org'
     builders:
-        - shell: !include-raw shell-scripts/jenkins_check_yaml.sh
+      - shell: !include-raw shell-scripts/jenkins_check_yaml.sh
     publishers:
-        - archive:
-            artifacts: '*.html'
+      - archive:
+          artifacts: '*.html'

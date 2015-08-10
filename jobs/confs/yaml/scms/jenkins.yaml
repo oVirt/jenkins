@@ -1,29 +1,15 @@
 - scm:
-    name: jenkins-master-gerrit
+    name: jenkins-gerrit
     scm:
-        - git:
-            url: git://gerrit.ovirt.org/jenkins.git
-            branches:
-                - $GERRIT_BRANCH
-            basedir: jenkins
-            scm-name: jenkins
-            name: ''
-            refspec: $GERRIT_REFSPEC
-            choosing-strategy: gerrit
-            clean:
-              before: true
-              after: false
-            use-author: true
-            wipe-workspace: false
-            skip-tag: true
-            prune: true
-
+      - gerrit:
+          project: jenkins
+          git-server: '{git-server}'
 
 - scm:
     name: jenkins
     scm:
         - git:
-            url: git://gerrit.ovirt.org/jenkins.git
+            url: 'git://{git-server}/jenkins.git'
             branches:
                 - '{branch}'
             basedir: jenkins

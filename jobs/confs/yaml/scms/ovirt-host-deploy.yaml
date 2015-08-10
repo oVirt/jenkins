@@ -1,16 +1,6 @@
 - scm:
     name: ovirt-host-deploy-gerrit
     scm:
-      - git:
-          url: git://gerrit.ovirt.org/ovirt-host-deploy.git
-          branches:
-            - $GERRIT_BRANCH
-          basedir: ovirt-host-deploy
-          scm-name: ovirt-host-deploy
-          name: ''
-          refspec: $GERRIT_REFSPEC
-          choosing-strategy: gerrit
-          use-author: true
-          skip-tag: true
-          prune: true
-          wipe-workspace: false
+      - gerrit:
+          project: ovirt-host-deploy
+          git-server: '{git-server}'

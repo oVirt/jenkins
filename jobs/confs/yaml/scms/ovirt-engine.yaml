@@ -2,9 +2,9 @@
     name: ovirt-engine
     scm:
         - git:
-            url: git://gerrit.ovirt.org/ovirt-engine.git
+            url: 'git://{git-server}/ovirt-engine.git'
             branches:
-              - "origin/{branch}"
+              - 'origin/{branch}'
             basedir: ovirt-engine
             scm-name: ovirt-engine
             wipe-workspace: false
@@ -12,16 +12,6 @@
 - scm:
     name: ovirt-engine-gerrit
     scm:
-      - git:
-          url: git://gerrit.ovirt.org/ovirt-engine.git
-          branches:
-            - $GERRIT_BRANCH
-          basedir: ovirt-engine
-          scm-name: ovirt-engine
-          name: ''
-          refspec: $GERRIT_REFSPEC
-          choosing-strategy: gerrit
-          use-author: true
-          skip-tag: true
-          prune: true
-          wipe-workspace: false
+      - gerrit:
+          project: ovirt-engine
+          git-server: '{git-server}'

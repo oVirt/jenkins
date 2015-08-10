@@ -1,15 +1,6 @@
 - scm:
     name: ovirt-register-gerrit
     scm:
-        - git:
-            url: git://gerrit.ovirt.org/ovirt-register.git
-            branches:
-              - origin/{branch}
-            scm-name: ''
-            wipe-workspace: false
-            basedir : "ovirt-register"
-            refspec: $GERRIT_REFSPEC
-            choosing-strategy: gerrit
-            use-author: true
-            skip-tag: true
-            prune: true
+      - gerrit:
+          project: ovirt-register
+          git-server: '{git-server}'

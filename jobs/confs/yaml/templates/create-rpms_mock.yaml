@@ -5,16 +5,19 @@
       - gerrit-params:
           branch: '{branch}'
     scm:
-      - '{project}-gerrit'
+      - '{project}-gerrit':
+          git-server: '{git-server}'
       - jenkins:
           branch: master
+          git-server: '{git-server}'
     triggers:
-      - on-patch-{trigger}:
+      - 'on-patch-{trigger}':
           project: '{project}'
           branch: '{branch}'
+          gerrit-server: '{gerrit-server}'
     builders:
       - cleanup-slave
-      - mock-{mock-build-type}:
+      - 'mock-{mock-build-type}':
           project: '{project}'
           distro: '{distro}'
           arch: '{arch}'
@@ -39,17 +42,20 @@
       - gerrit-params:
           branch: '{branch}'
     scm:
-      - '{project}-gerrit'
+      - '{project}-gerrit':
+          git-server: '{git-server}'
       - jenkins:
           branch: master
+          git-server: '{git-server}'
     triggers:
-      - on-patch-{trigger}-with-files:
+      - 'on-patch-{trigger}-with-files':
           project: '{project}'
           branch: '{branch}'
           files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
     builders:
       - cleanup-slave
-      - mock-{mock-build-type}-releng:
+      - 'mock-{mock-build-type}-releng':
           project: '{project}'
           subproject: '{subproject}'
           distro: '{distro}'
@@ -75,9 +81,11 @@
       - gerrit-params:
           branch: '{branch}'
     scm:
-      - '{project}-gerrit'
+      - '{project}-gerrit':
+          git-server: '{git-server}'
       - jenkins:
           branch: master
+          git-server: '{git-server}'
     triggers:
       - timed: "H */6 * * *"
     wrappers:
@@ -87,7 +95,7 @@
           relative-to: 'userContent'
     builders:
       - cleanup-slave
-      - mock-{mock-build-type}:
+      - 'mock-{mock-build-type}':
           project: '{project}'
           distro: '{distro}'
           arch: '{arch}'

@@ -2,6 +2,7 @@
     name: on-patch-created
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
             - patchset-created-event:
                 exclude-drafts: true
@@ -18,6 +19,7 @@
     name: on-patch-merged
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
             - change-merged-event
           escape-quotes: true
@@ -32,6 +34,7 @@
     name: on-patch-created-with-files
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
             - patchset-created-event:
                 exclude-drafts: true
@@ -51,6 +54,7 @@
     name: on-patch-merged-with-files
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
             - change-merged-event
           escape-quotes: true
@@ -68,6 +72,7 @@
     name: on-patch-created-with-files-voting
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           override-votes: true
           gerrit-build-unstable-verified-value: -1
           gerrit-build-failed-verified-value: -1
@@ -91,6 +96,7 @@
     name: on-patch-created-with-files-whitelist
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
             - patchset-created-event:
                 exclude-drafts: true
@@ -117,6 +123,7 @@
     name: on-patch-merged-with-files-whitelist
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
             - change-merged-event
           escape-quotes: true
@@ -141,6 +148,7 @@
     name: on-approved
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
             - comment-added-event:
                 exclude-drafts: true

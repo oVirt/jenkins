@@ -1,16 +1,6 @@
 - scm:
     name: ovirt-setup-lib-gerrit
     scm:
-      - git:
-          url: git://gerrit.ovirt.org/ovirt-setup-lib.git
-          branches:
-            - $GERRIT_BRANCH
-          basedir: ovirt-setup-lib
-          scm-name: ovirt-setup-lib
-          name: ''
-          refspec: $GERRIT_REFSPEC
-          choosing-strategy: gerrit
-          use-author: true
-          skip-tag: true
-          prune: true
-          wipe-workspace: false
+      - gerrit:
+          project: ovirt-setup-lib
+          git-server: '{git-server}'

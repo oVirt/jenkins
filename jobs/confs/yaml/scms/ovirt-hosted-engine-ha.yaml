@@ -1,16 +1,6 @@
 - scm:
     name: ovirt-hosted-engine-ha-gerrit
     scm:
-      - git:
-          url: git://gerrit.ovirt.org/ovirt-hosted-engine-ha.git
-          branches:
-            - $GERRIT_BRANCH
-          basedir: ovirt-hosted-engine-ha
-          scm-name: ovirt-hosted-engine
-          name: ''
-          refspec: $GERRIT_REFSPEC
-          choosing-strategy: gerrit
-          use-author: true
-          skip-tag: true
-          prune: true
-          wipe-workspace: false
+      - gerrit:
+          project: ovirt-hosted-engine-ha
+          git-server: '{git-server}'

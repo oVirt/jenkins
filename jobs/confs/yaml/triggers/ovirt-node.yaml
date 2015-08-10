@@ -2,6 +2,7 @@
     name: ovirt-node-merged
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
               - change-merged-event
           escape-quotes: true
@@ -16,6 +17,7 @@
     name: ovirt-node-iso-merged
     triggers:
       - gerrit:
+          server-name: '{gerrit-server}'
           trigger-on:
               - change-merged-event
           escape-quotes: true

@@ -5,11 +5,14 @@
 # project
 #   Name of the project to clone
 #
+# git-server
+#   Hostname of the server that holds the git repos
+#
 - scm:
     name: gerrit
     scm:
       - git:
-          url: 'git://gerrit.ovirt.org/{project}.git'
+          url: 'git://{git-server}/{project}.git'
           branches:
             - $GERRIT_BRANCH
           basedir: '{project}'
@@ -21,3 +24,5 @@
           skip-tag: true
           prune: true
           wipe-workspace: false
+          clean:
+            before: true

@@ -1,16 +1,6 @@
 - scm:
     name: ioprocess-gerrit
     scm:
-      - git:
-          url: git://gerrit.ovirt.org/ioprocess.git
-          branches:
-            - $GERRIT_BRANCH
-          basedir: ioprocess
-          scm-name: ioprocess
-          name: ''
-          refspec: $GERRIT_REFSPEC
-          choosing-strategy: gerrit
-          use-author: true
-          skip-tag: true
-          prune: true
-          wipe-workspace: false
+      - gerrit:
+          project: ioprocess
+          git-server: '{git-server}'
