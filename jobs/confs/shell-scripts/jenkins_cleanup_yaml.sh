@@ -32,7 +32,7 @@ echo "########################"
 echo "Generating previous xmls"
 cd "$WORKSPACE/jenkins"
 git fetch origin
-git reset --hard origin/master
+git reset --hard HEAD^1
 if ! [[ -d "$confs_dir" ]]; then
     echo "  No previous config"
 else
