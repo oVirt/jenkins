@@ -18,3 +18,21 @@
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: ovirt-engine_check-patch
+    project:
+      - ovirt-engine
+    version:
+      - master:
+          branch: master
+      - 3.6:
+          branch: ovirt-engine-3.6
+    stage:
+      - check-patch
+    distro:
+      - fc22
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
