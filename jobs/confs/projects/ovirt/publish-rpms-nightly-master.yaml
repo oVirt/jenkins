@@ -86,6 +86,9 @@
       - copy-create-job-artifact-vdsm-platforms:
           project-prefix: vdsm_master_create-rpms-
           project-suffix: _merged
+      - copy-create-job-artifact-vdsm-platforms:
+          project-prefix: ovirt-engine-cli_master_master_build-artifacts-
+          project-suffix: ''
 
       - copy-create-job-artifact-hosted-engine-platforms:
           project-prefix: ovirt-hosted-engine-ha_master_create-rpms-
@@ -94,8 +97,6 @@
           project-prefix: ovirt-hosted-engine-setup_master_build-artifacts-
           project-suffix: ""
 
-      - copy-create-job-artifact:
-          project: ovirt-engine-cli_master_create-rpms_merged
       - copy-create-job-artifact:
           project: ovirt-scheduler-proxy_master_create-rpms_merged
       - copy-create-job-artifact:

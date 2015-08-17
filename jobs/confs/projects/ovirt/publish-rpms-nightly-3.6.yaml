@@ -38,6 +38,9 @@
       - copy-create-job-artifact-all-platforms:
           project-prefix: ovirt-vmconsole_master_create-rpms-
           project-suffix: _merged
+      - copy-create-job-artifact-all-platforms:
+          project-prefix: ovirt-enigne-cli_3.6_build-artifacts-
+          project-suffix: ''
 
       - copy-create-job-artifact-older-platforms:
           project-prefix: unboundid-ldapsdk_master_create-rpms-
@@ -94,8 +97,6 @@
           project-prefix: ovirt-hosted-engine-setup_3.6_build-artifacts-
           project-suffix: ""
 
-      - copy-create-job-artifact:
-          project: ovirt-engine-cli_master_create-rpms_merged
       - copy-create-job-artifact:
           project: ovirt-scheduler-proxy_master_create-rpms_merged
       - copy-create-job-artifact:
