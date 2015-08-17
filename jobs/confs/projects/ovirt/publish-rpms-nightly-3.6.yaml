@@ -74,7 +74,7 @@
           project-prefix: ovirt-engine_3.6_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine-platforms:
-          project-prefix: ovirt-engine-sdk-java_master_create-rpms-
+          project-prefix: ovirt-engine-sdk-java_3.6_create-rpms-
           project-suffix: _merged
 
       - copy-create-job-artifact-vdsm-platforms:

@@ -7,6 +7,8 @@
     version:
       - master:
           branch: master
+      - 3.6:
+          branch: sdk_3.6
       - 3.5:
           branch: sdk_3.5
     mock-build-type: all
