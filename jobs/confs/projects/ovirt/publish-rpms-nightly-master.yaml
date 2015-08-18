@@ -87,7 +87,7 @@
           project-prefix: vdsm_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-vdsm-platforms:
-          project-prefix: ovirt-engine-cli_master_master_build-artifacts-
+          project-prefix: ovirt-engine-cli_master_build-artifacts-
           project-suffix: ''
 
       - copy-create-job-artifact-hosted-engine-platforms:
