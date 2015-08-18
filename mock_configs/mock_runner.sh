@@ -587,10 +587,12 @@ run_script() {
             res=\\\${PIPESTATUS[0]}
             end="\\\$(date +%s)"
             echo "Took \\\$((end - start)) seconds" \\
-                | tee -a \\\$logdir/${script##*/}.log
+            | tee -a \\\$logdir/${script##*/}.log
             echo "===================================" \\
-                | tee -a \\\$logdir/${script##*/}.log
-            find . -maxdepth 1 -uid 0 -exec chown -R "$UID:\\\$runner_GID" {} \\\\;
+            | tee -a \\\$logdir/${script##*/}.log
+            if [[ "\\\$(find . -uid 0 -print -quit)" != '' ]]; then
+                chown -R "\$UID:\\\$runner_GID" .
+            fi
             exit \\\$res
 EOS
 EOC
@@ -621,10 +623,12 @@ EOC
             res=\${PIPESTATUS[0]}
             end="\$(date +%s)"
             echo "Took \$((end - start)) seconds" \
-                | tee -a \$logdir/${script##*/}.log
+            | tee -a \$logdir/${script##*/}.log
             echo "===================================" \
-                | tee -a \$logdir/${script##*/}.log
-            find . -maxdepth 1 -uid 0 -exec chown -R "$UID:\$runner_GID" {} \\;
+            | tee -a \$logdir/${script##*/}.log
+            if [[ "\$(find . -uid 0 -print -quit)" != '' ]]; then
+                chown -R "$UID:\$runner_GID" .
+            fi
             exit \$res
 EOS
     return $?
