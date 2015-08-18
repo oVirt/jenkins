@@ -1,5 +1,5 @@
 - project:
-    name: ovirt-guest-agent_build
+    name: ovirt-guest-agent_check-patch
     project:
       - ovirt-guest-agent
     version:
@@ -8,6 +8,24 @@
     stage:
       - check-patch
     distro:
+      - fc22
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: ovirt-guest-agent_build-artifacts
+    project:
+      - ovirt-guest-agent
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+    distro:
+      - el6
+      - el7
       - fc22
     trigger: 'on-change'
     arch: x86_64

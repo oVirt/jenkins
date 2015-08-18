@@ -142,6 +142,9 @@
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-image-uploader_master_build-artifacts-
 
+      - copy-create-job-artifact-engine-platforms:
+          project-prefix: ovirt-guest-agent_master_build-artifacts-
+
     publishers:
       - email:
           recipients: 'infra@ovirt.org'
