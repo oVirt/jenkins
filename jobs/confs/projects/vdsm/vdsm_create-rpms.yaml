@@ -65,6 +65,11 @@
     extra-env: |
       NOSE_EXCLUDE=.*
     extra-rpmbuild-options: 'with_hooks=1'
+    extra-configure-options: |
+      '--prefix=/usr'
+      '--sysconfdir=/etc'
+      '--localstatedir=/var'
+      '--libdir=/usr/lib64'
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
@@ -139,6 +144,11 @@
     extra-env: |
       NOSE_EXCLUDE=.*
     extra-rpmbuild-options: 'with_hooks=1'
+    extra-configure-options: |
+      '--prefix=/usr'
+      '--sysconfdir=/etc'
+      '--localstatedir=/var'
+      '--libdir=/usr/lib64'
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
@@ -212,5 +222,10 @@
     extra-env: |
       NOSE_EXCLUDE=.*
     extra-rpmbuild-options: 'with_hooks=1'
+    extra-configure-options: |
+      '--prefix=/usr'
+      '--sysconfdir=/etc'
+      '--localstatedir=/var'
+      '--libdir=/usr/lib64'
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'

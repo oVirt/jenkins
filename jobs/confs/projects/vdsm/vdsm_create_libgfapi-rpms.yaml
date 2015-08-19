@@ -68,6 +68,11 @@
     extra-env: |
       NOSE_EXCLUDE=.*
     extra-rpmbuild-options: 'with_hooks=1'
+    extra-configure-options: |
+      '--prefix=/usr'
+      '--sysconfdir=/etc'
+      '--localstatedir=/var'
+      '--libdir=/usr/lib64'
     cherry-pick: |
       refs/changes/68/33768/3
     jobs:
