@@ -13,6 +13,9 @@
       - el6
       - el7
       - fc22
+    exclude:
+      - version: master
+        distro: el6
     trigger: 'timed'
     trigger-times: 'H H/6 * * *'
     arch: x86_64

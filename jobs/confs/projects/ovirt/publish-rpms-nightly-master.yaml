@@ -26,56 +26,54 @@
           mkdir $WORKSPACE/artifacts
 
 
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-all_master-platforms:
           project-prefix: ovirt-host-deploy_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-all_master-platforms:
           project-prefix: ovirt-engine-sdk_master_build-artifacts-
           project-suffix: ""
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-all_master-platforms:
           project-prefix: otopi_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-all_master-platforms:
           project-prefix: ovirt-vmconsole_master_create-rpms-
           project-suffix: _merged
 
-      - copy-create-job-artifact-older-platforms:
-          project-prefix: unboundid-ldapsdk_master_create-rpms-
-          project-suffix: _merged
-
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-iso-uploader_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-log-collector_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-extension-aaa-ldap_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-extension-aaa-misc_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-extension-logger-log4j_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-dwh_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-extension-aaa-jdbc_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-setup-lib_master_build-artifacts-
           project-suffix: ""
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: vdsm-jsonrpc-java_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine_master_build-artifacts-
           project-suffix: ""
-      - copy-create-job-artifact-engine-platforms:
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-sdk-java_master_create-rpms-
           project-suffix: _merged
+      - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-image-uploader_master_build-artifacts-
 
       - copy-create-job-artifact-vdsm-platforms:
           project-prefix: ioprocess_master_create-rpms-
@@ -102,10 +100,6 @@
       - copy-create-job-artifact:
           project: ovirt-optimizer_master_create-rpms_merged
       - copy-create-job-artifact:
-          project: httpcomponents-client_master_create-rpms_merged
-      - copy-create-job-artifact:
-          project: httpcomponents-core_master_create-rpms_merged
-      - copy-create-job-artifact:
           project: qemu_master_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
           project: ovirt-node_master_build-artifacts-el7-x86_64
@@ -117,9 +111,10 @@
           project: ovirt-node-plugin-hosted-engine_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-register_master_build-artifacts-el7-x86_64
-
       - copy-create-job-artifact:
-          project: ovirt-reports_master_create-rpms-el6-x86_64_merged
+          project: unboundid-ldapsdk_master_create-rpms-el7-x86_64_merged
+
+      # ovirt-reports still not working on fc22
       - copy-create-job-artifact:
           project: ovirt-reports_master_create-rpms-el7-x86_64_merged
 
@@ -141,10 +136,9 @@
       - copy-create-job-artifact:
           project: virtio-win-drivers_master_create-rpms-fc22-x86_64_merged
 
-      - copy-create-job-artifact-engine-platforms:
-          project-prefix: ovirt-image-uploader_master_build-artifacts-
 
-      - copy-create-job-artifact-engine-platforms:
+
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-guest-agent_master_build-artifacts-
 
     publishers:
