@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 3.6:
+          branch: ovirt-3.6
     stage: check-patch
     distro:
       - fc22
