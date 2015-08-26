@@ -2,7 +2,7 @@
     name: 'ovirt_master_publish-rpms_nightly'
     description: >
       Collects RPMs from all oVirt projects (master branches) and publish them
-      to ovirt.org yum repository.<br>
+      to resources.ovirt.org yum repository.<br>
       This job is automatically updated by jenkins job builder, any manual
       change will be lost in the next update. If you want to make permanent
       changes, check out the <a href="http://gerrit.ovirt.org/gitweb?p=jenkins.git;a=tree;h=refs/heads/master;hb=refs/heads/master">
@@ -151,7 +151,7 @@
           notify-every-unstable-build: true
           send-to-individuals: false
       - ssh:
-          site: ovirt.org
+          site: resources.ovirt.org
           source: '**/*.rpm, **/*.tar.gz, **/*.iso **/*.ova **/*.exe'
           target: ovirt-master-snapshot.tmp
           command: |
