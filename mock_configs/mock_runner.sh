@@ -16,7 +16,7 @@ RUN_SHELL="false"
 CLEANUP="false"
 MOCK_CONF_DIR="/etc/mock"
 MOCK="mock"
-MOUNT_POINT="/tmp/run"
+MOUNT_POINT="$PWD"
 LOGS_DIR="logs"
 TRY_PROXY="false"
 
@@ -233,7 +233,7 @@ gen_mock_config() {
                 base_conf="$proxified_conf"
             else
                 proxy="$(extract_proxy_from_mock_conf "$proxified_conf")"
-                echo "Failed to contact proxy $proxy, falling back to " \
+                echo "Failed to contact proxy $proxy, falling back to" \
                     "non-proxied config" \
                     >&2
             fi
@@ -253,14 +253,15 @@ distro_maj = int(platform.linux_distribution()[1].split('.', 1)[0])
 if int(distro_maj) >= 22:
     config_opts['yum_command'] = '/usr/bin/yum-deprecated'
 
+config_opts['chroothome'] = '$MOUNT_POINT'
 # This alleviates the io of installing the chroot
 config_opts["nosync"] = True
 # we are not going to build cross-arch packages, we can force it
 config_opts["nosync_force"] = True
 config_opts["plugin_conf"]["bind_mount_enable"]='True'
 config_opts["plugin_conf"]["bind_mount_opts"]["dirs"]=[
-    # Mount the local dir to /tmp/run
-    [os.path.realpath(os.curdir), u'/tmp/run'],
+    # Mount the local dir to $MOUNT_POINT
+    [os.path.realpath(os.curdir), u'$MOUNT_POINT'],
 EOH
 
     for mount_opt in $(get_data_from_file "$script" mounts "$dist_label"); do
@@ -398,7 +399,7 @@ clean_rpmdb() {
         --resultdir="$LOGS_DIR/${chroot}.clean_rpmdb" \\
         --shell <<EOC
             set -e
-            logdir="/tmp/run/$LOGS_DIR/${chroot}.clean_rpmdb"
+            logdir="$MOUNT_POINT/$LOGS_DIR/${chroot}.clean_rpmdb"
             [[ -d \$logdir ]] \\
             || mkdir -p "\$logdir"
             rm -Rf /var/lib/rpm/__* &>\$logdir/rpmbuild.log
@@ -411,7 +412,7 @@ EOC2
         --resultdir="$LOGS_DIR/${chroot}.clean_rpmdb" \
         --shell <<EOC
             set -e
-            logdir="/tmp/run/$LOGS_DIR/${chroot}.clean_rpmdb"
+            logdir="$MOUNT_POINT/$LOGS_DIR/${chroot}.clean_rpmdb"
             [[ -d \$logdir ]] \\
             || mkdir -p "\$logdir"
             rm -Rf /var/lib/rpm/__* &>\$logdir/rpmbuild.log
@@ -519,6 +520,7 @@ run_shell() {
     echo "Using base mock conf $MOCK_CONF_DIR/${base_chroot}.cfg" >&2
     prepare_chroot "$base_chroot" "$distro_id" "$script" \
     || return 1
+    echo "INFO The working directory is mounted at \$HOME, you can just run 'cd' to get there"
     cat <<EOC
     $MOCK \\
         --configdir="$mock_dir" \\
@@ -567,7 +569,7 @@ run_script() {
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \\
         --shell <<EOS
             set -e
-            logdir="/tmp/run/$LOGS_DIR/${mock_chroot}.${script##*/}"
+            logdir="$MOUNT_POINT/$LOGS_DIR/${mock_chroot}.${script##*/}"
             [[ -d "\\\$logdir" ]] \\
             || mkdir -p "\\\$logdir"
             export HOME=$MOUNT_POINT
@@ -603,7 +605,7 @@ EOC
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \
         --shell <<EOS
             set -e
-            logdir="/tmp/run/$LOGS_DIR/${mock_chroot}.${script##*/}"
+            logdir="$MOUNT_POINT/$LOGS_DIR/${mock_chroot}.${script##*/}"
             [[ -d "\$logdir" ]] \\
             || mkdir -p "\$logdir"
             export HOME=$MOUNT_POINT
