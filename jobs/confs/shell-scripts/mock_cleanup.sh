@@ -77,3 +77,8 @@ fi
 # remove mock system cache, we will setup proxies to do the caching and this
 # takes lots of space between runs
 sudo rm -Rf /var/cache/mock/*
+
+# restore the permissions in the working dir, as sometimes it leaves files
+# owned by root and then the 'cleanup workspace' from jenkins job fails to
+# clean and breaks the jobs
+sudo chown -R "$USER" "$WORKSPACE"
