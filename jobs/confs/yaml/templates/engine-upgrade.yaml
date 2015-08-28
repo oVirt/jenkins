@@ -33,8 +33,10 @@
     scm:
       - gerrit:
           project: 'ovirt-engine'
+          gerrit-server: '{git-server}'
       - jenkins:
           branch: 'master'
+          git-server: '{git-server}'
     node: '{distro}'
     triggers:
       - on-patch-{trigger}:
