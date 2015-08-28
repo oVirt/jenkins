@@ -33,7 +33,7 @@
     scm:
       - gerrit:
           project: 'ovirt-engine'
-          gerrit-server: '{git-server}'
+          git-server: '{git-server}'
       - jenkins:
           branch: 'master'
           git-server: '{git-server}'
