@@ -151,9 +151,15 @@ prepare_chroot() {
     local script="${3?}"
     local cleanup="${4:-false}"
     local base_conf \
-        tmp_conf
+        tmp_conf \
+        mock_conf \
+        mock_chroot \
+        mock_dir \
+        mock_conf_with_mounts
 
-    mock_conf="$(gen_mock_config "$base_chroot" "$dist_label" "$script")"
+    mock_conf="$(
+        gen_mock_config "$base_chroot" "$dist_label" "$script"
+    )"
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
     mock_dir="${mock_conf%/*}"
@@ -181,6 +187,9 @@ prepare_chroot() {
     clean_rpmdb "$mock_chroot" "$mock_dir" \
         | tee -a "$LOGS_DIR/${mock_chroot}.clean_rpmdb/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
+    mock_conf_with_mounts="$(
+        gen_mock_config "$base_chroot" "$dist_label" "$script" "with_mounts"
+    )"
     return 0
 }
 
@@ -210,6 +219,7 @@ gen_mock_config() {
     local chroot="${1?}"
     local dist_label="${2?}"
     local script="${3?}"
+    local with_mounts="${4:-no}"
     local base_conf \
         tmp_conf \
         mount_opt \
@@ -253,26 +263,33 @@ distro_maj = int(platform.linux_distribution()[1].split('.', 1)[0])
 if int(distro_maj) >= 22:
     config_opts['yum_command'] = '/usr/bin/yum-deprecated'
 
-config_opts['chroothome'] = '$MOUNT_POINT'
 # This alleviates the io of installing the chroot
 config_opts["nosync"] = True
 # we are not going to build cross-arch packages, we can force it
 config_opts["nosync_force"] = True
+EOH
+    if [[ "$with_mounts" != 'no' ]]; then
+        echo "Adding mount points" >&2
+        cat >>"$tmp_conf" <<EOH
 config_opts["plugin_conf"]["bind_mount_enable"]='True'
+config_opts['chroothome'] = '$MOUNT_POINT'
 config_opts["plugin_conf"]["bind_mount_opts"]["dirs"]=[
     # Mount the local dir to $MOUNT_POINT
     [os.path.realpath(os.curdir), u'$MOUNT_POINT'],
 EOH
 
-    for mount_opt in $(get_data_from_file "$script" mounts "$dist_label"); do
-        [[ "$mount_opt" == "" ]] && continue
-        if [[ "$mount_opt" =~ ^([^:]*)(:(.*))?$ ]]; then
-            src_mnt="${BASH_REMATCH[1]}"
-            dst_mnt="${BASH_REMATCH[3]:-$src_mnt}"
-        fi
-        echo "['$src_mnt', '$dst_mnt']," >> "$tmp_conf"
-    done
-    echo "]" >> "$tmp_conf"
+        for mount_opt in $(get_data_from_file "$script" mounts "$dist_label"); do
+            [[ "$mount_opt" == "" ]] && continue
+            if [[ "$mount_opt" =~ ^([^:]*)(:(.*))?$ ]]; then
+                src_mnt="${BASH_REMATCH[1]}"
+                dst_mnt="${BASH_REMATCH[3]:-$src_mnt}"
+            fi
+            echo "['$src_mnt', '$dst_mnt']," >> "$tmp_conf"
+        done
+        echo "]" >> "$tmp_conf"
+    else
+        echo "Skipping mount points" >&2
+    fi
 
     repos=($(get_data_from_file "$script" repos "$dist_label"))
     # if we use custom repos, we don't want to mess with existing cached
@@ -691,7 +708,7 @@ run_scripts() {
 
 if ! [[ "$0" =~ ^.*/bash$ ]]; then
 
-    log_opts="shell:"
+    long_opts="shell:"
     short_opts="s:"
 
     long_opts+=",patch-only"
