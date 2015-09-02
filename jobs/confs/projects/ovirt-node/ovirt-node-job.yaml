@@ -36,12 +36,14 @@
       - 'ovirt-node_{version}_create-rpms-{distro}_{trigger}'
 
 - project:
-    name: ovirt-node_master-build
+    name: ovirt-node-build
     project:
       - ovirt-node
     version:
       - master:
           branch: master
+      - ovirt-3.6:
+          branch: ovirt-3.6
     stage:
       - build-artifacts
       - check-merged
@@ -55,12 +57,14 @@
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
 - project:
-    name: ovirt-node-plugin-vdsm_master-build
+    name: ovirt-node-plugin-vdsm-build
     project:
       - ovirt-node-plugin-vdsm
     version:
       - master:
           branch: master
+      - ovirt-3.6:
+          branch: ovirt-3.6
     stage:
       - build-artifacts
       - check-merged
@@ -74,12 +78,14 @@
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
 - project:
-    name: ovirt-node-plugin-hosted-engine_master-build
+    name: ovirt-node-plugin-hosted-engine-build
     project:
       - ovirt-node-plugin-hosted-engine
     version:
       - master:
           branch: master
+      - ovirt-3.6:
+          branch: ovirt-3.6
     stage:
       - build-artifacts
       - check-merged
