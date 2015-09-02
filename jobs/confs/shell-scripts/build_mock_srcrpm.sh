@@ -180,7 +180,7 @@ $my_mock \
             autoreconf -ivf
         fi
         [[ -x configure  ]] &&
-            ./configure "${{extra_configure_options[@]}}"
+            ./configure ${{extra_configure_options[@]}}
         # Build extra make targets, like offline-tarball for ovirt-host-deploy
         make ${{make_targets[@]}}
 

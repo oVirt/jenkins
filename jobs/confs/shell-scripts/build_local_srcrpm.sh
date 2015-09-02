@@ -44,7 +44,7 @@ elif [[ -e configure.ac ]]; then
 fi
 
 if [[ -x configure ]]; then
-    ./configure "${{extra_configure_options[@]}}"
+    ./configure ${{extra_configure_options[@]}}
 fi
 make dist
 mv *.tar.gz "$WORKSPACE"/exported-artifacts/
