@@ -10,6 +10,9 @@
       - master:
           branch: master
           distro : el7
+      - ovirt-3.6:
+          branch: ovirt-3.6
+          distro : el7
       - ovirt-3.5:
           branch: ovirt-3.5
           distro : el7
