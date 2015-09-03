@@ -1,5 +1,6 @@
 - project:
     name: vdsm_standard
+    node-filter: fc21 || fc22
     project:
       - vdsm
     version:
