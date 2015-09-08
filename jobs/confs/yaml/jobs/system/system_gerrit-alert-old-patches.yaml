@@ -41,6 +41,8 @@
     scm:
         - jenkins:
             branch: master
+            git-server: 'gerrit.ovirt.org'
+
     publishers:
         - email-ext:
             recipients: dcaro@redhat.com, eedri@redhat.com, iheim@redhat.com, vishnu.srkmr@gmail.com
