@@ -18,7 +18,7 @@
             description: "Age in days for abandoning limit."
         - string:
             name: TEST_EMAIL
-            default: None
+            default: ""
             description: "Optional email address to use with dry-run. Default is None."
 
     builders:
@@ -27,13 +27,15 @@
             user="jenkins_ro"
             projects="vdsm,ovirt-engine"
             if $DRY_RUN; then
-                if "$TEST_EMAIL" == "None"; then
-                    dry="--dry-run"
-                else
-                    dry="--dry-run --with-email $TEST_EMAIL"
-                fi
+                dry="--dry-run"
             fi
-            $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug "$dry" --projects "$projects"
+
+            if [ -z "$TEST_EMAIL" ]; then
+                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug "$dry" --projects "$projects"
+            else
+                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug "$dry" --projects "$projects" --with-email "$TEST_EMAIL"
+            fi
+
     wrappers:
         - ssh-agent-credentials:
             users:
