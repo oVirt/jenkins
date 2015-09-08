@@ -307,7 +307,7 @@ wait_for_engine() {
     while ! $ok; do
         status="$(curl --user "admin@internal:${password}" \
             -I \
-            --insecure https://localhost/api \
+            --insecure https://localhost/ovirt-engine/api \
             | head -n 1 | awk '{print $2}')"
         if [[ "${status}" -ne 200 ]]; then
             counter=$((counter - 1))
