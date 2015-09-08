@@ -26,15 +26,18 @@
             #!/bin/bash
             user="jenkins_ro"
             projects="vdsm,ovirt-engine"
-            if $DRY_RUN; then
-                dry="--dry-run"
+            dry=
+
+            if [ "$DRY_RUN" == 'true' ] ; then
+                    dry="--dry-run"
             fi
 
             if [ -z "$TEST_EMAIL" ]; then
-                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug "$dry" --projects "$projects"
+                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug --projects "$projects" $dry
             else
-                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug "$dry" --projects "$projects" --with-email "$TEST_EMAIL"
+                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug --projects "$projects" --with-email "$TEST_EMAIL" $dry
             fi
+
 
     wrappers:
         - ssh-agent-credentials:
