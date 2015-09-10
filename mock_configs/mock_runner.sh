@@ -594,6 +594,10 @@ run_script() {
             chmod +x $script
             runner_GID="$(id -g)"
             runner_GROUP="$(id -n -g)"
+            # mock group is called mockbuild inside the chroot
+            if [[ \\\$runner_GROUP == "mock" ]]; then
+                runner_GROUP=mockbuild
+            fi
             if ! getent group "\\\$runner_GROUP" &>/dev/null; then
                 groupadd \\
                     --gid "\\\$runner_GID" \\
@@ -630,6 +634,10 @@ EOC
             chmod +x $script
             runner_GID="$(id -g)"
             runner_GROUP="$(id -n -g)"
+            # mock group is called mockbuild inside the chroot
+            if [[ \$runner_GROUP == "mock" ]]; then
+                runner_GROUP=mockbuild
+            fi
             if ! getent group "\$runner_GROUP" &>/dev/null; then
                 groupadd \
                     --gid "\$runner_GID" \
