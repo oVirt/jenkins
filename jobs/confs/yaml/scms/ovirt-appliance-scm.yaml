@@ -1,0 +1,9 @@
+##############################################################################
+###   SCM Definitions
+##############################################################################
+- scm:
+    name: ovirt-appliance-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-appliance
+          git-server: '{git-server}'

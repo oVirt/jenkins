@@ -1,0 +1,19 @@
+- project:
+    name: ovirt-appliance
+    project:
+      - ovirt-appliance
+    version:
+      - master:
+          branch: master
+      - ovirt-3.6:
+          branch: ovirt-3.6
+    stage:
+      - build-artifacts
+    distro:
+      - el7
+    trigger: 'on-change'
+    arch:
+      - x86_64
+    node-filter: (( fc21 || fc22 ) && nested) || appliance-builder
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
