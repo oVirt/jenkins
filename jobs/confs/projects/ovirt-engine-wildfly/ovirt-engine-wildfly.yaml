@@ -1,8 +1,8 @@
 - project:
-    name: ovirt-engine-wildfly_create-rpms
+    name: ovirt-engine-wildfly8_create-rpms
     project: releng-tools
     subproject:
-      - ovirt-engine-wildfly
+      - ovirt-engine-wildfly8
     trigger:
       - created
       - merged
@@ -12,6 +12,28 @@
     mock-build-type: all
     distro:
       - el6
+      - el7
+      - fc22
+    arch: x86_64
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+          extra-build-packages: |
+            rpmdevtools
+            wget
+
+- project:
+    name: ovirt-engine-wildfly10_create-rpms
+    project: releng-tools
+    subproject:
+      - ovirt-engine-wildfly10
+    trigger:
+      - created
+      - merged
+    version:
+      - master:
+          branch: master
+    mock-build-type: all
+    distro:
       - el7
       - fc22
     arch: x86_64
