@@ -3,7 +3,6 @@
 MOCKS=(
     el6:epel-6-x86_64
     el7:epel-7-x86_64
-    fc20:fedora-20-x86_64
     fc21:fedora-21-x86_64
     fc22:fedora-22-x86_64
 )

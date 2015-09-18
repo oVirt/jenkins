@@ -7,8 +7,8 @@ echo "shell-scripts/standard_build_artifacts.sh"
 #     has been cloned
 #
 # distro
-#     Distribution it should create the rpms for (usually el6, el7, fc19 or
-#     fc20)
+#     Distribution it should create the rpms for
+#     (usually el<version>, fc<version>)
 #
 # arch
 #     Architecture to build the packages for

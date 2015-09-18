@@ -7,8 +7,8 @@ echo "shell-scripts/mock_run.sh"
 #     has been cloned
 #
 # distro
-#     Distribution it should create the rpms for (usually el6, el7, fc19 or
-#     fc20)
+#     Distribution it should create the rpms for
+#     (usually el<version>, fc<version>)
 #
 # arch
 #     Architecture to build the packages for
@@ -17,8 +17,8 @@ echo "shell-scripts/mock_run.sh"
 #     List of packages to install
 #
 # extra-repos
-#     List of extra repositories to use when building, in a space separated list
-#     of name,url pairs
+#     List of extra repositories to use when building, in a space separated
+#     list of name,url pairs
 #
 # env
 #     Extra environment variables
