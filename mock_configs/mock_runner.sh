@@ -5,6 +5,7 @@ MOCKS=(
     el7:epel-7-x86_64
     fc21:fedora-21-x86_64
     fc22:fedora-22-x86_64
+    fc23:fedora-23-x86_64
 )
 SCRIPTS=(
     automation/check-patch.sh
