@@ -38,6 +38,7 @@ OVESETUP_DIALOG/engineStop=bool:True
 OVESETUP_ENGINE_CONFIG/fqdn=str:CHANGE_HOSTNAME
 OVESETUP_ENGINE_CORE/enable=bool:True
 OVESETUP_PKI/organization=str:ovirt.org
+OVESETUP_PKI/renew=bool:False
 OVESETUP_PROVISIONING/postgresProvisioningEnabled=bool:True
 OVESETUP_SYSTEM/memCheckEnabled=bool:False
 OVESETUP_SYSTEM/nfsConfigEnabled=bool:True
