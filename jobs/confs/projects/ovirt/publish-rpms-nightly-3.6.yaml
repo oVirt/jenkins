@@ -65,7 +65,7 @@
           project-prefix: ovirt-dwh_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine-platforms:
-          project-prefix: ovirt-engine-extension-aaa-jdbc_master_create-rpms-
+          project-prefix: ovirt-engine-extension-aaa-jdbc_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-setup-lib_master_build-artifacts-
