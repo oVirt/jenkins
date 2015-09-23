@@ -33,6 +33,7 @@
           branch: ovirt-engine-3.6
     stage:
       - check-patch
+      - check-merged
     distro:
       - el7
       - fc22
