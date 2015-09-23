@@ -1,0 +1,6 @@
+- scm:
+    name: ovirt-optimizer-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-optimizer
+          git-server: '{git-server}'
