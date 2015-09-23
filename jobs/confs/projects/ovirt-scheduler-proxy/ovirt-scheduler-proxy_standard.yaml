@@ -1,0 +1,38 @@
+- project:
+    name: ovirt-scheduler-proxy_build
+    project:
+      - ovirt-scheduler-proxy
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+    trigger: 'on-change'
+    distro:
+        - el6
+        - el7
+        - fc22
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: ovirt-scheduler-proxy_check-patch
+    project:
+      - ovirt-scheduler-proxy
+    version:
+      - master:
+          branch: master
+    stage:
+      - check-patch
+    distro:
+      - el6
+      - el7
+      - fc22
+    exclude:
+      - version: master
+        distro: el6
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
