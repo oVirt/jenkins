@@ -16,6 +16,7 @@
     repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot,
         http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static'
     distro: el7
+    jdk: 'java-1.8.0-openjdk'
     jobs:
       - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'
 
