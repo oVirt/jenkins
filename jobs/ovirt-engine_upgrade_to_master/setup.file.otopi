@@ -44,6 +44,7 @@ OVESETUP_AIO/storageDomainDir=none:None
 OVESETUP_PROVISIONING/postgresProvisioningEnabled=bool:True
 OVESETUP_APACHE/configureRootRedirection=bool:True
 OVESETUP_APACHE/configureSsl=bool:True
+OVESETUP_APACHE/configured=bool:True
 OVESETUP_DB/password=str:123456
 OVESETUP_ENGINE_CONFIG/fqdn=str:CHANGE_HOSTNAME
 OVESETUP_CONFIG/websocketProxyConfig=bool:True
