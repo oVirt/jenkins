@@ -38,9 +38,6 @@
       - copy-create-job-artifact-all_master-platforms:
           project-prefix: ovirt-vmconsole_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-all_master-platforms:
-          project-prefix: ovirt-optimizer_master_build-artifacts-
-          project-suffix: ""
 
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-iso-uploader_master_create-rpms-
@@ -79,6 +76,9 @@
           project-prefix: ovirt-image-uploader_master_build-artifacts-
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-scheduler-proxy_master_build-artifacts-
+      - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-optimizer_master_build-artifacts-
+          project-suffix: ""
 
       - copy-create-job-artifact-vdsm-platforms:
           project-prefix: ioprocess_master_create-rpms-
