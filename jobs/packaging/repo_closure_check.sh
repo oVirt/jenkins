@@ -133,6 +133,7 @@ check_repo_closure() {
                     --repofrompath=check-patternfly-"${distid}","${COPR}/patternfly/patternfly1/epel-${DISTRIBUTION_VERSION}-x86_64" \
                     --lookaside check-updates-"${distid}" \
                     --lookaside check-extras-"${distid}" \
+                    --lookaside check-openstack-"${distid}" \
                     --lookaside check-epel-"${distid}" \
                     --lookaside check-glusterfs-epel-"${distid}" \
                     --lookaside check-glusterfs-noarch-epel-"${distid}" \
