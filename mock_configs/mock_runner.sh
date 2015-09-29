@@ -419,6 +419,9 @@ clean_rpmdb() {
             logdir="$MOUNT_POINT/$LOGS_DIR/${chroot}.clean_rpmdb"
             [[ -d \$logdir ]] \\
             || mkdir -p "\$logdir"
+            # Fix that allows using yum inside the chroot on dnf enabled
+            # distros
+            [[ -d /etc/dnf ]] && cat /etc/yum/yum.conf > /etc/dnf/dnf.conf
             rm -Rf /var/lib/rpm/__* &>\$logdir/rpmbuild.log
             rpm --rebuilddb &>>\$logdir/rpmbuild.log
 EOC
@@ -432,6 +435,9 @@ EOC2
             logdir="$MOUNT_POINT/$LOGS_DIR/${chroot}.clean_rpmdb"
             [[ -d \$logdir ]] \\
             || mkdir -p "\$logdir"
+            # Fix that allows using yum inside the chroot on dnf enabled
+            # distros
+            [[ -d /etc/dnf ]] && cat /etc/yum/yum.conf > /etc/dnf/dnf.conf
             rm -Rf /var/lib/rpm/__* &>\$logdir/rpmbuild.log
             rpm --rebuilddb &>>\$logdir/rpmbuild.log
 EOC
