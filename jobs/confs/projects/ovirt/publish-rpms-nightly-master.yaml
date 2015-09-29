@@ -158,5 +158,7 @@
             mv  artifacts/ovirt-master-snapshot.tmp  artifacts/ovirt-master-snapshot.ready
 
             rm -rf ovirt-master-snapshot.tmp
-
-
+      - workspace-cleanup:
+          clean-if:
+            - success: true
+            - failure: false

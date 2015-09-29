@@ -162,5 +162,8 @@
             mv  artifacts/ovirt-3.6-snapshot.tmp  artifacts/ovirt-3.6-snapshot.ready
 
             rm -rf ovirt-3.6-snapshot.tmp
-
+      - workspace-cleanup:
+          clean-if:
+            - success: true
+            - failure: false
 
