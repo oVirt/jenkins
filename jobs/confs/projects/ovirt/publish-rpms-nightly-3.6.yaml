@@ -53,7 +53,7 @@
           project-prefix: ovirt-log-collector_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine-platforms:
-          project-prefix: ovirt-engine-extension-aaa-ldap_master_create-rpms-
+          project-prefix: ovirt-engine-extension-aaa-ldap_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-engine-extension-aaa-misc_master_create-rpms-
