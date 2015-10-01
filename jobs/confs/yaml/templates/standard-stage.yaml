@@ -1,4 +1,4 @@
-- job-template:
+- job-template:  &standard-template
     name: '{project}_{version}_{stage}-{distro}-{arch}'
     node: '{node-filter}'
     parameters:
@@ -28,3 +28,10 @@
     publishers:
       - mock-cleanup
       - exported-artifacts
+
+- job-template:
+    << : *standard-template
+    name: 'ovirt-appliance_{version}_{stage}-{distro}-{arch}'
+    logrotate:
+      numToKeep: 20
+      artifactNumToKeep: 2

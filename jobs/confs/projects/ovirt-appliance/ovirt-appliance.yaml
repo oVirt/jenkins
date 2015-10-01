@@ -1,7 +1,6 @@
 - project:
     name: ovirt-appliance
-    project:
-      - ovirt-appliance
+    project: ovirt-appliance
     version:
       - master:
           branch: master
@@ -16,4 +15,4 @@
       - x86_64
     node-filter: (( fc21 || fc22 ) && nested) || appliance-builder
     jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - 'ovirt-appliance_{version}_{stage}-{distro}-{arch}'
