@@ -1,7 +1,6 @@
 - project:
     name: ovirt-engine_build
-    project:
-      - ovirt-engine
+    project: ovirt-engine
     version:
       - master:
           branch: master
@@ -9,8 +8,7 @@
           branch: ovirt-engine-3.6
       - 3.6.0:
           branch: ovirt-engine-3.6.0
-    stage:
-      - build-artifacts
+    stage: build-artifacts
     distro:
       - el6
       - el7
@@ -22,7 +20,7 @@
     trigger-times: 'H H/6 * * *'
     arch: x86_64
     jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - 'ovirt-engine_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     name: ovirt-engine_check-patch
