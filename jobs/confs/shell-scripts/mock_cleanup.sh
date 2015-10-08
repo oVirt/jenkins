@@ -52,7 +52,7 @@ for mock_conf_file in "${mock_confs[@]}"; do
 
     mock_root="$(\
         grep \
-            -Po "(?=<config_opts\['root'\] = ')[^']*" \
+            -Po "(?<=config_opts\['root'\] = ')[^']*" \
             "$mock_conf_file" \
     )" || :
     [[ "$mock_root" ]] || continue
