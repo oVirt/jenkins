@@ -29,26 +29,33 @@ SSH = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 def check_forgotten_patches(days, t_project):
     "Return list of commits inactive for the given days."
     gerrit_call = (
-        "%s gerrit query --format=JSON --dependencies "
+        "%s gerrit query --format=JSON --current-patch-set "
         "status:open age:%dd project:%s"
         ) % (SSH, days, t_project)
     if ARGS.debug:
         print (gerrit_call)
     shell_command = ["bash", "-c", gerrit_call]
-    shell_output = log_exec(shell_command)
+    try:
+        shell_output = log_exec(shell_command)
+    except EnvironmentError:
+        print (
+            "Error fetching inactive patches. "
+            "See output above.")
+        sys.exit(127)
     f_patches = {}
     for line in shell_output.split('\n'):
         if not line:
             continue
         data = json.loads(line)
         try:
-            fp_patch = data['number']
+            fp_number = data['number']
+            fp_commit = data['currentPatchSet']['revision']
             fp_email = data['owner']['email']
-            if fp_patch and fp_email:
+            if fp_number and fp_commit and fp_email:
                 if fp_email not in f_patches.keys():
-                    f_patches[fp_email] = [fp_patch]
+                    f_patches[fp_email] = [(fp_number, fp_commit)]
                 else:
-                    f_patches[fp_email].append(fp_patch)
+                    f_patches[fp_email].append((fp_number, fp_commit))
         except KeyError:
             pass
     return f_patches
@@ -56,11 +63,12 @@ def check_forgotten_patches(days, t_project):
 
 def abandon_patch(commit, project):
     "Abandon the patch with comment."
-    message = "Abandoned due to no activity - \
-            please restore if still relevant"
+    message = (
+        "Abandoned due to no activity - "
+        "please restore if still relevant")
     gerrit_call = (
         "%s gerrit review --project=%s "
-        "--message %s --abandon %s"
+        "--message '\"%s\"' --abandon %s"
         ) % (SSH, project, message, commit)
     shell_command = ["bash", "-c", gerrit_call]
     return log_exec(shell_command)
@@ -72,7 +80,7 @@ def gen_warning_email_body(day, patches):
         "The following patches did not have any activity for over %d days, "
         "please consider nudging for more attention." % day)
     for patch in patches:
-        body += "\nhttp://gerrit.ovirt.org/%s" % patch
+        body += "\nhttp://gerrit.ovirt.org/%s" % patch[0]
     return body
 
 
@@ -84,11 +92,11 @@ def abandon_patch_and_gen_email_body(day, patches, project):
         "please restore if relevant" % day)
     for patch in patches:
         try:
-            abandon_patch(patch, project)
+            abandon_patch(patch[1], project)
         except EnvironmentError:
-            print("Error abandoning patch %s" % patch)
+            print("Error abandoning patch %s" % patch[0])
             pass
-        body += "\nhttp://gerrit.ovirt.org/%s" % patch
+        body += "\nhttp://gerrit.ovirt.org/%s" % patch[0]
     return body
 
 
@@ -96,7 +104,7 @@ def dry_run_message_gen(patches):
     "Generate dry run output message from list of patches"
     body = ""
     for patch in patches:
-        body += "http://gerrit.ovirt.org/%s\n" % patch
+        body += "http://gerrit.ovirt.org/%s\n" % patch[0]
     return body
 
 
@@ -126,7 +134,7 @@ def log_exec(argv, custom_input=None):
         print("Output: %s\n" % str(out))
         print("Error: %s\n" % str(err))
         print("Return code: %s\n" % str(rcode))
-        sys.exit(2)
+        raise EnvironmentError()
     else:
         return out
 
