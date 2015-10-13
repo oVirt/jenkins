@@ -41,9 +41,28 @@ die() {
 store(){
     local what="${1?}"
     local where="${2?}"
-    tar cvzf "$where/${what##*/}.tgz" "$what"
+    tar cvzf "$where/${what//\//_}.tgz" "$what"
 }
 
+archive_logs_in_dirs(){
+    local dst_dir="${1?}"
+    local dir
+    for dir in "${@:2}"; do
+        if [[ ! -d "$dir" ]]; then
+            continue
+        fi
+        find "$dir" -iname "*.log" | while read file; do
+            store "$file" "$dst_dir"
+        done
+    done
+}
+
+archive_engine_logs(){
+    local workspace="${1?}"
+    local dst_dir="${2?}"
+    archive_logs_in_dirs "$dst_dir" /var/log/ovirt-engine "$workspace/tmp_repo"
+    return $?
+}
 
 ## This is the last function executed always when the script ends
 cleanup()
@@ -59,15 +78,6 @@ cleanup()
     yum -y remove ovirt-engine\* vdsm\* httpd mod_ssl || :
     rm -f /root/.pgpass
     enable_engine_repos "$workspace/disabled_repos.list"
-    if [[ -d /var/log/ovirt-engine ]]; then
-        export -f store
-        find /var/log/ovirt-engine \
-            -iname "*.log" \
-        | while read file; do
-            store "$file" "$workspace/logs"
-        done
-    fi
-    return $?
 }
 
 
@@ -113,3 +123,4 @@ get_opts "${@}"
 [ -n "${WORKSPACE}" ] || die "Please specify the workspace"
 [ -n "${CLEANUP_FILE}" ] || die " Please specify a cleanup answer file"
 cleanup "$WORKSPACE" "$CLEANUP_FILE"
+archive_engine_logs "$WORKSPACE" "$WORKSPACE"/logs
