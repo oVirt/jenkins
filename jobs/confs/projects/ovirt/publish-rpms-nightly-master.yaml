@@ -117,6 +117,9 @@
           project: ovirt-register_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: unboundid-ldapsdk_master_create-rpms-el7-x86_64_merged
+      - copy-create-job-artifact:
+          project: ovirt-appliance_master_build-artifacts-el7-x86_64
+
 
       # ovirt-reports still not working on fc22
       - copy-create-job-artifact:
