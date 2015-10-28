@@ -120,6 +120,21 @@
       - copy-create-job-artifact:
           project: qemu-kvm-rhev_create-rpms_el6
 
+      - copy-create-job-artifact:
+          project: py2exe-py2.7_3.5_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: pywin32-py2.7_3.5_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: python-windows_3.5_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: vcredist-x86_3.5_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: spice-qxl_3.5_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: nsis-simple-service-plugin_3.5_create-rpms-fc22-x86_64_merged
+      - copy-create-job-artifact:
+          project: virtio-win-drivers_3.5_create-rpms-fc22-x86_64_merged
+
 
     publishers:
       - email:
