@@ -27,7 +27,7 @@
 
 
       - copy-create-job-artifact-all-platforms:
-          project-prefix: ovirt-host-deploy_master_create-rpms-
+          project-prefix: ovirt-host-deploy_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-all-platforms:
           project-prefix: ovirt-engine-sdk_3.6_build-artifacts-
