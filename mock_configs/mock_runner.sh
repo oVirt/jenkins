@@ -7,11 +7,7 @@ MOCKS=(
     fc22:fedora-22-x86_64
     fc23:fedora-23-x86_64
 )
-SCRIPTS=(
-    automation/check-patch.sh
-    automation/check-merged.sh
-    automation/build-artifacts.sh
-)
+SCRIPTS=()
 RUN_SHELL="false"
 CLEANUP="false"
 MOCK_CONF_DIR="/etc/mock"
@@ -19,6 +15,7 @@ MOCK="mock"
 MOUNT_POINT="$PWD"
 LOGS_DIR="logs"
 TRY_PROXY="false"
+PACKAGES=()
 
 
 help() {
@@ -58,8 +55,7 @@ help() {
             Run/Prepare for the build-artifacts script only
 
         -e|--execute-script path/to/script.sh
-            Run/Prepare for the given script (take into account that it needs a
-            .req file for that script too)
+            Run/Prepare for the given script
 
         -r|--cleanup
             Clean the chroot prior to initializing, just in case
@@ -68,9 +64,13 @@ help() {
             If set, will try to use the proxied config and set the proxy inside
             the mock env
 
-        -C|mock-confs-dir
+        -C|--mock-confs-dir
             Directory where the base mock configs are located (default is
             /etc/mock).
+
+        -a|--add-package
+            Add the given package to the mock env when installing, can be
+            specified more than once
 
     Parameters:
         mock_env
@@ -82,8 +82,8 @@ help() {
 
     Example:
 
-    To run all the scripts on all the chroots:
-    > $0
+    To run the build script on all the chroots:
+    > $0 --build-only
 
     To run only the build artifacts script on fedoras 21 and 22
     > $0 --build-only fc21:fedora-21-x86_64 fc22:fedora-22-x86_64
@@ -179,6 +179,7 @@ prepare_chroot() {
         "$mock_dir" \
         $(get_data_from_file "$script" req "$dist_label")  \
         $(get_data_from_file "$script" packages "$dist_label")  \
+        "${PACKAGES[@]}" \
         2>&1 \
         | tee -a "$LOGS_DIR/${mock_chroot}.install_packages/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
@@ -519,7 +520,7 @@ resolve_mock() {
 
 run_shell() {
     local mock_env="${1?}"
-    local script="${2?}"
+    local script="${2:-interactive}"
     local cleanup="${3:-false}"
     local distro_id \
         mock_conf \
@@ -752,6 +753,9 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
     long_opts+=",try-proxy"
     short_opts+=",P"
 
+    long_opts+=",add-package:"
+    short_opts+=",a:"
+
     # Parse options
     args="$( \
         getopt \
@@ -815,6 +819,10 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 TRY_PROXY="true"
                 shift
             ;;
+            -p|--add-package)
+                PACKAGES+=("$2")
+                shift 2
+            ;;
             --)
                 # end of options
                 shift
@@ -859,10 +867,26 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
             echo "##      took $((end - start)) seconds"
             echo "##      rc = $res"
             echo "##########################################################"
-            echo "##########################################################"
             if [[ "$res" != "0" ]]; then
+                echo "##! ERROR vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+                lastlog="$( \
+                    find logs -iname \*.log \
+                    | xargs ls -lt \
+                    | head -n1\
+                    | awk '{print $9}' \
+                )"
+                echo "##! Last 20 log enties: $lastlog"
+                echo "##!"
+                tail -n 20 "$lastlog"
+                echo "##!"
+                echo "##! ERROR ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+                echo "##!########################################################"
                 exit $res
+            else
+                echo "## FINISHED SUCCESSFULY"
+                echo "##########################################################"
             fi
+            echo "##########################################################"
         done
     fi
 fi
