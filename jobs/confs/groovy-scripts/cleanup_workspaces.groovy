@@ -56,26 +56,27 @@ for (node in Jenkins.instance.nodes) {
   // Sometimes node is not what we expect
   try {
     computer = node.toComputer()
+    // Skip disconnected node
+    if (computer.getChannel() == null) {
+        println("\n======")
+        println("INFO::Skipping ${node.getDisplayName()}, not connected.")
+        continue
+    }
+
+    if (node.getDisplayName() in nodeSkipList) {
+        println("\n======")
+        println("INFO::Skipping ${node.getDisplayName()}, in the skip list.")
+        continue
+    }
+    rootPath = node.getRootPath()
+
+    size = DiskSpaceMonitor.DESCRIPTOR.get(computer).size
+    roundedSize = size / (1024 * 1024 * 1024) as int
+
   } catch (Exception exc) {
     exc.printStackTrace()
     continue
   }
-  // Skip disconnected node
-  if (computer.getChannel() == null) {
-    println("\n======")
-    println("INFO::Skipping ${node.getDisplayName()}, not connected.")
-    continue
-  }
-
-  if (node.getDisplayName() in nodeSkipList) {
-    println("\n======")
-    println("INFO::Skipping ${node.getDisplayName()}, in the skip list.")
-    continue
-  }
-  rootPath = node.getRootPath()
-
-  size = DiskSpaceMonitor.DESCRIPTOR.get(computer).size
-  roundedSize = size / (1024 * 1024 * 1024) as int
 
   println("\n======")
   println("INFO::node: ${node.getDisplayName()}, free space: ${roundedSize}GB")
