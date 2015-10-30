@@ -1,5 +1,9 @@
-#!/bin/bash
+#!/bin/bash -xe
 echo 'shell_scripts/system_tests.cleanup.sh'
-PREFIX="${{WORKSPACE:?}}/jenkins-deployment-${{BUILD_NUMBER:?}}"
-cd "${{PREFIX}}"
-testenvcli cleanup
+
+WORKSPACE=$PWD
+
+PREFIX="$WORKSPACE/lago-prefix"
+
+cd "$PREFIX"
+lagocli cleanup

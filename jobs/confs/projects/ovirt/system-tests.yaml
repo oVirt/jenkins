@@ -1,42 +1,16 @@
 - systemt_tests-placeholder-element:
     name: 'system_tests-placeholder-name'
     system_tests--key: &system-tests-common
-      version:
-        - master:
-            branch: master
-            other-branch: master
+      version: 3.5
       node-filter: integ-tests
       trigger: merged
       distro: el7
       arch: x86_64
-      email-to: dkuznets@redhat.com bazulay@redhat.com
+      email-to: dcaro+ovirt-system-tests@redhat.com
       jobs:
-        - '{project}_{deployment}_{version}_system-tests-{distro}-{arch}_{trigger}'
+        - '{project}_{version}_system-tests-{distro}-{arch}'
 
 - project:
-    name: ovirt-engine-system-tests
-    project: ovirt-engine
-    other-project: vdsm
-    deployment : std
+    name: ovirt-system-tests
+    project: ovirt
     <<: *system-tests-common
-
-- project:
-    name: vdsm-system-tests
-    project: vdsm
-    deployment:
-      - std
-      - container
-    other-project: ovirt-engine
-    <<: *system-tests-common
-
-- project:
-    name: engine-vdsm-system-tests
-    deployment :
-      - std
-      - container
-    node-filter: integ-tests
-    distro: el7
-    arch: x86_64
-    email-to: dkuznets@redhat.com bazulay@redhat.com
-    jobs:
-      - 'ovirt_{deployment}_system-tests-{distro}-{arch}_developer'

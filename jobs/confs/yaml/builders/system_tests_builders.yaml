@@ -1,10 +1,4 @@
 - builder:
-    name: system-tests-std
+    name: system-tests
     builders:
-      - shell: !include-raw shell-scripts/system_tests_common_std.sh
-
-- builder:
-    name: system-tests-container
-    builders:
-      - shell: !include-raw-escape shell-scripts/system_tests_generate_scenario.sh
-      - shell: !include-raw shell-scripts/system_tests_common_container.sh
+      - shell: !include-raw shell-scripts/system_tests.sh
