@@ -24,4 +24,4 @@ pushd "$WORKSPACE/releng-tools/specs/$subproject"
 git clean -dxf
 # build srcrpm
 ./build.sh "${{extra_build_options[@]}}"
-mv *src.rpm exported-artifacts/
+mv *src.rpm "$WORKSPACE"/

@@ -55,9 +55,11 @@ rpmbuild_options=("-D" "release_suffix ${{suffix}}")
 for option in "${{extra_rpmbuild_options[@]}}"; do
     rpmbuild_options+=("-D" "${{option//=/ }}")
 done
+# not using -D "_srcrpmdir $WORKSPACE/exported-artifacts"
+# avoiding duplicate src.rpms
 rpmbuild \
     -D "_topdir $WORKSPACE/rpmbuild"  \
-    -D "_srcrpmdir $WORKSPACE/exported-artifacts"  \
+    -D "_srcrpmdir $WORKSPACE"  \
     "${{rpmbuild_options[@]}}" \
     -ts exported-artifacts/*.gz
 ## we don't need the rpmbuild dir no more

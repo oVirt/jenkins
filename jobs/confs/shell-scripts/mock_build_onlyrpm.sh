@@ -97,7 +97,7 @@ temp_mock="$build_mock --resultdir=$WORKSPACE"
 
 ### Build the rpms
 echo "##### Building the rpms"
-for srcrpm in "$WORKSPACE"/exported-artifacts/*.src.rpm; do
+for srcrpm in "$WORKSPACE"/*.src.rpm; do
 
     ## init the chroot
     echo "##### Initializing chroot for ${{srcrpm##*/}}"
