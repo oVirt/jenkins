@@ -352,7 +352,7 @@ install_packages() {
     $MOCK \\
         --configdir="$conf_dir" \\
         --root="$chroot" \\
-        --install "${packages[@]}" \\
+        --install ${packages[@]} \\
         --resultdir="$LOGS_DIR/${chroot}.install_packages"
 EOC
     $MOCK \
