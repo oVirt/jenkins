@@ -1,24 +1,33 @@
 - job-template:
-    name: '{project}_{version}_system-tests-{distro}-{arch}'
+    name: '{project}_{version}_system-tests'
     node: '{node-filter}'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
     triggers:
       - timed: 'H H * * *'
     scm:
+      - 'ovirt-system-tests-gerrit':
+          branch: 'master'
+          git-server: '{git-server}'
       - 'jenkins':
           branch: 'master'
           git-server: '{git-server}'
     builders:
-      - 'system-tests'
+      - 'system-tests':
+          version: '{version}'
     publishers:
       - post-tasks:
           - matches:
-              - log-text: '.*INIT_OK.*'
+              - log-text: '.*'
                 operator: AND
-            script: !include-raw shell-scripts/system_tests.cleanup.sh
+            escalate-status: true
+            script: !include-raw shell-scripts/system_tests.collect_logs.sh
           - matches:
               - log-text: '.*'
                 operator: AND
-            script: !include-raw shell-scripts/system_tests.collect_logs.sh
+            escalate-status: true
+            script: !include-raw-escape shell-scripts/mock_cleanup.sh
       - junit:
           results: 'exported-artifacts/nosetests*.xml'
       - archive:

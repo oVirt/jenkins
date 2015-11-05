@@ -1,16 +1,14 @@
 - systemt_tests-placeholder-element:
     name: 'system_tests-placeholder-name'
     system_tests--key: &system-tests-common
-      version: 3.5
+      project: ovirt
       node-filter: integ-tests
-      trigger: merged
-      distro: el7
-      arch: x86_64
+      branch: master
       email-to: dcaro+ovirt-system-tests@redhat.com
       jobs:
-        - '{project}_{version}_system-tests-{distro}-{arch}'
+        - '{project}_{version}_system-tests'
 
 - project:
-    name: ovirt-system-tests
-    project: ovirt
     <<: *system-tests-common
+    name: ovirt-system-tests
+    version: 3.5

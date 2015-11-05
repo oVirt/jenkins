@@ -1,15 +1,19 @@
 #!/bin/bash -xe
 echo 'shell_scripts/system_tests.collect_logs.sh'
 
-WORKSPACE=$PWD
+#
+# Required jjb vars:
+#    version
+#
+VERSION={version}
 
-PREFIX="$WORKSPACE/lago-prefix"
+WORKSPACE="$PWD"
+OVIRT_SUITE="basic_suite_$VERSION"
+PREFIX="$WORKSPACE/ovirt-system-tests/deployment-$OVIRT_SUITE"
+
+mkdir -p "$WORKSPACE/exported-artifacts"
 
 if [[ -d "$PREFIX" ]]; then
-    rm -rf \
-        "$WORKSPACE/exported-artifacts"
-
-    mkdir -p "$WORKSPACE/exported-artifacts"
 
     if [[ -d "$PREFIX/test_logs/" ]]; then
         cp -av \
@@ -20,7 +24,7 @@ if [[ -d "$PREFIX" ]]; then
     if [[ -d "$PREFIX/logs/" ]]; then
         cp -av \
             "$PREFIX/logs/" \
-            "$WORKSPACE/exported-artifacts/testenv_logs"
+            "$WORKSPACE/exported-artifacts/lago_logs"
     fi
 
     find "$PREFIX" \
