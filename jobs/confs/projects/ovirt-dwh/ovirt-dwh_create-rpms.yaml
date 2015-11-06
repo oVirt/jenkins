@@ -7,6 +7,7 @@
       - created
     distro:
       - fc22
+      - fc23
       - el7
       - el6:
           extra-repos: jpackage-6.0-generic,http://ftp.heanet.ie/pub/jpackage/6.0/generic/free

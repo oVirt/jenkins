@@ -129,19 +129,19 @@
           project: ovirt-live_master_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
-          project: py2exe-py2.7_master_create-rpms-fc22-x86_64_merged
+          project: py2exe-py2.7_master_create-rpms-fc23-x86_64_merged
       - copy-create-job-artifact:
-          project: pywin32-py2.7_master_create-rpms-fc22-x86_64_merged
+          project: pywin32-py2.7_master_create-rpms-fc23-x86_64_merged
       - copy-create-job-artifact:
-          project: python-windows_master_create-rpms-fc22-x86_64_merged
+          project: python-windows_master_create-rpms-fc23-x86_64_merged
       - copy-create-job-artifact:
-          project: vcredist-x86_master_create-rpms-fc22-x86_64_merged
+          project: vcredist-x86_master_create-rpms-fc23-x86_64_merged
       - copy-create-job-artifact:
-          project: spice-qxl_master_create-rpms-fc22-x86_64_merged
+          project: spice-qxl_master_create-rpms-fc23-x86_64_merged
       - copy-create-job-artifact:
-          project: nsis-simple-service-plugin_master_create-rpms-fc22-x86_64_merged
+          project: nsis-simple-service-plugin_master_create-rpms-fc23-x86_64_merged
       - copy-create-job-artifact:
-          project: virtio-win-drivers_master_create-rpms-fc22-x86_64_merged
+          project: virtio-win-drivers_master_create-rpms-fc23-x86_64_merged
 
 
 

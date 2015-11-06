@@ -16,6 +16,8 @@
           project: "{project-prefix}el7-x86_64{project-suffix}"
       - copy-create-job-artifact:
           project: "{project-prefix}fc22-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc23-x86_64{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-all_master-platforms
@@ -36,6 +38,8 @@
           project: "{project-prefix}el7-x86_64{project-suffix}"
       - copy-create-job-artifact:
           project: "{project-prefix}fc22-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc23-x86_64{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-older-platforms
@@ -63,6 +67,8 @@
           project: "{project-prefix}fc21-x86_64{project-suffix}"
       - copy-create-job-artifact:
           project: "{project-prefix}fc22-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc23-x86_64{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-hosted-engine-platforms
@@ -71,3 +77,6 @@
           project: "{project-prefix}el7-x86_64{project-suffix}"
       - copy-create-job-artifact:
           project: "{project-prefix}fc22-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc23-x86_64{project-suffix}"
+

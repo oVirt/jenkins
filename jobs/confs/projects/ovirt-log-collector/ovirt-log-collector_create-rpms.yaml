@@ -43,6 +43,7 @@
     mock-build-type: onlyrpm
     distro:
       - fc22
+      - fc23
       - el6
       - el7
     exclude:

@@ -12,7 +12,7 @@
       - 3.5:
           branch: ovirt-wgt-toolchain-3.5
     mock-build-type: all
-    distro: fc22
+    distro: fc23
     arch: x86_64
     extra-build-packages: |
       rpmdevtools

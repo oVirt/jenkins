@@ -8,7 +8,7 @@
     stage:
       - check-patch
     distro:
-      - fc22
+      - fc23
     trigger: 'on-change'
     arch: x86_64
     jobs:
@@ -27,6 +27,7 @@
       - el6
       - el7
       - fc22
+      - fc23
     trigger: 'on-change'
     arch: x86_64
     jobs:

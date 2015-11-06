@@ -26,9 +26,12 @@
       - el6
       - el7
       - fc22
+      - fc23
     exclude:
       - version: 3.5
-        distro: fc22
+        distro:
+          - fc22
+          - fc23
       - version: master
         distro: el6
     arch: x86_64

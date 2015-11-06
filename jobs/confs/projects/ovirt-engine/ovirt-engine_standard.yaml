@@ -11,6 +11,7 @@
       - el6
       - el7
       - fc22
+      - fc23
     exclude:
       - version: master
         distro: el6
@@ -36,6 +37,7 @@
       - el6
       - el7
       - fc22
+      - fc23
     exclude:
       - version: master
         distro: el6

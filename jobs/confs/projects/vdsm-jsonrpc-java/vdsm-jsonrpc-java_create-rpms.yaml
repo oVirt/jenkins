@@ -35,6 +35,7 @@
     mock-build-type: onlyrpm
     distro:
       - fc22
+      - fc23
       - el6:
           extra-repos: |
             ci-tools,http://resources.ovirt.org/repos/ci-tools/el6

@@ -31,6 +31,14 @@
             glib2-devel
             yajl-devel
             python3-devel
+      - fc23:
+          extra-build-packages: |
+            autoreconf
+            gettext-devel
+            automake
+            glib2-devel
+            yajl-devel
+            python3-devel
       - el7:
           extra-build-packages: |
             autoreconf

@@ -54,7 +54,7 @@
           branch: ovirt-3.6
     stage: check-patch
     distro:
-      - fc22
+      - fc23
     arch: x86_64
     trigger: 'on-change'
     jobs:

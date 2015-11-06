@@ -12,6 +12,7 @@
     distro:
       - fc21
       - fc22
+      - fc23
       - el6
       - el7
     arch: x86_64
