@@ -868,18 +868,22 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
             echo "##      rc = $res"
             echo "##########################################################"
             if [[ "$res" != "0" ]]; then
-                echo "##! ERROR vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
                 lastlog="$( \
                     find logs -iname \*.log \
                     | xargs ls -lt \
                     | head -n1\
                     | awk '{print $9}' \
                 )"
-                echo "##! Last 20 log enties: $lastlog"
-                echo "##!"
-                tail -n 20 "$lastlog"
-                echo "##!"
-                echo "##! ERROR ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+                if [[ -r "$lastlog" ]]; then
+                    echo "##! ERROR vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+                    echo "##! Last 20 log enties: $lastlog"
+                    echo "##!"
+                    tail -n 20 "$lastlog"
+                    echo "##!"
+                    echo "##! ERROR ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+                else
+                    echo "No log files found, check command output"
+                fi
                 echo "##!########################################################"
                 exit $res
             else
