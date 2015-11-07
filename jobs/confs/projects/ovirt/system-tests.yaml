@@ -11,4 +11,6 @@
 - project:
     <<: *system-tests-common
     name: ovirt-system-tests
-    version: 3.5
+    version:
+      - 3.5
+      - 3.6
