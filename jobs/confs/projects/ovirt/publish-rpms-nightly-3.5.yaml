@@ -63,7 +63,7 @@
           project-prefix: ovirt-engine-extension-aaa-misc_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-older-platforms:
-          project-prefix: ovirt-engine-extension-logger-log4j_master_create-rpms-
+          project-prefix: ovirt-engine-extension-logger-log4j_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-older-platforms:
           project-prefix: ovirt-dwh_3.5_create-rpms-
