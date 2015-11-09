@@ -26,22 +26,22 @@
           mkdir $WORKSPACE/artifacts
 
 
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-older-platforms:
           project-prefix: ovirt-host-deploy_3.5_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-older-platforms:
           project-prefix: ovirt-engine-sdk_3.5_build-artifacts-
           project-suffix: ""
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-older-platforms:
           project-prefix: otopi_3.5_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-older-platforms:
           project-prefix: ovirt-engine-cli_3.5_build-artifacts-
           project-suffix: ''
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-older-platforms:
           project-prefix: mom_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-older-platforms:
           project-prefix: ioprocess_0.15.0_create-rpms-
           project-suffix: _merged
 
