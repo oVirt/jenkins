@@ -30,9 +30,6 @@
           project-prefix: ovirt-host-deploy_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-all_master-platforms:
-          project-prefix: ovirt-engine-sdk_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-all_master-platforms:
           project-prefix: otopi_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-all_master-platforms:
@@ -45,6 +42,9 @@
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-log-collector_master_create-rpms-
           project-suffix: _merged
+      - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-engine-cli_master_build-artifacts-
+          project-suffix: ''
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-extension-aaa-ldap_master_create-rpms-
           project-suffix: _merged
@@ -70,6 +70,9 @@
           project-prefix: ovirt-engine_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-engine-sdk_master_build-artifacts-
+          project-suffix: ""
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-sdk-java_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine_master-platforms:
@@ -92,9 +95,6 @@
       - copy-create-job-artifact-vdsm-platforms:
           project-prefix: vdsm_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-vdsm-platforms:
-          project-prefix: ovirt-engine-cli_master_build-artifacts-
-          project-suffix: ''
 
       - copy-create-job-artifact-hosted-engine-platforms:
           project-prefix: ovirt-hosted-engine-ha_master_create-rpms-

@@ -29,7 +29,7 @@
       - copy-create-job-artifact-all-platforms:
           project-prefix: ovirt-host-deploy_3.6_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-engine-sdk_3.6_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-all-platforms:
@@ -38,7 +38,7 @@
       - copy-create-job-artifact-all-platforms:
           project-prefix: ovirt-vmconsole_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-all-platforms:
+      - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-engine-cli_3.6_build-artifacts-
           project-suffix: ''
 
