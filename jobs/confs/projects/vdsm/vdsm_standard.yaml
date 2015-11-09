@@ -1,6 +1,6 @@
-- vdsm_stardard_common:
-    name: 'vdsm_stardard_common'
-    vdsm_stardard--key: &vdsm_stardard_common
+- vdsm_standard_common:
+    name: 'vdsm_standard_common'
+    vdsm_stardard--key: &vdsm_standard_common
       project:
         - vdsm
       version:
@@ -23,7 +23,7 @@
 
 
 - project:
-    <<: *vdsm_stardard_common
+    <<: *vdsm_standard_common
     name: vdsm_build-artifacts_3.5
     version:
       - 3.5:
@@ -33,7 +33,7 @@
       - el6
 
 - project:
-    <<: *vdsm_stardard_common
+    <<: *vdsm_standard_common
     name: vdsm_build-artifacts
     version:
       - master:
