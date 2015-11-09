@@ -1,0 +1,6 @@
+- scm:
+    name: ovirt-vmconsole-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-vmconsole
+          git-server: '{git-server}'
