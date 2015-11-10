@@ -12,9 +12,10 @@ FLUSH_CACHE="${FLUSH_CACHE:-false}"
 confs_dir="${WORKSPACE}/jenkins/jobs/confs"
 yaml_dir="${confs_dir}/yaml:${confs_dir}/projects"
 conf_file="${HOME}/.jenkinsjobsrc"
+options=()
 ### Flush the cache if specified
 if [[ "$FLUSH_CACHE" == "true" ]]; then
-    options="$options  --flush-cache"
+    options+=("--flush-cache")
 fi
 cd "$confs_dir"
 [[ -d "${confs_dir}/projects" ]] \
@@ -24,7 +25,7 @@ jenkins-jobs \
     -l debug \
     --allow-empty \
     --conf "$conf_file" \
-    $options \
+    "${options[@]}" \
     update \
         --workers 0 \
         "$yaml_dir_extended"
