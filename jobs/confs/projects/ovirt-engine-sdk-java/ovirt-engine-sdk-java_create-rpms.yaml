@@ -21,6 +21,9 @@
           extra-packages: |
             maven3
       - el7
+    exclude:
+      - version: 3.5
+        distro: fc23
     arch: x86_64
     extra-build-packages: |
       git
