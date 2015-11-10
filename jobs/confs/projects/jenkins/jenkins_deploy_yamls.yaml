@@ -12,6 +12,12 @@
           description: |
             If set, it will update all the jobs instead of only the changed
             ones
+      - string:
+          name: JOBS_FILTERS
+          default: ''
+          description: |
+            Comma separated list of globs to filter the jobs to deploy by,
+            ex: 'ovirt_master_system*,vdsm*,jenkins_master_deploy'
       - gerrit-params:
           branch: master
     triggers:

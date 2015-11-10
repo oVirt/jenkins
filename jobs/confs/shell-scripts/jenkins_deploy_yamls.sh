@@ -6,13 +6,19 @@ echo "shell-scripts/jenkins_deploy_yamls.sh"
 #   FLUSH_CACHE
 #     If set to 'true' will force updating the jobs and ignore the cache
 #
+#   JOBS_FILTERS
+#     Comma separated globs to select which jobs to update, if not set will
+#     select them all
+#
 WORKSPACE=$PWD
 FLUSH_CACHE="${FLUSH_CACHE:-false}"
+JOBS_FILTERS=(${JOBS_FILTERS:+${JOBS_FILTERS//,/ }})
 
 confs_dir="${WORKSPACE}/jenkins/jobs/confs"
 yaml_dir="${confs_dir}/yaml:${confs_dir}/projects"
 conf_file="${HOME}/.jenkinsjobsrc"
 options=()
+
 ### Flush the cache if specified
 if [[ "$FLUSH_CACHE" == "true" ]]; then
     options+=("--flush-cache")
@@ -28,4 +34,5 @@ jenkins-jobs \
     "${options[@]}" \
     update \
         --workers 0 \
-        "$yaml_dir_extended"
+        "$yaml_dir_extended" \
+        "${JOBS_FILTERS[@]}"
