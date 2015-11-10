@@ -120,6 +120,7 @@ local   all            all        trust
 EOF
     cat /var/lib/pgsql/data/pg_hba.conf
     service postgresql start || res=$(($res + $?))
+    sleep 30
     psql -h 127.0.0.1 postgres postgres \
         -c "CREATE USER engine WITH PASSWORD '123456';" \
         || res=$(($res + $?))
