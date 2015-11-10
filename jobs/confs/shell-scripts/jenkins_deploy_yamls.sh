@@ -1,6 +1,14 @@
 #!/bin/bash -ex
 echo "shell-scripts/jenkins_deploy_yamls.sh"
 ## UPDATE JOBS FROM YAML
+#
+# Requires the env vars:
+#   FLUSH_CACHE
+#     If set to 'true' will force updating the jobs and ignore the cache
+#
+WORKSPACE=$PWD
+FLUSH_CACHE="${FLUSH_CACHE:-false}"
+
 confs_dir="${WORKSPACE}/jenkins/jobs/confs"
 yaml_dir="${confs_dir}/yaml:${confs_dir}/projects"
 conf_file="${HOME}/.jenkinsjobsrc"

@@ -6,6 +6,12 @@
           name: ARCHIVE_JOBS
           default: true
           description: "Archive jobs removed from yaml"
+      - bool:
+          name: FLUSH_CACHE
+          default: false
+          description: |
+            If set, it will update all the jobs instead of only the changed
+            ones
       - gerrit-params:
           branch: master
     triggers:
