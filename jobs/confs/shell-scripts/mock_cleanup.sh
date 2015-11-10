@@ -30,6 +30,7 @@ fi
 # stop any processes running inside the chroot
 failed=false
 mock_confs=("$WORKSPACE"/*/mocker*)
+# Clean current jobs mockroot if any
 for mock_conf_file in "${mock_confs[@]}"; do
     [[ "$mock_conf_file" ]] || continue
     echo "Cleaning up mock $mock_conf"
@@ -67,6 +68,27 @@ for mock_conf_file in "${mock_confs[@]}"; do
             failed=true
         }
     done
+done
+
+# Clean any leftover chroot from other jobs
+for mock_chroot in /var/lib/mock/*; do
+    this_chroot_failed=false
+    mounts=($(mount | awk '{print $3}' | grep "$mock_root")) || :
+    if [[ "$mounts" ]]; then
+        echo "Found mounted dirs inside the chroot $mock_chroot." \
+             "Trying to umount."
+    fi
+    for mount in "${mounts[@]}"; do
+        sudo umount "$mount" \
+        || {
+            echo "ERROR:  Failed to umount $mount."
+            failed=true
+            this_chroot_failed=true
+        }
+    done
+    if ! $this_chroot_failed; then
+        sudo rm -rf "$mock_chroot"
+    fi
 done
 
 if $failed; then
