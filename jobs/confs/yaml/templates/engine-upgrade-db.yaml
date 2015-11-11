@@ -25,7 +25,7 @@
 #    What to do with test-branch, upgrade from or to it (values: from|to)
 #
 - job-template:
-    name: 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{trigger}'
+    name: 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{distro}_{trigger}'
     parameters:
       - gerrit-params:
           branch: '{branch}'
@@ -36,6 +36,7 @@
       - jenkins:
           branch: master
           git-server: '{git-server}'
+    node: '{distro}'
     triggers:
       - on-patch-{trigger}-with-files-whitelist:
           project: 'ovirt-engine'

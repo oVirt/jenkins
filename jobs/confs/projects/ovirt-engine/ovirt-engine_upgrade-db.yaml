@@ -18,8 +18,9 @@
           test-branch: 'master'
     action:
       - from
+    distro: el7
     jobs:
-      - 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{trigger}'
+      - 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{distro}_{trigger}'
 
 - project:
     name: ovirt-engine_upgrade-db_3.6
@@ -38,8 +39,9 @@
           test-branch: 'ovirt-engine-3.6'
     action:
       - from
+    distro: el6
     jobs:
-      - 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{trigger}'
+      - 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{distro}_{trigger}'
 
 - project:
     name: ovirt-engine_upgrade-db_3.5
@@ -56,5 +58,6 @@
           test-branch: 'ovirt-engine-3.5'
     action:
       - from
+    distro: el6
     jobs:
-      - 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{trigger}'
+      - 'ovirt-engine_{version}_upgrade-db-{action}-{test-version}_{distro}_{trigger}'
