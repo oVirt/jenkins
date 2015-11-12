@@ -71,11 +71,11 @@ for mock_conf_file in "${mock_confs[@]}"; do
 done
 
 # Clean any leftover chroot from other jobs
-for mock_chroot in /var/lib/mock/*; do
+for mock_root in /var/lib/mock/*; do
     this_chroot_failed=false
     mounts=($(mount | awk '{print $3}' | grep "$mock_root")) || :
     if [[ "$mounts" ]]; then
-        echo "Found mounted dirs inside the chroot $mock_chroot." \
+        echo "Found mounted dirs inside the chroot $mock_root." \
              "Trying to umount."
     fi
     for mount in "${mounts[@]}"; do
@@ -87,7 +87,7 @@ for mock_chroot in /var/lib/mock/*; do
         }
     done
     if ! $this_chroot_failed; then
-        sudo rm -rf "$mock_chroot"
+        sudo rm -rf "$mock_root"
     fi
 done
 
@@ -98,6 +98,7 @@ fi
 
 # remove mock system cache, we will setup proxies to do the caching and this
 # takes lots of space between runs
+shopt -u nullglob
 sudo rm -Rf /var/cache/mock/*
 
 # restore the permissions in the working dir, as sometimes it leaves files
