@@ -155,7 +155,7 @@
           send-to-individuals: false
       - ssh:
           site: resources.ovirt.org
-          source: '**/*.rpm, **/*.tar.gz, **/*.iso **/*.ova **/*.exe'
+          source: '**/*.rpm, **/*.tar.gz, **/*.iso **/*.exe'
           target: ovirt-3.6-snapshot.tmp
           command: |
             mkdir -p artifacts/ovirt-3.6-snapshot.tmp
