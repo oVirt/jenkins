@@ -4,6 +4,12 @@
     parameters:
       - gerrit-params:
           branch: '{branch}'
+    concurrent: true
+    properties:
+        - throttle:
+            max-per-node: 1
+            max-total: 3
+            option: project
     scm:
       - '{project}-gerrit':
           git-server: '{git-server}'
