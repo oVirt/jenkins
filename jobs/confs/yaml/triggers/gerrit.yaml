@@ -4,6 +4,7 @@
       - gerrit:
           server-name: '{gerrit-server}'
           trigger-on:
+            - draft-published-event
             - patchset-created-event:
                 exclude-drafts: true
                 exclude-no-code-change: true
@@ -36,6 +37,7 @@
       - gerrit:
           server-name: '{gerrit-server}'
           trigger-on:
+            - draft-published-event
             - patchset-created-event:
                 exclude-drafts: true
                 exclude-no-code-change: true
@@ -77,6 +79,7 @@
           gerrit-build-unstable-verified-value: -1
           gerrit-build-failed-verified-value: -1
           trigger-on:
+            - draft-published-event
             - patchset-created-event:
                 exclude-drafts: true
                 exclude-no-code-change: true
@@ -98,6 +101,7 @@
       - gerrit:
           server-name: '{gerrit-server}'
           trigger-on:
+            - draft-published-event
             - patchset-created-event:
                 exclude-drafts: true
                 exclude-no-code-change: true

@@ -19,6 +19,7 @@
       - gerrit:
           server-name: '{gerrit-server}'
           trigger-on:
+              - draft-published-event
               - patchset-created-event:
                   exclude-drafts: true
                   exclude-no-code-change: true
