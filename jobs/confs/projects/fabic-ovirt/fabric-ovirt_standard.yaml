@@ -12,7 +12,6 @@
     distro:
       - el6
       - el7
-      - fc21
       - fc22
       - fc23
     trigger: 'on-change'

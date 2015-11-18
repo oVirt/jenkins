@@ -12,7 +12,6 @@
       - check-merged:
           node-filter: 'nested && fc21'
     distro:
-      - fc21
       - fc22
       - fc23
       - el7

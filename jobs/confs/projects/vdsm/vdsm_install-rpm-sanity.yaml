@@ -7,13 +7,6 @@
           branch: master
     mock-build-type: onlyrpm
     distro:
-      - fc21:
-          extra-repos: |
-              ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
-              ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
-              glusterfs-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/\\$basearch
-              glusterfs-noarch-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/noarch
-              fedora-virt-preview,http://fedorapeople.org/groups/virt/virt-preview/fedora-\\$releasever/\\$basearch
       - fc22:
           extra-repos: |
               ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
@@ -53,13 +46,6 @@
           branch: ovirt-3.6
     mock-build-type: onlyrpm
     distro:
-      - fc21:
-          extra-repos: |
-              ovirt-3.6-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
-              ovirt-3.6-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.6-snapshot-static/rpm/$distro
-              glusterfs-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/\\$basearch
-              glusterfs-noarch-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/noarch
-              fedora-virt-preview,http://fedorapeople.org/groups/virt/virt-preview/fedora-\\$releasever/\\$basearch
       - fc22:
           extra-repos: |
               ovirt-3.6-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
@@ -98,13 +84,6 @@
           branch: ovirt-3.5
     mock-build-type: onlyrpm
     distro:
-      - fc21:
-          extra-repos: |
-              ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
-              ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
-              glusterfs-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/\\$basearch
-              glusterfs-noarch-fedora,http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-\\$releasever/noarch
-              fedora-virt-preview,http://fedorapeople.org/groups/virt/virt-preview/fedora-\\$releasever/\\$basearch
       - el7:
           extra-repos: |
               ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro

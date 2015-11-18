@@ -3,7 +3,6 @@
 MOCKS=(
     el6:epel-6-x86_64
     el7:epel-7-x86_64
-    fc21:fedora-21-x86_64
     fc22:fedora-22-x86_64
     fc23:fedora-23-x86_64
 )
@@ -85,8 +84,8 @@ help() {
     To run the build script on all the chroots:
     > $0 --build-only
 
-    To run only the build artifacts script on fedoras 21 and 22
-    > $0 --build-only fc21:fedora-21-x86_64 fc22:fedora-22-x86_64
+    To run only the build artifacts script on fedoras 22 and 23
+    > $0 --build-only fc22:fedora-22-x86_64 fc23:fedora-23-x86_64
 
     To open a shell to debug the check-merged script on el7
     > $0 --merged-only --shell el7:epel-7-x86_64

@@ -15,14 +15,6 @@
       - master:
           branch: master
     distro:
-      - fc21:
-          extra-build-packages: |
-            autoreconf
-            gettext-devel
-            automake
-            glib2-devel
-            yajl-devel
-            python3-devel
       - fc22:
           extra-build-packages: |
             autoreconf
@@ -58,7 +50,6 @@
     distro:
       - el6
       - el7
-      - fc21
       - fc22
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':

@@ -24,7 +24,6 @@
     mock-build-type: all
     distro:
       - el7
-      - fc21
       - fc22
       - fc23
     exclude:
