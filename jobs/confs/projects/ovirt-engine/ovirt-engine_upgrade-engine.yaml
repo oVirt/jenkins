@@ -25,8 +25,11 @@
     project: ovirt-engine
     trigger:
       - merged
-    version: 3.6
-    branch: 'ovirt-engine-3.6'
+    version:
+      - 3.6:
+          branch: 'ovirt-engine-3.6'
+      - 3.6.1:
+          branch: 'ovirt-engine-3.6.1.x'
     test-version:
       - '3.6':
           repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot,

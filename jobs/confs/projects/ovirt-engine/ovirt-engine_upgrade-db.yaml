@@ -14,6 +14,8 @@
     test-version:
       - 3.6:
           test-branch: 'ovirt-engine-3.6'
+      - 3.6.1:
+          test-branch: 'ovirt-engine-3.6.1.x'
       - master:
           test-branch: 'master'
     action:
@@ -32,6 +34,8 @@
     version:
       - 3.6:
           branch: 'ovirt-engine-3.6'
+      - 3.6.1:
+          branch: 'ovirt-engine-3.6.1.x'
     test-version:
       - 3.5:
           test-branch: 'ovirt-engine-3.5'
