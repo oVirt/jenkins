@@ -60,3 +60,11 @@
     name: check-merged_trigger_timed
     triggers:
       - timed: '{trigger-times}'
+
+# this is needed because if you reconfigure a job that had triggers with empty
+# triggers, it will not really remove any of them, you have to set at least one
+# trigger
+- trigger:
+    name: dummy-trigger
+    triggers:
+      - timed: ''

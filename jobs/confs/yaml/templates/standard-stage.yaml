@@ -1,5 +1,5 @@
-- job-template:  &standard-template
-    name: '{project}_{version}_{stage}-{distro}-{arch}'
+- job-template: &standard-template-basic
+    name: 'standard-template-basic'
     node: '{node-filter}'
     parameters:
       - gerrit-params:
@@ -23,29 +23,83 @@
           branch: '{branch}'
           trigger-times: '{trigger-times}'
           gerrit-server: '{gerrit-server}'
-    builders:
-      - cleanup-slave
-      - '{stage}_builder':
-          project: '{project}'
-          distro: '{distro}'
-          arch: '{arch}'
-          extra-env: '{extra-env}'
-          cherry-pick: '{cherry-pick}'
-    publishers:
-      - mock-cleanup
-      - exported-artifacts
-      - html-reports
+
+- job-template: &standard-template
+      <<: *standard-template-basic
+      name: '{project}_{version}_{stage}-{distro}-{arch}'
+      scm:
+        - '{project}-gerrit':
+            git-server: '{git-server}'
+        # Non-gerrit scm, we have to specify the branch
+        - jenkins:
+            branch: master
+            git-server: '{git-server}'
+      builders:
+        - cleanup-slave
+        - '{stage}_builder':
+            project: '{project}'
+            distro: '{distro}'
+            arch: '{arch}'
+            extra-env: '{extra-env}'
+            cherry-pick: '{cherry-pick}'
+      publishers:
+        - mock-cleanup
+        - exported-artifacts
+        - html-reports
 
 - job-template:
-    << : *standard-template
+    <<: *standard-template
     name: 'ovirt-appliance_{version}_{stage}-{distro}-{arch}'
     logrotate:
       numToKeep: 20
       artifactNumToKeep: 2
 
 - job-template:
-    << : *standard-template
+    <<: *standard-template
     name: 'ovirt-engine_{version}_build-artifacts-{distro}-{arch}'
     logrotate:
       numToKeep: 40
       artifactNumToKeep: 10
+
+# the following templates are for the new pipeline jobs
+- job-template:
+    <<: *standard-template
+    name: 'lago_{version}_{stage}-{distro}-{arch}'
+    triggers:
+      - dummy-trigger:
+          project: '{project}'
+          branch: '{branch}'
+
+- job-template:
+    <<: *standard-template-basic
+    name: '{project}_{version}_{stage}-pipeline'
+    project-type: workflow
+    dsl: !include-raw groovy-scripts/standard-pipeline.groovy
+    properties: []
+
+- job-template:
+    name: '{project}_{version}_deploy-to-{reponame}-snapshot'
+    node: '{node-filter}'
+    parameters:
+      - string:
+          name: BUILD_ID
+          default: ''
+          description: |
+            Id of this build, will be also the suffix of the snapshot repo created
+      - string:
+          name: BUILD_ARTIFACTS_JOBS
+          default: ''
+          description: |
+            Comma separated list of jobs to deploy to {reponame} snapshot repo
+    builders:
+      - shell: |
+          jobs=(${{BUILD_ARTIFACTS_JOBS//,/ }})
+          for line in "repo-suffix:.$BUILD_ID" "${{jobs[@]}}"; do
+              echo "$line"
+          done \
+          | ssh \
+              -o StrictHostKeyChecking=no \
+              deploy-{reponame}-snapshot@resources.ovirt.org
+    wrappers:
+      - ssh-agent-credentials:
+          user: b76f2120-1f78-44b3-918e-2d7c5df9ed6e

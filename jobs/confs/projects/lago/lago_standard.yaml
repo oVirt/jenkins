@@ -1,21 +1,44 @@
+- lago_common:
+    name: lago_common
+    lago_common--key: &lago_common
+      project: lago
+      version:
+        - master:
+            branch: master
+      distro:
+        - fc22
+        - fc23
+        - el7
+      trigger: 'on-change'
+      arch: x86_64
+      reponame: lago
+
+# TODO: migrate to pipeline when ready
 - project:
-    name: lago_checks_standard
-    project:
-      - lago
-    version:
-      - master:
-          branch: master
+    <<: *lago_common
+    name: lago_check-patch_standard
     stage:
-      - build-artifacts
       - check-patch:
           node-filter: 'nested && fc21'
-      - check-merged:
-          node-filter: 'nested && fc21'
-    distro:
-      - fc22
-      - fc23
-      - el7
-    trigger: 'on-change'
-    arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+# This is already using the pipeline
+- project:
+    <<: *lago_common
+    name: lago_checks_standard
+    stage:
+      - build-artifacts
+      - check-merged:
+          node-filter: 'nested && fc21'
+    jobs:
+      - 'lago_{version}_{stage}-{distro}-{arch}'
+      - '{project}_{version}_deploy-to-{reponame}-snapshot'
+
+- project:
+    <<: *lago_common
+    name: lago_checks_standard_pipeline
+    stage:
+      - check-merged
+    jobs:
+      - '{project}_{version}_{stage}-pipeline'
