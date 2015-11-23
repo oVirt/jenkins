@@ -24,8 +24,9 @@
     builders:
         - shell: |
             #!/bin/bash
+            #TODO: add all ovirt projects
             user="jenkins_ro"
-            projects="vdsm,ovirt-engine"
+            projects="vdsm,ovirt-engine,jenkins,infra-puppet,lago,gerrit-admin,infra-docs,repoman"
             dry=
 
             if [ "$DRY_RUN" == 'true' ] ; then
@@ -50,7 +51,7 @@
 
     publishers:
         - email-ext:
-            recipients: dcaro@redhat.com, eedri@redhat.com, iheim@redhat.com, vishnu.srkmr@gmail.com
+            recipients: dcaro@redhat.com, eedri@redhat.com, ykaul@redhat.com, vishnu.srkmr@gmail.com
             content-type: text
             subject: Alert-Old-Patches Build ${BUILD_NUMBER}
             attach-build-log: true
