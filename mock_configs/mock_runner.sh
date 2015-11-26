@@ -117,15 +117,21 @@ extract_proxy_from_mock_conf() {
     grep -oP '(?<=^proxy=).*$' "$conf_file"
 }
 
+extract_repo_url_from_mock_conf() {
+    local conf_file="${1?}"
+    grep -oP '(?<=^baseurl=).*$' "$conf_file" | head -n1
+}
 
 try_proxy() {
     local mock_conf_file="${1?}"
     local proxy="$(extract_proxy_from_mock_conf "$mock_conf_file")"
+    local repo_url="$(extract_repo_url_from_mock_conf "$mock_conf_file")"
     http_proxy="$proxy" \
         timeout 5 \
         wget \
             -q \
-            "http://ovirt.org" \
+            "$repo_url" \
+            -O - \
     &>/dev/null
     return $?
 }
