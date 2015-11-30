@@ -824,7 +824,7 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 TRY_PROXY="true"
                 shift
             ;;
-            -p|--add-package)
+            -a|--add-package)
                 PACKAGES+=("$2")
                 shift 2
             ;;
