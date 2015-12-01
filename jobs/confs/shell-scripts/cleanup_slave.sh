@@ -150,6 +150,32 @@ cleanup_workspaces() {
     return $res
 }
 
+
+cleanup_lago_network_interfaces() {
+    local links \
+        link
+    local failed=false
+    # remove lago-type interfaces, that is, 8chars of hash + '-some_tag'
+    links=($( \
+        sudo ip link show \
+        | grep -Po '^[[:alnum:]]*: [[:alnum:]]{8}-[^:]*' \
+        | awk '{print $2}' \
+    ))
+    for link in "${links[@]}"; do
+        echo "Removing interface $link"
+        sudo ip link delete "$link" \
+        || {
+            failed=true
+            echo "ERROR: Failed to cleanup interface $link"
+        }
+    done
+    if $failed; then
+        return 1
+    fi
+    return 0
+}
+
+
 main() {
     local workspace="${1?}"
     echo "###################################################################"
@@ -163,6 +189,7 @@ main() {
     cleanup_logs || :
     cleanup_workspaces "$workspace" || :
     cleanup_home || :
+    cleanup_lago_network_interfaces || :
     echo "---------------------------------------------------------------"
     sudo df -h || :
     echo "###################################################################"
