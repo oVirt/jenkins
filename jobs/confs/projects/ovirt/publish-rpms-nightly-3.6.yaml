@@ -93,8 +93,8 @@
           project-prefix: mom_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-vdsm-platforms:
-          project-prefix: vdsm_3.6_create-rpms-
-          project-suffix: _merged
+          project-prefix: vdsm_3.6_build-artifacts-
+          project-suffix: ""
 
       - copy-create-job-artifact-hosted-engine-platforms:
           project-prefix: ovirt-hosted-engine-ha_3.6_create-rpms-

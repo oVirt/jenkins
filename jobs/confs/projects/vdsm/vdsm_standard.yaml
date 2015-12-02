@@ -3,20 +3,9 @@
     vdsm_stardard--key: &vdsm_standard_common
       project:
         - vdsm
-      version:
-        - master:
-            branch: master
-        - 3.6:
-            branch: ovirt-3.6
-        - 3.5:
-            branch: ovirt-3.5
       stage:
         - build-artifacts
         - check-patch
-      distro:
-        - fc22
-        - fc23
-        - el7
       arch: x86_64
       trigger: 'on-change'
       jobs:
@@ -32,6 +21,8 @@
     stage: build-artifacts
     distro:
       - el6
+      - el7
+
 
 - project:
     <<: *vdsm_standard_common
@@ -42,12 +33,16 @@
       - 3.6:
           branch: ovirt-3.6
     stage: build-artifacts
+    distro:
+      - el7
+      - fc22
+      - fc23
+
 
 - project:
+    <<: *vdsm_standard_common
     name: vdsm_standard
     node-filter: fc21 || fc22
-    project:
-      - vdsm
     version:
       - master:
           branch: master
@@ -56,7 +51,3 @@
     stage: check-patch
     distro:
       - fc23
-    arch: x86_64
-    trigger: 'on-change'
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'

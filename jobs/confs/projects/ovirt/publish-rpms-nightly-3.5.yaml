@@ -76,8 +76,8 @@
           project-suffix: _merged
 
       - copy-create-job-artifact-older-platforms:
-          project-prefix: vdsm_3.5_create-rpms-
-          project-suffix: _merged
+          project-prefix: vdsm_3.5_build-artifacts-
+          project-suffix: ""
 
       - copy-create-job-artifact-older-platforms:
           project-prefix: ovirt-hosted-engine-ha_3.5_create-rpms-
