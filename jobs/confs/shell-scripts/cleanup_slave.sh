@@ -178,6 +178,57 @@ cleanup_lago_network_interfaces() {
 }
 
 
+cleanup_lago_vms() {
+    local vm \
+        vms
+    local failed=false
+    # remove lago-type vms, that is, 8chars of hash + '-some_tag'
+    vms=($( \
+        sudo virsh list \
+        | grep -Po '^ *[[:digit:]]* +[[:alnum:]]{8}-[^[:space:]]*' \
+        | awk '{print $2}' \
+    ))
+    for vm in "${vms[@]}"; do
+        echo "Removing domain $vm"
+        sudo virsh destroy "$vm" \
+        || {
+            failed=true
+            echo "ERROR: Failed to cleanup domain $vm"
+        }
+    done
+    if $failed; then
+        return 1
+    fi
+    return 0
+}
+
+
+cleanup_lago_virtual_network_interfaces() {
+    local links \
+        link
+    local failed=false
+    # remove lago-type interfaces, that is, 8chars of hash + '-some_tag'
+    links=($( \
+        sudo virsh net-list \
+        | grep -Po '^ *[[:alnum:]]{8}-[^[:space:]]*' \
+    ))
+    for link in "${links[@]}"; do
+        echo "Removing virtual interface $link"
+        sudo virsh net-destroy "$link" \
+        || {
+            failed=true
+            echo "ERROR: Failed to cleanup virtual interface $link"
+        }
+    done
+    if $failed; then
+        return 1
+    fi
+    return 0
+}
+
+
+
+
 main() {
     local workspace="${1?}"
     echo "###################################################################"
@@ -191,6 +242,8 @@ main() {
     cleanup_logs || :
     cleanup_workspaces "$workspace" || :
     cleanup_home || :
+    cleanup_lago_vms || :
+    cleanup_lago_virtual_network_interfaces || :
     cleanup_lago_network_interfaces || :
     echo "---------------------------------------------------------------"
     sudo df -h || :
