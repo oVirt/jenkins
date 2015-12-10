@@ -162,6 +162,8 @@ cleanup_lago_network_interfaces() {
         | awk '{print $2}' \
     ))
     for link in "${links[@]}"; do
+        #If the interface has an '@' the name is before it
+        link="${link%%@*}"
         echo "Removing interface $link"
         sudo ip link delete "$link" \
         || {
