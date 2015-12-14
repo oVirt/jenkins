@@ -1,0 +1,6 @@
+- scm:
+    name: ovirt-engine-sdk-ruby-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-engine-sdk-ruby
+          git-server: '{git-server}'

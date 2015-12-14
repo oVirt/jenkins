@@ -76,6 +76,9 @@
           project-prefix: ovirt-engine-sdk-java_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-engine-sdk-ruby_master_build-artifacts-
+          project-suffix: ""
+      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-image-uploader_master_build-artifacts-
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-scheduler-proxy_master_build-artifacts-
