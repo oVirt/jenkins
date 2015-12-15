@@ -1,0 +1,9 @@
+- publisher:
+    name: html-reports
+    publishers:
+      - html-publisher:
+          name: "Archived report"
+          dir: "exported-artifacts/"
+          files: "index.html"
+          allow-missing: true
+          keep-all: true
