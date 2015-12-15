@@ -1,0 +1,20 @@
+##############################################################################
+###   Projects
+##############################################################################
+- project:
+    name: ovirt-node-ng_build-nightly
+    project: ovirt-node-ng
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+    distro:
+      - fc23
+    trigger: 'timed'
+    trigger-times: '30 00 * * *'
+    arch:
+      - x86_64
+    node-filter: ((fc21 || fc22) && nested) || appliance-builder
+    jobs:
+        - '{project}_{version}_{stage}-{distro}-{arch}'
