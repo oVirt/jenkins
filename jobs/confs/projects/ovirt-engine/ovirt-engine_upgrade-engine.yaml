@@ -11,10 +11,10 @@
     test-version:
       - 'master'
       - '3.6'
-    repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot,
-        http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static'
-    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot,
-        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static'
+    repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot/rpm/{distro}/,
+        http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static/rpm/{distro}/'
+    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/{distro}/,
+        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static/rpm/{distro}/'
     distro: el7
     jdk: 'java-1.8.0-openjdk'
     jobs:
@@ -30,12 +30,12 @@
           branch: 'ovirt-engine-3.6'
     test-version:
       - '3.6':
-          repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot,
-              http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static'
+          repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot/rpm/{distro}/,
+              http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static/rpm/{distro}/'
       - '3.5':
-          repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}'
-    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot,
-        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static'
+          repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}/rpm/{distro}/'
+    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/{distro}/,
+        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static/rpm/{distro}/'
     distro: el6
     jobs:
       - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'
@@ -50,9 +50,9 @@
     test-version:
       - '3.5'
       - '3.4'
-    repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}'
-    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot,
-        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static'
+    repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}/rpm/{distro}/'
+    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/{distro}/,
+        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static/rpm/{distro}/'
     distro: el6
     jobs:
       - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'

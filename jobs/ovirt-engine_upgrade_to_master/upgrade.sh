@@ -18,7 +18,7 @@
 ## Holds the current step name for logging
 CURRENT_STEP="INIT"
 REPOS_FILE="/etc/yum.repos.d/upgrade_test.repo"
-
+ENGINE_PACKAGE="ovirt-engine"
 
 show_error()
 {
@@ -61,6 +61,9 @@ usage() {
 
         -s|--setup-file SETUP_FILE
             Answerfile to use when running setup
+        -p|--engine-package ENGINE_PACKAGE_NAME
+            specify a custom engine package name
+            (optional, default is ovirt-engine)
 __EOF__
 }
 
@@ -68,8 +71,8 @@ __EOF__
 get_opts() {
     local args
     args=$(getopt \
-        -o "w:f:t:s:c:" \
-        -l "workspace:,repo-from:,repo-to:,setup-file:,cleanup-file:" \
+        -o "w:f:t:s:c:p:" \
+        -l "workspace:,repo-from:,repo-to:,setup-file:,cleanup-file:,engine-package:" \
         -n "$0" \
         -- "$@")
     [[ $? -ne 0 ]] && exit $?
@@ -93,6 +96,9 @@ get_opts() {
                 ;;
             -c|--cleanup-file)
                 CLEANUP_FILE="${val}"
+                ;;
+            -p|--engine-package)
+                ENGINE_PACKAGE="${val}"
                 ;;
             --) break;;
         esac
@@ -170,12 +176,12 @@ pre_clean() {
     echo "----- Cleaning old rpms... ----"
     sed -i "s/CHANGE_HOSTNAME/${HOSTNAME}/g" "${cleanup_file}"
     # Clean engine rpms
-    if rpm -q ovirt-engine; then
+    if rpm -q "$ENGINE_PACKAGE"; then
         engine-cleanup -u 2>/dev/null\
         || engine-cleanup --config-append="${cleanup_file}" \
         || :
     fi
-    yum -y remove ovirt-engine\* vdsm\* httpd mod_ssl || :
+    yum -y remove "$ENGINE_PACKAGE"\* vdsm\* httpd mod_ssl || :
     yum clean all --enablerepo=upgrade_*
     echo "" > /etc/exports
     rm -rf /etc/ovirt-engine
@@ -236,6 +242,7 @@ configure_repos() {
     case $os in
         fedora) os="fc";;
         centos) os="el";;
+        RedHat) os="el";;
     esac
     ## disable all the previous ovirt repos, if any
     disable_engine_repos "$workspace/disabled_repos.list"
@@ -246,17 +253,11 @@ EOF
     ## Add all the repos
     i=0
     for from_repo in ${from_repos//,/ }; do
-        if [[ "$from_repo" =~ ^http.*$ ]]; then
-            from_repo="${from_repo}/rpm/${os}\$releasever"
-        fi
         append_repo "$REPOS_FILE" "upgrade_from_$i" "$from_repo"
         i="$(($i + 1))"
     done
     i=0
     for to_repo in ${to_repos//,/ }; do
-        if [[ "$to_repo" =~ ^http.*$ ]]; then
-            to_repo="${to_repo}/rpm/${os}\$releasever"
-        fi
         append_repo "$REPOS_FILE" "upgrade_to_$i" "$to_repo" 0
         i="$(($i + 1))"
     done
@@ -275,7 +276,7 @@ install_from_engine() {
     local answer_file="${1?}"
     CURRENT_STEP="SETUP::INSTALLING_ENGINE"
     # Installing 'from' version
-    yum -y install ovirt-engine
+    yum -y install "$ENGINE_PACKAGE"
     sed -i "s/CHANGE_HOSTNAME/$HOSTNAME/g" "${answer_file}"
     echo "Installing engine"
     engine-setup --config-append="${answer_file}" \
@@ -289,7 +290,7 @@ install_from_engine() {
 
 engine_upgrade() {
     local answer_file="${1?}"
-    yum -y update ovirt-engine-setup
+    yum -y update "${ENGINE_PACKAGE}-setup"
     echo "Running upgrade setup"
     engine-setup --config-append="${answer_file}"
     return $?
@@ -347,7 +348,7 @@ setup_env()
     collect_iptables_rules "$workspace/logs/iptables_before_upgrade.txt"
     echo "Some yum information"
     yum versionlock list
-    yum list installed ovirt-engine\*
+    yum list installed "${ENGINE_PACKAGE}"\*
     yum grouplist
     return 0
 }
@@ -363,7 +364,7 @@ run_upgrade()
     collect_iptables_rules "$workspace/logs/iptables_after_upgrade.txt"
     echo "Some yum information"
     yum versionlock list
-    yum list installed ovirt-engine\*
+    yum list installed "${ENGINE_PACKAGE}"\*
     yum grouplist
     wait_for_engine "$answer_file"
     return 0

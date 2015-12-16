@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 ## Copyright (C) 2014 Red Hat, Inc., Kiril Nesenko <knesenko@redhat.com>
 ### This program is free software; you can redistribute it and/or modify
@@ -14,6 +14,9 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+ENGINE_PACKAGE="ovirt-engine"
+
 usage() {
     local rc="$1"
     local msg="$2"
@@ -26,7 +29,10 @@ usage() {
             path to workspace
 
         -c|--cleanup-file CLEANUP_FILE
-            Answerfile to use when running cleanup"
+            Answerfile to use when running cleanup
+        -p|--engine-package ENGINE_PACKAGE_NAME
+            specify a custom engine package name
+            (optional, default is ovirt-engine)"
     [[ -n "$rc" ]] && die "$msg" "$rc"
 }
 
@@ -75,7 +81,7 @@ cleanup()
         engine-cleanup --config-append="${cleanup_file}" \
         || :
     fi
-    yum -y remove ovirt-engine\* vdsm\* httpd mod_ssl || :
+    yum -y remove "$ENGINE_PACKAGE"\* vdsm\* httpd mod_ssl || :
     rm -f /root/.pgpass
     enable_engine_repos "$workspace/disabled_repos.list"
 }
@@ -84,8 +90,8 @@ cleanup()
 get_opts() {
     local opt val opts
     opts=$(getopt \
-        -o 'w:c:h' \
-        -l 'workspace:,cleanup-file:,help' \
+        -o 'w:c:p:h' \
+        -l 'workspace:,cleanup-file:,engine-package:,help' \
         -n "$0" \
         -- "$@")
     [[ $? -eq 0 ]] || help 1;
@@ -99,6 +105,7 @@ get_opts() {
                 WORKSPACE="${val}";;
             -c|--cleanup-file)
                 CLEANUP_FILE="${val}";;
+            -p|--engine-package) ENGINE_PACKAGE="${val}";;
             -h|--help) usage 0;;
             --) break;;
         esac
