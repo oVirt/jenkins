@@ -1,0 +1,6 @@
+- scm:
+    name: ovirt-engine-api-metamodel-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-engine-api-metamodel-gerrit
+          git-server: '{git-server}'
