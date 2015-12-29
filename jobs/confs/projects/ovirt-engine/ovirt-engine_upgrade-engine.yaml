@@ -28,8 +28,6 @@
     version:
       - 3.6:
           branch: 'ovirt-engine-3.6'
-      - 3.6.2:
-          branch: 'ovirt-engine-3.6.2'
     test-version:
       - '3.6':
           repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot,
