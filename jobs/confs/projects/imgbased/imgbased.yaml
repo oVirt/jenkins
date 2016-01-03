@@ -28,6 +28,7 @@
       - check-patch
       - check-merged
     distro:
+      - el7
       - fc23
     trigger: 'on-change'
     arch:
