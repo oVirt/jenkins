@@ -9,7 +9,6 @@
       - build-artifacts
     trigger: 'on-change'
     distro:
-        - el6
         - el7
         - fc22
         - fc23
