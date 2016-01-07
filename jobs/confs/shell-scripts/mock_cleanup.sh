@@ -70,6 +70,32 @@ for mock_conf_file in "${mock_confs[@]}"; do
     done
 done
 
+# Try to cleanup leftover loopback devices in this workspace (or a mock root
+# from this workspace). /build/diskFOOBAR.img are orphaned from
+# livemedia-creator. Grab those also
+loops=($(losetup -a \
+    | grep -E "$WORKSPACE|\(build/disk" \
+    | awk '{print $1}' \
+    | sed -e 's/://'\
+)) || :
+if [[ "$loops" ]]; then
+    echo "Found orphaned or left over loopback devices. Removing them"
+fi
+for loop in "${loops[@]}"; do
+    # Check devmapper, since it can't be removed from losetup if dm holds it
+    dm_device=$(dmsetup info | grep $loop | awk '{print $2}') || :
+    [[ "$dm_device" ]] \ && dmsetup remove $dm_device \
+        || {
+            echo "ERROR:  Failed to dmsetup remove $dm_device."
+            failed=true
+        }
+    losetup -d /dev/$loop \
+    || {
+        echo "ERROR:  Failed to losetup -d /dev/$loop."
+        failed=true
+    }
+done
+
 # Clean any leftover chroot from other jobs
 for mock_root in /var/lib/mock/*; do
     this_chroot_failed=false
