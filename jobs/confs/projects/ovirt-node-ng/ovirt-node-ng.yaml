@@ -10,7 +10,7 @@
     stage:
       - build-artifacts
     distro:
-      - fc23
+      - fc22
     trigger: 'timed'
     trigger-times: '30 00 * * *'
     arch:
