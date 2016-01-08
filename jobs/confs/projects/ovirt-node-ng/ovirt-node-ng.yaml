@@ -15,6 +15,6 @@
     trigger-times: '30 00 * * *'
     arch:
       - x86_64
-    node-filter: ((fc21 || fc22) && nested) || appliance-builder
+    node-filter: node-fc21
     jobs:
         - '{project}_{version}_{stage}-{distro}-{arch}'
