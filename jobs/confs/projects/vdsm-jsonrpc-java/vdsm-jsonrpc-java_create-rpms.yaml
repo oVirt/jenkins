@@ -36,12 +36,6 @@
     distro:
       - fc22
       - fc23
-      - el6:
-          extra-repos: |
-            ci-tools,http://resources.ovirt.org/repos/ci-tools/el6
-            ovirt-snap,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el6
-          extra-packages: |
-            maven3
       - el7:
           extra-packages: |
             maven
