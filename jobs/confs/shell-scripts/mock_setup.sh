@@ -68,7 +68,7 @@ chmod g+rws mock
 
 # Make sure the cache has a newer timestamp than the config file or it will
 # not be used
-sudo touch /var/cache/mock/*/root_cache/cache.tar.gz || :
+sudo touch /var/cache/mock/*/root_cache/cache.tar.gz 2>/dev/null || :
 # Make sure yum caches are clean
 sudo yum clean all
 exit 0
