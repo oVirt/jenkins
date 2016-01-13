@@ -2,7 +2,7 @@
 echo "shell-scripts/cleanup_slave.sh"
 
 WORKSPACE="${WORKSPACE?}"
-
+export PATH=$PATH:/usr/sbin
 
 umount_everyhting_inside() {
     local mydir="${1?}"
@@ -227,6 +227,20 @@ cleanup_lago_virtual_network_interfaces() {
 }
 
 
+cleanup_loop_devices() {
+    echo "Making sure there are no device mappings..."
+    sudo dmsetup remove_all || :
+    echo "Removing the used loop devices..."
+    sudo losetup -D || :
+    if [[ "$(sudo losetup)" != "" ]]; then
+        echo "Failed to free all the loop devices:"
+        sudo losetup
+        echo "--- device mappings"
+        sudo dmsetup info
+        return 1
+    fi
+    return 0
+}
 
 
 main() {
@@ -245,6 +259,7 @@ main() {
     cleanup_lago_vms || :
     cleanup_lago_virtual_network_interfaces || :
     cleanup_lago_network_interfaces || :
+    cleanup_loop_devices || :
     echo "---------------------------------------------------------------"
     sudo df -h || :
     echo "###################################################################"
