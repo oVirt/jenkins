@@ -14,6 +14,7 @@
           branch: 'master'
           git-server: '{git-server}'
     builders:
+      - cleanup-slave
       - 'system-tests':
           version: '{version}'
     publishers:
@@ -26,7 +27,7 @@
           - matches:
               - log-text: '.*'
                 operator: AND
-            escalate-status: true
+                escalate-status: true
             script: !include-raw-escape shell-scripts/mock_cleanup.sh
       - junit:
           results: 'exported-artifacts/nosetests*.xml'
