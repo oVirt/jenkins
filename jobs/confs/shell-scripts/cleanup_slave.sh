@@ -242,6 +242,12 @@ cleanup_loop_devices() {
     return 0
 }
 
+cleanup_lago() {
+    cleanup_lago_vms || :
+    cleanup_lago_virtual_network_interfaces || :
+    cleanup_lago_network_interfaces || :
+    sudo service libvirtd restart || :
+}
 
 main() {
     local workspace="${1?}"
@@ -256,10 +262,8 @@ main() {
     cleanup_logs || :
     cleanup_workspaces "$workspace" || :
     cleanup_home || :
-    cleanup_lago_vms || :
-    cleanup_lago_virtual_network_interfaces || :
-    cleanup_lago_network_interfaces || :
     cleanup_loop_devices || :
+    cleanup_lago || :
     echo "---------------------------------------------------------------"
     sudo df -h || :
     echo "###################################################################"
