@@ -11,7 +11,6 @@
       - build-artifacts
     distro:
       - el7
-      - fc23
     trigger: 'on-change'
     arch:
       - x86_64
