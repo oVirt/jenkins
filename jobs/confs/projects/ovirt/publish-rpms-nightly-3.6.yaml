@@ -71,7 +71,7 @@
           project-prefix: ovirt-setup-lib_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine-platforms:
-          project-prefix: vdsm-jsonrpc-java_master_create-rpms-
+          project-prefix: vdsm-jsonrpc-java_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-engine_3.6_build-artifacts-
