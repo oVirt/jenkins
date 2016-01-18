@@ -83,7 +83,7 @@
           project-prefix: ovirt-scheduler-proxy_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine-platforms:
-          project-prefix: ovirt-optimizer_master_build-artifacts-
+          project-prefix: ovirt-optimizer_3.6_build-artifacts-
           project-suffix: ""
 
       - copy-create-job-artifact-vdsm-platforms:
