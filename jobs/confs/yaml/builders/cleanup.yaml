@@ -2,3 +2,9 @@
     name: cleanup-slave
     builders:
         - shell: !include-raw shell-scripts/cleanup_slave.sh
+
+- builder:
+    name: fix_rpmdb_problems
+    builders:
+        - shell: !include-raw shell-scripts/fix_rpmdb_problems.sh
+
