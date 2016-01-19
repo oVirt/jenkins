@@ -49,6 +49,7 @@
             - 'artifactory-ovirt-org-settings.xml'
           relative-to: 'userContent'
     builders:
+      - fix_rpmdb_problems
       - ovirt-engine_upgrade-engine:
           version: '{version}'
           test-version: '{test-version}'
