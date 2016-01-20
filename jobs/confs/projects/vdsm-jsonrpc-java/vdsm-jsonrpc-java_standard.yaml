@@ -5,6 +5,7 @@
         - vdsm-jsonrpc-java
       stage:
         - build-artifacts
+        - check-patch
       arch: x86_64
       trigger: 'on-change'
       jobs:
