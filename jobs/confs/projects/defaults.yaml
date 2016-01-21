@@ -25,3 +25,4 @@
       artifactNumToKeep: 20
     wrappers:
       - timestamps
+      - ansicolor
