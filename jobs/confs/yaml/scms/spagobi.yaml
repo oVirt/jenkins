@@ -1,0 +1,9 @@
+- scm:
+    name: spagobi-gerrit
+    scm:
+      - releng-tools-gerrit:
+          git-server: '{git-server}'
+      - svn:
+          url: svn://svn.forge.objectweb.org/svnroot/spagobi/V_5.x/Server/trunk
+          basedir: spagobi
+          workspaceupdater: wipeworkspace

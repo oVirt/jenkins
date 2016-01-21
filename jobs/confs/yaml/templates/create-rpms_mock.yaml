@@ -35,7 +35,7 @@
       - exported-artifacts
 
 ## Template for the releng-based jobs
-- job-template:
+- job-template: &releng-template
     name: '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}'
     node: '{node-filter}'
     parameters:
@@ -73,6 +73,23 @@
       - mock-cleanup
       - exported-artifacts
 
+- job-template:
+    <<: *releng-template
+    name: 'spagobi_{version}_create-rpms-{distro}-{arch}_{trigger}'
+    scm:
+      - 'spagobi-gerrit':
+          git-server: '{git-server}'
+      - jenkins:
+          branch: master
+          git-server: '{git-server}'
+    triggers:
+      - 'on-patch-{trigger}-with-files':
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
+          poll-interval: '{poll-interval}'
+      - pollscm: 'H */6 * * *'
 
 - job-template:
     name: 'ovirt-engine_{version}_create-rpms-{distro}-{arch}_{trigger}'

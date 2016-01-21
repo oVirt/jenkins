@@ -1,0 +1,23 @@
+# todo: trigger on upstream subversion commit using timed in the meanwhile
+
+- project:
+    name: spagobi_create-rpms
+    project: releng-tools
+    subproject: spagobi
+    trigger:
+      - created
+      - merged
+    poll-interval: 'H * * * *'
+    version:
+      - master:
+          branch: master
+    mock-build-type: all
+    distro:
+      - el7
+      - fc23
+    arch: x86_64
+    extra-build-packages: |
+      perl-XML-XPath
+      subversion
+    jobs:
+      - 'spagobi_{version}_create-rpms-{distro}-{arch}_{trigger}'
