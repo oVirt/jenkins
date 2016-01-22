@@ -15,8 +15,6 @@
       - copy-create-job-artifact:
           project: "{project-prefix}el7-x86_64{project-suffix}"
       - copy-create-job-artifact:
-          project: "{project-prefix}fc22-x86_64{project-suffix}"
-      - copy-create-job-artifact:
           project: "{project-prefix}fc23-x86_64{project-suffix}"
 
 - builder:
