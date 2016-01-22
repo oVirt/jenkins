@@ -1,0 +1,25 @@
+- scm:
+    name: github
+    scm:
+      - git: &base-git
+          url: 'https://github.com/{org}/{project}.git'
+          branches:
+            - '${{sha1}}'
+          basedir: '{project}'
+          scm-name: '{project}'
+          name: ''
+          refspec: '+refs/pull/*:refs/remotes/origin/pr/*'
+          use-author: true
+          skip-tag: true
+          wipe-workspace: false
+          clean:
+            before: true
+
+- scm:
+    name: github-pull
+    scm:
+      - git:
+          <<: *base-git
+          branches:
+            - '${{sha1}}'
+          refspec: '+refs/pull/*:refs/remotes/origin/pr/*'

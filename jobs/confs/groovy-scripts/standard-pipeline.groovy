@@ -18,7 +18,8 @@ if (trigger_stage == 'check-merged') {{
 def get_jobs(project, version, trigger_stage) {{
     def jobs = Jenkins.instance.items.findAll {{ job ->
         job.name =~ /^${{project}}_${{version}}_${{trigger_stage}}/ \
-        && job.name != env.JOB_NAME
+        && job.name != env.JOB_NAME \
+        && ! job.name.endsWith('-trigger')
     }}.collect {{ job ->
         job.name
     }}
@@ -41,12 +42,17 @@ def run_checks(project, branch, trigger_stage) {{
                     [
                         $class: 'StringParameterValue',
                         name: 'GERRIT_REFSPEC',
-                        value: GERRIT_REFSPEC
+                        value: env.GERRIT_REFSPEC?: ''
                     ],
                     [
                         $class: 'StringParameterValue',
                         name: 'GERRIT_BRANCH',
-                        value: GERRIT_BRANCH
+                        value: env.GERRIT_BRANCH?: ''
+                    ],
+                    [
+                        $class: 'StringParameterValue',
+                        name: 'sha1',
+                        value: env.sha1?: ''
                     ]
                 ]
             ])
@@ -71,13 +77,19 @@ def build_artifacts(project, branch) {{
                     [
                         $class: 'StringParameterValue',
                         name: 'GERRIT_REFSPEC',
-                        value: GERRIT_REFSPEC
+                        value: env.GERRIT_REFSPEC?: ''
                     ],
                     [
                         $class: 'StringParameterValue',
                         name: 'GERRIT_BRANCH',
-                        value: GERRIT_BRANCH
+                        value: env.GERRIT_BRANCH?: ''
+                    ],
+                    [
+                        $class: 'StringParameterValue',
+                        name: 'sha1',
+                        value: env.sha1?: ''
                     ]
+
                 ]
             ])
         }}
@@ -97,6 +109,17 @@ def extract_builders_list(build_results) {{
         )
     }}
     return builders_list
+}}
+
+
+// Make sure that the global vars we extract exist, as they are not in the env object
+for(varname in ['GERRIT_REFSPEC', 'GERRIT_BRANCH', 'sha1']){{
+    println "Setting env variable $varname"
+    if(binding.variables.containsKey(varname)) {{
+        env."$varname" = binding.variables[varname]
+    }} else {{
+        env."$varname" = ''
+    }}
 }}
 
 

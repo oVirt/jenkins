@@ -1,6 +1,6 @@
 - scm:
-    name: lago-gerrit
-    scm:
-      - gerrit:
-          project: 'lago'
-          git-server: '{git-server}'
+    name: lago
+    scms:
+      - github:
+          project: lago
+          org: lago-project

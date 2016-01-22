@@ -65,15 +65,7 @@
       artifactNumToKeep: 10
 
 # the following templates are for the new pipeline jobs
-- job-template:
-    <<: *standard-template
-    name: 'lago_{version}_{stage}-{distro}-{arch}'
-    triggers:
-      - dummy-trigger:
-          project: '{project}'
-          branch: '{branch}'
-
-- job-template:
+- job-template: &standard-pipeline
     <<: *standard-template-basic
     name: '{project}_{version}_{stage}-pipeline'
     project-type: workflow
@@ -110,3 +102,88 @@
       - ssh-agent-credentials:
           users:
             - b76f2120-1f78-44b3-918e-2d7c5df9ed6e
+
+
+## lago specific jobs, because it's using github not gerrit
+- lago-common: &lago-common
+    name: lago-common
+    properties:
+      - github:
+          url: 'https://github.com/{org}/{project}'
+    scm:
+      - 'github-pull':
+          project: '{project}'
+          org: '{org}'
+      - jenkins:
+          branch: master
+          git-server: '{git-server}'
+    parameters:
+
+- job-template:
+    <<: *standard-template
+    <<: *lago-common
+    name: 'lago_{version}_check-patch-{distro}-{arch}'
+    triggers:
+      - github-pull-check-patch:
+          project: '{project}'
+          org: '{org}'
+          branch: '{branch}'
+          distro: '{distro}'
+          arch: '{arch}'
+
+- job-template:
+    <<: *standard-template
+    <<: *lago-common
+    name: 'lago_{version}_{stage}-{distro}-{arch}'
+    scm:
+      - 'github':
+          project: '{project}'
+          org: '{org}'
+          branch: '{branch}'
+      - jenkins:
+          branch: master
+          git-server: '{git-server}'
+    triggers:
+      - dummy-trigger:
+          project: '{project}'
+          branch: '{branch}'
+
+- job-template:
+    <<: *standard-pipeline
+    <<: *lago-common
+    name: 'lago_{version}_{stage}-pipeline'
+    triggers:
+      - dummy-trigger:
+          project: '{project}'
+          branch: '{branch}'
+
+# This is needed because workflow/pipeline jobs don't support github
+# trigger yet
+- job-template:
+    <<: *standard-template
+    <<: *lago-common
+    name: 'lago_{version}_{stage}-trigger'
+    concurrent: false
+    triggers:
+      - github-pull-check-merged:
+          project: '{project}'
+          org: '{org}'
+          branch: '{branch}'
+          distro: '{distro}'
+          arch: '{arch}'
+    scm:
+      - 'github':
+          project: '{project}'
+          org: '{org}'
+          branch: '{branch}'
+    builders:
+      - trigger-builds:
+          - project: 'lago_{version}_{stage}-pipeline'
+            current-parameters: true
+            block: true
+    publishers:
+      - github-pull-request-merge:
+          only-admins-merge: true
+          disallow-own-code: false
+          fail-on-non-merge: true
+          delete-on-merge: true

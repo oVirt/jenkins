@@ -12,16 +12,16 @@
       trigger: 'on-change'
       arch: x86_64
       reponame: lago
+      org: lago-project
 
 # TODO: migrate to pipeline when ready
 - project:
     <<: *lago_common
     name: lago_check-patch_standard
-    stage:
-      - check-patch:
-          node-filter: 'nested && fc21'
+    stage: 'check-patch'
+    node-filter: 'nested && fc21'
     jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - 'lago_{version}_check-patch-{distro}-{arch}'
 
 # This is already using the pipeline
 - project:
@@ -41,4 +41,5 @@
     stage:
       - check-merged
     jobs:
-      - '{project}_{version}_{stage}-pipeline'
+      - 'lago_{version}_{stage}-trigger'
+      - 'lago_{version}_{stage}-pipeline'

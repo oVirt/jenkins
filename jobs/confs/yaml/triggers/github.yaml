@@ -1,0 +1,39 @@
+- trigger:
+    name: github-pull-check-patch
+    triggers:
+      - github-pull-request:
+          org-list:
+            - '{org}'
+          cron: '* * * * *'
+          trigger-phrase: '.*(ci test please|ci :(\+1|thumbsup):).*'
+          github-hooks: false
+          permit-all: false
+          auto-close-on-fail: false
+          allow-whitelist-orgs-as-admins: true
+          white-list-target-branches:
+            - master
+          auth-id: '3bd5b831-4709-4194-a8b0-62bc525c0bd7'
+          status-context: '{distro}-{arch}'
+
+- trigger:
+    name: github-pull-check-merged
+    triggers:
+      - github-pull-request:
+          org-list:
+            - '{org}'
+          cron: '* * * * *'
+          trigger-phrase: '.*(ci merge please|ci :shipit:).*'
+          only-trigger-phrase: true
+          github-hooks: false
+          permit-all: false
+          auto-close-on-fail: false
+          allow-whitelist-orgs-as-admins: true
+          white-list-target-branches:
+            - master
+          auth-id: '3bd5b831-4709-4194-a8b0-62bc525c0bd7'
+          status-context: 'merge-pipeline'
+
+- trigger:
+    name: github-push
+    triggers:
+      - github
