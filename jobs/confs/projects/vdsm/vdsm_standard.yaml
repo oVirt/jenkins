@@ -37,7 +37,9 @@
       - el7
       - fc22
       - fc23
-
+    exclude:
+      - version: master
+        distro: fc22
 
 - project:
     <<: *vdsm_standard_common
