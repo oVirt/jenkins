@@ -18,6 +18,8 @@
     exclude:
       - version: master
         distro: el6
+      - version: master
+        distro: fc22
     trigger: 'on-change'
     arch: x86_64
     jobs:
