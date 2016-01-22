@@ -9,6 +9,7 @@
           branch: v0.9.z
     stage:
       - build-artifacts
+      - check-patch
     trigger: 'on-change'
     distro:
       - el6
