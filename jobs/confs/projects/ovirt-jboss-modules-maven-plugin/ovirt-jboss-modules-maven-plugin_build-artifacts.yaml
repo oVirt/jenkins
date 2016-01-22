@@ -12,7 +12,6 @@
     trigger: 'on-change'
     distro:
         - el7
-        - fc22
         - fc23
     arch: x86_64
     jobs:
