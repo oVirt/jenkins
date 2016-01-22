@@ -17,6 +17,9 @@
         - el7
         - fc22
         - fc23
+    exclude:
+      - version: master
+        distro: fc22
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -37,7 +40,7 @@
       - check-patch
     trigger: 'on-change'
     distro:
-        - fc22
+        - fc23
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'

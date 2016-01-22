@@ -24,6 +24,8 @@
     exclude:
       - version: 3.5
         distro: fc23
+      - version: master
+        distro: fc22
     arch: x86_64
     extra-build-packages: |
       git
