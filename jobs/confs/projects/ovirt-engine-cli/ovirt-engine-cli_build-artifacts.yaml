@@ -23,6 +23,8 @@
         - version: master
           distro: fc22
         - version: 3.5
+          distro: fc22
+        - version: 3.5
           distro: fc23
     arch: x86_64
     jobs:
