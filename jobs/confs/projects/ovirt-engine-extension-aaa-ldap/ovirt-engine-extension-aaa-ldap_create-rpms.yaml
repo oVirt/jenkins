@@ -25,6 +25,8 @@
     exclude:
       - version: master
         distro: el6
+      - version: master
+        distro: fc22
     arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
