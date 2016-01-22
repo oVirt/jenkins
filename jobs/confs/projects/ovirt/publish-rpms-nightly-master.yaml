@@ -86,13 +86,13 @@
           project-prefix: ovirt-jboss-modules-maven-plugin_master_build-artifacts-
           project-suffix: ""
 
-      - copy-create-job-artifact-vdsm-platforms:
+      - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: ioprocess_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-vdsm-platforms:
+      - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: mom_master_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-vdsm-platforms:
+      - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: vdsm_master_build-artifacts-
           project-suffix: ""
 
