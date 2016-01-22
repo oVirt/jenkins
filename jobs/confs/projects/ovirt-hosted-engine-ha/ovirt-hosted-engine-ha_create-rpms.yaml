@@ -20,6 +20,9 @@
             ovirt-36-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
             ovirt-36-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.6-snapshot-static/rpm/$distro
           branch: ovirt-hosted-engine-ha-1.3
+    exclude:
+      - version: master
+        distro: fc22
     mock-build-type: onlyrpm
     arch: x86_64
     jobs:

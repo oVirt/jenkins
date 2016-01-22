@@ -15,6 +15,9 @@
       - el7
       - fc22
       - fc23
+    exclude:
+      - version: master
+        distro: fc22
     trigger: 'on-change'
     arch: x86_64
     jobs:
