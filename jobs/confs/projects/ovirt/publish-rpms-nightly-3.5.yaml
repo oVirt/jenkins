@@ -17,7 +17,7 @@
       - timeout:
           timeout: 900
           type: absolute
-          write-description: true
+          write-description: 'Timed out'
           fail: true
       - timestamps
     builders:
