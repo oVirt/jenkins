@@ -1,4 +1,4 @@
 - builder:
     name: system-tests
     builders:
-      - shell: !include-raw shell-scripts/system_tests.sh
+      - shell: !include-raw: shell-scripts/system_tests.sh

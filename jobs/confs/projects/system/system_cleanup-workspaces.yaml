@@ -13,6 +13,7 @@
             description: Comma or space separated list of nodes to skip
     builders:
         - system-groovy:
-            command: !include-raw groovy-scripts/cleanup_workspaces.groovy
+            command: !include-raw: groovy-scripts/cleanup_workspaces.groovy
     publishers:
-        - groovy-postbuild: !include-raw groovy-scripts/cleanup_workspaces.postbuild.groovy
+        - groovy-postbuild:
+            script: !include-raw: groovy-scripts/cleanup_workspaces.postbuild.groovy

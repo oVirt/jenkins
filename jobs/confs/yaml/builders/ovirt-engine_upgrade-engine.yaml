@@ -18,4 +18,4 @@
     name: ovirt-engine_upgrade-engine
     builders:
       - shell: "sudo puppet agent --disable"
-      - shell: !include-raw shell-scripts/ovirt-engine_upgrade-engine.sh
+      - shell: !include-raw: shell-scripts/ovirt-engine_upgrade-engine.sh

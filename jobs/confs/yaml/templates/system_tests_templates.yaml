@@ -23,12 +23,12 @@
               - log-text: '.*'
                 operator: AND
             escalate-status: true
-            script: !include-raw shell-scripts/system_tests.collect_logs.sh
+            script: !include-raw: shell-scripts/system_tests.collect_logs.sh
           - matches:
               - log-text: '.*'
                 operator: AND
                 escalate-status: true
-            script: !include-raw-escape shell-scripts/mock_cleanup.sh
+            script: !include-raw-escape: shell-scripts/mock_cleanup.sh
       - junit:
           results: 'exported-artifacts/nosetests*.xml'
       - archive:

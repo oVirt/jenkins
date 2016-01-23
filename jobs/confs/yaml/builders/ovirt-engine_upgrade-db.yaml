@@ -15,4 +15,4 @@
 - builder:
     name: ovirt-engine_upgrade-db
     builders:
-      - shell: !include-raw shell-scripts/ovirt-engine_upgrade-db.sh
+      - shell: !include-raw: shell-scripts/ovirt-engine_upgrade-db.sh

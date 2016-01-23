@@ -1,20 +1,20 @@
 - builder:
     name: build-artifacts_builder
     builders:
-      - shell: !include-raw shell-scripts/global_setup.sh
-      - shell: !include-raw shell-scripts/mock_setup.sh
-      - shell: !include-raw shell-scripts/standard_build_artifacts.sh
+      - shell: !include-raw: shell-scripts/global_setup.sh
+      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw: shell-scripts/standard_build_artifacts.sh
 
 - builder:
     name: check-merged_builder
     builders:
-      - shell: !include-raw shell-scripts/global_setup.sh
-      - shell: !include-raw shell-scripts/mock_setup.sh
-      - shell: !include-raw shell-scripts/standard_check_merged.sh
+      - shell: !include-raw: shell-scripts/global_setup.sh
+      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw: shell-scripts/standard_check_merged.sh
 
 - builder:
     name: check-patch_builder
     builders:
-      - shell: !include-raw shell-scripts/global_setup.sh
-      - shell: !include-raw shell-scripts/mock_setup.sh
-      - shell: !include-raw shell-scripts/standard_check_patch.sh
+      - shell: !include-raw: shell-scripts/global_setup.sh
+      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw: shell-scripts/standard_check_patch.sh

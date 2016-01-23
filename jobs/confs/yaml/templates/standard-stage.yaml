@@ -74,7 +74,7 @@
     <<: *standard-template-basic
     name: '{project}_{version}_{stage}-pipeline'
     project-type: workflow
-    dsl: !include-raw groovy-scripts/standard-pipeline.groovy
+    dsl: !include-raw: groovy-scripts/standard-pipeline.groovy
     properties: []
 
 - job-template:
@@ -102,4 +102,5 @@
               deploy-{reponame}-snapshot@resources.ovirt.org
     wrappers:
       - ssh-agent-credentials:
-          user: b76f2120-1f78-44b3-918e-2d7c5df9ed6e
+          users:
+            - b76f2120-1f78-44b3-918e-2d7c5df9ed6e

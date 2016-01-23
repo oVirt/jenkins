@@ -55,4 +55,4 @@
           - matches:
               - log-text: '.*INFO::DATABASE CREATED.*'
                 operator: AND
-            script: !include-raw shell-scripts/ovirt-engine_upgrade-db.cleanup.sh
+            script: !include-raw: shell-scripts/ovirt-engine_upgrade-db.cleanup.sh

@@ -38,10 +38,11 @@
       - jenkins-gerrit:
           git-server: 'gerrit.ovirt.org'
     builders:
-      - shell: !include-raw shell-scripts/jenkins_deploy_yamls.sh
-      - shell: !include-raw shell-scripts/jenkins_cleanup_yaml.sh
+      - shell: !include-raw: shell-scripts/jenkins_deploy_yamls.sh
+      - shell: !include-raw: shell-scripts/jenkins_cleanup_yaml.sh
       - system-groovy:
-          command: !include-raw groovy-scripts/archive_jobs.groovy
+          command: !include-raw: groovy-scripts/archive_jobs.groovy
     publishers:
-      - groovy-postbuild: !include-raw groovy-scripts/archive_jobs.postbuild.groovy
+      - groovy-postbuild:
+          script: !include-raw: groovy-scripts/archive_jobs.postbuild.groovy
 

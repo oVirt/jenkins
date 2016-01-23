@@ -89,7 +89,8 @@
           files: 'specs/{subproject}/.*'
           gerrit-server: '{gerrit-server}'
           poll-interval: '{poll-interval}'
-      - pollscm: 'H */6 * * *'
+      - pollscm:
+          cron: 'H */6 * * *'
 
 - job-template:
     name: 'ovirt-engine_{version}_create-rpms-{distro}-{arch}_{trigger}'

@@ -1,31 +1,31 @@
 - builder:
     name: mock-onlyrpm
     builders:
-      - shell: !include-raw shell-scripts/global_setup.sh
-      - shell: !include-raw shell-scripts/mock_setup.sh
-      - shell: !include-raw shell-scripts/build_local_srcrpm.sh
-      - shell: !include-raw shell-scripts/mock_build_onlyrpm.sh
+      - shell: !include-raw: shell-scripts/global_setup.sh
+      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw: shell-scripts/build_local_srcrpm.sh
+      - shell: !include-raw: shell-scripts/mock_build_onlyrpm.sh
 
 - builder:
     name: mock-onlyrpm-releng
     builders:
-      - shell: !include-raw shell-scripts/global_setup.sh
-      - shell: !include-raw shell-scripts/mock_setup.sh
-      - shell: !include-raw shell-scripts/build_local_srcrpm_releng.sh
-      - shell: !include-raw shell-scripts/mock_build_onlyrpm.sh
+      - shell: !include-raw: shell-scripts/global_setup.sh
+      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw: shell-scripts/build_local_srcrpm_releng.sh
+      - shell: !include-raw: shell-scripts/mock_build_onlyrpm.sh
 
 - builder:
     name: mock-all
     builders:
-      - shell: !include-raw shell-scripts/global_setup.sh
-      - shell: !include-raw shell-scripts/mock_setup.sh
-      - shell: !include-raw shell-scripts/build_mock_srcrpm.sh
-      - shell: !include-raw shell-scripts/mock_build_onlyrpm.sh
+      - shell: !include-raw: shell-scripts/global_setup.sh
+      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw: shell-scripts/build_mock_srcrpm.sh
+      - shell: !include-raw: shell-scripts/mock_build_onlyrpm.sh
 
 - builder:
     name: mock-all-releng
     builders:
-      - shell: !include-raw shell-scripts/global_setup.sh
-      - shell: !include-raw shell-scripts/mock_setup.sh
-      - shell: !include-raw shell-scripts/build_mock_srcrpm_releng.sh
-      - shell: !include-raw shell-scripts/mock_build_onlyrpm.sh
+      - shell: !include-raw: shell-scripts/global_setup.sh
+      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw: shell-scripts/build_mock_srcrpm_releng.sh
+      - shell: !include-raw: shell-scripts/mock_build_onlyrpm.sh

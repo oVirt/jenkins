@@ -1,6 +1,6 @@
 - builder:
     name: mock-run
     builders:
-      - shell: !include-raw shell-scripts/global_setup.sh
-      - shell: !include-raw shell-scripts/mock_setup.sh
-      - shell: !include-raw shell-scripts/mock_run.sh
+      - shell: !include-raw: shell-scripts/global_setup.sh
+      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw: shell-scripts/mock_run.sh

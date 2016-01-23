@@ -8,4 +8,4 @@
 - builder:
     name: whitelist
     builders:
-        - shell: !include-raw shell-scripts/whitelist-filter.sh
+        - shell: !include-raw: shell-scripts/whitelist-filter.sh

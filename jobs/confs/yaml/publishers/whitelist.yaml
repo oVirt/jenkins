@@ -1,4 +1,5 @@
 - publisher:
     name: whitelist
     publishers:
-        - groovy-postbuild: !include-raw groovy-scripts/whitelist-filter.groovy
+        - groovy-postbuild:
+            script: !include-raw: groovy-scripts/whitelist-filter.groovy
