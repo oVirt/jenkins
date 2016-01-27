@@ -50,6 +50,8 @@
           branch: master
       - 3.6:
           branch: ovirt-3.6
-    stage: check-patch
+    stage:
+      - check-patch
+      - check-merged
     distro:
       - fc23
