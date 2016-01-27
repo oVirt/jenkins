@@ -6,7 +6,8 @@
       - merged
       - created
     distro:
-      - fc22
+      - fc22:
+          extra-repos: ovirt-3.6-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
       - fc23
       - el7
       - el6:
