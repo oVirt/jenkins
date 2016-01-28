@@ -7,8 +7,14 @@
       change will be lost in the next update. If you want to make permanent
       changes, check out the <a href="http://gerrit.ovirt.org/gitweb?p=jenkins.git;a=tree;h=refs/heads/master;hb=refs/heads/master">
       jenkins</a> repo.
-    logrotate:
-      numToKeep: 10
+    properties:
+      - throttle:
+          enabled: false
+          max-per-node: 1
+          max-total: 3
+          option: project
+      - build-discarder:
+          num-to-keep: 10
     node: master
     triggers:
       - timed: "H(20-40) 0 * * *"

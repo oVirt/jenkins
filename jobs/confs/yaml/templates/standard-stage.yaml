@@ -10,6 +10,9 @@
             max-per-node: 1
             max-total: 3
             option: project
+        - build-discarder:
+            num-to-keep: 40
+            artifact-num-to-keep: 20
     scm:
       - '{project}-gerrit':
           git-server: '{git-server}'
@@ -75,7 +78,10 @@
     name: '{project}_{version}_{stage}-pipeline'
     project-type: workflow
     dsl: !include-raw: groovy-scripts/standard-pipeline.groovy
-    properties: []
+    properties:
+        - build-discarder:
+            num-to-keep: 40
+            artifact-num-to-keep: 20
 
 - job-template:
     name: '{project}_{version}_deploy-to-{reponame}-snapshot'

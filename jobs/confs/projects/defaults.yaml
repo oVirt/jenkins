@@ -19,10 +19,9 @@
           max-per-node: 1
           max-total: 3
           option: project
-
-    logrotate:
-      numToKeep: 40
-      artifactNumToKeep: 20
+      - build-discarder:
+          num-to-keep: 40
+          artifact-num-to-keep: 20
     wrappers:
       - timestamps
       - ansicolor
