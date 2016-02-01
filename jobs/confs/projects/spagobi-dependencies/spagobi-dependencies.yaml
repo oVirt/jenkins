@@ -17,5 +17,7 @@
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: |
-            rpmdevtools
+            git
             make
+            rpmdevtools
+            yum-utils
