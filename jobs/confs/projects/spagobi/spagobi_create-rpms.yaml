@@ -16,6 +16,8 @@
       - el7
       - fc23
     arch: x86_64
+    extra-repos: |
+      spagobi-nightly-snapshot,http://jenkins.ovirt.org/job/spagobi_repo_merged/lastSuccessfulBuild/artifact/artifacts/$distro
     extra-build-packages: |
       perl-XML-XPath
       subversion
