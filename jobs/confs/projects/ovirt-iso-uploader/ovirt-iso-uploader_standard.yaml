@@ -1,0 +1,18 @@
+- project:
+    name: ovirt-iso-uploader_build
+    project:
+      - ovirt-iso-uploader
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+      - check-patch
+      - check-merged
+    distro:
+      - el7
+      - fc23
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'

@@ -43,8 +43,8 @@
           project-suffix: _merged
 
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-iso-uploader_master_create-rpms-
-          project-suffix: _merged
+          project-prefix: ovirt-iso-uploader_master_build-artifacts-
+          project-suffix: ''
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-log-collector_master_create-rpms-
           project-suffix: _merged
