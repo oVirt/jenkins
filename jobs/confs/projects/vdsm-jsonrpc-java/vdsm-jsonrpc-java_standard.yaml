@@ -17,10 +17,16 @@
     name: vdsm-jsonrpc-java_build-artifacts_3.6
     version:
       - 3.6:
+          branch: ovirt-3.6
+      - master:
           branch: master
     distro:
       - el6
       - el7
       - fc22
       - fc23
-
+    exclude:
+      - version: master
+        distro: el6
+      - version: master
+        distro: fc22
