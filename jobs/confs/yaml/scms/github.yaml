@@ -8,7 +8,7 @@
           basedir: '{project}'
           scm-name: '{project}'
           name: ''
-          refspec: '+refs/pull/*:refs/remotes/origin/pr/*'
+          refspec: '${{REFSPEC}}'
           use-author: true
           skip-tag: true
           wipe-workspace: false
@@ -22,4 +22,4 @@
           <<: *base-git
           branches:
             - '${{sha1}}'
-          refspec: '+refs/pull/*:refs/remotes/origin/pr/*'
+          refspec: '${{REFSPEC}}'

@@ -51,6 +51,11 @@ def run_checks(project, branch, trigger_stage) {{
                     ],
                     [
                         $class: 'StringParameterValue',
+                        name: 'REFSPEC',
+                        value: env.REFSPEC?: ''
+                    ],
+                    [
+                        $class: 'StringParameterValue',
                         name: 'sha1',
                         value: env.sha1?: ''
                     ]
@@ -86,6 +91,11 @@ def build_artifacts(project, branch) {{
                     ],
                     [
                         $class: 'StringParameterValue',
+                        name: 'REFSPEC',
+                        value: env.REFSPEC?: ''
+                    ],
+                    [
+                        $class: 'StringParameterValue',
                         name: 'sha1',
                         value: env.sha1?: ''
                     ]
@@ -113,7 +123,7 @@ def extract_builders_list(build_results) {{
 
 
 // Make sure that the global vars we extract exist, as they are not in the env object
-for(varname in ['GERRIT_REFSPEC', 'GERRIT_BRANCH', 'sha1']){{
+for(varname in ['GERRIT_REFSPEC', 'GERRIT_BRANCH', 'REFSPEC', 'sha1']){{
     println "Setting env variable $varname"
     if(binding.variables.containsKey(varname)) {{
         env."$varname" = binding.variables[varname]
