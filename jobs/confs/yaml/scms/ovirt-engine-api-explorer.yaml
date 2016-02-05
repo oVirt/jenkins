@@ -1,0 +1,6 @@
+- scm:
+    name: ovirt-engine-api-explorer-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-engine-api-explorer
+          git-server: '{git-server}'
