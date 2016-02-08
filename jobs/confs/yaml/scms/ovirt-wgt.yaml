@@ -1,0 +1,6 @@
+- scm:
+    name: ovirt-wgt-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-wgt
+          git-server: '{git-server}'
