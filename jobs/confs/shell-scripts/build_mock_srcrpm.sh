@@ -193,14 +193,15 @@ $my_mock \
             rpmbuild_options+=("-D" "${{option//=/ }}")
         done
 
+        shopt -s nullglob
         # build src.rpm
         rpmbuild \
             -D "_srcrpmdir ."  \
             "\${{rpmbuild_options[@]}}" \
-            -ts *.gz
+            -ts *.gz *.bz2
 
         mkdir /tmp/SRCRPMS
-        mv *.tar.gz /tmp/SRCRPMS/
+        mv *.tar.gz *.tar.bz2 /tmp/SRCRPMS/
         mv *src.rpm /tmp/SRCRPMS/
 EOF
 
