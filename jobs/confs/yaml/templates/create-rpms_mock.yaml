@@ -30,6 +30,8 @@
           extra-env: '{extra-env}'
           extra-make-targets: '{extra-make-targets}'
           cherry-pick: '{cherry-pick}'
+          copy-in: '{copy-in}'
+          copy-out: '{copy-out}'
     publishers:
       - mock-cleanup
       - exported-artifacts

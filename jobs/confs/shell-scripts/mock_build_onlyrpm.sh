@@ -29,6 +29,9 @@ echo "shell-scripts/mock_build_onlyrpm.sh"
 #
 # copy-in
 #     list of files to copy into the chroot before building the rpm
+#
+# copy-out
+#     list of files to copy out of the chroot after building the rpm
 
 distro="{distro}"
 arch="{arch}"
@@ -38,6 +41,7 @@ extra_rpmbuild_options=({extra-rpmbuild-options})
 extra_repos=({extra-repos})
 extra_env=({extra-env})
 copy_in=({copy-in})
+copy_out=({copy-out})
 WORKSPACE=$PWD
 
 ### Import the suffix if any
@@ -157,4 +161,19 @@ EOF
         --no-cleanup-after \
         --resultdir=$WORKSPACE/exported-artifacts \
         "$srcrpm"
+
+    ### Copy out files if any
+    for fname in "${{copy_out[@]}}"; do
+        if [[ "$fname" =~ ^.*: ]]; then
+            dest="${{fname#*:}}"
+            fname="${{fname%:*}}"
+        else
+            dest="$PWD/exported-artifacts"
+        fi
+        $temp_mock \
+            --no-clean \
+            --copyout \
+            "$fname" \
+            "$dest"
+    done
 done

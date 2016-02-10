@@ -37,5 +37,7 @@
       hardlink
       p7zip
       p7zip-plugins
+    copy-out: |
+      '/builddir/build/BUILD/*/*.iso'
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
