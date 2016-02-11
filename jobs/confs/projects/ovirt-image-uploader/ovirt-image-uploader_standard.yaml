@@ -5,6 +5,23 @@
     version:
       - master:
           branch: master
+    stage:
+      - check-patch
+      - check-merged
+      - build-artifacts
+    distro:
+      - el7
+      - fc23
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: ovirt-image-uploader_3.6
+    project:
+      - ovirt-image-uploader
+    version:
       - 3.6:
           branch: ovirt-image-uploader-3.6
     stage:
@@ -15,11 +32,6 @@
       - el7
       - fc22
       - fc23
-    exclude:
-      - version: master
-        distro: el6
-      - version: master
-        distro: fc22
     trigger: 'on-change'
     arch: x86_64
     jobs:
