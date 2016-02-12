@@ -50,8 +50,6 @@
           branch: master
       - 3.6:
           branch: ovirt-3.6
-      - 3.5:
-          branch: ovirt-3.5
     stage:
       - check-patch
       - check-merged
