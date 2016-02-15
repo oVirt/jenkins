@@ -101,19 +101,6 @@
           project: httpcomponents-core_master_create-rpms_merged
       - copy-create-job-artifact:
           project: qemu_master_create-rpms-el7-x86_64_merged
-      - copy-create-job-artifact:
-          project: ovirt-node_ovirt-3.5_create-rpms-el6_merged
-      - copy-create-job-artifact:
-          project: ovirt-node_ovirt-3.5_create-rpms-el7_merged
-      - copy-create-job-artifact:
-          project: ovirt-node_ovirt-3.5_create-iso-el6_merged
-      - copy-create-job-artifact:
-          project: ovirt-node_ovirt-3.5_create-iso-el7_merged
-
-      - copy-create-job-artifact:
-          project: ovirt-node-plugin-vdsm_3_5_rpms 
-      - copy-create-job-artifact:
-          project: ovirt-node-plugin-hosted-engine_3.5_create-rpms_merged
 
       - copy-create-job-artifact:
           project: ovirt-reports_3.5_create-rpms-el6-x86_64_merged
