@@ -39,7 +39,7 @@
           project-prefix: ovirt-engine-sdk_3.6_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-all-platforms:
-          project-prefix: otopi_master_create-rpms-
+          project-prefix: otopi_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-all-platforms:
           project-prefix: ovirt-vmconsole_3.6_create-rpms-
