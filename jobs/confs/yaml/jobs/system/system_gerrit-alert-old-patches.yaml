@@ -10,11 +10,11 @@
             description: "Turn on dry-run mode. Default is false."
         - string:
             name: WARNING
-            default: "120"
+            default: "100"
             description: "Age in days for warning limit."
         - string:
             name: ABANDON
-            default: "220"
+            default: "200"
             description: "Age in days for abandoning limit."
         - string:
             name: TEST_EMAIL
@@ -51,7 +51,7 @@
 
     publishers:
         - email-ext:
-            recipients: dcaro@redhat.com, eedri@redhat.com, ykaul@redhat.com, vishnu.srkmr@gmail.com
+            recipients: dcaro@redhat.com, eedri@redhat.com, ykaul@redhat.com, vishnu.srkmr@gmail.com, amarchuk@redhat.com
             content-type: text
             subject: Alert-Old-Patches Build ${BUILD_NUMBER}
             attach-build-log: true
