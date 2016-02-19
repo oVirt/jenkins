@@ -143,5 +143,5 @@ echo "#### Archiving the results"
 $my_mock \
     --no-clean \
     --copyout /tmp/SRCRPMS ./SRCRPMS
-mv ./SRCRPMS/* "$WORKSPACE"/exported-artifacts/
+mv ./SRCRPMS/* "$WORKSPACE"/
 rm -Rf ./SRCRPMS
