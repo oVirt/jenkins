@@ -63,9 +63,6 @@
           project-prefix: ovirt-log-collector_3.5_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-older-platforms:
-          project-prefix: ovirt-engine-extension-aaa-ldap_3.5_create-rpms-
-          project-suffix: _merged
-      - copy-create-job-artifact-older-platforms:
           project-prefix: ovirt-engine-extension-aaa-misc_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-older-platforms:
@@ -108,6 +105,8 @@
           project: ovirt-reports_3.5_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
           project: ovirt-engine_3.5_create-rpms_merged
+      - copy-create-job-artifact:
+          project: ovirt-engine-extension-aaa-ldap_3.5_create-rpms-el6-x86_64_merged
       - copy-create-job-artifact:
           project: qemu-kvm-rhev_create-rpms_el6
 

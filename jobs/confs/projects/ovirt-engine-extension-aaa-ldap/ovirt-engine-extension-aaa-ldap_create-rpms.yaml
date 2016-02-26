@@ -47,7 +47,6 @@
     mock-build-type: onlyrpm
     distro:
       - el6
-      - el7
     arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
