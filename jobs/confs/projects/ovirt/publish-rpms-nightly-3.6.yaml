@@ -129,9 +129,9 @@
           project: ovirt-appliance_ovirt-3.6_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
-          project: ovirt-reports_master_create-rpms-el6-x86_64_merged
+          project: ovirt-reports_3.6_create-rpms-el6-x86_64_merged
       - copy-create-job-artifact:
-          project: ovirt-reports_master_create-rpms-el7-x86_64_merged
+          project: ovirt-reports_3.6_create-rpms-el7-x86_64_merged
 
       - copy-create-job-artifact:
           project: ovirt-live_3.6_build-artifacts-el7-x86_64
