@@ -10,11 +10,11 @@
             description: "Turn on dry-run mode. Default is false."
         - string:
             name: WARNING
-            default: "100"
+            default: "80"
             description: "Age in days for warning limit."
         - string:
             name: ABANDON
-            default: "200"
+            default: "180"
             description: "Age in days for abandoning limit."
         - string:
             name: TEST_EMAIL
