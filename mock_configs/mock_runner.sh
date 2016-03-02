@@ -358,7 +358,7 @@ install_packages() {
     $MOCK \\
         --configdir="$conf_dir" \\
         --root="$chroot" \\
-        --install ${packages[@]} \\
+        --install "${packages[@]}" \\
         --resultdir="$LOGS_DIR/${chroot}.install_packages"
 EOC
     $MOCK \
@@ -607,19 +607,20 @@ run_script() {
             runner_GID="$(id -g)"
             runner_GROUP="$(id -n -g)"
             # mock group is called mockbuild inside the chroot
-            if [[ \\\$runner_GID == "mock" ]]; then
+            if [[ \\\$runner_GROUP == "mock" ]]; then
                 runner_GROUP=mockbuild
             fi
-            if ! getent group "\\\$runner_GROUP" &>/dev/null; then
+            if ! getent group "\\\$runner_GID" &>/dev/null; then
                 groupadd \\
                     --gid "\\\$runner_GID" \\
                     "\\\$runner_GROUP"
             fi
             start="\\\$(date +%s)"
+            res=0
             echo "========== Running the shellscript $script" \\
                 | tee -a \\\$logdir/${script##*/}.log
-            ./$script 2>&1 | tee -a \\\$logdir/${script##*/}.log
-            res=\\\${PIPESTATUS[0]}
+            ./$script 2>&1 | tee -a \\\$logdir/${script##*/}.log \\
+            || res=\\\${PIPESTATUS[0]}
             end="\\\$(date +%s)"
             echo "Took \\\$((end - start)) seconds" \\
             | tee -a \\\$logdir/${script##*/}.log
@@ -656,18 +657,22 @@ EOC
                     "\$runner_GROUP"
             fi
             start="\$(date +%s)"
+            res=0
             echo "========== Running the shellscript $script" \
                 | tee -a \$logdir/${script##*/}.log
-            ./$script 2>&1 | tee -a \$logdir/${script##*/}.log
-            res=\${PIPESTATUS[0]}
-            end="\$(date +%s)"
+            # It turns out that on some scripts if the following is not all
+            # in the same line, it never runs and returns with 0 (giving false
+            # positives)
+            ./$script 2>&1 | tee -a \$logdir/${script##*/}.log \
+            && res=\${PIPESTATUS[0]}; \
+            end="\$(date +%s)"; \
             echo "Took \$((end - start)) seconds" \
-            | tee -a \$logdir/${script##*/}.log
+            | tee -a \$logdir/${script##*/}.log; \
             echo "===================================" \
-            | tee -a \$logdir/${script##*/}.log
-            if [[ "\$(find . -uid 0 -print -quit)" != '' ]]; then
-                chown -R "$UID:\$runner_GID" .
-            fi
+            | tee -a \$logdir/${script##*/}.log; \
+            if [[ "\$(find . -uid 0 -print -quit)" != '' ]]; then \
+                chown -R "$UID:\$runner_GID" . ;\
+            fi; \
             exit \$res
 EOS
     return $?
@@ -880,16 +885,16 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                     | awk '{print $9}' \
                 )"
                 if [[ -r "$lastlog" ]]; then
-                    echo "##! ERROR vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
-                    echo "##! Last 20 log enties: $lastlog"
-                    echo "##!"
+                    echo '##! ERROR vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv'
+                    echo '##! Last 20 log enties: '"$lastlog"
+                    echo '##!'
                     tail -n 20 "$lastlog"
-                    echo "##!"
-                    echo "##! ERROR ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+                    echo '##!'
+                    echo '##! ERROR ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
                 else
                     echo "No log files found, check command output"
                 fi
-                echo "##!########################################################"
+                echo '##!########################################################'
                 exit $res
             else
                 echo "## FINISHED SUCCESSFULY"
