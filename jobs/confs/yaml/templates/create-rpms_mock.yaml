@@ -87,12 +87,6 @@
       - build-discarder:
           num-to-keep: 10
           artifact-num-to-keep: 2
-    scm:
-      - 'spagobi-gerrit':
-          git-server: '{git-server}'
-      - jenkins:
-          branch: master
-          git-server: '{git-server}'
     triggers:
       - 'on-patch-{trigger}-with-files':
           project: '{project}'
@@ -100,8 +94,7 @@
           files: 'specs/{subproject}/.*'
           gerrit-server: '{gerrit-server}'
           poll-interval: '{poll-interval}'
-      - pollscm:
-          cron: 'H */6 * * *'
+      - timed: "H */6 * * *"
 
 - job-template:
     name: 'ovirt-engine_{version}_create-rpms-{distro}-{arch}_{trigger}'

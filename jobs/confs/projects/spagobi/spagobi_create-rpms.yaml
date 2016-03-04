@@ -7,7 +7,6 @@
     trigger:
       - created
       - merged
-    poll-interval: 'H * * * *'
     version:
       - master:
           branch: master
