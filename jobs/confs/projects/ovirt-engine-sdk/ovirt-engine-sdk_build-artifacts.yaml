@@ -19,6 +19,8 @@
         - fc23
     exclude:
       - version: master
+        distro: el6
+      - version: master
         distro: fc22
       - version: 3.5
         distro: fc22
