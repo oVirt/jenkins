@@ -1,0 +1,6 @@
+- scm:
+    name: ovirt-release-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-release
+          git-server: '{git-server}'
