@@ -1,10 +1,7 @@
 - project:
-    name: ovirt-release_create-rpms
+    name: ovirt-release_build
     project:
       - ovirt-release
-    trigger:
-      - merged
-      - created
     version:
       - master:
           branch: master
@@ -12,9 +9,12 @@
           branch: ovirt-3.6
       - 3.5:
           branch: ovirt-3.5
-    mock-build-type: onlyrpm
+    stage:
+      - build-artifacts
+      - check-patch
     distro:
       - el7
+    trigger: 'on-change'
     arch: x86_64
     jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+      - '{project}_{version}_{stage}-{distro}-{arch}'
