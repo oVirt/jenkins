@@ -9,8 +9,6 @@
           branch: master
       - 3.6:
           branch: sdk_3.6
-      - 3.5:
-          branch: sdk_3.5
     mock-build-type: all
     distro:
       - fc22
@@ -22,8 +20,6 @@
             maven3
       - el7
     exclude:
-      - version: 3.5
-        distro: fc23
       - version: master
         distro: fc22
     arch: x86_64

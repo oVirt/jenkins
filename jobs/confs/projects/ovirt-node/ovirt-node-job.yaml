@@ -13,30 +13,9 @@
       - ovirt-3.6:
           branch: ovirt-3.6
           distro : el7
-      - ovirt-3.5:
-          branch: ovirt-3.5
-          distro : el7
-      - ovirt-3.5:
-          branch: ovirt-3.5
-          distro : el6
     jobs:
       - 'ovirt-node_{version}_create-iso-{distro}_{trigger}'
 
-
-- project:
-    name: 'ovirt-node-rpm-builder'
-    project: 'ovirt-node'
-    trigger:
-      - merged
-    version :
-      - ovirt-3.5:
-          branch: ovirt-3.5
-          distro : el7
-      - ovirt-3.5:
-          branch: ovirt-3.5
-          distro : el6
-    jobs:
-      - 'ovirt-node_{version}_create-rpms-{distro}_{trigger}'
 
 - project:
     name: ovirt-node-build

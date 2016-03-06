@@ -12,17 +12,6 @@
         - '{project}_{version}_{stage}-{distro}-{arch}'
 
 
-- project:
-    <<: *vdsm_standard_common
-    name: vdsm_build-artifacts_3.5
-    version:
-      - 3.5:
-          branch: ovirt-3.5
-    stage: build-artifacts
-    distro:
-      - el6
-      - el7
-
 
 - project:
     <<: *vdsm_standard_common

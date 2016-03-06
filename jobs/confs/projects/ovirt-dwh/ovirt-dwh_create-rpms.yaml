@@ -21,24 +21,3 @@
       git
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
-
-- project:
-    name: ovirt-dwh_3.5_create-rpms
-    project:
-      - ovirt-dwh
-    trigger:
-      - merged
-      - created
-    distro:
-      - el7
-      - el6:
-          extra-repos: jpackage-6.0-generic,http://ftp.heanet.ie/pub/jpackage/6.0/generic/free
-    version:
-      - 3.5:
-          branch: ovirt-engine-dwh-3.5
-    mock-build-type: all
-    arch: x86_64
-    extra-build-packages: |
-      git
-    jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'

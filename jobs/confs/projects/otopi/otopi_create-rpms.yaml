@@ -10,8 +10,6 @@
           branch: master
       - 3.6:
           branch: otopi-1.4
-      - 3.5:
-          branch: otopi-1.3
     mock-build-type: all
     distro:
       - el6
@@ -19,10 +17,6 @@
       - fc22
       - fc23
     exclude:
-      - version: 3.5
-        distro: fc22
-      - version: 3.5
-        distro: fc23
       - version: master
         distro: fc22
       - version: master

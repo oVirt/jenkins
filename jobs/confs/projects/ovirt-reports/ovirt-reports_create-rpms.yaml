@@ -32,26 +32,3 @@
       git
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
-
-- project:
-    name: ovirt-reports_3.5_create-rpms
-    project:
-      - ovirt-reports
-    trigger:
-      - merged
-      - created
-    distro:
-      - el6
-      - el7
-    version:
-      - 3.5:
-          branch: ovirt-engine-reports-3.5
-          extra-repos: |
-            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
-            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
-    mock-build-type: all
-    arch: x86_64
-    extra-build-packages: |
-      git
-    jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'

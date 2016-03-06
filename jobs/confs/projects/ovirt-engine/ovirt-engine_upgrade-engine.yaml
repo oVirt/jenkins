@@ -39,20 +39,3 @@
     distro: el6
     jobs:
       - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'
-
-- project:
-    name: 'ovirt-engine_upgrade_3.5'
-    project: ovirt-engine
-    trigger:
-      - merged
-    version: 3.5
-    branch: 'ovirt-engine-3.5'
-    test-version:
-      - '3.5'
-      - '3.4'
-    repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}/rpm/{distro}/'
-    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/{distro}/,
-        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static/rpm/{distro}/'
-    distro: el6
-    jobs:
-      - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'

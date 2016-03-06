@@ -22,22 +22,3 @@
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
-
-- project:
-    name: ovirt-hosted-engine-setup_3.5
-    project:
-      - ovirt-hosted-engine-setup
-    version:
-      - 3.5:
-          branch: ovirt-hosted-engine-setup-1.2
-    stage:
-      - build-artifacts
-      - check-patch
-      - check-merged
-    distro:
-      - el6
-      - el7
-    trigger: 'on-change'
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'

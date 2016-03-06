@@ -36,21 +36,3 @@
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
-
-- project:
-    name: ovirt-image-uploader_3.5
-    project:
-      - ovirt-image-uploader
-    version:
-      - 3.5:
-          branch: ovirt-image-uploader-3.5
-    stage:
-      - check-patch
-      - build-artifacts
-    distro:
-      - el6
-      - el7
-    trigger: 'on-change'
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'

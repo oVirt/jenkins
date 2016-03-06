@@ -2,27 +2,6 @@
 ## the template, so if we don't want fc21 for branch 3.5, we have to
 ## create a separated template for it
 - project:
-    name: ovirt-log-collector_create-rpms
-    project:
-      - ovirt-log-collector
-    trigger:
-      - merged
-      - created
-    version:
-      - 3.5:
-          branch: ovirt-log-collector-3.5
-          extra-repos: |
-            ovirt-3.5-snapshot,http://resources.ovirt.org/pub/ovirt-3.5-snapshot/rpm/$distro
-            ovirt-3.5-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.5-snapshot-static/rpm/$distro
-    mock-build-type: onlyrpm
-    distro:
-      - el6
-      - el7
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
-
-- project:
     name: ovirt-log-collector_master_create-rpms
     project:
       - ovirt-log-collector
