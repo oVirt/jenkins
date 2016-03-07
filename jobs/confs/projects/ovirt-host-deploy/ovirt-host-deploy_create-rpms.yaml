@@ -18,12 +18,16 @@
           branch: ovirt-host-deploy-1.4
     mock-build-type: all
     distro:
+      - el6
       - el7
-      - fc22
       - fc23
     exclude:
       - version: master
-        distro: fc22
+        distro: el6
+      - version: 3.6
+        distro: el7
+      - version: 3.6
+        distro: fc23
     arch: x86_64
     extra-configure-options: |
       --with-otopi-sources=/dev/null
@@ -31,16 +35,12 @@
       gettext-devel
       automake
       autoreconf
-      make
-    extra-make-targets: |
-      offline-tarball
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
-# On EL6 build ovirt-host-deploy-offline only on 3.5 branch
-# Don't build for EL6 on master since it's not supported anymore.
+
 - project:
-    name: ovirt-host-deploy_create-rpms_el6
+    name: ovirt-host-deploy_36_create-rpms
     project:
       - ovirt-host-deploy
     trigger:
@@ -54,7 +54,9 @@
           branch: ovirt-host-deploy-1.4
     mock-build-type: all
     distro:
-      - el6
+      - el7
+      - fc22
+      - fc23
     arch: x86_64
     extra-configure-options: |
       --with-otopi-sources=/dev/null
@@ -62,6 +64,7 @@
       gettext-devel
       automake
       autoreconf
-      make
+    extra-make-targets: |
+      offline-tarball
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
