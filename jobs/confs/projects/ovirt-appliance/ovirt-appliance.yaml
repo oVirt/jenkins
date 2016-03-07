@@ -6,6 +6,8 @@
           branch: master
       - ovirt-3.6:
           branch: ovirt-3.6
+      - ovirt-4.0:
+          branch: ovirt-4.0
     stage:
       - build-artifacts
     distro:

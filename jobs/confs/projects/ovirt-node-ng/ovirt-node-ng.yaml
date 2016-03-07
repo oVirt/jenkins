@@ -7,6 +7,8 @@
     version:
       - master:
           branch: master
+      - ovirt-4.0:
+          branch: ovirt-4.0
     stage:
       - build-artifacts
     distro:
