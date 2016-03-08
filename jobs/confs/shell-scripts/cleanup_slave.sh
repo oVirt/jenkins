@@ -156,11 +156,19 @@ cleanup_lago_network_interfaces() {
         link
     local failed=false
     # remove lago-type interfaces, that is, 8chars of hash + '-some_tag'
-    links=($( \
-        sudo ip link show \
-        | grep -Po '^[[:alnum:]]*: [[:alnum:]]{8}-[^:]*' \
-        | awk '{print $2}' \
-    ))
+    # or 4 chars of hash + 6 chars of hash
+    links=(
+        $( \
+            sudo ip link show \
+            | grep -Po '^[[:alnum:]]*: [[:alnum:]]{8}-[^:]*' \
+            | awk '{print $2}' \
+        )
+        $( \
+            sudo ip link show \
+            | grep -Po '^[[:alnum:]]*: [[:alnum:]]{4}-[[:alnum:]]{6}[^:]*' \
+            | awk '{print $2}' \
+        )
+    )
     for link in "${links[@]}"; do
         #If the interface has an '@' the name is before it
         link="${link%%@*}"
