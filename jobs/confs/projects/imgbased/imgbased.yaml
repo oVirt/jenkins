@@ -9,6 +9,8 @@
           branch: master
       - ovirt-4.0:
           branch: ovirt-4.0
+      - ovirt-3.6:
+          branch: ovirt-3.6
     stage:
       - build-artifacts
     distro:
@@ -27,6 +29,8 @@
           branch: master
       - ovirt-4.0:
           branch: ovirt-4.0
+      - ovirt-3.6:
+          branch: ovirt-3.6
     stage:
       - check-patch
       - check-merged
