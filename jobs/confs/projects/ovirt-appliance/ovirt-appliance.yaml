@@ -4,15 +4,20 @@
     version:
       - master:
           branch: master
+          trigger: 'timed'
+          trigger-times: '@daily'
       - ovirt-3.6:
           branch: ovirt-3.6
+          trigger: 'timed'
+          trigger-times: '@weekly'
       - ovirt-4.0:
           branch: ovirt-4.0
+          trigger: 'timed'
+          trigger-times: '@weekly'
     stage:
       - build-artifacts
     distro:
       - el7
-    trigger: 'on-change'
     arch:
       - x86_64
     node-filter: (( fc21 || fc22 ) && nested) || appliance-builder
