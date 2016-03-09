@@ -115,14 +115,6 @@
       - copy-create-job-artifact:
           project: qemu_master_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
-          project: ovirt-node_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-node_master_create-iso-el7_merged
-      - copy-create-job-artifact:
-          project: ovirt-node-plugin-vdsm_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-node-plugin-hosted-engine_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
           project: ovirt-register_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: unboundid-ldapsdk_master_create-rpms-el7-x86_64_merged

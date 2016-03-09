@@ -7,23 +7,17 @@
     trigger:
       - merged
     version :
-      - master:
-          branch: master
-          distro : el7
       - ovirt-3.6:
           branch: ovirt-3.6
           distro : el7
     jobs:
       - 'ovirt-node_{version}_create-iso-{distro}_{trigger}'
 
-
 - project:
     name: ovirt-node-build
     project:
       - ovirt-node
     version:
-      - master:
-          branch: master
       - ovirt-3.6:
           branch: ovirt-3.6
     stage:
@@ -43,8 +37,6 @@
     project:
       - ovirt-node-plugin-vdsm
     version:
-      - master:
-          branch: master
       - ovirt-3.6:
           branch: ovirt-3.6
     stage:
@@ -64,8 +56,6 @@
     project:
       - ovirt-node-plugin-hosted-engine
     version:
-      - master:
-          branch: master
       - ovirt-3.6:
           branch: ovirt-3.6
     stage:
