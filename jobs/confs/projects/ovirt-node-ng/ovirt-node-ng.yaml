@@ -19,6 +19,6 @@
     trigger-times: '30 00 * * *'
     arch:
       - x86_64
-    node-filter: node-fc21
+    node-filter: node-fc21 || fc21
     jobs:
         - '{project}_{version}_{stage}-{distro}-{arch}'
