@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: ovirt-4.0
       - 3.6:
           branch: ovirt-3.6
     stage:
