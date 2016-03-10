@@ -110,6 +110,9 @@
     properties:
       - github:
           url: 'https://github.com/{org}/{project}'
+      - build-discarder:
+          num-to-keep: 40
+          artifact-num-to-keep: 20
     scm:
       - 'github-pull':
           project: '{project}'
