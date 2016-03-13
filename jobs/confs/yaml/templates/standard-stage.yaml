@@ -61,7 +61,7 @@
     <<: *standard-template
     name: 'ovirt-engine_{version}_build-artifacts-{distro}-{arch}'
     logrotate:
-      numToKeep: 40
+      numToKeep: 20
       artifactNumToKeep: 10
 
 # the following templates are for the new pipeline jobs
