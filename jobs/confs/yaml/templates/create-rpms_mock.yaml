@@ -1,6 +1,7 @@
 - job-template:
     name: '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
     node: '{node-filter}'
+    defaults: create-rpms
     parameters:
       - gerrit-params:
           branch: '{branch}'

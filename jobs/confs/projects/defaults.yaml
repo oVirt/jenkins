@@ -30,3 +30,35 @@
           write-description: 'Timed out'
       - timestamps
       - ansicolor
+
+
+- defaults:
+    description: |
+      This job is automatically updated by jenkins job builder, any manual
+      change will be lost in the next update. If you want to make permanent
+      changes, check out the <a href="http://gerrit.ovirt.org/gitweb?p=jenkins.git;a=tree;h=refs/heads/master;hb=refs/heads/master">
+      jenkins</a> repo.
+    name: create-rpms
+    project-type: freestyle
+    concurrent: false
+    # to enable the throttle plugin, you also need to set concurrent: true
+    git-server: 'gerrit.ovirt.org'
+    gerrit-server: 'gerrit.ovirt.org'
+    properties:
+      - throttle:
+          enabled: false
+          max-per-node: 1
+          max-total: 3
+          option: project
+      - build-discarder:
+          num-to-keep: 120
+          artifact-num-to-keep: 60
+    wrappers:
+      - timeout:
+          fail: true
+          timeout: 360
+          type: absolute
+          write-description: 'Timed out'
+      - timestamps
+      - ansicolor
+      - workspace-cleanup
