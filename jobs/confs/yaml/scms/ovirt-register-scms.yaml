@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-register-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-register
-          git-server: '{git-server}'

@@ -124,8 +124,6 @@
       - copy-create-job-artifact:
           project: ovirt-node-plugin-hosted-engine_ovirt-3.6_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
-          project: ovirt-register_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
           project: ovirt-appliance_ovirt-3.6_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
