@@ -9,7 +9,7 @@ VERSION={version}
 
 WORKSPACE="$PWD"
 OVIRT_SUITE="basic_suite_$VERSION"
-PREFIX="$WORKSPACE/ovirt-system-tests/deployment-$OVIRT_SUITE"
+PREFIX="$WORKSPACE/ovirt-system-tests/deployment-$OVIRT_SUITE/current"
 
 mkdir -p "$WORKSPACE/exported-artifacts"
 
