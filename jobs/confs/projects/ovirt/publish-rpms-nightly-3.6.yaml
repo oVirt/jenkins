@@ -148,11 +148,13 @@
           project: ovirt-wgt_3.6_create-rpms-fc23-x86_64_merged
 
       - copy-create-job-artifact:
+          project: ovirt-release_3.6_build-artifacts-el7-x86_64
+
+      - copy-create-job-artifact:
           project: imgbased_ovirt-3.6_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-guest-agent_3.6_build-artifacts-
-
 
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-image-uploader_3.6_build-artifacts-
