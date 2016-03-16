@@ -5,7 +5,7 @@
           org-list:
             - '{org}'
           cron: '* * * * *'
-          trigger-phrase: '.*(ci test please|ci :(\+1|thumbsup):).*'
+          trigger-phrase: '^(ci test please|ci :(\+1|thumbsup):).*'
           github-hooks: false
           permit-all: false
           auto-close-on-fail: false
@@ -22,7 +22,7 @@
           org-list:
             - '{org}'
           cron: '* * * * *'
-          trigger-phrase: '.*(ci merge please|ci :shipit:).*'
+          trigger-phrase: '^(ci merge please|ci :shipit:).*'
           only-trigger-phrase: true
           github-hooks: false
           permit-all: false
