@@ -21,8 +21,8 @@
           max-total: 3
           option: project
       - build-discarder:
-          numToKeep: 40
-          artifactNumToKeep: 7
+          num-to-keep: 2
+          artifact-num-to-keep: 2
     publishers:
       - ovirt-node-cleanup:
           distro: '{distro}'
