@@ -6,13 +6,13 @@
           branch: '{branch}'
     concurrent: true
     properties:
-        - throttle:
-            max-per-node: 1
-            max-total: 3
-            option: project
-        - build-discarder:
-            num-to-keep: 40
-            artifact-num-to-keep: 20
+      - throttle: &standard-template-properties-throttle
+          max-per-node: 1
+          max-total: 3
+          option: project
+      - build-discarder:
+          num-to-keep: 40
+          artifact-num-to-keep: 20
     scm:
       - '{project}-gerrit':
           git-server: '{git-server}'
@@ -63,6 +63,15 @@
     logrotate:
       numToKeep: 20
       artifactNumToKeep: 10
+
+- job-template:
+    <<: *standard-template
+    name: '{project}_{version}_{stage}-{distro}-{arch}{_big_artifacts}'
+    properties:
+      - throttle: *standard-template-properties-throttle
+      - build-discarder:
+          num-to-keep: 2
+          artifact-num-to-keep: 2
 
 # the following templates are for the new pipeline jobs
 - job-template: &standard-pipeline

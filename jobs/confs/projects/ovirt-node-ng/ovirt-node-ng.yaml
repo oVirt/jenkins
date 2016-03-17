@@ -21,4 +21,4 @@
       - x86_64
     node-filter: node-fc21 || fc21
     jobs:
-        - '{project}_{version}_{stage}-{distro}-{arch}'
+        - '{project}_{version}_{stage}-{distro}-{arch}{_big_artifacts}'
