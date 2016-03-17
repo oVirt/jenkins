@@ -202,3 +202,4 @@
           disallow-own-code: false
           fail-on-non-merge: true
           delete-on-merge: true
+      - github-notifier
