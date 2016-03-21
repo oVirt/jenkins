@@ -18,6 +18,8 @@ ACTION="${{ACTION?No action passed}}"
 cd "$WORKSPACE"/ovirt-engine
 
 ### Make sure we have all the remote info up to date
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+git fetch --all
 git fetch --all --tags
 
 ### get current HEAD ###
