@@ -1,0 +1,37 @@
+##############################################################################
+###   Projects
+##############################################################################
+- project:
+    name: cockpit-ovirt
+    project: cockpit-ovirt
+    version:
+      - master:
+          branch: master
+    stage:
+      - build-artifacts
+    distro:
+      - el7
+      - fc23
+    trigger: 'on-change'
+    arch:
+      - x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: cockpit-ovirt-lint
+    project: cockpit-ovirt
+    version:
+      - master:
+          branch: master
+    stage:
+      - check-patch
+      - check-merged
+    distro:
+      - el7
+      - fc23
+    trigger: 'on-change'
+    arch:
+      - x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'

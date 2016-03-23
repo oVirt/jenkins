@@ -1,0 +1,9 @@
+##############################################################################
+###   SCM Definitions
+##############################################################################
+- scm:
+    name: cockpit-ovirt-gerrit
+    scm:
+      - gerrit:
+          project: cockpit-ovirt
+          git-server: '{git-server}'
