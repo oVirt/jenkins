@@ -8,6 +8,8 @@
           branch: ovirt-engine-3.6
       - 3.6.4:
           branch: ovirt-engine-3.6.4
+      - 3.6.5:
+          branch: ovirt-engine-3.6.5
     stage: build-artifacts
     distro:
       - el6
@@ -36,6 +38,8 @@
           branch: ovirt-engine-3.6
       - 3.6.4:
           branch: ovirt-engine-3.6.4
+      - 3.6.5:
+          branch: ovirt-engine-3.6.5
     stage:
       - check-patch
       - check-merged
