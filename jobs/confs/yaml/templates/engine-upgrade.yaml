@@ -37,7 +37,7 @@
       - jenkins:
           branch: 'master'
           git-server: '{git-server}'
-    jdk: '{jdk}'
+    jdk: '{java-jdk}'
     node: '{distro}'
     triggers:
       - on-patch-{trigger}:

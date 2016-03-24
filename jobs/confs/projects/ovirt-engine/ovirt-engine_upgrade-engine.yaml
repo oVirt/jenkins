@@ -16,9 +16,9 @@
     repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/{distro}/,
         http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static/rpm/{distro}/'
     distro: el7
-    jdk: 'java-1.8.0-openjdk'
+    java-jdk: 'java-1.8.0-openjdk'
     jobs:
-      - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'
+      - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}':
 
 - project:
     name: 'ovirt-engine_upgrade_3.6'
