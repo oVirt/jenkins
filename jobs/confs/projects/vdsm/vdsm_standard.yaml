@@ -44,3 +44,4 @@
       - check-merged
     distro:
       - fc23
+      - el7
