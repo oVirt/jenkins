@@ -89,12 +89,19 @@ create_src_rpm()
     local tarball="${1?}"
     local dst_dir="${2?}"
     local workspace="${3:-$PWD}"
-    local MAVEN_OPTS="${MAVEN_OPTS}"
-    MAVEN_OPTS+=" -XX:MaxPermSize=1024m -Dgwt.compiler.localWorkers=1"
-    MAVEN_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
-    MAVEN_OPTS+=" -Duser.home=$workspace"
+    local BUILD_JAVA_OPTS_MAVEN="\
+    -XX:MaxPermSize=1G \
+    -Dgwt.compiler.localWorkers=1 \
+"
+    local BUILD_JAVA_OPTS_GWT="\
+    -XX:PermSize=512M \
+    -XX:MaxPermSize=1G \
+    -Xms1G \
+    -Xmx6G \
+"
     rm -f "$workspace"/ovirt-engine-*.src.rpm
-    env MAVEN_OPTS="$MAVEN_OPTS" \
+    env BUILD_JAVA_OPTS_MAVEN="${BUILD_JAVA_OPTS_MAVEN}" \
+        BUILD_JAVA_OPTS_GWT="${BUILD_JAVA_OPTS_GWT}" \
         rpmbuild \
                  -D "_srcrpmdir $workspace" \
                  -D "_specdir $workspace" \
@@ -122,11 +129,18 @@ create_rpms()
     local dst_dir="${2?}"
     local release="${3?}"
     local workspace="${4:-$PWD}"
-    local MAVEN_OPTS="${MAVEN_OPTS}"
-    MAVEN_OPTS+=" -XX:MaxPermSize=1024m -Dgwt.compiler.localWorkers=1"
-    MAVEN_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
-    MAVEN_OPTS+=" -Duser.home=$workspace"
-    env MAVEN_OPTS="$MAVEN_OPTS" \
+    local BUILD_JAVA_OPTS_MAVEN="\
+    -XX:MaxPermSize=1G \
+    -Dgwt.compiler.localWorkers=1 \
+"
+    local BUILD_JAVA_OPTS_GWT="\
+    -XX:PermSize=512M \
+    -XX:MaxPermSize=1G \
+    -Xms1G \
+    -Xmx6G \
+"
+    env BUILD_JAVA_OPTS_MAVEN="${BUILD_JAVA_OPTS_MAVEN}" \
+        BUILD_JAVA_OPTS_GWT="${BUILD_JAVA_OPTS_GWT}" \
         rpmbuild \
                  -D "ovirt_build_minimal 1" \
                  -D "release_suffix $release" \
