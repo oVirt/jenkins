@@ -140,6 +140,10 @@
       - copy-create-job-artifact:
           project: ovirt-wgt_master_create-rpms-fc23-x86_64_merged
 
+      - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-engine-sdk-ruby_master_build-artifacts-
+          project-suffix: ""
+
       - copy-create-job-artifact:
           project: ovirt-release_master_build-artifacts-el7-x86_64
 
