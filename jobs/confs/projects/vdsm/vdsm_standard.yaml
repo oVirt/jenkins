@@ -24,7 +24,6 @@
     stage: build-artifacts
     distro:
       - el7
-      - fc22
       - fc23
     exclude:
       - version: master
@@ -32,16 +31,25 @@
 
 - project:
     <<: *vdsm_standard_common
-    name: vdsm_standard
+    name: vdsm_check-patch
     node-filter: fc21 || fc22
     version:
       - master:
           branch: master
       - 3.6:
           branch: ovirt-3.6
-    stage:
-      - check-patch
-      - check-merged
+    stage: check-patch
     distro:
       - fc23
       - el7
+
+- project:
+    <<: *vdsm_standard_common
+    name: vdsm_check-merged
+    node-filter: fc21 || fc22
+    version:
+      - master:
+          branch: master
+    stage: check-merged
+    distro:
+      - fc23
