@@ -13,8 +13,8 @@
       - el6:
           extra-repos: jpackage-6.0-generic,http://ftp.heanet.ie/pub/jpackage/6.0/generic/free
     version:
-      - master:
-          branch: master
+      - 3.6:
+          branch: ovirt-engine-dwh-3.6
     mock-build-type: all
     arch: x86_64
     extra-build-packages: |
