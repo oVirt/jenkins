@@ -6,7 +6,6 @@
     project:
       - ovirt-engine
     trigger:
-      - merged
       - created
     version:
       - master:
@@ -27,7 +26,6 @@
     project:
       - ovirt-engine
     trigger:
-      - merged
       - created
     version:
       - 3.6:
