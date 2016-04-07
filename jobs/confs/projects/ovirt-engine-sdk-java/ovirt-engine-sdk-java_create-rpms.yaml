@@ -5,8 +5,6 @@
     trigger:
       - merged
     version:
-      - master:
-          branch: master
       - 3.6:
           branch: sdk_3.6
     mock-build-type: all
@@ -19,9 +17,6 @@
           extra-packages: |
             maven3
       - el7
-    exclude:
-      - version: master
-        distro: fc22
     arch: x86_64
     extra-build-packages: |
       git
