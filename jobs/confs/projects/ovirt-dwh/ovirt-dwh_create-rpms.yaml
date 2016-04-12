@@ -1,5 +1,5 @@
 - project:
-    name: ovirt-dwh_master_create-rpms
+    name: ovirt-dwh_3.6_create-rpms
     project:
       - ovirt-dwh
     trigger:
