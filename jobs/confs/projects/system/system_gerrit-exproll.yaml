@@ -1,0 +1,15 @@
+- job:
+    name: system_gerrit-exproll
+    node: master
+    triggers:
+      - timed: "45 00 * * *"
+    builders:
+      - shell: |
+          #!/bin/bash -e
+          ssh gerrit2@gerrit.ovirt.org -p 22 \
+              -o UserKnownHostsFile=/dev/null \
+              -o StrictHostKeyChecking=no
+    wrappers:
+      - ssh-agent-credentials:
+          users:
+            - 04692252-83e1-461a-8f76-5799ad87200f
