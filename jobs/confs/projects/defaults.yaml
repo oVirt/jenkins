@@ -23,5 +23,10 @@
           num-to-keep: 40
           artifact-num-to-keep: 20
     wrappers:
+      - timeout:
+          fail: true
+          timeout: 360
+          type: absolute
+          write-description: 'Timed out'
       - timestamps
       - ansicolor
