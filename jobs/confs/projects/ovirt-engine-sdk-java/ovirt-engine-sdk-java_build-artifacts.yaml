@@ -27,6 +27,7 @@
       - check-patch
     trigger: 'on-change'
     distro:
+        - el7
         - fc23
     arch: x86_64
     jobs:
