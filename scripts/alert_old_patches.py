@@ -22,8 +22,26 @@ import smtplib
 import argparse
 import os
 
-CC_EMAIL = "iheim@redhat.com,bazulay@redhat.com"
+CC_EMAIL = "ykaul@redhat.com,eedri@redhat.com"
 SSH = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+
+def get_all_projects():
+    "Return list of all projects."
+    gerrit_call = (
+        "%s gerrit ls-projects"
+        ) % (SSH)
+    if ARGS.debug:
+        print(gerrit_call)
+    shell_command = ["bash", "-c", gerrit_call]
+    try:
+        project_list = log_exec(shell_command).splitlines()
+    except EnvironmentError:
+        print(
+            "Error getting list of projects. "
+            "See output above.")
+        sys.exit(127)
+    return project_list
 
 
 def check_forgotten_patches(days, t_project):
@@ -141,9 +159,13 @@ def log_exec(argv, custom_input=None):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
+    project_options = parser.add_mutually_exclusive_group(required=True)
+    project_options.add_argument(
         "--projects", help="Comma separated list of projects",
-        metavar="PROJECT1,PROJECT2,..", required=True)
+        metavar="PROJECT1,PROJECT2,..")
+    project_options.add_argument(
+        "--all", help="Search across all projects",
+        action="store_true", dest='is_all')
     parser.add_argument(
         "--server", help="Gerrit server, default: gerrit.ovirt.org",
         default="gerrit.ovirt.org")
@@ -186,7 +208,7 @@ if __name__ == "__main__":
         SSH += " -p %s %s@%s" % (ARGS.port, ARGS.user, ARGS.server)
 
     MAIL_SERVER_HOST = ARGS.mail
-    SUBJECT = "Forgotten Patches"
+    SUBJECT = "Forgotten Patches in project"
     if ARGS.dry_run and not ARGS.with_email:
         MAILSERVER = None
     else:
@@ -200,7 +222,14 @@ if __name__ == "__main__":
 
     DAYS = [int(ARGS.abandon_days), int(ARGS.warning_days)]
 
-    for project in ARGS.projects.split(','):
+    # Get the list of projects if is_all is true
+    # else use the given project list
+    if ARGS.is_all:
+        project_list = get_all_projects()
+    else:
+        project_list = ARGS.projects.split(',')
+
+    for project in project_list:
         for day in DAYS:
             output = check_forgotten_patches(day, project)
             if not output:
@@ -224,7 +253,7 @@ if __name__ == "__main__":
                                 notice_txt, dry_run_message_gen(patches)))
                         if ARGS.with_email:
                             msg = MIMEText(notice)
-                            msg['Subject'] = SUBJECT
+                            msg['Subject'] = "%s %s" % (SUBJECT, project)
                             msg['To'] = ARGS.with_email
                             msg['From'] = FROMADDR
                             MAILSERVER.sendmail(
@@ -239,7 +268,7 @@ if __name__ == "__main__":
                         else:
                             txt = gen_warning_email_body(day, patches)
                         msg = MIMEText(txt)
-                        msg['Subject'] = SUBJECT
+                        msg['Subject'] = "%s %s" % (SUBJECT, project)
                         msg['To'] = email
                         msg['From'] = FROMADDR
                         if "@redhat.com" not in email:
