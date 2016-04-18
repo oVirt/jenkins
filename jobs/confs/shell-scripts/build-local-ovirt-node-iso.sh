@@ -68,6 +68,8 @@ function clean_iso {{
     fi
 }}
 
+#patch jenkins packages
+sudo yum install sssd-client -y || true
 
 set_env
 check_pre
