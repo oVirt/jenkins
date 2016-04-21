@@ -16,7 +16,7 @@
     distro:
       - fc22
     trigger: 'timed'
-    trigger-times: '30 00 * * *'
+    trigger-times: '00 04 * * *'
     arch:
       - x86_64
     node-filter: fc23
