@@ -1,0 +1,17 @@
+- project:
+    name: ovirt-engine-dashboard_checks
+    project:
+      - ovirt-engine-dashboard
+    version:
+      - master:
+          branch: master
+    stage:
+      - check-merged
+      - check-patch
+    trigger: 'on-change'
+    distro:
+        - el7
+        - fc23
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
