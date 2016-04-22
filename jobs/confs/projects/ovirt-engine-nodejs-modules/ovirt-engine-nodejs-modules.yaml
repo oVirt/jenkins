@@ -19,5 +19,6 @@
           extra-build-packages: |
             gcc-c++
             ovirt-engine-nodejs
+            python
             rpmdevtools
             wget
