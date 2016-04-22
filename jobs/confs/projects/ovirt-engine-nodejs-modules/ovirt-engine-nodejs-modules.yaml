@@ -17,6 +17,7 @@
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: |
+            gcc-c++
             ovirt-engine-nodejs
             rpmdevtools
             wget
