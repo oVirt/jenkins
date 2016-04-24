@@ -20,4 +20,4 @@ cd ovirt-system-tests
     --mock-confs-dir ../jenkins/mock_configs \
     --try-proxy \
     --execute-script "automation/$OVIRT_SUITE.sh" \
-    fc22
+    fc23
