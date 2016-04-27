@@ -25,6 +25,7 @@
     distro:
       - el7
       - fc23
+      - fc22
     exclude:
       - version: master
         distro: fc22
