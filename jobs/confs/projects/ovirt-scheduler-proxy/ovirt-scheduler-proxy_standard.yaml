@@ -9,7 +9,9 @@
       - build-artifacts
     trigger: 'on-change'
     distro:
+        - el6
         - el7
+        - fc22
         - fc23
     arch: x86_64
     jobs:
@@ -25,7 +27,9 @@
     stage:
       - check-patch
     distro:
+      - el6
       - el7
+      - fc22
       - fc23
     exclude:
       - version: master
