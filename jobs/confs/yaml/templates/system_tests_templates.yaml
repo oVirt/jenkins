@@ -17,6 +17,7 @@
       - cleanup-slave
       - 'system-tests':
           version: '{version}'
+          suite_type : basic
     publishers:
       - post-tasks:
           - matches:
@@ -38,3 +39,68 @@
           recipients: '{email-to}'
           notify-every-unstable-build: false
           send-to-individuals: false
+
+
+- job-template:
+    name: '{project}_{version}_image-ng-system-tests'
+    node: ovirt-srv26.phx.ovirt.org
+    triggers:
+      - timed: "@midnight"
+    scm:
+      - 'ovirt-system-tests-gerrit':
+          branch: 'master'
+          git-server: '{git-server}'
+      - 'jenkins':
+          branch: 'master'
+          git-server: '{git-server}'
+    parameters:
+      - string:
+          name: GERRIT_REFSPEC
+          default: 'refs/changes/60/56360/51'
+          description: 'Git refspec to build'
+      - string:
+          name: GERRIT_BRANCH
+          default: 'origin/{branch}'
+          description: 'Git branch to build'
+    builders:
+      - shell: "rm -rf $WORKSPACE/ovirt-system-tests/images || true"
+      - copyartifact:
+          project: 'ovirt-appliance_ovirt-{version}_build-artifacts-el7-x86_64'
+          which-build: upstream-build
+          fallback-to-last-successful: true
+          filter: "exported-artifacts/*.ova"
+          optional: true
+          target: ovirt-system-tests/images
+      - copyartifact:
+          project: 'ovirt-node-ng_ovirt-{version}_build-artifacts-fc22-x86_64'
+          which-build: upstream-build
+          fallback-to-last-successful: true
+          optional: true
+          target: ovirt-system-tests/images
+          filter: "exported-artifacts/*.squashfs.img"
+      - cleanup-slave
+      - 'system-tests':
+          version: '{version}'
+          suite_type : image_ng
+    publishers:
+      - post-tasks:
+          - matches:
+              - log-text: '.*'
+                operator: AND
+            escalate-status: true
+            script: !include-raw: shell-scripts/system_tests.collect_logs.sh
+          - matches:
+              - log-text: '.*'
+                operator: AND
+                escalate-status: true
+            script: !include-raw-escape: shell-scripts/mock_cleanup.sh
+      - junit:
+          results: 'exported-artifacts/nosetests*.xml'
+      - archive:
+          artifacts: 'exported-artifacts/**'
+          allow-empty: true
+      - email:
+          recipients: '{email-to}'
+          notify-every-unstable-build: false
+          send-to-individuals: false
+

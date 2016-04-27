@@ -14,3 +14,16 @@
     version:
       - 3.6
       - master
+
+# type can be both image and image_ng
+# they differ in the testing used
+- project:
+    name: ovirt-system-image-tests
+    version:
+      - 3.6
+    project: ovirt
+    branch: master
+    email-to: tlitovsk@redhat.com
+    jobs:
+      - '{project}_{version}_image-ng-system-tests'
+

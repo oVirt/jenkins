@@ -6,9 +6,10 @@ echo 'shell_scripts/system_tests.collect_logs.sh'
 #    version
 #
 VERSION={version}
+SUITE_TYPE={suite_type}
 
 WORKSPACE="$PWD"
-OVIRT_SUITE="basic_suite_$VERSION"
+OVIRT_SUITE="$SUITE_TYPE_suite_$VERSION"
 TESTS_LOGS="$WORKSPACE/ovirt-system-tests/exported-artifacts"
 
 rm -rf "$WORKSPACE/exported-artifacts"
