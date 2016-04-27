@@ -10,11 +10,11 @@
             description: "Turn on dry-run mode. Default is false."
         - string:
             name: WARNING
-            default: "60"
+            default: "90"
             description: "Age in days for warning limit."
         - string:
             name: ABANDON
-            default: "160"
+            default: "360"
             description: "Age in days for abandoning limit."
         - string:
             name: TEST_EMAIL
@@ -24,9 +24,9 @@
     builders:
         - shell: |
             #!/bin/bash
-            #TODO: add all ovirt projects
             user="jenkins_ro"
-            projects="vdsm,ovirt-engine,jenkins,infra-puppet,lago,gerrit-admin,infra-docs,repoman"
+            # leaving placeholder for projects if we want to run on a limited set of projects manually, please use the --projects instead of --all
+            projects=""
             dry=
 
             if [ "$DRY_RUN" == 'true' ] ; then
@@ -34,16 +34,16 @@
             fi
 
             if [ -z "$TEST_EMAIL" ]; then
-                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug --projects "$projects" $dry
+                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug $dry
             else
-                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug --projects "$projects" --with-email "$TEST_EMAIL" $dry
+                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug --with-email "$TEST_EMAIL" $dry
             fi
 
 
     wrappers:
         - ssh-agent-credentials:
             users:
-                - '106ec229-f1a1-4a0b-ac4f-38395556b6ad'
+                - '83c7da57-3efd-438d-a275-f04c5a08231e'
     scm:
         - jenkins:
             branch: master
