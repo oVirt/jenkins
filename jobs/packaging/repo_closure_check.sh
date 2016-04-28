@@ -22,7 +22,6 @@ BASE_URL="http://resources.ovirt.org"
 CENTOS_MIRROR="http://centos.mirror.constant.com/"
 EPEL_MIRROR="http://mirror.switch.ch/ftp/mirror"
 FEDORA_MIRROR="http://mirrors.kernel.org/"
-GLUSTER_MIRROR="http://download.gluster.org"
 JPACKAGE_MIRROR="http://ftp.heanet.ie/pub"
 COPR="http://copr-be.cloud.fedoraproject.org/results"
 STATIC_RP=""
@@ -127,15 +126,13 @@ check_repo_closure() {
                 --repofrompath=check-extras-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
                 --repofrompath=centos-ovirt36-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/virt/x86_64/ovirt-3.6/ \
                 --repofrompath=check-epel-"${distid}","${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
-                --repofrompath=check-glusterfs-epel-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
-                --repofrompath=check-glusterfs-epel-noarch-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
+                --repofrompath=centos-glusterfs37-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/storage/x86_64/gluster-3.7/ \
                 --repofrompath=check-patternfly-"${distid}","${COPR}/patternfly/patternfly1/epel-${DISTRIBUTION_VERSION}-x86_64" \
                 --lookaside check-updates-"${distid}" \
                 --lookaside check-extras-"${distid}" \
                 --lookaside centos-ovirt36-"${distid}" \
                 --lookaside check-epel-"${distid}" \
-                --lookaside check-glusterfs-epel-"${distid}" \
-                --lookaside check-glusterfs-noarch-epel-"${distid}" \
+                --lookaside centos-glusterfs37-"${distid}" \
                 --lookaside check-base-"${distid}" \
                 --lookaside check-patternfly-"${distid}" \
                 --repoid check-custom-"${distid}"
@@ -171,14 +168,10 @@ check_repo_closure() {
             --repofrompath=check-updates-"${distid}","${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
             --repofrompath=check-updates-testing-"${distid}","${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
             --repofrompath=check-patternfly-"${distid}",""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
-            --repofrompath=check-glusterfs-fedora-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/x86_64/ \
-            --repofrompath=check-glusterfs-fedora-noarch-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/noarch \
             --lookaside check-fedora-"${distid}" \
             --lookaside check-updates-"${distid}" \
             --lookaside check-updates-testing-"${distid}" \
             --lookaside check-patternfly-"${distid}" \
-            --lookaside check-glusterfs-fedora-"${distid}" \
-            --lookaside check-glusterfs-noarch-fedora-"${distid}" \
             --repoid check-custom-"${distid}"
     fi
 }
