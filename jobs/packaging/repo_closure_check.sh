@@ -22,6 +22,7 @@ BASE_URL="http://resources.ovirt.org"
 CENTOS_MIRROR="http://centos.mirror.constant.com/"
 EPEL_MIRROR="http://mirror.switch.ch/ftp/mirror"
 FEDORA_MIRROR="http://mirrors.kernel.org/"
+GLUSTER_MIRROR="http://download.gluster.org"
 JPACKAGE_MIRROR="http://ftp.heanet.ie/pub"
 COPR="http://copr-be.cloud.fedoraproject.org/results"
 STATIC_RP=""
@@ -161,18 +162,38 @@ check_repo_closure() {
         fi
     elif [ "${DISTRIBUTION}" == "fc" ] \
         || [ "${DISTRIBUTION}" == "Fedora" ]; then
-        repoclosure \
-            --tempcache \
-            --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
-            --repofrompath=check-fedora-"${distid}","${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
-            --repofrompath=check-updates-"${distid}","${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
-            --repofrompath=check-updates-testing-"${distid}","${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
-            --repofrompath=check-patternfly-"${distid}",""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
-            --lookaside check-fedora-"${distid}" \
-            --lookaside check-updates-"${distid}" \
-            --lookaside check-updates-testing-"${distid}" \
-            --lookaside check-patternfly-"${distid}" \
-            --repoid check-custom-"${distid}"
+	if [[ "${DISTRIBUTION_VERSION}" == "22" ]]; then
+	        repoclosure \
+	            --tempcache \
+	            --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
+	            --repofrompath=check-fedora-"${distid}","${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
+	            --repofrompath=check-updates-"${distid}","${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
+	            --repofrompath=check-updates-testing-"${distid}","${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
+	            --repofrompath=check-patternfly-"${distid}",""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
+	            --repofrompath=check-glusterfs-fedora-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/x86_64/ \
+	            --repofrompath=check-glusterfs-fedora-noarch-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/Fedora/fedora-"${DISTRIBUTION_VERSION}"/noarch \
+	            --lookaside check-fedora-"${distid}" \
+	            --lookaside check-updates-"${distid}" \
+	            --lookaside check-updates-testing-"${distid}" \
+	            --lookaside check-patternfly-"${distid}" \
+	            --lookaside check-glusterfs-fedora-"${distid}" \
+	            --lookaside check-glusterfs-noarch-fedora-"${distid}" \
+	            --repoid check-custom-"${distid}"
+        fi
+        else
+	        repoclosure \
+ 	           --tempcache \
+        	    --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
+	            --repofrompath=check-fedora-"${distid}","${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
+	            --repofrompath=check-updates-"${distid}","${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
+	            --repofrompath=check-updates-testing-"${distid}","${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
+	            --repofrompath=check-patternfly-"${distid}",""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
+	            --lookaside check-fedora-"${distid}" \
+	            --lookaside check-updates-"${distid}" \
+	            --lookaside check-updates-testing-"${distid}" \
+	            --lookaside check-patternfly-"${distid}" \
+	            --repoid check-custom-"${distid}"
+        fi
     fi
 }
 
