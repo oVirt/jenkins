@@ -145,15 +145,13 @@ check_repo_closure() {
                 --repofrompath=check-updates-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
                 --repofrompath=check-extras-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
                 --repofrompath=check-epel-"${distid}","${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
-                --repofrompath=check-glusterfs-epel-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/x86_64/ \
-                --repofrompath=check-glusterfs-epel-noarch-"${distid}","${GLUSTER_MIRROR}"/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-"${DISTRIBUTION_VERSION}"/noarch \
+                --repofrompath=centos-glusterfs37-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/storage/x86_64/gluster-3.7/ \
                 --repofrompath=check-jpackage-generic-"${distid}","${JPACKAGE_MIRROR}"/jpackage/6.0/generic/free \
                 --repofrompath=check-patternfly-"${distid}","${COPR}/patternfly/patternfly1/epel-6-x86_64" \
                 --lookaside check-updates-"${distid}" \
                 --lookaside check-extras-"${distid}" \
                 --lookaside check-epel-"${distid}" \
-                --lookaside check-glusterfs-epel-"${distid}" \
-                --lookaside check-glusterfs-noarch-epel-"${distid}" \
+                --lookaside centos-glusterfs37-"${distid}" \
                 --lookaside check-base-"${distid}" \
                 --lookaside check-jpackage-rhel5-"${distid}" \
                 --lookaside check-jpackage-generic-"${distid}" \
