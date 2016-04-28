@@ -160,7 +160,7 @@ check_repo_closure() {
         fi
     elif [ "${DISTRIBUTION}" == "fc" ] \
         || [ "${DISTRIBUTION}" == "Fedora" ]; then
-	if [[ "${DISTRIBUTION_VERSION}" == "22" ]]; then
+        if [[ "${DISTRIBUTION_VERSION}" == "22" ]]; then
 	        repoclosure \
 	            --tempcache \
 	            --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
@@ -177,7 +177,6 @@ check_repo_closure() {
 	            --lookaside check-glusterfs-fedora-"${distid}" \
 	            --lookaside check-glusterfs-noarch-fedora-"${distid}" \
 	            --repoid check-custom-"${distid}"
-        fi
         else
 	        repoclosure \
  	           --tempcache \
