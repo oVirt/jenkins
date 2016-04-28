@@ -13,8 +13,7 @@
     distro:
       - el7:
           extra-repos: |
-              glusterfs-epel,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-7/\\$basearch
-              glusterfs-noarch-epel,http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-7/noarch
+              glusterfs-centos,http://mirror.centos.org/centos/7/storage/\\$basearch/gluster-3.7/
     arch: x86_64
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
