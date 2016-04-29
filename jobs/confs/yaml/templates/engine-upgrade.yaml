@@ -16,6 +16,15 @@
 
 - job-template:
     name: 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'
+    properties:
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          max-total: 3
+          option: project
+      - build-discarder:
+          num-to-keep: 40
+          artifact-num-to-keep: 20
     parameters:
       - gerrit-params:
           branch: '{branch}'
