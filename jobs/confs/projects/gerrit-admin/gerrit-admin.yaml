@@ -1,0 +1,16 @@
+- project:
+    name: gerrit_admin
+    project:
+      - gerrit-admin
+    version:
+      - master:
+          branch: master
+    stage:
+      - check-patch
+      - check-merged
+    distro:
+      - fc23
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
