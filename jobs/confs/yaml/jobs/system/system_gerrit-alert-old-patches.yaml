@@ -34,9 +34,9 @@
             fi
 
             if [ -z "$TEST_EMAIL" ]; then
-                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug $dry
+                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --all --debug $dry
             else
-                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --debug --with-email "$TEST_EMAIL" $dry
+                $WORKSPACE/jenkins/scripts/alert_old_patches.py --user "$user" --warning-days-limit "$WARNING" --abandon-days-limit "$ABANDON" --all --debug --with-email "$TEST_EMAIL" $dry
             fi
 
 
