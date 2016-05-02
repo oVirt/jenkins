@@ -1,0 +1,46 @@
+# to add a new backup:
+# 1) create ssh site in jenkins global configuration, this is ssh_local
+# 2) ensure that site has duplicity installed
+# 3) add here a new project with the apropriate directory structure, i.e.:
+#    ssh://jenkins-backup@backup.phx.ovirt.org/{hostname}/duplicity
+#    the directory will be auto-created.
+# 4) for more details see 'man duplicity'
+#
+# look at the first entry on how to customize the parameters.
+
+
+
+- project:
+    name: 'system-backup_project'
+    hostname:
+      - jenkins_old_ovirt_org:
+          ssh_local: 'backup_jenkins_old_ovirt_org'
+          # SSH site in jenkins
+          backup_dir: '/var/lib/jenkins'
+          # root path to backup
+          exclude_list: '**.temp2,**/.git/**,**.jar,**/exported-artifacts/**,**/workspace/**,jobs/**/exported-artifacts/**,**.iso,**.rpm,jobs/**/builds/**/archive/**'
+          # files to exclude. use '**' for everything including backslashes, and '*' for everything excluding
+          # backslashes
+          ssh_remote: 'ssh://jenkins-backup@backup.phx.ovirt.org/jenkins_old_ovirt_org/duplicity'
+          # remote site to send backups to over SCP
+          uuid: '386bae3f-f3b7-4778-a317-224d0f9a090c'
+          # UUID for the ssh_local
+          to_keep: '120'
+          # days to keep old backups
+          full: '90'
+          # number of days to do a full backup
+          trigger-times: "0 0 * * 6"
+          mail_to: infra@ovirt.org
+
+      - jenkins_ovirt_org:
+          ssh_local: 'backup_jenkins_ovirt_org'
+          backup_dir: '/var/lib/data/jenkins'
+          exclude_list: '**.temp2,**/.git/**,**.jar,**/exported-artifacts/**,**/workspace/**,jobs/**/exported-artifacts/**,**.iso,**.rpm,jobs/**/builds/**/archive/**'
+          ssh_remote: 'ssh://jenkins-backup@backup.phx.ovirt.org/jenkins_ovirt_org/duplicity'
+          uuid: '386bae3f-f3b7-4778-a317-224d0f9a090c'
+          to_keep: '180'
+          full: '30'
+          trigger-times: "@midnight"
+          mail_to: infra@ovirt.org
+    jobs:
+      - 'system-backup_{hostname}'

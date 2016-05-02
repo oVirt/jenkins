@@ -1,0 +1,53 @@
+- job-template:
+    name: 'system-backup_{hostname}'
+    node: master
+    properties:
+      - build-discarder:
+          num-to-keep: '{to_keep}'
+          artifact-num-to-keep: '{to_keep}'
+    scm:
+      - jenkins:
+          git-server: '{git-server}'
+    parameters:
+      - string:
+            name: VERBOSITY
+            default: '4'
+            description: |
+             duplicity verbosity level
+    triggers:
+      - timed: '{trigger-times}'
+    wrappers:
+      - ssh-agent-credentials:
+            users:
+              - '{uuid}'
+      - timeout:
+          timeout: '600'
+          timeout-var: 'BUILD_TIMEOUT'
+          fail: 'true'
+          type: 'absolute'
+      - timestamps
+    publishers:
+      - ssh:
+          site: '{ssh_local}'
+          source: "**/duplicity-backup.sh"
+          target: backup-dup/
+          timeout: 0
+          fail-on-error: true
+          clean-remote: false
+          always-publish-on-master: false
+          command: |
+            set -e
+            chmod +x backup-dup/jenkins/backup/duplicity-backup.sh
+            backup-dup/jenkins/backup/duplicity-backup.sh --ssh {ssh_remote} \
+              --exclude {exclude_list} \
+              --backup_dir {backup_dir} \
+              --full {full}D \
+              --tokeep {to_keep}D \
+              --verbosity $VERBOSITY
+            rm -rf backup-dup/jenkins/backup/
+      - email-ext:
+          recipients: '{mail_to}'
+          unstable: true
+          failure: true
+          send-to:
+            - recipients
