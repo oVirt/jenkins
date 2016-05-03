@@ -94,6 +94,9 @@
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-jboss-modules-maven-plugin_master_build-artifacts-
           project-suffix: ""
+      - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-engine-dashboard_master_build-artifacts-
+          project-suffix: ""
 
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: ioprocess_master_create-rpms-
