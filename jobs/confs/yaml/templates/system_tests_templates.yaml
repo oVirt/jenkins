@@ -56,7 +56,7 @@
     parameters:
       - string:
           name: GERRIT_REFSPEC
-          default: 'refs/changes/60/56360/51'
+          default: 'refs/heads/master'
           description: 'Git refspec to build'
       - string:
           name: GERRIT_BRANCH
