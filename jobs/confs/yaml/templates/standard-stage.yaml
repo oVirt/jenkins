@@ -53,16 +53,20 @@
 - job-template:
     <<: *standard-template
     name: 'ovirt-appliance_{version}_{stage}-{distro}-{arch}'
-    logrotate:
-      numToKeep: 20
-      artifactNumToKeep: 2
+    properties:
+      - throttle: *standard-template-properties-throttle
+      - build-discarder:
+          num-to-keep: 40
+          artifact-num-to-keep: 2
 
 - job-template:
     <<: *standard-template
     name: 'ovirt-engine_{version}_build-artifacts-{distro}-{arch}'
-    logrotate:
-      numToKeep: 20
-      artifactNumToKeep: 10
+    properties:
+      - throttle: *standard-template-properties-throttle
+      - build-discarder:
+          num-to-keep: 20
+          artifact-num-to-keep: 10
 
 - job-template:
     <<: *standard-template
