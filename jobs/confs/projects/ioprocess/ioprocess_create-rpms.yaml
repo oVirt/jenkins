@@ -15,14 +15,6 @@
       - master:
           branch: master
     distro:
-      - fc22:
-          extra-build-packages: |
-            autoreconf
-            gettext-devel
-            automake
-            glib2-devel
-            yajl-devel
-            python3-devel
       - fc23:
           extra-build-packages: |
             autoreconf
@@ -42,11 +34,11 @@
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
 - project:
-    name: ioprocess_create-rpms-0.15.0
+    name: ioprocess_create-rpms-0.15
     <<: *ioprocess_defaults
     version:
-      - 0.15.0:
-          branch: ioprocess-0.15.0
+      - 0.15:
+          branch: ioprocess-0.15.1
     distro:
       - el6
       - el7
