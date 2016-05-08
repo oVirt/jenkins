@@ -1,6 +1,6 @@
 - vdsm-jsonrpc-java_standard_common:
     name: 'vdsm-jsonrpc-java_standard_common'
-    vdsm-jsonrpc-java_stardard--key: &vdsm-jsonrpc-java_standard_common
+    vdsm-jsonrpc-java_standard--key: &vdsm-jsonrpc-java_standard_common
       project:
         - vdsm-jsonrpc-java
       stage:

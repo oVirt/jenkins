@@ -1,6 +1,6 @@
 - vdsm_standard_common:
     name: 'vdsm_standard_common'
-    vdsm_stardard--key: &vdsm_standard_common
+    vdsm_standard--key: &vdsm_standard_common
       project:
         - vdsm
       stage:
