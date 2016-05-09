@@ -43,6 +43,7 @@
       - el6
       - el7
       - fc22
+      - fc23
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: |
