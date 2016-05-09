@@ -20,8 +20,8 @@
           max-total: 3
           option: project
       - build-discarder:
-          num-to-keep: 40
-          artifact-num-to-keep: 20
+          num-to-keep: 120
+          artifact-num-to-keep: 60
     wrappers:
       - timeout:
           fail: true
