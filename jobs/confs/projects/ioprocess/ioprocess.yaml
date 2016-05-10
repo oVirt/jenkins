@@ -1,0 +1,45 @@
+- project:
+    name: ioprocess
+    project:
+      - ioprocess
+    version:
+      - master:
+          branch: master
+    distro:
+      - fc23
+      - el7
+    arch:
+      - x86_64
+    trigger: 'on-change'
+    stage:
+      - build-artifacts
+      - check-patch
+      - check-merged
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: ioprocess_0.15
+    project:
+      - ioprocess
+    version:
+      - 0.15:
+          branch: ioprocess-0.15.1
+    distro:
+      - el6
+      - el7
+      - fc22
+      - fc23
+    arch: x86_64
+    trigger:
+      - merged
+      - created
+    mock-build-type: all
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+          extra-build-packages: |
+            automake
+            autoreconf
+            gettext-devel
+            glib2-devel
+            yajl-devel
