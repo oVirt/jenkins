@@ -33,7 +33,7 @@
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-patch
-    node-filter: fc21 || fc22
+    node-filter: fc21 || fc22 || fc23
     version:
       - master:
           branch: master
@@ -47,7 +47,7 @@
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-merged
-    node-filter: fc21 || fc22
+    node-filter: fc21 || fc22 || fc23
     version:
       - master:
           branch: master
