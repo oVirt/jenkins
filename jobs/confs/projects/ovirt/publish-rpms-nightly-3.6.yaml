@@ -145,9 +145,9 @@
       - copy-create-job-artifact:
           project: ovirt-wgt_3.6_create-rpms-fc23-x86_64_merged
       - copy-create-job-artifact:
-          project: cockpit-ovirt_master_build-artifacts-el7-x86_64
+          project: cockpit-ovirt_ovirt-3.6_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
-          project: cockpit-ovirt_master_build-artifacts-fc23-x86_64
+          project: cockpit-ovirt_ovirt-3.6_build-artifacts-fc23-x86_64
 
       - copy-create-job-artifact:
           project: ovirt-release_3.6_build-artifacts-el7-x86_64
