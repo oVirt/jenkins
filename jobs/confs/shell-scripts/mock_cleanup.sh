@@ -62,7 +62,7 @@ for mock_conf_file in "${mock_confs[@]}"; do
         echo "Found mounted dirs inside the chroot $chroot. Trying to umount."
     fi
     for mount in "${mounts[@]}"; do
-        sudo umount "$mount" \
+        sudo umount --lazy "$mount" \
         || {
             echo "ERROR:  Failed to umount $mount."
             failed=true
@@ -79,7 +79,7 @@ for mock_root in /var/lib/mock/*; do
              "Trying to umount."
     fi
     for mount in "${mounts[@]}"; do
-        sudo umount "$mount" \
+        sudo umount --lazy "$mount" \
         || {
             echo "ERROR:  Failed to umount $mount."
             failed=true

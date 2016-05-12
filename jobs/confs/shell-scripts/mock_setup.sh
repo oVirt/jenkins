@@ -47,7 +47,7 @@ for chroot in "${{chroots[@]}}"; do
         echo "Found mounted dirs inside the chroot $chroot. Trying to umount."
     fi
     for mount in "${{mounts[@]}}"; do
-        sudo umount "$mount" \
+        sudo umount --lazy "$mount" \
         || {{
             echo "ERROR:  Failed to umount $mount."
             failed=true

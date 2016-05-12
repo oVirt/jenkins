@@ -12,7 +12,7 @@ umount_everyhting_inside() {
     )
     local inner_dir
     for inner_dir in "${inner_dirs[@]}"; do
-        sudo umount "$inner_dir" \
+        sudo umount --lazy "$inner_dir" \
         && echo "    Umounted $inner_dir" \
         || {
             res=1

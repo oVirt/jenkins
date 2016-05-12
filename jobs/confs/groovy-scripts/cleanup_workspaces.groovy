@@ -195,7 +195,7 @@ for (node in Jenkins.instance.nodes) {
              mountPath = mount.split(' ')[2]
               if (mountPath.startsWith(wsPath)) {
                 println("WARN::${wsPath}:: Found stalled mount ${mountPath}, trying to umount")
-                runOnSlave(node, "sudo umount '${mountPath}'")
+                runOnSlave(node, "sudo umount --lazy '${mountPath}'")
               }
             }
           }

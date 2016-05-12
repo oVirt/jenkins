@@ -93,5 +93,5 @@ mount_dir=$(mktemp -d -p "$WORKSPACE")
 sudo mount -t iso9660 -o loop "$iso" "$mount_dir"
 cp $mount_dir/isolinux/manifest-srpm.txt exported-artifacts/
 cp $mount_dir/isolinux/manifest-rpm.txt exported-artifacts/
-sudo umount "$mount_dir"
+sudo umount --lazy "$mount_dir"
 rm -rf "$WORKSPACE/$mount_dir"
