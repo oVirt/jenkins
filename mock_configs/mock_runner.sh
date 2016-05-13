@@ -8,7 +8,7 @@ MOCKS=(
 )
 SCRIPTS=()
 RUN_SHELL="false"
-CLEANUP="false"
+CLEANUP="true"
 MOCK_CONF_DIR="/etc/mock"
 MOCK="mock"
 MOUNT_POINT="$PWD"
@@ -56,8 +56,9 @@ help() {
         -e|--execute-script path/to/script.sh
             Run/Prepare for the given script
 
-        -r|--cleanup
-            Clean the chroot prior to initializing, just in case
+        -n|--no-cleanup
+            If set, will not cleanup/scrub the generated chroot at the end,
+            allowing you to access it (usually under /var/lib/mock/)
 
         -P|--try-proxy
             If set, will try to use the proxied config and set the proxy inside
@@ -168,10 +169,6 @@ prepare_chroot() {
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
     mock_dir="${mock_conf%/*}"
-    if [[ "$cleanup" == "true" ]]; then
-        clean_chroot "$mock_chroot" "$mock_dir" \
-        || return 1
-    fi
     [[ -e "$LOGS_DIR/${mock_chroot}.init" ]] \
     || mkdir -p "$LOGS_DIR/${mock_chroot}.init"
     init_chroot "${mock_chroot}" "${mock_dir}" \
@@ -306,8 +303,11 @@ EOH
     else
         tmp_chroot="$chroot"
     fi
-    echo "Using temp chroot = ${tmp_chroot}" >&2
+    echo "Using chroot cache = /var/cache/mock/${tmp_chroot}" >&2
+    echo "Using chroot dir = /var/lib/mock/${tmp_chroot}-$$" >&2
     echo "config_opts['root'] = '${tmp_chroot}'" >> "$tmp_conf"
+    echo "config_opts['unique-ext'] = '$$'" \
+    >> "$tmp_conf"
     sed -n \
         -e "/config_opts\[.root.\]/d" \
         -e "1,/\[[\"\']yum.conf[\"\']\]/p" \
@@ -401,12 +401,6 @@ EOC
 }
 
 
-clean_chroot() {
-    local chroot="${1?}"
-    local confdir="${2?}"
-}
-
-
 clean_rpmdb() {
     local chroot="${1?}"
     local conf_dir="${2?}"
@@ -455,28 +449,28 @@ EOC
 }
 
 
-clean_chroot() {
+scrub_chroot() {
     local chroot="${1?}"
     local confdir="${2?}"
     local start \
         end
     start="$(date +%s)"
-    echo "========== Cleaning chroot"
+    echo "========== Scrubbing chroot"
     cat <<EOC
     $MOCK \\
         --configdir="$confdir" \\
         --root="$chroot" \\
-        --resultdir="$LOGS_DIR/${chroot}.clean" \\
-        --clean
+        --resultdir="$LOGS_DIR/${chroot}.scrub" \\
+        --scrub=chroot
 EOC
     $MOCK \
-        --configdir="$MOCK_CONF_DIR" \
+        --configdir="$confdir" \
         --root="$chroot" \
-        --resultdir="$LOGS_DIR/${chroot}.clean" \
-        --clean
+        --resultdir="$LOGS_DIR/${chroot}.scrub" \
+        --scrub=chroot
     res=$?
     end="$(date +%s)"
-    echo "Clean chroot took $((end - start)) seconds"
+    echo "Scrub chroot took $((end - start)) seconds"
     echo "============================"
     return $res
 }
@@ -562,7 +556,13 @@ EOC
         --root="$mock_chroot" \
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \
         --shell
-    return $?
+    res=$?
+
+    if [[ "$cleanup" == "true" ]]; then
+        scrub_chroot "$mock_chroot" "$mock_dir" \
+        || return 1
+    fi
+    return $res
 }
 
 
@@ -698,10 +698,6 @@ run_scripts() {
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
     mock_dir="${mock_conf%/*}"
-    if [[ "$cleanup" == "true" ]]; then
-        clean_chroot "$mock_chroot" "$mock_dir" \
-        || return 1
-    fi
     for script in "${scripts[@]}"; do
         [[ -r "$script" ]] \
         || {
@@ -721,12 +717,15 @@ run_scripts() {
         echo "@@      rc = $res"
         echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
         if [[ "$res" != "0" ]]; then
-            return $res
+            break
         fi
     done
-    return 0
+    if [[ "$cleanup" == "true" ]]; then
+        scrub_chroot "$mock_chroot" "$mock_dir" \
+        || return 1
+    fi
+    return $res
 }
-
 
 
 #### MAIN
@@ -754,8 +753,8 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
     long_opts+=",verbose"
     short_opts+=",v"
 
-    long_opts+=",cleanup"
-    short_opts+=",c"
+    long_opts+=",no-cleanup"
+    short_opts+=",n"
 
     long_opts+=",mock-confs-dir:"
     short_opts+=",C:"
@@ -817,9 +816,9 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 SCRIPTS=( "$2" )
                 shift 2
             ;;
-            -c|--cleanup)
+            -n|--no-cleanup)
                 shift
-                CLEANUP="true"
+                CLEANUP="false"
             ;;
             -C|--mock-confs-dir)
                 MOCK_CONF_DIR="$2"
@@ -849,7 +848,7 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
             "${mock_env:?}" \
             "${SCRIPTS[0]}" \
             "$CLEANUP"
-        exit $?
+        res=$?
     else
         if [[ -n "$1" ]]; then
             mocks=("$@")
@@ -895,12 +894,13 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                     echo "No log files found, check command output"
                 fi
                 echo '##!########################################################'
-                exit $res
             else
                 echo "## FINISHED SUCCESSFULY"
                 echo "##########################################################"
+                res=0
             fi
             echo "##########################################################"
         done
     fi
+    exit $res
 fi
