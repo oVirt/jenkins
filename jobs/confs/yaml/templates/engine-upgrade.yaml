@@ -20,11 +20,12 @@
       - throttle:
           enabled: true
           max-per-node: 1
-          max-total: 3
+          max-total: 6
           option: project
       - build-discarder:
           num-to-keep: 40
           artifact-num-to-keep: 20
+    concurrent: true
     parameters:
       - gerrit-params:
           branch: '{branch}'
