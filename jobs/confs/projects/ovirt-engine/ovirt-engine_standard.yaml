@@ -9,7 +9,6 @@
       - 3.6.6:
           branch: ovirt-engine-3.6.6
     stage: build-artifacts
-    node-filter: 'physical'
     distro:
       - el6
       - el7
