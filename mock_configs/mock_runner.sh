@@ -151,6 +151,14 @@ rotate_logs_dir() {
 }
 
 
+makedir() {
+    dir_path="${1?}"
+    [[ -e "$dir_path" ]] \
+    || mkdir -p "$dir_path"
+    chgrp mock "$dir_path"
+    chmod g+rwx "$dir_path"
+}
+
 prepare_chroot() {
     local base_chroot="${1?}"
     local dist_label="${2?}"
@@ -169,13 +177,11 @@ prepare_chroot() {
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
     mock_dir="${mock_conf%/*}"
-    [[ -e "$LOGS_DIR/${mock_chroot}.init" ]] \
-    || mkdir -p "$LOGS_DIR/${mock_chroot}.init"
+    makedir "$LOGS_DIR/${mock_chroot}.init"
     init_chroot "${mock_chroot}" "${mock_dir}" \
         | tee -a "$LOGS_DIR/${mock_chroot}.init/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
-    [[ -e "$LOGS_DIR/${mock_chroot}.install_packages" ]] \
-    || mkdir -p "$LOGS_DIR/${mock_chroot}.install_packages"
+    makedir "$LOGS_DIR/${mock_chroot}.install_packages"
     install_packages \
         "$mock_chroot" \
         "$mock_dir" \
@@ -185,8 +191,7 @@ prepare_chroot() {
         2>&1 \
         | tee -a "$LOGS_DIR/${mock_chroot}.install_packages/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
-    [[ -e "$LOGS_DIR/${mock_chroot}.clean_rpmdb" ]] \
-    || mkdir -p "$LOGS_DIR/${mock_chroot}.clean_rpmdb"
+    makedir "$LOGS_DIR/${mock_chroot}.clean_rpmdb"
     clean_rpmdb "$mock_chroot" "$mock_dir" \
         | tee -a "$LOGS_DIR/${mock_chroot}.clean_rpmdb/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
@@ -842,7 +847,7 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
     done
 
     rotate_logs_dir "$PWD/$LOGS_DIR"
-    mkdir -p "$LOGS_DIR"
+    makedir "$LOGS_DIR"
 
     if [[ "$RUN_SHELL" == "true" ]]; then
         run_shell \
