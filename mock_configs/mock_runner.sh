@@ -453,7 +453,8 @@ scrub_chroot() {
     local chroot="${1?}"
     local confdir="${2?}"
     local start \
-        end
+        end \
+        res
     start="$(date +%s)"
     echo "========== Scrubbing chroot"
     cat <<EOC
