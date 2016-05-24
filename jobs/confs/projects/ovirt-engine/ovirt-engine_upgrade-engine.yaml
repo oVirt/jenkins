@@ -10,7 +10,7 @@
     branch: 'master'
     test-version:
       - 'master'
-      - '3.6'
+      - '4.0'
     repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot/rpm/{distro}/,
         http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static/rpm/{distro}/'
     repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/{distro}/,
@@ -19,6 +19,28 @@
     java-jdk: 'java-1.8.0-openjdk'
     jobs:
       - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}':
+
+- project:
+    name: 'ovirt-engine_upgrade_4.0'
+    project: ovirt-engine
+    trigger:
+      - merged
+    version:
+      - 4.0:
+          branch: 'ovirt-engine-4.0'
+    test-version:
+      - '4.0':
+          repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot/rpm/{distro}/,
+              http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static/rpm/{distro}/'
+      - '3.6':
+          repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}/rpm/{distro}/'
+    repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/{distro}/,
+        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static/rpm/{distro}/'
+    distro: el7
+    java-jdk: 'java-1.8.0-openjdk'
+    jobs:
+      - 'ovirt-engine_{version}_upgrade-from-{test-version}_{distro}_{trigger}'
+
 
 - project:
     name: 'ovirt-engine_upgrade_3.6'

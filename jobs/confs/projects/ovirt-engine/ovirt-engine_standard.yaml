@@ -4,6 +4,8 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: ovirt-engine-4.0
       - 3.6:
           branch: ovirt-engine-3.6
       - 3.6.7:
@@ -20,6 +22,10 @@
         distro: el6
       - version: master
         distro: fc22
+      - version: 4.0
+        distro: el6
+      - version: 4.0
+        distro: fc22
     trigger: 'timed'
     trigger-times: 'H H/6 * * *'
     arch: x86_64
@@ -33,6 +39,8 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: ovirt-engine-4.0
       - 3.6:
           branch: ovirt-engine-3.6
       - 3.6.7:
@@ -46,6 +54,8 @@
       - fc23
     exclude:
       - version: master
+        distro: el6
+      - version: 4.0
         distro: el6
     trigger: 'on-change'
     arch: x86_64
