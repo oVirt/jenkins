@@ -30,8 +30,8 @@
     version:
       - 3.6:
           branch: 'ovirt-engine-3.6'
-      - 3.6.6:
-          branch: 'ovirt-engine-3.6.6'
+      - 3.6.7:
+          branch: 'ovirt-engine-3.6.7'
     test-version:
       - 3.5:
           test-branch: 'ovirt-engine-3.5'
