@@ -76,27 +76,6 @@
       - exported-artifacts
 
 - job-template:
-    <<: *releng-template
-    name: 'spagobi_{version}_create-rpms-{distro}-{arch}_{trigger}'
-    properties:
-      - throttle:
-          enabled: false
-          max-per-node: 1
-          max-total: 3
-          option: project
-      - build-discarder:
-          num-to-keep: 10
-          artifact-num-to-keep: 2
-    triggers:
-      - 'on-patch-{trigger}-with-files':
-          project: '{project}'
-          branch: '{branch}'
-          files: 'specs/{subproject}/.*'
-          gerrit-server: '{gerrit-server}'
-          poll-interval: '{poll-interval}'
-      - timed: "H */6 * * *"
-
-- job-template:
     name: 'ovirt-engine_{version}_create-rpms-{distro}-{arch}_{trigger}'
     node: '{node-filter}'
     parameters:
