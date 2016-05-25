@@ -134,7 +134,7 @@
           project: ovirt-reports_master_create-rpms-el7-x86_64_merged
 
       - copy-create-job-artifact:
-          project: ovirt-live_master_build-artifacts-el7-x86_64
+          project: ovirt-live_4.0_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
           project: py2exe-py2.7_master_create-rpms-fc23-x86_64_merged

@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: ovirt-live-4.0
       - 3.6:
           branch: ovirt-live-3.6
     stage:
@@ -25,6 +27,8 @@
           branch: master
       - 3.6:
           branch: ovirt-live-3.6
+      - 4.0:
+          branch: ovirt-live-4.0
     stage:
       - check-patch
     trigger: 'on-change'
