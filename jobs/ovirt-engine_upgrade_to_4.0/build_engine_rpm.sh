@@ -14,6 +14,11 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+(
+    set +x
+    echo ====================================================================
+    echo == "$(basename "$0")"
+)
 
 shopt -s nullglob
 
@@ -188,7 +193,22 @@ done
 [[ -e $SRC_DIR ]] || help 1 "The source dir $SRC_DIR does not exist."
 [[ -e $DST_DIR ]] || mkdir -p "$DST_DIR"
 
+(set +x; echo CREATING ENGINE TARBALL)
 tarball="$(create_tarball "$SRC_DIR" "$DST_DIR")"
+(set +x; echo BUILDING ENGINE SRC RPM)
 src_rpm="$(create_src_rpm "$tarball" "$DST_DIR")"
 release="$(get_release_suffix "$SRC_DIR")"
+(set +x; echo BUILDING ENGINE RPM)
 create_rpms "$src_rpm" "$DST_DIR" "$release"
+result=$?
+if [[ $result -eq 0 ]]; then
+    (set +x; echo ENGINE BUILD SUCCESSFUL)
+else
+    (set +x; echo ENGINE BUILD FAILED)
+fi
+(
+    set +x
+    echo listing built files
+    find "$DST_DIR" -type f
+)
+exit $result

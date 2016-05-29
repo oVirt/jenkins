@@ -16,6 +16,12 @@
 ## Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 ## Holds the current step name for logging
+(
+    set +x
+    echo ====================================================================
+    echo == "$(basename "$0")"
+)
+
 CURRENT_STEP="INIT"
 REPOS_FILE="/etc/yum.repos.d/upgrade_test.repo"
 ENGINE_PACKAGE="ovirt-engine"
