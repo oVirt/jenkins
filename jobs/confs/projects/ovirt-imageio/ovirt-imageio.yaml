@@ -5,6 +5,8 @@
     version:
         - master:
             branch: master
+        - 0.2:
+            branch: 0.2
     stage:
         - check-patch
         - check-merged
