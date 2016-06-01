@@ -1,4 +1,4 @@
-- job-template:
+- job-template: &basic_system_tests
     name: '{project}_{version}_system-tests'
     node: '{node-filter}'
     parameters:
@@ -40,28 +40,21 @@
           notify-every-unstable-build: false
           send-to-individuals: false
 
+- job-template:
+    <<: *basic_system_tests
+    name: '{project}_{version}_he-system-tests'
+    builders:
+      - cleanup-slave
+      - 'system-tests':
+          version: '{version}'
+          suite_type : he_basic
 
 - job-template:
+    <<: *basic_system_tests
     name: '{project}_{version}_image-ng-system-tests'
     node: ovirt-srv26.phx.ovirt.org
     triggers:
       - timed: "@midnight"
-    scm:
-      - 'ovirt-system-tests-gerrit':
-          branch: 'master'
-          git-server: '{git-server}'
-      - 'jenkins':
-          branch: 'master'
-          git-server: '{git-server}'
-    parameters:
-      - string:
-          name: GERRIT_REFSPEC
-          default: 'refs/heads/master'
-          description: 'Git refspec to build'
-      - string:
-          name: GERRIT_BRANCH
-          default: 'origin/{branch}'
-          description: 'Git branch to build'
     builders:
       - shell: "rm -rf $WORKSPACE/ovirt-system-tests/images || true"
       - copyartifact:
@@ -82,25 +75,3 @@
       - 'system-tests':
           version: '{version}'
           suite_type : image_ng
-    publishers:
-      - post-tasks:
-          - matches:
-              - log-text: '.*'
-                operator: AND
-            escalate-status: true
-            script: !include-raw: shell-scripts/system_tests.collect_logs.sh
-          - matches:
-              - log-text: '.*'
-                operator: AND
-                escalate-status: true
-            script: !include-raw-escape: shell-scripts/mock_cleanup.sh
-      - junit:
-          results: 'exported-artifacts/nosetests*.xml'
-      - archive:
-          artifacts: 'exported-artifacts/**'
-          allow-empty: true
-      - email:
-          recipients: '{email-to}'
-          notify-every-unstable-build: false
-          send-to-individuals: false
-

@@ -18,12 +18,20 @@
 # type can be both image and image_ng
 # they differ in the testing used
 - project:
+    <<: *system-tests-common
     name: ovirt-system-image-tests
     version:
       - 3.6
-    project: ovirt
-    branch: master
     email-to: tlitovsk@redhat.com
     jobs:
       - '{project}_{version}_image-ng-system-tests'
+
+# Hosted engine system tests
+- project:
+    <<: *system-tests-common
+    name: ovirt-system-he-tests
+    version:
+      - 3.6
+    jobs:
+      - '{project}_{version}_he-system-tests'
 
