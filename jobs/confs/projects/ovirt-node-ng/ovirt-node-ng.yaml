@@ -7,6 +7,10 @@
     version:
       - master:
           branch: master
+      - ovirt-4.0-snapshot:
+          branch: ovirt-4.0-snapshot
+      - ovirt-4.0-pre:
+          branch: ovirt-4.0-pre
       - ovirt-4.0:
           branch: ovirt-4.0
       - ovirt-3.6:
