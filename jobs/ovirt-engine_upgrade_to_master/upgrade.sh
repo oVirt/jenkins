@@ -290,7 +290,7 @@ install_from_engine() {
 
 engine_upgrade() {
     local answer_file="${1?}"
-    yum -y update "${ENGINE_PACKAGE}-setup"
+    yum -y update "${ENGINE_PACKAGE}-setup" "${ENGINE_PACKAGE}-dwh-setup"
     echo "Running upgrade setup"
     engine-setup --config-append="${answer_file}"
     return $?
