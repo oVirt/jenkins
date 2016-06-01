@@ -14,7 +14,8 @@
       - check-patch
     distro:
       - el7
-    trigger: 'on-change'
+    trigger: 'timed'
+    trigger-times: '@nightly'
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
