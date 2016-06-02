@@ -8,7 +8,7 @@
       - master:
           branch: master
       - ovirt-4.0:
-          branch: ovirt-4.0
+          branch: master
       - ovirt-3.6:
           branch: ovirt-3.6
     stage:
@@ -28,7 +28,7 @@
       - master:
           branch: master
       - ovirt-4.0:
-          branch: ovirt-4.0
+          branch: master
       - ovirt-3.6:
           branch: ovirt-3.6
     stage:
