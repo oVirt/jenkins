@@ -10,6 +10,14 @@
           branch: ovirt-3.6
           trigger: 'timed'
           trigger-times: '@weekly'
+      - ovirt-4.0-snapshot:
+          branch: ovirt-4.0-snapshot
+          trigger: 'timed'
+          trigger-times: '@daily'
+      - ovirt-4.0-pre:
+          branch: ovirt-4.0-pre
+          trigger: 'timed'
+          trigger-times: '@weekly'
       - ovirt-4.0:
           branch: ovirt-4.0
           trigger: 'timed'
