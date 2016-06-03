@@ -126,7 +126,7 @@
       - copy-create-job-artifact:
           project: unboundid-ldapsdk_master_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
-          project: ovirt-appliance_master_build-artifacts-el7-x86_64
+          project: ovirt-appliance_ovirt-4.0_build-artifacts-el7-x86_64
 
 
       # ovirt-reports still not working on fc22
@@ -149,19 +149,19 @@
       - copy-create-job-artifact:
           project: ovirt-wgt_master_create-rpms-fc23-x86_64_merged
       - copy-create-job-artifact:
-          project: cockpit-ovirt_master_build-artifacts-el7-x86_64
+          project: cockpit-ovirt_ovirt-4.0_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
-          project: cockpit-ovirt_master_build-artifacts-fc23-x86_64
+          project: cockpit-ovirt_ovirt-4.0_build-artifacts-fc23-x86_64
 
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-sdk-ruby_master_build-artifacts-
           project-suffix: ""
 
       - copy-create-job-artifact:
-          project: ovirt-release_master_build-artifacts-el7-x86_64
+          project: ovirt-release_4.0_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
-          project: imgbased_master_build-artifacts-el7-x86_64
+          project: imgbased_ovirt-4.0_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-node-ng_ovirt-4.0-snapshot_build-artifacts-fc22-x86_64
 
