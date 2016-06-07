@@ -21,6 +21,8 @@
           branch: master
       - 3.6:
           branch: ovirt-3.6
+      - 4.0:
+          branch: ovirt-4.0
     stage: build-artifacts
     distro:
       - el7
@@ -28,6 +30,8 @@
       - fc22
     exclude:
       - version: master
+        distro: fc22
+      - version: 4.0
         distro: fc22
 
 - project:
@@ -39,6 +43,8 @@
           branch: master
       - 3.6:
           branch: ovirt-3.6
+      - 4.0:
+          branch: ovirt-4.0
     stage: check-patch
     distro:
       - fc23
@@ -51,6 +57,8 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: ovirt-4.0
     stage: check-merged
     distro:
       - fc23
