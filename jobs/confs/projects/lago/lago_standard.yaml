@@ -6,8 +6,8 @@
         - master:
             branch: master
       distro:
-        - fc22
         - fc23
+        - fc24
         - el7
       trigger: 'on-change'
       arch: x86_64
