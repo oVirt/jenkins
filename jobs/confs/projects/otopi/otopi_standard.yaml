@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: otopi-1.5
     stage:
       - build-artifacts
       - check-patch
