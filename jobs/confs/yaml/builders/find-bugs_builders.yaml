@@ -1,0 +1,28 @@
+- builder:
+    name: findbugs-created-builders
+    builders:
+      - shell: |
+          # testing cleanup of Maven repo
+          rm -rf $WORKSPACE/.repository/org/ovirt
+      - whitelist
+      - shell: !include-raw: shell-scripts/findbugs_git_info.sh
+      - findbugs-maven:
+          goals: '{goals}'
+
+- builder:
+    name: findbugs-merged-builders
+    builders:
+      - findbugs-maven:
+          goals: '{goals}'
+
+- builder:
+    name: findbugs-maven
+    builders:
+      - maven-target:
+          goals: '{goals}'
+          pom: ovirt-engine/pom.xml
+          java-opts:
+            - "-Xms512M"
+            - "-Xmx1024M"
+            - "-XX:MaxPermSize=1024m"
+          private-repository: true

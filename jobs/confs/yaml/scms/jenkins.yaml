@@ -23,3 +23,22 @@
             wipe-workspace: false
             skip-tag: true
             prune: true
+
+
+- scm:
+    name: jenkins-whitelist
+    scm:
+        - git:
+            url: 'git://{git-server}/jenkins-whitelist.git'
+            branches:
+                - 'master'
+            basedir: jenkins-whitelist
+            refspec: ''
+            scm-name: jenkins-whitelist
+            name: ''
+            clean:
+              before: true
+              after: false
+            use-author: true
+            wipe-workspace: false
+            prune: true

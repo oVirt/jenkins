@@ -1,0 +1,19 @@
+- publisher:
+    name: findbugs-created-publishers
+    publishers:
+      - findbugs:
+          rank-priority: true
+          thresholds:
+              unstable:
+                  total-all: 0
+      - groovy-postbuild:
+          script: !include-raw: groovy-scripts/findbugs-postbuild.groovy
+
+- publisher:
+    name: findbugs-merged-publishers
+    publishers:
+      - findbugs:
+          rank-priority: true
+          thresholds:
+              unstable:
+                  total-all: 0
