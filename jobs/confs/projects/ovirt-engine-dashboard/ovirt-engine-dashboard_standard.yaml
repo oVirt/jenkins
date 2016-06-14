@@ -1,11 +1,14 @@
 - project:
-    name: ovirt-engine-dashboard_checks
+    name: ovirt-engine-dashboard_build
     project:
       - ovirt-engine-dashboard
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: ovirt-engine-dashboard-1.0
     stage:
+      - build-artifacts
       - check-merged
       - check-patch
     trigger: 'on-change'

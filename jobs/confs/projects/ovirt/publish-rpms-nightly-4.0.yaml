@@ -101,7 +101,7 @@
           project-prefix: ovirt-jboss-modules-maven-plugin_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-dashboard_master_build-artifacts-
+          project-prefix: ovirt-engine-dashboard_4.0_build-artifacts-
           project-suffix: ""
 
       - copy-create-job-artifact-vdsm-master-platforms:
