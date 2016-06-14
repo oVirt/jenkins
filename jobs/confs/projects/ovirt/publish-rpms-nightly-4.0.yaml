@@ -111,7 +111,7 @@
           project-prefix: mom_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-vdsm-master-platforms:
-          project-prefix: vdsm_master_build-artifacts-
+          project-prefix: vdsm_4.0_build-artifacts-
           project-suffix: ""
 
       - copy-create-job-artifact-hosted-engine-master-platforms:
