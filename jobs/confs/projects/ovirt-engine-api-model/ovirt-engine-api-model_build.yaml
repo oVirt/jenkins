@@ -1,15 +1,13 @@
 - project:
     name: ovirt-engine-api-model_build
-    project:
-      - ovirt-engine-api-model
+    project: ovirt-engine-api-model
     version:
       - master:
           branch: master
-    stage:
-      - build-artifacts
+    stage: build-artifacts
     trigger: 'on-change'
     distro:
       - el7
     arch: x86_64
     jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - 'ovirt-engine-api-model_{version}_build-artifacts-{distro}-{arch}'

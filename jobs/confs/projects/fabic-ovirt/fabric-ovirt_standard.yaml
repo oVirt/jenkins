@@ -6,7 +6,6 @@
       - master:
           branch: master
     stage:
-      - build-artifacts
       - check-patch
       - check-merged
     distro:

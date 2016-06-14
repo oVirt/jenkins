@@ -1,0 +1,13 @@
+- project:
+    name: deploy-to-ovirt_experimental
+    node: ''
+    project:
+      - ovirt-engine
+    version:
+      - master
+      - 4.0
+      - 3.6
+    reponame: ovirt
+    repotype: experimental
+    jobs:
+      - 'deploy-to-{reponame}_{repotype}_{version}'

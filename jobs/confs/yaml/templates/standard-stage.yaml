@@ -45,10 +45,18 @@
             arch: '{arch}'
             extra-env: '{extra-env}'
             cherry-pick: '{cherry-pick}'
+      reponame: ovirt
+      repotype: experimental
       publishers:
         - mock-cleanup
         - exported-artifacts
         - html-reports
+        - trigger-parameterized-builds:
+          - project: 'deploy-to-{reponame}_{repotype}_{version}'
+            predefined-parameters: |
+              BUILD_ID={project}_{distro}_$BUILD_NUMBER
+              BUILD_ARTIFACTS_JOBS=$BUILD_URL
+            condition: SUCCESS
 
 - job-template:
     <<: *standard-template
@@ -67,6 +75,30 @@
       - build-discarder:
           num-to-keep: 20
           artifact-num-to-keep: 10
+
+- job-template: &no-deploy-standard-template
+    <<: *standard-template
+    name: 'no-depoly-standard-template'
+    publishers:
+      - mock-cleanup
+      - exported-artifacts
+      - html-reports
+
+- job-template:
+    <<: *no-deploy-standard-template
+    name: 'ovirt-engine-api-model_{version}_build-artifacts-{distro}-{arch}'
+
+- job-template:
+    <<: *no-deploy-standard-template
+    name: 'ovirt-engine-api-metamodel_{version}_build-artifacts-{distro}-{arch}'
+
+- job-template:
+    <<: *no-deploy-standard-template
+    name: 'ovirt-engine-api-explorer_{version}_build-artifacts-{distro}-{arch}'
+
+- job-template:
+    <<: *no-deploy-standard-template
+    name: 'ovirt-release_{version}_build-artifacts-{distro}-{arch}'
 
 - job-template:
     <<: *standard-template
@@ -88,20 +120,52 @@
             num-to-keep: 40
             artifact-num-to-keep: 20
 
-- job-template:
-    name: '{project}_{version}_deploy-to-{reponame}-snapshot'
+- job-template: &deploy-job-template
+    name: 'deploy-to-{reponame}_{repotype}_{version}'
     node: '{node-filter}'
+    properties:
+      - throttle:
+          max-per-node: 1
+          max-total: 1
+          option: project
+      - build-discarder:
+          num-to-keep: 40
+          artifact-num-to-keep: 2
     parameters:
       - string:
           name: BUILD_ID
           default: ''
           description: |
-            Id of this build, will be also the suffix of the snapshot repo created
+            Id of this build, will be also the suffix of the {repotype} repo created
       - string:
           name: BUILD_ARTIFACTS_JOBS
           default: ''
           description: |
-            Comma separated list of jobs to deploy to {reponame} snapshot repo
+            Comma separated list of jobs to deploy to {reponame} {repotype} repo
+    builders:
+      - shell: |
+          [[ "$BUILD_ARTIFACTS_JOBS" == "" ]] && exit 1
+          jobs=(${{BUILD_ARTIFACTS_JOBS//,/ }})
+          for line in \
+              "repo-extra-dir:{version}" \
+              "repo-extra-dir:$BUILD_ID" \
+              "${{jobs[@]}}";
+          do
+              echo "$line"
+          done \
+          | ssh \
+              -o StrictHostKeyChecking=no \
+              deploy-{reponame}-{repotype}@resources.ovirt.org
+    wrappers:
+      - ssh-agent-credentials:
+          users:
+            - c7ecbee7-5352-46da-a3c4-5aea24cd3de0
+
+
+- job-template:
+    <<: *deploy-job-template
+    name: '{project}_{version}_deploy-to-{reponame}-snapshot'
+    node: '{node-filter}'
     builders:
       - shell: |
           jobs=(${{BUILD_ARTIFACTS_JOBS//,/ }})
@@ -111,10 +175,6 @@
           | ssh \
               -o StrictHostKeyChecking=no \
               deploy-{reponame}-snapshot@resources.ovirt.org
-    wrappers:
-      - ssh-agent-credentials:
-          users:
-            - c7ecbee7-5352-46da-a3c4-5aea24cd3de0
 
 
 ## lago specific jobs, because it's using github not gerrit
@@ -175,6 +235,10 @@
       - dummy-trigger:
           project: '{project}'
           branch: '{branch}'
+    publishers:
+      - mock-cleanup
+      - exported-artifacts
+      - html-reports
 
 - job-template:
     <<: *standard-pipeline
