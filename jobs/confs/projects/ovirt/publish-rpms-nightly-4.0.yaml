@@ -42,7 +42,7 @@
           project-prefix: ovirt-vmconsole_master_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-all_master-platforms:
-          project-prefix: ovirt-imageio_0.2_build-artifacts-
+          project-prefix: ovirt-imageio_master_build-artifacts-
           project-suffix: ''
 
       - copy-create-job-artifact-engine_master-platforms:
