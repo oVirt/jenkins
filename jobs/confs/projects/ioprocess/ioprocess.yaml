@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 0.16:
+          branch: ioprocess-0.16
     distro:
       - fc23
       - el7

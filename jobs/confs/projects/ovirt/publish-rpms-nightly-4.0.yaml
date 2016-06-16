@@ -105,7 +105,7 @@
           project-suffix: ""
 
       - copy-create-job-artifact-vdsm-master-platforms:
-          project-prefix: ioprocess_master_build-artifacts-
+          project-prefix: ioprocess_0.16_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: mom_master_create-rpms-
