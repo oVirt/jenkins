@@ -15,7 +15,7 @@
     distro:
       - el7
     trigger: 'timed'
-    trigger-times: '@nightly'
+    trigger-times: '@midnight'
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
