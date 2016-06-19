@@ -36,8 +36,8 @@
           project-prefix: ovirt-host-deploy_master_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-all_master-platforms:
-          project-prefix: otopi_master_create-rpms-
-          project-suffix: _merged
+          project-prefix: otopi_4.0_build-artifacts-
+          project-suffix: ''
       - copy-create-job-artifact-all_master-platforms:
           project-prefix: ovirt-vmconsole_master_create-rpms-
           project-suffix: _merged
