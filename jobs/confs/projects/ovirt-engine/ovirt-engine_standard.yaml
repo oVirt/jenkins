@@ -41,6 +41,8 @@
           branch: master
       - 4.0:
           branch: ovirt-engine-4.0
+      - 4.0.0:
+          branch: ovirt-engine-4.0.0
       - 3.6:
           branch: ovirt-engine-3.6
       - 3.6.7:
@@ -56,6 +58,8 @@
       - version: master
         distro: el6
       - version: 4.0
+        distro: el6
+      - version: 4.0.0
         distro: el6
     trigger: 'on-change'
     arch: x86_64
