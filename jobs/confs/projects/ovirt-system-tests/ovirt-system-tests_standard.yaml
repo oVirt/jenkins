@@ -1,5 +1,6 @@
 - project:
     name: ovirt-system-tests_check-patch
+    node-filter: integ-tests
     project:
       - ovirt-system-tests
     version:
