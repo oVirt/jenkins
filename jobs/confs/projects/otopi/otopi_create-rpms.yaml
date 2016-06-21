@@ -6,8 +6,6 @@
       - merged
       - created
     version:
-      - master:
-          branch: master
       - 3.6:
           branch: otopi-1.4
     mock-build-type: all
@@ -16,11 +14,6 @@
       - el7
       - fc22
       - fc23
-    exclude:
-      - version: master
-        distro: fc22
-      - version: master
-        distro: el6
     arch: x86_64
     extra-build-packages: |
       gettext-devel
