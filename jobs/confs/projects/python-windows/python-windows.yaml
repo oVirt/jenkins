@@ -9,6 +9,8 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: ovirt-wgt-toolchain-4.0
     mock-build-type: all
     distro: fc23
     arch: x86_64

@@ -18,6 +18,12 @@
             ovirt-3.6-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.6-snapshot-static/rpm/$distro
             virtio-win,https://fedorapeople.org/groups/virt/virtio-win/repo/latest
           branch: ovirt-wgt-3.6
+      - 4.0:
+          extra-repos: |
+            ovirt-4.0-snapshot,http://resources.ovirt.org/pub/ovirt-4.0-snapshot/rpm/$distro
+            ovirt-4.0-snapshot-static,http://resources.ovirt.org/pub/ovirt-4.0-snapshot-static/rpm/$distro
+            virtio-win,https://fedorapeople.org/groups/virt/virtio-win/repo/latest
+          branch: ovirt-wgt-4.0
     mock-build-type: all
     distro:
       - fc23
