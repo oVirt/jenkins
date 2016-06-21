@@ -1,0 +1,17 @@
+- project:
+    name: "test_ovirt_experimental_repo"
+    version:
+        - 3.6
+        - 4.0
+        - master
+    reponame: ovirt
+    repotype: experimental
+    jobs:
+      - 'test-repo_{reponame}_{repotype}_{version}'
+
+- job-template:
+    name: 'test-repo_{reponame}_{repotype}_{version}'
+    project-type: workflow
+    concurrent: false
+    properties: []
+    dsl: !include-raw groovy-scripts/test-ovirt-repo.groovy

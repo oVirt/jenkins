@@ -144,8 +144,15 @@
       - ssh-agent-credentials:
           users:
             - c7ecbee7-5352-46da-a3c4-5aea24cd3de0
+    publishers:
+      - exported-artifacts
+      - trigger-parameterized-builds:
+        - project: 'test-repo_{reponame}_{repotype}_{version}'
+          condition: SUCCESS
 
 
+# should not be used anymore, only by lago until migrated, used the
+# deploy-to-* template instead
 - job-template:
     <<: *deploy-job-template
     name: '{project}_{version}_deploy-to-{reponame}-snapshot'
@@ -159,7 +166,7 @@
           | ssh \
               -o StrictHostKeyChecking=no \
               deploy-{reponame}-snapshot@resources.ovirt.org
-
+    publishers: []
 
 ## lago specific jobs, because it's using github not gerrit
 - lago-common: &lago-common
