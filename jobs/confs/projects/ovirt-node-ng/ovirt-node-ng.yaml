@@ -15,8 +15,7 @@
           branch: ovirt-4.0
       - ovirt-3.6:
           branch: ovirt-3.6
-    stage:
-      - build-artifacts
+    stage: build-artifacts
     distro:
       - fc22
     trigger: 'timed'
@@ -25,4 +24,4 @@
       - x86_64
     node-filter: fc23
     jobs:
-        - '{project}_{version}_{stage}-{distro}-{arch}{_big_artifacts}'
+        - '{project}_{version}_build-artifacts-{distro}-{arch}{_big_artifacts}'

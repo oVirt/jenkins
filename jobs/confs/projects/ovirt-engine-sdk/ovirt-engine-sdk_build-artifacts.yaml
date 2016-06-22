@@ -7,8 +7,7 @@
           branch: master
       - 3.6:
           branch: sdk_3.6
-    stage:
-      - build-artifacts
+    stage: build-artifacts
     trigger: 'on-change'
     distro:
         - el6
@@ -22,7 +21,7 @@
         distro: fc22
     arch: x86_64
     jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     name: ovirt-engine-sdk_checks

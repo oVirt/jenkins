@@ -1,4 +1,4 @@
-- project:
+- project: &base-params
     name: ovirt-image-uploader_master
     project:
       - ovirt-image-uploader
@@ -8,7 +8,6 @@
     stage:
       - check-patch
       - check-merged
-      - build-artifacts
     distro:
       - el7
       - fc23
@@ -18,15 +17,21 @@
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
 - project:
+    <<: *base-params
+    name: ovirt-image-uploader_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+
+
+- project: &base-params-36
     name: ovirt-image-uploader_3.6
     project:
       - ovirt-image-uploader
     version:
       - 3.6:
           branch: ovirt-image-uploader-3.6
-    stage:
-      - check-patch
-      - build-artifacts
+    stage: check-patch
     distro:
       - el6
       - el7
@@ -36,3 +41,11 @@
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params-36
+    name: ovirt-image-uploader_3.6_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+

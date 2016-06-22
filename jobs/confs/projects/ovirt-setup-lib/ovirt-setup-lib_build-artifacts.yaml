@@ -5,8 +5,7 @@
     version:
       - master:
           branch: master
-    stage:
-      - build-artifacts
+    stage: build-artifacts
     distro:
         - el6
         - el7
@@ -15,7 +14,7 @@
     trigger: 'on-change'
     arch: x86_64
     jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     name: ovirt-setup-lib_checks
@@ -24,11 +23,10 @@
     version:
       - master:
           branch: master
-    stage:
-      - check-patch
+    stage: check-patch
     distro:
-        - el6
-        - fc23
+      - el6
+      - fc23
     trigger: 'on-change'
     arch: x86_64
     jobs:

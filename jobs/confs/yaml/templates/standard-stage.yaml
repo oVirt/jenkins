@@ -45,6 +45,14 @@
             arch: '{arch}'
             extra-env: '{extra-env}'
             cherry-pick: '{cherry-pick}'
+      publishers:
+        - mock-cleanup
+        - exported-artifacts
+        - html-reports
+
+- job-template: &standard-template-deploy
+      <<: *standard-template
+      name: '{project}_{version}_build-artifacts-{distro}-{arch}'
       reponame: ovirt
       repotype: experimental
       publishers:
@@ -59,8 +67,8 @@
             condition: SUCCESS
 
 - job-template:
-    <<: *standard-template
-    name: 'ovirt-appliance_{version}_{stage}-{distro}-{arch}'
+    <<: *standard-template-deploy
+    name: 'ovirt-appliance_{version}_build-artifacts-{distro}-{arch}'
     properties:
       - throttle: *standard-template-properties-throttle
       - build-discarder:
@@ -68,7 +76,7 @@
           artifact-num-to-keep: 2
 
 - job-template:
-    <<: *standard-template
+    <<: *standard-template-deploy
     name: 'ovirt-engine_{version}_build-artifacts-{distro}-{arch}'
     properties:
       - throttle: *standard-template-properties-throttle
@@ -76,33 +84,9 @@
           num-to-keep: 20
           artifact-num-to-keep: 10
 
-- job-template: &no-deploy-standard-template
-    <<: *standard-template
-    name: 'no-depoly-standard-template'
-    publishers:
-      - mock-cleanup
-      - exported-artifacts
-      - html-reports
-
 - job-template:
-    <<: *no-deploy-standard-template
-    name: 'ovirt-engine-api-model_{version}_build-artifacts-{distro}-{arch}'
-
-- job-template:
-    <<: *no-deploy-standard-template
-    name: 'ovirt-engine-api-metamodel_{version}_build-artifacts-{distro}-{arch}'
-
-- job-template:
-    <<: *no-deploy-standard-template
-    name: 'ovirt-engine-api-explorer_{version}_build-artifacts-{distro}-{arch}'
-
-- job-template:
-    <<: *no-deploy-standard-template
-    name: 'ovirt-release_{version}_build-artifacts-{distro}-{arch}'
-
-- job-template:
-    <<: *standard-template
-    name: '{project}_{version}_{stage}-{distro}-{arch}{_big_artifacts}'
+    <<: *standard-template-deploy
+    name: '{project}_{version}_build-artifacts-{distro}-{arch}{_big_artifacts}'
     properties:
       - throttle: *standard-template-properties-throttle
       - build-discarder:

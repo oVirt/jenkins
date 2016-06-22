@@ -1,4 +1,4 @@
-- project:
+- project: &base-params
     name: otopi_build
     project:
       - otopi
@@ -8,7 +8,6 @@
       - 4.0:
           branch: otopi-1.5
     stage:
-      - build-artifacts
       - check-patch
       - check-merged
     distro:
@@ -18,3 +17,11 @@
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: otopi_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+

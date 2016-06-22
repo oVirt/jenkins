@@ -5,15 +5,14 @@
     version:
       - master:
           branch: master
-    stage:
-      - build-artifacts
+    stage: build-artifacts
     trigger: 'on-change'
     distro:
         - el7
         - fc23
     arch: x86_64
     jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     name: ovirt-engine-sdk-ruby_checks

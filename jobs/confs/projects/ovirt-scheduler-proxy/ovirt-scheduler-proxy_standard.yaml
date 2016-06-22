@@ -5,8 +5,7 @@
     version:
       - master:
           branch: master
-    stage:
-      - build-artifacts
+    stage: build-artifacts
     trigger: 'on-change'
     distro:
         - el6
@@ -15,7 +14,7 @@
         - fc23
     arch: x86_64
     jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     name: ovirt-scheduler-proxy_check-patch
@@ -24,8 +23,7 @@
     version:
       - master:
           branch: master
-    stage:
-      - check-patch
+    stage: check-patch
     distro:
       - el6
       - el7

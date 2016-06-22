@@ -3,9 +3,6 @@
     vdsm_standard--key: &vdsm_standard_common
       project:
         - vdsm
-      stage:
-        - build-artifacts
-        - check-patch
       arch: x86_64
       trigger: 'on-change'
       jobs:
@@ -33,6 +30,8 @@
         distro: fc22
       - version: 4.0
         distro: fc22
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     <<: *vdsm_standard_common

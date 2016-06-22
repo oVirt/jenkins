@@ -22,12 +22,11 @@
           branch: ovirt-4.0
           trigger: 'timed'
           trigger-times: '@weekly'
-    stage:
-      - build-artifacts
+    stage: build-artifacts
     distro:
       - el7
     arch:
       - x86_64
     node-filter: (( fc21 || fc22 ) && nested) || appliance-builder
     jobs:
-      - 'ovirt-appliance_{version}_{stage}-{distro}-{arch}'
+      - 'ovirt-appliance_{version}_build-artifacts-{distro}-{arch}'

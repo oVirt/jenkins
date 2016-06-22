@@ -11,15 +11,14 @@
           branch: master
       - ovirt-3.6:
           branch: ovirt-3.6
-    stage:
-      - build-artifacts
+    stage: build-artifacts
     distro:
       - el7
     trigger: 'on-change'
     arch:
       - x86_64
     jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     name: imgbased-lint

@@ -1,20 +1,5 @@
-- vdsm-jsonrpc-java_standard_common:
+- project: &base-params
     name: 'vdsm-jsonrpc-java_standard_common'
-    vdsm-jsonrpc-java_standard--key: &vdsm-jsonrpc-java_standard_common
-      project:
-        - vdsm-jsonrpc-java
-      stage:
-        - build-artifacts
-        - check-patch
-      arch: x86_64
-      trigger: 'on-change'
-      jobs:
-        - '{project}_{version}_{stage}-{distro}-{arch}'
-
-
-- project:
-    <<: *vdsm-jsonrpc-java_standard_common
-    name: vdsm-jsonrpc-java_build-artifacts_3.6
     version:
       - 3.6:
           branch: ovirt-3.6
@@ -30,3 +15,18 @@
         distro: el6
       - version: master
         distro: fc22
+    project:
+      - vdsm-jsonrpc-java
+    stage: check-patch
+    arch: x86_64
+    trigger: 'on-change'
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: vdsm-jsonrpc-java_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+

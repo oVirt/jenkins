@@ -11,4 +11,4 @@
       - fc23
     arch: x86_64
     jobs:
-      - 'ovirt-engine-api-explorer_{version}_build-artifacts-{distro}-{arch}'
+      - '{project}_{version}_{stage}-{distro}-{arch}'

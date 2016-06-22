@@ -9,14 +9,13 @@
           branch: ovirt-live-4.0
       - 3.6:
           branch: ovirt-live-3.6
-    stage:
-      - build-artifacts
+    stage: build-artifacts
     trigger: 'on-change'
     distro:
         - el7
     arch: x86_64
     jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     name: ovirt-live_check-patch

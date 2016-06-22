@@ -1,4 +1,4 @@
-- project:
+- project: &base-params
     name: ioprocess
     project:
       - ioprocess
@@ -14,11 +14,17 @@
       - x86_64
     trigger: 'on-change'
     stage:
-      - build-artifacts
       - check-patch
       - check-merged
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: ioprocess_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     name: ioprocess_0.15

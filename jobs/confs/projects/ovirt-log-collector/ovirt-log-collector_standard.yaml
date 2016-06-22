@@ -1,4 +1,4 @@
-- project:
+- project: &base-params
     name: ovirt-log_collector_build
     project:
       - ovirt-log-collector
@@ -6,7 +6,6 @@
       - master:
           branch: master
     stage:
-      - build-artifacts
       - check-patch
       - check-merged
     distro:
@@ -16,3 +15,11 @@
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: ovirt-log-collector_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+

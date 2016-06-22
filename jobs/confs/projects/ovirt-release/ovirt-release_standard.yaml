@@ -1,4 +1,4 @@
-- project: &base_project
+- project:
     name: ovirt-release_check
     project: ovirt-release
     version:
@@ -10,6 +10,7 @@
           branch: ovirt-3.6
     stage:
       - check-patch
+      - build-artifacts
     distro:
       - el7
     trigger: 'timed'
@@ -17,10 +18,3 @@
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
-
-- project:
-    <<: *base_project
-    name: ovirt-release_build
-    stage: build-artifacts
-    jobs:
-      - 'ovirt-release_{version}_build-artifacts-{distro}-{arch}'

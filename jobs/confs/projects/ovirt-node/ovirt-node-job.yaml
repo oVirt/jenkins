@@ -13,7 +13,7 @@
     jobs:
       - 'ovirt-node_{version}_create-iso-{distro}_{trigger}'
 
-- project:
+- project: &node-base-params
     name: ovirt-node-build
     project:
       - ovirt-node
@@ -21,7 +21,6 @@
       - ovirt-3.6:
           branch: ovirt-3.6
     stage:
-      - build-artifacts
       - check-merged
       - check-patch
     distro:
@@ -33,6 +32,13 @@
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
 - project:
+    <<: *node-base-params
+    name: ovirt-node_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+
+- project: &node-plugin-base-params
     name: ovirt-node-plugin-vdsm-build
     project:
       - ovirt-node-plugin-vdsm
@@ -40,7 +46,6 @@
       - ovirt-3.6:
           branch: ovirt-3.6
     stage:
-      - build-artifacts
       - check-merged
       - check-patch
     distro:
@@ -52,6 +57,14 @@
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
 - project:
+    <<: *node-plugin-base-params
+    name: ovirt-node-plugin_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+
+
+- project: &hosted-engine-params
     name: ovirt-node-plugin-hosted-engine-build
     project:
       - ovirt-node-plugin-hosted-engine
@@ -59,7 +72,6 @@
       - ovirt-3.6:
           branch: ovirt-3.6
     stage:
-      - build-artifacts
       - check-merged
       - check-patch
     distro:
@@ -69,4 +81,11 @@
       - x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *hosted-engine-params
+    name: hosted-engine_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
