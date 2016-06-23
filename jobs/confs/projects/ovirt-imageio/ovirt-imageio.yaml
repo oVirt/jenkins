@@ -21,6 +21,11 @@
     <<: *base-params
     name: ovirt-imageio_build-artifacts
     stage: build-artifacts
+    version:
+        - master:
+            branch: master
+        - 4.0:
+            branch: master
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 

@@ -27,6 +27,13 @@
     <<: *base-params
     name: vdsm-jsonrpc-java_build-artifacts
     stage: build-artifacts
+    version:
+      - 3.6:
+          branch: ovirt-3.6
+      - master:
+          branch: master
+      - 4.0:
+          branch: master
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 

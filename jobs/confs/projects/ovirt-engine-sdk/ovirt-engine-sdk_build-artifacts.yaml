@@ -1,35 +1,12 @@
-- project:
-    name: ovirt-engine-sdk_build
-    project:
-      - ovirt-engine-sdk
-    version:
-      - master:
-          branch: master
-      - 3.6:
-          branch: sdk_3.6
-    stage: build-artifacts
-    trigger: 'on-change'
-    distro:
-        - el6
-        - el7
-        - fc22
-        - fc23
-    exclude:
-      - version: master
-        distro: el6
-      - version: master
-        distro: fc22
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
-
-- project:
+- project: &basic-params
     name: ovirt-engine-sdk_checks
     project:
       - ovirt-engine-sdk
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: sdk_4.0
       - 3.6:
           branch: sdk_3.6
     stage:
@@ -41,3 +18,20 @@
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *basic-params
+    name: ovirt-engine-sdk_build
+    stage: build-artifacts
+    distro:
+        - el6
+        - el7
+        - fc22
+        - fc23
+    exclude:
+      - version: master
+        distro: el6
+      - version: master
+        distro: fc22
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'

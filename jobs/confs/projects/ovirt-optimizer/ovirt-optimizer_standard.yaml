@@ -28,6 +28,13 @@
     <<: *base-params
     name: ovirt-optimizer_build-artifacts
     stage: build-artifacts
+    version:
+      - master:
+          branch: master
+      - 4.0:
+          branch: master
+      - 3.6:
+          branch: v0.9.z
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 

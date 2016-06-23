@@ -1,26 +1,12 @@
-- project:
-    name: ovirt-engine-sdk-java_build
-    project:
-      - ovirt-engine-sdk-java
-    version:
-      - master:
-          branch: master
-    stage: build-artifacts
-    trigger: 'on-change'
-    distro:
-        - el7
-        - fc23
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
-
-- project:
+- project: &basic-params
     name: ovirt-engine-sdk-java_checks
     project:
       - ovirt-engine-sdk-java
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: sdk_4.0
     stage:
       - check-merged
       - check-patch
@@ -31,3 +17,10 @@
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *basic-params
+    name: ovirt-engine-sdk-java_build
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'

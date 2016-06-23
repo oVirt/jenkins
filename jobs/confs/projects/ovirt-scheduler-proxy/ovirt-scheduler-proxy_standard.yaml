@@ -23,6 +23,10 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: master
+      - 3.6:
+          branch: master
     stage: check-patch
     distro:
       - el6
