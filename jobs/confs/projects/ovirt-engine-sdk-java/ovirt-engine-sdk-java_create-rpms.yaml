@@ -7,6 +7,13 @@
     version:
       - 3.6:
           branch: sdk_3.6
+          repoversion: 3.6
+      - 4.0:
+          branch: sdk_3.6
+          repoversion: 4.0
+      - master:
+          branch: sdk_3.6
+          repoversion: master
     mock-build-type: all
     distro:
       - fc22

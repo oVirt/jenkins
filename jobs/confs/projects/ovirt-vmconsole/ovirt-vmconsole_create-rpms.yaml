@@ -7,8 +7,13 @@
     version:
       - master:
           branch: master
+          repoversion: master
+      - 4.0:
+          branch: master
+          repoversion: 4.0
       - 3.6:
           branch: master
+          repoversion: 3.6
     mock-build-type: all
     distro:
       - el6
@@ -19,6 +24,10 @@
       - version: master
         distro: el6
       - version: master
+        distro: fc22
+      - version: 4.0
+        distro: el6
+      - version: 4.0
         distro: fc22
     arch: x86_64
     extra-build-packages: |

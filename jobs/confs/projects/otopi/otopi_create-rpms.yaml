@@ -8,6 +8,7 @@
     version:
       - 3.6:
           branch: otopi-1.4
+          repoversion: 3.6
     mock-build-type: all
     distro:
       - el6

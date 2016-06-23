@@ -1,8 +1,7 @@
 - project:
     name: ovirt-engine-wildfly8_create-rpms
     project: releng-tools
-    subproject:
-      - ovirt-engine-wildfly8
+    subproject: ovirt-engine-wildfly8
     trigger:
       - created
       - merged
@@ -17,7 +16,7 @@
       - fc23
     arch: x86_64
     jobs:
-      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - 'ovirt-engine-wildfly8_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: |
             rpmdevtools
             wget
@@ -25,8 +24,7 @@
 - project:
     name: ovirt-engine-wildfly10_create-rpms
     project: releng-tools
-    subproject:
-      - ovirt-engine-wildfly10
+    subproject: ovirt-engine-wildfly10
     trigger:
       - created
       - merged
@@ -40,7 +38,7 @@
       - fc23
     arch: x86_64
     jobs:
-      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: |
             rpmdevtools
             wget

@@ -1,8 +1,7 @@
 - project:
     name: slf4j_create-rpms
     project: releng-tools
-    subproject:
-      - slf4j
+    subproject: slf4j
     trigger:
       - created
       - merged
@@ -16,6 +15,6 @@
           extra-packages: maven3
     arch: x86_64
     jobs:
-      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - 'slf4j_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: |
             rpmdevtools

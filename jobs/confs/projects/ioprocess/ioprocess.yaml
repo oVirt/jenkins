@@ -5,8 +5,10 @@
     version:
       - master:
           branch: master
+          repoversion: master
       - 0.16:
           branch: ioprocess-0.16
+          repoversion: 4.0
     distro:
       - fc23
       - el7
@@ -33,6 +35,7 @@
     version:
       - 0.15:
           branch: ioprocess-0.15.1
+          repoversion: 3.6
     distro:
       - el6
       - el7

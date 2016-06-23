@@ -1,4 +1,4 @@
-- job-template:
+- job-template: &create-rpms
     name: '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
     node: '{node-filter}'
     defaults: create-rpms
@@ -33,6 +33,21 @@
           cherry-pick: '{cherry-pick}'
           copy-in: '{copy-in}'
           copy-out: '{copy-out}'
+    reponame: ovirt
+    repotype: experimental
+    publishers:
+      - mock-cleanup
+      - exported-artifacts
+      - trigger-parameterized-builds:
+        - project: 'deploy-to-{reponame}_{repotype}_{repoversion}'
+          predefined-parameters: |
+            BUILD_ID={project}_{distro}_$BUILD_NUMBER
+            BUILD_ARTIFACTS_JOBS=$BUILD_URL
+          condition: SUCCESS
+
+- job-template: &no-deploy-create-rpms
+    <<: *create-rpms
+    name: 'no-deploy-create-rpms'
     publishers:
       - mock-cleanup
       - exported-artifacts
@@ -75,6 +90,47 @@
     publishers:
       - mock-cleanup
       - exported-artifacts
+      - trigger-parameterized-builds:
+        - project: 'deploy-to-{reponame}_{repotype}_{repoversion}'
+          predefined-parameters: |
+            BUILD_ID={project}_{distro}_$BUILD_NUMBER
+            BUILD_ARTIFACTS_JOBS=$BUILD_URL
+          condition: SUCCESS
+
+- job-template: &no-deploy-releng
+    <<: *releng-template
+    name: 'no-deploy-releng'
+    publishers:
+      - mock-cleanup
+      - exported-artifacts
+
+- job-template:
+    <<: *no-deploy-releng
+    name: 'jasperreports-server_{version}_create-rpms-{distro}-{arch}_{trigger}'
+
+- job-template:
+    <<: *no-deploy-releng
+    name: 'ovirt-engine-wildfly-overlay8_{version}_create-rpms-{distro}-{arch}_{trigger}'
+
+- job-template:
+    <<: *no-deploy-releng
+    name: 'ovirt-engine-wildfly-overlay10_{version}_create-rpms-{distro}-{arch}_{trigger}'
+
+- job-template:
+    <<: *no-deploy-releng
+    name: 'slf4j_{version}_create-rpms-{distro}-{arch}_{trigger}'
+
+- job-template:
+    <<: *no-deploy-releng
+    name: 'ovirt-engine-wildfly8_{version}_create-rpms-{distro}-{arch}_{trigger}'
+
+- job-template:
+    <<: *no-deploy-releng
+    name: 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_{trigger}'
+
+- job-template:
+    <<: *no-deploy-releng
+    name: 'ebay-cors-filter_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
 - job-template:
     name: 'ovirt-engine_{version}_create-rpms-{distro}-{arch}_{trigger}'
@@ -114,3 +170,9 @@
     publishers:
       - mock-cleanup
       - exported-artifacts
+      - trigger-parameterized-builds:
+        - project: 'deploy-to-{reponame}_{repotype}_{version}'
+          predefined-parameters: |
+            BUILD_ID={project}_{distro}_$BUILD_NUMBER
+            BUILD_ARTIFACTS_JOBS=$BUILD_URL
+          condition: SUCCESS

@@ -9,6 +9,10 @@
     version:
       - master:
           branch: master
+          repoversion: master
+      - 4.0:
+          branch: master
+          repoversion: 4.0
     mock-build-type: all
     distro:
       - el7

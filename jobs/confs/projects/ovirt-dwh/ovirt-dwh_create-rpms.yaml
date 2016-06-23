@@ -15,6 +15,7 @@
     version:
       - 3.6:
           branch: ovirt-engine-dwh-3.6
+          repoversion: 3.6
     mock-build-type: all
     arch: x86_64
     extra-build-packages: |
