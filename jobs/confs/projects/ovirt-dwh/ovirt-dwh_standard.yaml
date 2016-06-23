@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: ovirt-engine-dwh-4.0
     stage:
       - check-patch
       - check-merged
