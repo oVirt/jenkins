@@ -15,6 +15,10 @@
         distro: el6
       - version: master
         distro: fc22
+      - version: 4.0
+        distro: el6
+      - version: 4.0
+        distro: fc22
     project:
       - vdsm-jsonrpc-java
     stage: check-patch
