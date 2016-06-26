@@ -4,7 +4,7 @@
       project: ovirt
       node-filter: integ-tests
       branch: master
-      email-to: dcaro+ovirt-system-tests@redhat.com
+      email-to: infra@ovirt.org, devel@ovirt.org
       jobs:
         - '{project}_{version}_system-tests'
 
@@ -13,8 +13,8 @@
     name: ovirt-system-tests
     version:
       - 3.6
-      - master
       - 4.0
+      - master
 
 # type can be both image and image_ng
 # they differ in the testing used
@@ -23,7 +23,7 @@
     name: ovirt-system-image-tests
     version:
       - 3.6
-    email-to: tlitovsk@redhat.com
+    email-to: tlitovsk@redhat.com, fabiand@redhat.com
     jobs:
       - '{project}_{version}_image-ng-system-tests'
 
@@ -33,5 +33,6 @@
     name: ovirt-system-he-tests
     version:
       - 3.6
+    email-to: sbonnazo@redhat.com, infra@ovirt.org
     jobs:
       - '{project}_{version}_he-system-tests'
