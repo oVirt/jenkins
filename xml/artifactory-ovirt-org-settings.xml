@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<settings xmlns="http://maven.apache.org/POM/4.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+<mirrors>
+        <mirror>
+                <id>ovirt-maven-repository</id>
+                <name>Maven Repository Manager running on Brew</name>
+                <url>http://artifactory.ovirt.org/artifactory/ovirt-mirror</url>
+                <mirrorOf>*</mirrorOf>
+        </mirror>
+</mirrors>
+</settings>
+
