@@ -427,7 +427,7 @@ clean_rpmdb() {
             || mkdir -p "\$logdir"
             # Fix that allows using yum inside the chroot on dnf enabled
             # distros
-            [[ -d /etc/dnf ]] && cat /etc/yum/yum.conf > /etc/dnf/dnf.conf
+            [[ -d /etc/dnf ]] && [[ -e /etc/yum/yum.conf ]] && cat /etc/yum/yum.conf > /etc/dnf/dnf.conf
             rm -Rf /var/lib/rpm/__* &>\$logdir/rpmbuild.log
             rpm --rebuilddb &>>\$logdir/rpmbuild.log
 EOC
@@ -443,7 +443,7 @@ EOC2
             || mkdir -p "\$logdir"
             # Fix that allows using yum inside the chroot on dnf enabled
             # distros
-            [[ -d /etc/dnf ]] && cat /etc/yum/yum.conf > /etc/dnf/dnf.conf
+            [[ -d /etc/dnf ]] && [[ -e /etc/yum/yum.conf ]] && cat /etc/yum/yum.conf > /etc/dnf/dnf.conf
             rm -Rf /var/lib/rpm/__* &>\$logdir/rpmbuild.log
             rpm --rebuilddb &>>\$logdir/rpmbuild.log
 EOC
