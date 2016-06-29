@@ -14,7 +14,7 @@
             description: "Age in days for warning limit."
         - string:
             name: ABANDON
-            default: "360"
+            default: "180"
             description: "Age in days for abandoning limit."
         - string:
             name: TEST_EMAIL
