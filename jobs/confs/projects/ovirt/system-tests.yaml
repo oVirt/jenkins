@@ -4,7 +4,7 @@
       project: ovirt
       node-filter: integ-tests
       branch: master
-      email-to: infra@ovirt.org, devel@ovirt.org
+      email-to: infra@ovirt.org
       jobs:
         - '{project}_{version}_system-tests'
 
