@@ -33,6 +33,6 @@
     name: ovirt-system-he-tests
     version:
       - 3.6
-    email-to: sbonnazo@redhat.com, infra@ovirt.org
+    email-to: sbonazzo@redhat.com, infra@ovirt.org, lveyde@redhat.com
     jobs:
       - '{project}_{version}_he-system-tests'
