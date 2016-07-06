@@ -17,10 +17,14 @@
           repoversion: 3.6
     mock-build-type: all
     distro:
-      - fc22
       - fc23
-      - el6
+      - fc24
       - el7
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 3.6
+        distro: fc24
     arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
