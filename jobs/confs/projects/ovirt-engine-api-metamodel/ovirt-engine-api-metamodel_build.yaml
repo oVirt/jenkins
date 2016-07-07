@@ -4,6 +4,8 @@
     version:
       - master:
           branch: master
+      - 1.0:
+          branch: metamodel_1.0
     stage: build-artifacts
     trigger: 'on-change'
     distro:

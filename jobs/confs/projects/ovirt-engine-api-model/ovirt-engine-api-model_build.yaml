@@ -4,6 +4,8 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: model_4.0
     stage: build-artifacts
     trigger: 'on-change'
     distro:

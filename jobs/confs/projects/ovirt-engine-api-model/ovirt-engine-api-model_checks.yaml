@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: model_4.0
     stage: check-patch
     trigger: 'on-change'
     distro:
