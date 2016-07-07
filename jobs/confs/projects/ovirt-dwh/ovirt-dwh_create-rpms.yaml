@@ -11,7 +11,7 @@
       - fc23
       - el7
       - el6:
-          extra-repos: jpackage-6.0-generic,http://ftp.heanet.ie/pub/jpackage/6.0/generic/free
+          extra-repos: jpackage-6.0-generic,http://vesta.informatik.rwth-aachen.de/ftp/pub/comp/Linux/jpackage/6.0/generic/free/
     version:
       - 3.6:
           branch: ovirt-engine-dwh-3.6
