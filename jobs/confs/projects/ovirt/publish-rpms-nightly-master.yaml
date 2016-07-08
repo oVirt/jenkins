@@ -76,9 +76,6 @@
           project-prefix: vdsm-jsonrpc-java_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-sdk_3.6_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
@@ -108,9 +105,6 @@
           project-prefix: ioprocess_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-vdsm-master-platforms:
-          project-prefix: mom_master_create-rpms-
-          project-suffix: _merged
-      - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: vdsm_master_build-artifacts-
           project-suffix: ""
 
@@ -128,8 +122,18 @@
       - copy-create-job-artifact:
           project: ovirt-appliance_master_build-artifacts-el7-x86_64
 
+      - copy-create-job-artifact:
+          project: ovirt-engine_master_build-artifacts-el7-x86_64
+      - copy-create-job-artifact:
+          project: ovirt-engine_master_build-artifacts-fc24-x86_64
 
-      # ovirt-reports still not working on fc22
+      - copy-create-job-artifact:
+          project: mom_master_create-rpms-el7-x86_64_merged
+
+      #TODO: enable once mom build works for fc24
+      #- copy-create-job-artifact:
+      #    project: mom_master_create-rpms-fc24-x86_64_merged
+
       - copy-create-job-artifact:
           project: ovirt-reports_master_create-rpms-el7-x86_64_merged
 

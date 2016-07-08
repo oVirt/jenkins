@@ -108,9 +108,6 @@
           project-prefix: ioprocess_0.16_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-vdsm-master-platforms:
-          project-prefix: mom_master_create-rpms-
-          project-suffix: _merged
-      - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: vdsm_4.0_build-artifacts-
           project-suffix: ""
 
@@ -123,6 +120,11 @@
 
       - copy-create-job-artifact:
           project: qemu_master_create-rpms-el7-x86_64_merged
+      - copy-create-job-artifact:
+          project: mom_4.0_create-rpms-el7-x86_64_merged
+      - copy-create-job-artifact:
+          project: mom_4.0_create-rpms-fc24-x86_64_merged
+
       - copy-create-job-artifact:
           project: unboundid-ldapsdk_master_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
