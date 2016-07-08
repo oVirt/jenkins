@@ -20,7 +20,7 @@
     distro:
       - el7:
           extra-repos: |
-              glusterfs-centos,http://mirror.centos.org/centos/7/storage/\\$basearch/gluster-3.7/
+              glusterfs-centos,http://mirror.centos.org/centos/7/storage/$arch/gluster-3.7/
     arch: x86_64
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
