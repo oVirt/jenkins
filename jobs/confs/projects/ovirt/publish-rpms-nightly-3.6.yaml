@@ -79,9 +79,15 @@
       - copy-create-job-artifact-engine-platforms:
           project-prefix: vdsm-jsonrpc-java_3.6_build-artifacts-
           project-suffix: ""
-      - copy-create-job-artifact-engine-platforms:
-          project-prefix: ovirt-engine_3.6_build-artifacts-
-          project-suffix: ""
+
+      - copy-create-job-artifact:
+          project: ovirt-engine_3.6_build-artifacts-el7-x86_64
+      - copy-create-job-artifact:
+          project: ovirt-engine_3.6_build-artifacts-el6-x86_64
+
+      - copy-create-job-artifact:
+          project: mom_3.6_create-rpms-el7-x86_64_merged
+
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-engine-sdk-java_3.6_create-rpms-
           project-suffix: _merged
@@ -95,9 +101,7 @@
       - copy-create-job-artifact-vdsm-platforms:
           project-prefix: ioprocess_0.15_create-rpms-
           project-suffix: _merged
-      - copy-create-job-artifact-vdsm-platforms:
-          project-prefix: mom_master_create-rpms-
-          project-suffix: _merged
+
       - copy-create-job-artifact-vdsm-platforms:
           project-prefix: vdsm_3.6_build-artifacts-
           project-suffix: ""
@@ -121,8 +125,6 @@
           project: ovirt-node-plugin-hosted-engine_ovirt-3.6_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-appliance_ovirt-3.6_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-node-ng_ovirt-3.6_build-artifacts-fc22-x86_64
 
       - copy-create-job-artifact:
           project: ovirt-reports_3.6_create-rpms-el6-x86_64_merged
@@ -133,21 +135,7 @@
           project: ovirt-live_3.6_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
-          project: py2exe-py2.7_master_create-rpms-fc23-x86_64_merged
-      - copy-create-job-artifact:
-          project: pywin32-py2.7_master_create-rpms-fc23-x86_64_merged
-      - copy-create-job-artifact:
-          project: python-windows_master_create-rpms-fc23-x86_64_merged
-      - copy-create-job-artifact:
-          project: vcredist-x86_master_create-rpms-fc23-x86_64_merged
-      - copy-create-job-artifact:
-          project: nsis-simple-service-plugin_master_create-rpms-fc23-x86_64_merged
-      - copy-create-job-artifact:
-          project: ovirt-wgt_3.6_create-rpms-fc23-x86_64_merged
-      - copy-create-job-artifact:
           project: cockpit-ovirt_ovirt-3.6_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: cockpit-ovirt_ovirt-3.6_build-artifacts-fc23-x86_64
 
       - copy-create-job-artifact:
           project: ovirt-release_3.6_build-artifacts-el7-x86_64
