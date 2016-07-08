@@ -119,7 +119,7 @@
           project-suffix: ""
 
       - copy-create-job-artifact:
-          project: qemu_master_create-rpms-el7-x86_64_merged
+          project: qemu_4.0_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
           project: mom_4.0_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
