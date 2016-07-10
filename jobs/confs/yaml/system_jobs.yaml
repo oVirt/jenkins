@@ -1,0 +1,37 @@
+- job:
+    name: system_jenkins-report
+    node: master
+    triggers:
+        - timed: "0 23 * * *"
+    wrappers:
+      - timeout:
+          fail: true
+          type: absolute
+          timeout: 180
+          write-desc: true
+      - timestamps
+      - ansicolor
+      - mask-passwords
+    builders:
+        - system-groovy:
+            command: !include-raw: groovy-scripts/system_report.groovy
+    publishers:
+        - archive:
+            artifacts: 'exported-artifacts/*report.html'
+            fingerprint: false
+        - email-ext:
+            recipients: 'infra@ovirt.org'
+            attachments: 'exported-artifacts/*report.html'
+            content-type: 'text'
+            always: true
+            send-to:
+              - recipients
+            subject: 'RHEVM CI Jenkins daily report - $BUILD_ID'
+            body: |
+              Good morning!
+
+              Attached is the HTML page with the jenkins status report. You can see it also here:
+               - ${BUILD_URL}/artifact/exported-artifacts/upstream_report.html
+
+              Cheers,
+              Jenkins
