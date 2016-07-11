@@ -9,15 +9,15 @@
           branch: sdk_3.6
           repoversion: 3.6
       - 4.0:
-          branch: sdk_3.6
+          branch: sdk_4.0
           repoversion: 4.0
       - master:
-          branch: sdk_3.6
+          branch: master
           repoversion: master
     mock-build-type: all
     distro:
-      - fc22
       - fc23
+      - fc24
       - el6:
           extra-repos: |
             ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
