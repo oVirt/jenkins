@@ -67,26 +67,12 @@ for(item in view.getAllItems())
   def desc = item.getDescription()
   job_name = item.name
   println("Job name is: $item.name")
-  if(desc != null && desc != "")
-  {
-    f.append("""
-                     <tr><td>
-                         <a href="$job_url">$job_name</a>
-                     </td><td>
-                         $desc
-                     </td></tr>
-                     """)
-    println("Job desc is: $desc")
-  }
-  else
-  {
-      f.append("""
-                     <tr><td>
-                         <a href="$job_url">$job_name</a>
-                     </td><td>
-                         No Description
-                     </td></tr>
-                     """)
-    println("No description")
-  }
+  f.append("""
+                   <tr><td>
+                       <a href="$job_url">$job_name</a>
+                   </td><td>
+                       ${desc ? desc : 'No Description'}
+                   </td></tr>
+                   """)
+  println("Job desc is: ${desc ? desc : 'No Description'}")
 }
