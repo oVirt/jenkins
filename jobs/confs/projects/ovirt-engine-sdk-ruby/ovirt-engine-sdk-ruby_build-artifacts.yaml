@@ -12,7 +12,14 @@
       - check-patch
     trigger: 'on-change'
     distro:
-        - fc23
+      - el7
+      - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -21,8 +28,5 @@
     <<: *basic-params
     name: ovirt-engine-sdk-ruby_build
     stage: build-artifacts
-    distro:
-        - el7
-        - fc23
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
