@@ -12,7 +12,6 @@
     distro:
       - el6
       - el7
-      - fc22
       - fc23
     arch: x86_64
     jobs:
@@ -34,8 +33,8 @@
     mock-build-type: all
     distro:
       - el7
-      - fc22
       - fc23
+      - fc24
     arch: x86_64
     jobs:
       - 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_{trigger}':
