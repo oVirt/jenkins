@@ -11,7 +11,13 @@
           repoversion: 4.0
     distro:
       - fc23
+      - fc24
       - el7
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 0.16
+        distro: fc24
     arch:
       - x86_64
     trigger: 'on-change'
@@ -39,7 +45,6 @@
     distro:
       - el6
       - el7
-      - fc22
       - fc23
     arch: x86_64
     trigger:
