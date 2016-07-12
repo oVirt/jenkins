@@ -88,7 +88,7 @@
           project-prefix: ovirt-engine-sdk-java_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-sdk-java_master_build-artifacts-
+          project-prefix: ovirt-engine-sdk-java_4.0_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-image-uploader_master_build-artifacts-
