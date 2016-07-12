@@ -23,7 +23,7 @@ CENTOS_MIRROR="http://centos.mirror.constant.com/"
 EPEL_MIRROR="http://mirror.switch.ch/ftp/mirror"
 FEDORA_MIRROR="http://mirrors.kernel.org/"
 GLUSTER_MIRROR="http://download.gluster.org"
-JPACKAGE_MIRROR="http://ftp.heanet.ie/pub"
+JPACKAGE_MIRROR="http://vesta.informatik.rwth-aachen.de/ftp/pub/comp/Linux/"
 COPR="http://copr-be.cloud.fedoraproject.org/results"
 STATIC_RP=""
 
