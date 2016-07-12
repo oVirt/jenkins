@@ -156,7 +156,7 @@
           project: cockpit-ovirt_ovirt-4.0_build-artifacts-fc23-x86_64
 
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-sdk-ruby_master_build-artifacts-
+          project-prefix: ovirt-engine-sdk-ruby_4.0_build-artifacts-
           project-suffix: ""
 
       - copy-create-job-artifact:
