@@ -44,7 +44,6 @@
       - copy-create-job-artifact-all_master-platforms:
           project-prefix: ovirt-imageio_master_build-artifacts-
           project-suffix: ''
-
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-iso-uploader_master_build-artifacts-
           project-suffix: ''
@@ -129,13 +128,8 @@
 
       - copy-create-job-artifact:
           project: mom_master_create-rpms-el7-x86_64_merged
-
-      #TODO: enable once mom build works for fc24
-      #- copy-create-job-artifact:
-      #    project: mom_master_create-rpms-fc24-x86_64_merged
-
       - copy-create-job-artifact:
-          project: ovirt-reports_master_create-rpms-el7-x86_64_merged
+          project: mom_master_create-rpms-fc24-x86_64_merged
 
       - copy-create-job-artifact:
           project: ovirt-live_master_build-artifacts-el7-x86_64
@@ -179,6 +173,7 @@
 
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-guest-agent_master_build-artifacts-
+          project-suffix: ""
 
     publishers:
       - email:
