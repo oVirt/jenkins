@@ -29,6 +29,8 @@
         distro: fc24
       - version: 3.6
         distro: fc24
+      - version: 3.6
+        distro: fc23
     trigger: 'on-change'
     arch: x86_64
     jobs:
