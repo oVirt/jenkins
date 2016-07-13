@@ -112,7 +112,7 @@
           project-suffix: ""
 
       - copy-create-job-artifact-hosted-engine-master-platforms:
-          project-prefix: ovirt-hosted-engine-ha_master_create-rpms-
+          project-prefix: ovirt-hosted-engine-ha_4.0_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-hosted-engine-master-platforms:
           project-prefix: ovirt-hosted-engine-setup_4.0_build-artifacts-
