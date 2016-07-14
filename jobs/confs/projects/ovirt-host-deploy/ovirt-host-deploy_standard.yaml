@@ -5,12 +5,22 @@
     version:
       - master:
           branch: master
+          repoversion: master
+      - 4.0:
+          branch: ovirt-host-deploy-1.5
+          repoversion: 4.0
     stage:
       - check-patch
       - check-merged
     distro:
-      - el7
       - fc23
+      - fc24
+      - el7
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
     trigger: 'on-change'
     arch: x86_64
     jobs:
@@ -20,11 +30,6 @@
     <<: *base-params
     name: ovirt-host-deploy_build-artifacts
     stage: build-artifacts
-    version:
-      - master:
-          branch: master
-      - 4.0:
-          branch: master
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 

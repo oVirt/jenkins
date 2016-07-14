@@ -43,7 +43,6 @@
     mock-build-type: all
     distro:
       - el7
-      - fc22
       - fc23
     arch: x86_64
     extra-configure-options: |
