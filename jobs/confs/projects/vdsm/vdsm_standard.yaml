@@ -24,19 +24,22 @@
     distro:
       - el7
       - fc23
-      - fc22
+      - fc24
     exclude:
       - version: master
-        distro: fc22
+        distro: fc23
       - version: 4.0
-        distro: fc22
+        distro: fc24
+      - version: 3.6
+        distro: fc24
+
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-patch
-    node-filter: fc21 || fc22 || fc23
+    node-filter: fc22 || fc23 || fc24
     version:
       - master:
           branch: master
@@ -46,13 +49,13 @@
           branch: ovirt-4.0
     stage: check-patch
     distro:
-      - fc23
+      - fc24
       - el7
 
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-merged
-    node-filter: fc21 || fc22 || fc23
+    node-filter: fc22 || fc23 || fc24
     version:
       - master:
           branch: master
@@ -60,4 +63,4 @@
           branch: ovirt-4.0
     stage: check-merged
     distro:
-      - fc23
+      - fc24
