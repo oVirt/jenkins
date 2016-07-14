@@ -9,6 +9,7 @@
         - check-patch
         - check-merged
     distro:
+        - fc24
         - fc23
         - el7
     trigger: 'on-change'
@@ -24,8 +25,15 @@
     version:
         - master:
             branch: master
+            repoversion: master
         - 4.0:
             branch: master
+            repoversion: 4.0
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
