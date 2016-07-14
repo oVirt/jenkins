@@ -17,11 +17,23 @@
           branch: ovirt-3.6
     stage: build-artifacts
     distro:
-      - fc22
+      - fc23
+      - fc24
+    exclude:
+     - version: master
+       distro: fc23
+     - version: ovirt-4.0-snapshot
+       distro: fc24
+     - version: ovirt-4.0-pre
+       distro: fc24
+     - version: ovirt-4.0
+       distro: fc24
+     - version: ovirt-3.6
+       distro: fc24
     trigger: 'timed'
     trigger-times: '00 04 * * *'
     arch:
       - x86_64
-    node-filter: fc23
+    node-filter: fc23 || fc24
     jobs:
         - '{project}_{version}_build-artifacts-{distro}-{arch}{_big_artifacts}'
