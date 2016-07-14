@@ -13,8 +13,6 @@
     distro:
       - el6
       - el7
-      - fc22
-      - fc23
     arch: x86_64
     jobs:
       - 'jasperreports-server_{version}_create-rpms-{distro}-{arch}_{trigger}':
