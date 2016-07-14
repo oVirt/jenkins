@@ -143,7 +143,7 @@
       - copy-create-job-artifact:
           project: imgbased_ovirt-3.6_build-artifacts-el7-x86_64
 
-      - copy-create-job-artifact-engine_master-platforms:
+      - copy-create-job-artifact-all-platforms:
           project-prefix: ovirt-guest-agent_3.6_build-artifacts-
 
       - copy-create-job-artifact-engine-platforms:

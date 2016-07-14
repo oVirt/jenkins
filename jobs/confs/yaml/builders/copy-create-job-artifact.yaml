@@ -16,7 +16,16 @@
       - copy-create-job-artifact:
           project: "{project-prefix}el7-x86_64{project-suffix}"
       - copy-create-job-artifact:
+          project: "{project-prefix}fc24-x86_64{project-suffix}"
+
+- builder:
+    name: copy-create-job-artifact-engine_4.0-platforms
+    builders:
+      - copy-create-job-artifact:
+          project: "{project-prefix}el7-x86_64{project-suffix}"
+      - copy-create-job-artifact:
           project: "{project-prefix}fc23-x86_64{project-suffix}"
+
 
 - builder:
     name: copy-create-job-artifact-all_master-platforms
@@ -25,6 +34,12 @@
           project-prefix: "{project-prefix}"
           project-suffix: "{project-suffix}"
 
+- builder:
+    name: copy-create-job-artifact-all_4.0-platforms
+    builders:
+      - copy-create-job-artifact-engine_4.0-platforms:
+          project-prefix: "{project-prefix}"
+          project-suffix: "{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-engine-platforms
@@ -57,6 +72,14 @@
       - copy-create-job-artifact:
           project: "{project-prefix}el7-x86_64{project-suffix}"
       - copy-create-job-artifact:
+          project: "{project-prefix}fc24-x86_64{project-suffix}"
+
+- builder:
+    name: copy-create-job-artifact-vdsm-4.0-platforms
+    builders:
+      - copy-create-job-artifact:
+          project: "{project-prefix}el7-x86_64{project-suffix}"
+      - copy-create-job-artifact:
           project: "{project-prefix}fc23-x86_64{project-suffix}"
 
 - builder:
@@ -77,6 +100,14 @@
 
 - builder:
     name: copy-create-job-artifact-hosted-engine-master-platforms
+    builders:
+      - copy-create-job-artifact:
+          project: "{project-prefix}el7-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc24-x86_64{project-suffix}"
+
+- builder:
+    name: copy-create-job-artifact-hosted-engine-4.0-platforms
     builders:
       - copy-create-job-artifact:
           project: "{project-prefix}el7-x86_64{project-suffix}"
