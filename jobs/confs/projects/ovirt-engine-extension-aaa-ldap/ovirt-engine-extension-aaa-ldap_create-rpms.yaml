@@ -28,17 +28,19 @@
     distro:
       - el6
       - el7
-      - fc22
       - fc23
+      - fc24
     exclude:
       - version: master
         distro: el6
       - version: master
-        distro: fc22
+        distro: fc23
       - version: 4.0
         distro: el6
       - version: 4.0
-        distro: fc22
+        distro: fc24
+      - version: 3.6
+        distro: fc24
     arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
