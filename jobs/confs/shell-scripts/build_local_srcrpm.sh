@@ -38,6 +38,7 @@ echo "suffix='${{suffix}}'" > "${{WORKSPACE}}/tmp/rpm_suffix.inc"
 git clean -dxf
 # build tarballs
 if [[ -x autogen.sh ]]; then
+    yum install -y autoconf automake
     ./autogen.sh --system "${{extra_autogen_options[@]}}"
 elif [[ -e configure.ac ]]; then
     autoreconf -ivf
