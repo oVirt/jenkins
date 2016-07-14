@@ -58,6 +58,7 @@ for option in "${{extra_rpmbuild_options[@]}}"; do
 done
 # not using -D "_srcrpmdir $WORKSPACE/exported-artifacts"
 # avoiding duplicate src.rpms
+sudo yum install -y rpm-build
 rpmbuild \
     -D "_topdir $WORKSPACE/rpmbuild"  \
     -D "_srcrpmdir $WORKSPACE"  \
