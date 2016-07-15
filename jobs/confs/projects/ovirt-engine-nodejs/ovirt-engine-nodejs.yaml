@@ -17,6 +17,12 @@
     distro:
       - el7
       - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
     arch: x86_64
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
