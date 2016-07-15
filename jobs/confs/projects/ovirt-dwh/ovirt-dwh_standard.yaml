@@ -13,8 +13,7 @@
       - check-patch
       - check-merged
     distro:
-      - el6:
-          extra-repos: jpackage-6.0-generic,http://vesta.informatik.rwth-aachen.de/ftp/pub/comp/Linux/jpackage/6.0/generic/free/
+      - el6
       - el7
       - fc23
       - fc24
