@@ -49,7 +49,7 @@
           project-suffix: ''
 
       - copy-create-job-artifact-older-platforms:
-          project-prefix: unboundid-ldapsdk_master_create-rpms-
+          project-prefix: unboundid-ldapsdk_3.6_create-rpms-
           project-suffix: _merged
 
       - copy-create-job-artifact-engine-platforms:
@@ -74,7 +74,7 @@
           project-prefix: ovirt-engine-extension-aaa-jdbc_3.6_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine-platforms:
-          project-prefix: ovirt-setup-lib_master_build-artifacts-
+          project-prefix: ovirt-setup-lib_3.6_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine-platforms:
           project-prefix: vdsm-jsonrpc-java_3.6_build-artifacts-
