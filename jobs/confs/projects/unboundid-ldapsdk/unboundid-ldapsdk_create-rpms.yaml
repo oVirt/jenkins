@@ -9,6 +9,15 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: master
+      - 3.6:
+          branch: master
+    exclude:
+      - version: master
+        distro: el6
+      - version: 4.0
+        distro: el6
     mock-build-type: all
     distro:
       - el6
