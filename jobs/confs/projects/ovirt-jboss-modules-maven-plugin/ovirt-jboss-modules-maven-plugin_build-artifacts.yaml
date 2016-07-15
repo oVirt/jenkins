@@ -12,6 +12,7 @@
     distro:
         - el7
         - fc23
+        - fc24
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -25,6 +26,11 @@
           branch: master
       - 4.0:
           branch: master
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
