@@ -1,6 +1,3 @@
-## jjb does not allow discarding variable combination when exploding
-## the template, so if we don't want fc21 for branch 3.5, we have to
-## create a separated template for it
 - project:
     name: ovirt-log-collector_master_create-rpms
     project:
