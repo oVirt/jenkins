@@ -58,7 +58,7 @@
           project-prefix: ovirt-engine-extension-aaa-ldap_4.0_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine_4.0-platforms:
-          project-prefix: ovirt-engine-extension-aaa-misc_master_create-rpms-
+          project-prefix: ovirt-engine-extension-aaa-misc_4.0_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine_4.0-platforms:
           project-prefix: ovirt-engine-extension-logger-log4j_4.0_create-rpms-
@@ -82,7 +82,7 @@
           project-prefix: ovirt-engine-sdk_3.6_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.0-platforms:
-          project-prefix: ovirt-engine-sdk_master_build-artifacts-
+          project-prefix: ovirt-engine-sdk_4.0_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.0-platforms:
           project-prefix: ovirt-engine-sdk-java_3.6_create-rpms-
@@ -93,12 +93,12 @@
       - copy-create-job-artifact-engine_4.0-platforms:
           project-prefix: ovirt-image-uploader_4.0_build-artifacts-
       - copy-create-job-artifact-engine_4.0-platforms:
-          project-prefix: ovirt-scheduler-proxy_master_build-artifacts-
+          project-prefix: ovirt-scheduler-proxy_4.0_build-artifacts-
       - copy-create-job-artifact-engine_4.0-platforms:
-          project-prefix: ovirt-optimizer_master_build-artifacts-
+          project-prefix: ovirt-optimizer_4.0_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.0-platforms:
-          project-prefix: ovirt-jboss-modules-maven-plugin_master_build-artifacts-
+          project-prefix: ovirt-jboss-modules-maven-plugin_4.0_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.0-platforms:
           project-prefix: ovirt-engine-dashboard_4.0_build-artifacts-
@@ -126,7 +126,7 @@
           project: mom_4.0_create-rpms-fc24-x86_64_merged
 
       - copy-create-job-artifact:
-          project: unboundid-ldapsdk_master_create-rpms-el7-x86_64_merged
+          project: unboundid-ldapsdk_4.0_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
           project: ovirt-appliance_ovirt-4.0-snapshot_build-artifacts-el7-x86_64
 
@@ -164,11 +164,11 @@
           project: ovirt-node-ng_ovirt-4.0-snapshot_build-artifacts-fc22-x86_64
 
       - copy-create-job-artifact-engine_4.0-platforms:
-          project-prefix: ovirt-engine-nodejs_master_create-rpms-
+          project-prefix: ovirt-engine-nodejs_4.0_create-rpms-
           project-suffix: _merged
 
       - copy-create-job-artifact-engine_4.0-platforms:
-          project-prefix: ovirt-engine-nodejs-modules_master_create-rpms-
+          project-prefix: ovirt-engine-nodejs-modules_4.0_create-rpms-
           project-suffix: _merged
 
       - copy-create-job-artifact-engine_4.0-platforms:
