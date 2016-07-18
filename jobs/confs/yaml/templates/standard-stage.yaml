@@ -271,3 +271,13 @@
           fail-on-non-merge: true
           delete-on-merge: true
       - github-notifier
+
+- job-template:
+    <<: *standard-template
+    name: '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
+      - file:
+          name: TARBALL_FILE
+          description: 'Tarball with the sources to build'

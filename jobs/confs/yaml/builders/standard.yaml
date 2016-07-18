@@ -18,3 +18,10 @@
       - shell: !include-raw: shell-scripts/global_setup.sh
       - shell: !include-raw: shell-scripts/mock_setup.sh
       - shell: !include-raw: shell-scripts/standard_check_patch.sh
+
+- builder:
+    name: build-artifacts-manual_builder
+    builders:
+      - shell: !include-raw: shell-scripts/global_setup.sh
+      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw: shell-scripts/standard_build_artifacts_manual.sh

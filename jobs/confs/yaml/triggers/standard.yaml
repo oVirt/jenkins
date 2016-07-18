@@ -68,3 +68,8 @@
     name: dummy-trigger
     triggers:
       - timed: ''
+
+- trigger:
+    name: build-artifacts-manual_trigger_manual
+    triggers:
+      - timed: ''
