@@ -8,6 +8,8 @@
           branch: ovirt-engine-4.0
       - 3.6:
           branch: ovirt-engine-3.6
+      - 3.6.8:
+          branch: ovirt-engine-3.6.8
     stage: build-artifacts
     node-filter: physical
     distro:
@@ -25,6 +27,8 @@
       - version: 4.0
         distro: fc24
       - version: 3.6
+        distro: fc24
+      - version: 3.6.8
         distro: fc24
     trigger: 'timed'
     trigger-times: 'H H/6 * * *'
@@ -45,6 +49,8 @@
           branch: ovirt-engine-4.0.1
       - 3.6:
           branch: ovirt-engine-3.6
+      - 3.6.8:
+          branch: ovirt-engine-3.6.8
     stage:
       - check-patch
     distro:
@@ -58,6 +64,8 @@
       - version: 4.0.1
         distro: el6
       - version: 3.6
+        distro: el7
+      - version: 3.6.8
         distro: el7
     trigger: 'on-change'
     arch: x86_64
@@ -77,6 +85,8 @@
           branch: ovirt-engine-4.0.1
       - 3.6:
           branch: ovirt-engine-3.6
+      - 3.6.8:
+          branch: ovirt-engine-3.6.8
     stage:
       - check-merged
     distro:
@@ -100,6 +110,10 @@
       - version: 3.6
         distro: fc24
       - version: 3.6
+        distro: el7
+      - version: 3.6.8
+        distro: fc24
+      - version: 3.6.8
         distro: el7
     trigger: 'on-change'
     arch: x86_64
