@@ -12,7 +12,7 @@
           clean:
             after: true
       - jenkins:
-          git-server: ''
+          git-server: 'gerrit.ovirt.org'
           branch: 'master'
     node: el7
     jdk: 'java-1.8.0-openjdk'
