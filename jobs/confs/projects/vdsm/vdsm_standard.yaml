@@ -32,7 +32,6 @@
         distro: fc24
       - version: 3.6
         distro: fc24
-
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
@@ -49,8 +48,16 @@
           branch: ovirt-4.0
     stage: check-patch
     distro:
-      - fc24
       - el7
+      - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
+      - version: 3.6
+        distro: fc24
 
 - project:
     <<: *vdsm_standard_common
@@ -59,8 +66,19 @@
     version:
       - master:
           branch: master
+      - 3.6:
+          branch: ovirt-3.6
       - 4.0:
           branch: ovirt-4.0
     stage: check-merged
     distro:
+      - el7
+      - fc23
       - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
+      - version: 3.6
+        distro: fc24
