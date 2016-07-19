@@ -6,6 +6,7 @@
     project: ovirt-engine
     trigger:
       - merged
+      - created
     version: master
     branch: 'master'
     test-version:
