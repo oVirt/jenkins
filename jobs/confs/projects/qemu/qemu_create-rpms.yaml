@@ -1,6 +1,7 @@
 - project:
     name: qemu_create-rpms
     project: releng-tools
+    node-filter: 'el7 || fc23 || fc24'
     subproject:
       - qemu
     trigger:
@@ -21,7 +22,38 @@
       - el7:
           extra-repos: |
               glusterfs-centos,http://mirror.centos.org/centos/7/storage/$arch/gluster-3.7/
-    arch: x86_64
+    arch:
+      - x86_64
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+          extra-build-packages: 'wget'
+
+- project:
+    name: qemu_create-rpms_ppc64le
+    project: releng-tools
+    node-filter: 'ppc64le'
+    subproject:
+      - qemu
+    trigger:
+      - created
+      - merged
+    version:
+      - master:
+          branch: master
+          repoversion: master
+      - 4.0:
+          branch: master
+          repoversion: 4.0
+      - 3.6:
+          branch: master
+          repoversion: 3.6
+    mock-build-type: all
+    distro:
+      - el7:
+          extra-repos: |
+              glusterfs-centos,http://cbs.centos.org/repos/storage7-gluster-37-testing/$arch/os/
+    arch:
+      - ppc64le
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
           extra-build-packages: 'wget'
