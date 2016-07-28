@@ -3,24 +3,31 @@
     vdsm_standard--key: &vdsm_standard_common
       project:
         - vdsm
-      arch: x86_64
       trigger: 'on-change'
+      version:
+        - master:
+            branch: master
+        - 4.0:
+            branch: ovirt-4.0
+        - 3.6:
+            branch: ovirt-3.6
       jobs:
         - '{project}_{version}_{stage}-{distro}-{arch}'
 
-
-
 - project:
     <<: *vdsm_standard_common
-    name: vdsm_build-artifacts
+    name: vdsm_build-artifacts_x86_64
+    stage: build-artifacts
     version:
       - master:
           branch: master
-      - 3.6:
-          branch: ovirt-3.6
+          repoversion: master
       - 4.0:
           branch: ovirt-4.0
-    stage: build-artifacts
+          repoversion: 4.0
+      - 3.6:
+          branch: ovirt-3.6
+          repoversion: 3.6
     distro:
       - el7
       - fc23
@@ -32,6 +39,31 @@
         distro: fc24
       - version: 3.6
         distro: fc24
+    arch:
+      - x86_64:
+          node-filter: fc22 || fc23 || fc24
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+
+- project:
+    <<: *vdsm_standard_common
+    name: vdsm_build-artifacts_ppc64le
+    stage: build-artifacts
+    version:
+      - master:
+          branch: master
+          repoversion: master
+      - 4.0:
+          branch: ovirt-4.0
+          repoversion: 4.0
+      - 3.6:
+          branch: ovirt-3.6
+          repoversion: 3.6
+    distro:
+      - el7
+    arch:
+      - ppc64le:
+          node-filter: ppc64le
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
@@ -39,13 +71,7 @@
     <<: *vdsm_standard_common
     name: vdsm_check-patch
     node-filter: fc22 || fc23 || fc24
-    version:
-      - master:
-          branch: master
-      - 3.6:
-          branch: ovirt-3.6
-      - 4.0:
-          branch: ovirt-4.0
+    arch: x86_64
     stage: check-patch
     distro:
       - el7
@@ -54,6 +80,8 @@
     exclude:
       - version: master
         distro: fc23
+      - version: master
+        distro: el7
       - version: 4.0
         distro: fc24
       - version: 3.6
@@ -63,13 +91,7 @@
     <<: *vdsm_standard_common
     name: vdsm_check-merged
     node-filter: fc22 || fc23 || fc24
-    version:
-      - master:
-          branch: master
-      - 3.6:
-          branch: ovirt-3.6
-      - 4.0:
-          branch: ovirt-4.0
+    arch: x86_64
     stage: check-merged
     distro:
       - fc23
@@ -77,7 +99,10 @@
     exclude:
       - version: master
         distro: fc23
+      - version: master
+        distro: el7
       - version: 4.0
         distro: fc24
       - version: 3.6
         distro: fc24
+
