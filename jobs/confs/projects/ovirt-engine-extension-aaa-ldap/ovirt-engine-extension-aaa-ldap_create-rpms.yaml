@@ -41,6 +41,8 @@
         distro: fc24
       - version: 3.6
         distro: fc24
+      - version: 3.6
+        distro: fc23
     arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
