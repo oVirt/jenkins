@@ -26,7 +26,7 @@
             always: true
             send-to:
               - recipients
-            subject: 'RHEVM CI Jenkins daily report - $BUILD_ID'
+            subject: 'oVirt infra daily report - unstable production jobs - $BUILD_ID'
             body: |
               Good morning!
 
