@@ -13,12 +13,13 @@ failed=false
 mock_dir="$WORKSPACE/mock"
 # stop any processes running inside the chroot
 chroots=("$WORKSPACE"/mock/*)
+arch=$(uname -i)
 for chroot in "${{chroots[@]}}"; do
     echo "Cleaning up chroot $chroot"
     ### Generate the mock configuration
     pushd "$WORKSPACE"/jenkins/mock_configs
     mock_conf="${{chroot##*/}}"
-    base_conf="${{mock_conf%%x86_64*}}x86_64"
+    base_conf="${{mock_conf%%{arch}*}}{arch}"
     echo "#### Generating mock configuration"
     ./mock_genconfig \
         --name="$mock_conf" \
