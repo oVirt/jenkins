@@ -72,7 +72,6 @@
           branch: ovirt-4.0
     stage: check-merged
     distro:
-      - el7
       - fc23
       - fc24
     exclude:
