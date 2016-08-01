@@ -12,7 +12,7 @@ MAVEN_OPTS+="-Dgwt.compiler.localWorkers=1 "
 MAVEN_OPTS+="-Dgwt.logLevel=TRACE"
 export MAVEN_OPTS
 
-wget -N https://scan.coverity.com/download/linux-64 \
+wget -N https://scan.coverity.com/download/linux64 \
     --post-data "token=YqBYeyDp2jPuC_uVz0Hdog&project=ovirt-engine" \
     -O coverity_tool.tgz
 rm -rf "$WORKSPACE"/"cov-analysis-linux64-*"
