@@ -12,6 +12,9 @@
         - fc24
         - fc23
         - el7
+    exclude:
+      - version: master
+        distro: fc23
     trigger: 'on-change'
     arch:
         - x86_64
