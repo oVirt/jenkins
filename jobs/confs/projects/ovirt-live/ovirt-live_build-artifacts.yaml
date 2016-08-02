@@ -13,6 +13,12 @@
     trigger: 'on-change'
     distro:
         - el7
+        - fc24
+    exclude:
+      - version: 4.0
+        distro: fc24
+      - version: 3.6
+        distro: fc24
     arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
@@ -33,6 +39,12 @@
     trigger: 'on-change'
     distro:
         - el7
+        - fc24
+    exclude:
+      - version: 4.0
+        distro: fc24
+      - version: 3.6
+        distro: fc24
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
