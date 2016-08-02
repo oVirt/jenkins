@@ -139,7 +139,7 @@
       - copy-create-job-artifact:
           project: pywin32-py2.7_master_create-rpms-fc23-x86_64_merged
       - copy-create-job-artifact:
-          project: python-windows_master_create-rpms-fc23-x86_64_merged
+          project: python-windows_master_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
           project: vcredist-x86_master_create-rpms-fc23-x86_64_merged
       - copy-create-job-artifact:
