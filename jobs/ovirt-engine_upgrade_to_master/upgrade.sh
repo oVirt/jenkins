@@ -118,11 +118,11 @@ init_postgres() {
     CURRENT_STEP="SETUP::INIT_POSTGRES"
     if rpm -q postgresql-server; then
         service postgresql stop
-        yum remove -y postgresql-server
+        yum remove -y postgresql-server postgresql-contrib
     fi
     ## rm -rf does not complain if the file does not exist
     rm -rf /var/lib/pgsql/data
-    yum -y install postgresql-server
+    yum -y install postgresql-server postgresql-contrib
     service postgresql initdb || res=$(($res + $?))
     ## ugly fig for the tests to work
     cat >/var/lib/pgsql/data/pg_hba.conf <<EOF
