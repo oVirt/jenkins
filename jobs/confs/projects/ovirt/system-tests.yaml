@@ -12,9 +12,12 @@
     <<: *system-tests-common
     name: ovirt-system-tests
     version:
-      - 3.6
-      - 4.0
-      - master
+      - 3.6:
+          chroot_distro: fc23
+      - 4.0:
+          chroot_distro: fc23
+      - master:
+          chroot_distro: fc24
 
 # type can be both image and image_ng
 # they differ in the testing used
@@ -22,7 +25,8 @@
     <<: *system-tests-common
     name: ovirt-system-image-tests
     version:
-      - 3.6
+      - 3.6:
+          chroot_distro: fc23
     email-to: tlitovsk@redhat.com, fabiand@redhat.com
     jobs:
       - '{project}_{version}_image-ng-system-tests'
@@ -32,8 +36,10 @@
     <<: *system-tests-common
     name: ovirt-system-he-tests
     version:
-      - 3.6
-      - 4.0
+      - 3.6:
+          chroot_distro: fc23
+      - 4.0:
+          chroot_distro: fc23
     email-to: sbonazzo@redhat.com, infra@ovirt.org, lveyde@redhat.com
     jobs:
       - '{project}_{version}_he-system-tests'

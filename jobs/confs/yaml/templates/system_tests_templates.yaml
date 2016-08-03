@@ -18,6 +18,7 @@
       - 'system-tests':
           version: '{version}'
           suite_type : basic
+          chroot_distro: '{chroot_distro}'
     publishers:
       - post-tasks:
           - matches:
@@ -48,6 +49,7 @@
       - 'system-tests':
           version: '{version}'
           suite_type : he_basic
+          chroot_distro: '{chroot_distro}'
 
 - job-template:
     <<: *basic_system_tests
@@ -75,3 +77,4 @@
       - 'system-tests':
           version: '{version}'
           suite_type : image_ng
+          chroot_distro: '{chroot_distro}'
