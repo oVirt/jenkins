@@ -1,7 +1,21 @@
-- project: &base-params
-    name: ioprocess
-    project:
-      - ioprocess
+- ioprocess_standard_common:
+    name: 'ioprocess_standard_common'
+    ioprocess_standard--key: &ioprocess_standard_common
+      project:
+        - ioprocess
+      trigger: 'on-change'
+      version:
+        - master:
+            branch: master
+        - 0.16:
+            branch: ioprocess-0.16
+      jobs:
+        - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *ioprocess_standard_common
+    name: ioprocess_build-artifacts_x86_64
+    stage: build-artifacts
     version:
       - master:
           branch: master
@@ -10,32 +24,108 @@
           branch: ioprocess-0.16
           repoversion: 4.0
     distro:
+      - el7
       - fc23
       - fc24
-      - el7
     exclude:
       - version: master
         distro: fc23
       - version: 0.16
         distro: fc24
     arch:
-      - x86_64
-    trigger: 'on-change'
-    stage:
-      - check-patch
-      - check-merged
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - x86_64:
+          node-filter: fc22 || fc23 || fc24
 
 - project:
-    <<: *base-params
-    name: ioprocess_build-artifacts
+    <<: *ioprocess_standard_common
+    name: ioprocess_build-artifacts_ppc64le
     stage: build-artifacts
-    jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+    version:
+      - master:
+          branch: master
+          repoversion: master
+      - 0.16:
+          branch: ioprocess-0.16
+          repoversion: 4.0
+    distro:
+      - el7
+      - fc24
+    exclude:
+      - version: 0.16
+        distro: el7
+      - version: 0.16
+        distro: fc24
+    arch:
+      - ppc64le:
+          node-filter: ppc64le
+
+- project:
+    <<: *ioprocess_standard_common
+    name: ioprocess_check-patch_x86_64
+    node-filter: fc22 || fc23 || fc24
+    arch: x86_64
+    stage: check-patch
+    distro:
+      - el7
+      - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 0.16
+        distro: fc24
+
+- project:
+    <<: *ioprocess_standard_common
+    name: ioprocess_check-patch_ppc64le
+    arch:
+      - ppc64le:
+          node-filter: ppc64le
+    stage: check-patch
+    distro:
+      - el7
+      - fc24
+    exclude:
+      - version: 0.16
+        distro: el7
+      - version: 0.16
+        distro: fc24
+
+- project:
+    <<: *ioprocess_standard_common
+    name: ioprocess_check-merged_x86_64
+    node-filter: fc22 || fc23 || fc24
+    arch: x86_64
+    stage: check-merged
+    distro:
+      - el7
+      - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 0.16
+        distro: fc24
+
+- project:
+    <<: *ioprocess_standard_common
+    name: ioprocess_check-merged_ppc64le
+    arch:
+      - ppc64le:
+          node-filter: ppc64le
+    stage: check-merged
+    distro:
+      - el7
+      - fc24
+    exclude:
+      - version: 0.16
+        distro: el7
+      - version: 0.16
+        distro: fc24
 
 - project:
     name: ioprocess_0.15
+    node-filter: 'el7 || fc23 || fc24'
     project:
       - ioprocess
     version:
