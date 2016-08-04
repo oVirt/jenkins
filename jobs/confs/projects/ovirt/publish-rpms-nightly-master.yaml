@@ -117,6 +117,9 @@
       - copy-create-job-artifact:
           project: qemu_master_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
+          project: qemu_master_create-rpms-el7-ppc64le_merged
+
+      - copy-create-job-artifact:
           project: unboundid-ldapsdk_master_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
           project: ovirt-appliance_master_build-artifacts-el7-x86_64

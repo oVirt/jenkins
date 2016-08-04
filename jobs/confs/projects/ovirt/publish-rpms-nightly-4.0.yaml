@@ -121,6 +121,9 @@
       - copy-create-job-artifact:
           project: qemu_4.0_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
+          project: qemu_4.0_create-rpms-el7-ppc64le_merged
+
+      - copy-create-job-artifact:
           project: mom_4.0_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
           project: mom_4.0_create-rpms-fc24-x86_64_merged
