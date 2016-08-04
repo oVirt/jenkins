@@ -1,9 +1,13 @@
 - project:
     name: "test_ovirt_experimental_repo"
     version:
-        - 3.6
-        - 4.0
-        - master
+        - 3.6:
+            chroot_distro: fc23
+        - 4.0:
+            chroot_distro: fc23
+        - master:
+            chroot_distro: fc24
+
     reponame: ovirt
     repotype: experimental
     jobs:
@@ -11,6 +15,7 @@
 
 - job-template:
     name: 'test-repo_{reponame}_{repotype}_{version}'
+    chroot_distro: '{chroot_distro}'
     project-type: workflow
     concurrent: false
     properties: []

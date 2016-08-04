@@ -2,6 +2,7 @@
 def reponame = '{reponame}'
 def repotype = '{repotype}'
 def version = '{version}'
+def chroot_distro = '{chroot_distro}'
 
 // This might change to something more reasonable once we upgrade the
 // credentials plugin to allow short names, something like
@@ -13,7 +14,7 @@ def credentials_ack_repo = '7abaf08a-57a9-4975-b1ee-0f75ab2f5f57'
 def project = 'ovirt-system-tests'
 def git_project = "git://gerrit.ovirt.org/${{project}}"
 def git_jenkins = 'git://gerrit.ovirt.org/jenkins'
-def distros = ['fc23']
+def distros = ["${{chroot_distro}}"]
 def scripts = ["basic_suite_${{version}}.sh"]
 def deploy_server_url = "deploy-${{reponame}}-${{repotype}}@resources.ovirt.org"
 def test_repo_url = "http://plain.resources.ovirt.org/repos/${{reponame}}/${{repotype}}/${{version}}/latest.under_testing"
