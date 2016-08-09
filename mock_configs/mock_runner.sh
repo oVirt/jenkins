@@ -3,9 +3,11 @@
 MOCKS=(
     el6:epel-6-x86_64
     el7:epel-7-x86_64
+    el7:epel-7-ppc64le
     fc22:fedora-22-x86_64
     fc23:fedora-23-x86_64
     fc24:fedora-24-x86_64
+    fc24:fedora-24-ppc64le
 )
 SCRIPTS=()
 RUN_SHELL="false"
