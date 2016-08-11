@@ -35,6 +35,8 @@
     arch:
       - x86_64:
           node-filter: fc22 || fc23 || fc24
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     <<: *ioprocess_standard_common
@@ -58,6 +60,8 @@
     arch:
       - ppc64le:
           node-filter: ppc64le
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     <<: *ioprocess_standard_common
