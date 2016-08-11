@@ -21,7 +21,7 @@
     distro:
       - el7:
           extra-repos: |
-              glusterfs-centos,http://mirror.centos.org/centos/7/storage/$arch/gluster-3.7/
+              glusterfs-centos,http://mirror.centos.org/centos/7/storage/$arch/gluster-3.8/
     arch:
       - x86_64
     jobs:
@@ -51,7 +51,7 @@
     distro:
       - el7:
           extra-repos: |
-              glusterfs-centos,http://cbs.centos.org/repos/storage7-gluster-37-testing/$arch/os/
+              glusterfs-centos,http://cbs.centos.org/repos/storage7-gluster-38-testing/$arch/os/
     arch:
       - ppc64le
     jobs:
