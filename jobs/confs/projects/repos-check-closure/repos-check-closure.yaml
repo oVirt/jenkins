@@ -1,0 +1,12 @@
+- project:
+    name: repos_check_closure
+    version:
+      - master:
+          distros: 'fc24'
+      - 4.0:
+          distros: 'el7,fc23'
+      - 3.6:
+          distros: 'el6,el7'
+    trigger: merged
+    jobs:
+      - 'repos_{version}_check-closure_{trigger}'

@@ -1,0 +1,44 @@
+- job-template:
+    name: 'repos_{version}_check-closure_{trigger}'
+    scm:
+      - jenkins:
+          branch: 'master'
+          git-server: '{gerrit-server}'
+    triggers:
+        - timed: "H 6 * * *"
+    parameters:
+      - string:
+          name: DISTRIBUTIONS
+          default: '{distros}'
+          description: comma-separated list of distributions to check, e.g. 'fc23, el7'
+      - string:
+          name: REPO_NAME
+          default: 'ovirt-{version}-snapshot'
+          description: 'Repos under http://resources.ovirt.org/pub'
+      - string:
+          name: STATIC_REPO
+          default: 'ovirt-{version}-snapshot-static'
+          description: 'Repos under http://resources.ovirt.org/pub'
+      - bool:
+          name: USE_STATIC
+          default: true
+      - bool:
+          name: CLEAN_METADATA
+          default: false
+      - string:
+          name: PATCHES
+          description: comma-separated list of gerrit patches to apply
+    builders:
+      - shell: !include-raw-escape: shell-scripts/repos-check-closure_apply-cherry-pick.sh
+      - shell: !include-raw-escape: shell-scripts/repos-check-closure_run-check.sh
+    publishers:
+      - groovy-postbuild:
+          script: !include-raw-escape: groovy-scripts/repos-check-closure_post-build.groovy
+          on-failure: 'nothing'
+      - exported-artifacts
+      - email-ext:
+          recipients: sbonazzo@redhat.com,infra@redhat.com
+          send-to:
+            - developers
+            - requester
+            - culprits
