@@ -26,6 +26,8 @@ GLUSTER_MIRROR="http://download.gluster.org"
 JPACKAGE_MIRROR="http://vesta.informatik.rwth-aachen.de/ftp/pub/comp/Linux/"
 COPR="http://copr-be.cloud.fedoraproject.org/results"
 STATIC_RP=""
+EXPERIMENTAL_BASE="${BASE_URL}/repos/ovirt/experimental"
+EXPERIMENTAL_RP=""
 
 die() {
     local msg="${1}"
@@ -41,6 +43,7 @@ usage() {
     --repo                     - Repository you want to test
     --distribution-version     - Distribution version (6,19)
     --static-repo              - Use static repo for nightly (needed for a new layout only)
+    --experimental-repo        - Experimental repo to test
 
     Example:
         new layout:
@@ -73,6 +76,9 @@ get_opts() {
                 ;;
             --static-repo=*)
                 STATIC_REPO="${val}"
+                ;;
+            --experimental-repo=*)
+                EXPERIMENTAL_REPO="${val}"
                 ;;
             *)
                 usage
@@ -112,6 +118,12 @@ check_layout() {
         distver="$DISTRIBUTION$DISTRIBUTION_VERSION"
         STATIC_RP="--repofrompath=check-custom-static-$distver,${static_url} -l check-custom-static-$distver"
     fi
+    if [[ -n "${EXPERIMENTAL_REPO}" ]]; then
+        experimental_url="${EXPERIMENTAL_BASE}/${EXPERIMENTAL_REPO}/latest.tested/rpm/${repo}"
+        distver="$DISTRIBUTION$DISTRIBUTION_VERSION"
+        EXPERIMENTAL_RP="--repofrompath=check-experimental-$distver,${experimental_url} -l check-experimental-$distver  "
+    fi
+
 }
 
 check_repo_closure() {
@@ -121,7 +133,7 @@ check_repo_closure() {
         if [[ "${DISTRIBUTION_VERSION}" == "7" ]]; then
             repoclosure \
                 --tempcache \
-                --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
+                --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} ${EXPERIMENTAL_RP} \
                 --repofrompath=check-base-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/x86_64/ \
                 --repofrompath=check-updates-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
                 --repofrompath=check-extras-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
@@ -140,7 +152,7 @@ check_repo_closure() {
         else
             repoclosure \
                 --tempcache \
-                --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
+                --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} ${EXPERIMENTAL_RP} \
                 --repofrompath=check-base-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/os/x86_64/ \
                 --repofrompath=check-updates-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/updates/x86_64/ \
                 --repofrompath=check-extras-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/extras/x86_64/ \
@@ -163,7 +175,7 @@ check_repo_closure() {
         if [[ "${DISTRIBUTION_VERSION}" == "22" ]]; then
 	        repoclosure \
 	            --tempcache \
-	            --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
+	            --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} ${EXPERIMENTAL_RP} \
 	            --repofrompath=check-fedora-"${distid}","${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
 	            --repofrompath=check-updates-"${distid}","${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
 	            --repofrompath=check-updates-testing-"${distid}","${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
@@ -180,7 +192,7 @@ check_repo_closure() {
         else
 	        repoclosure \
  	           --tempcache \
-        	    --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} \
+              --repofrompath=check-custom-"${distid}","${CUSTOM_URL}" ${STATIC_RP} ${EXPERIMENTAL_RP} \
 	            --repofrompath=check-fedora-"${distid}","${FEDORA_MIRROR}"/fedora/releases/"${DISTRIBUTION_VERSION}"/Everything/x86_64/os/ \
 	            --repofrompath=check-updates-"${distid}","${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
 	            --repofrompath=check-updates-testing-"${distid}","${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \

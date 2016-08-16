@@ -21,13 +21,15 @@ for DIST in ${DISTRIBUTIONS//,/ }; do
         DIST_NAME=${BASH_REMATCH[1]}
         VER=${BASH_REMATCH[2]}
         "${USE_STATIC}" && STATIC_SETTINGS="--static-repo=${STATIC_REPO}"
+        "${USE_EXPERIMENTAL}" &&
+            EXP_SETTINGS="--experimental-repo=${EXPERIMENTAL_REPO}"
         [[ "${CLEAN_METADATA}" == "true" ]] && rm -rf "${WORKSPACE}"/check-*
         "${WORKSPACE}"/jenkins/jobs/packaging/repo_closure_check.sh \
                  --distribution="${DIST_NAME}" \
                  --layout=new \
                  --distribution-version="${VER}" \
                  --repo="${REPO_NAME}" \
-                 ${STATIC_SETTINGS} |& tee "${LOGFILE}"
+                 ${STATIC_SETTINGS} ${EXP_SETTINGS} |& tee "${LOGFILE}"
     else
       print_err "Distribution name '${DIST}' not supported" | tee "${LOGFILE}"
     fi
