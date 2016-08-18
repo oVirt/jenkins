@@ -2,7 +2,7 @@
     name: repos_check_closure
     version:
       - master:
-          distros: 'fc24'
+          distros: 'el7,fc24'
       - 4.0:
           distros: 'el7,fc23'
       - 3.6:
