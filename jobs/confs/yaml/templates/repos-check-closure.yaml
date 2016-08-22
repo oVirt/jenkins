@@ -35,6 +35,7 @@
       - string:
           name: PATCHES
           description: comma-separated list of gerrit patches to apply
+    node: '{node-label}'
     builders:
       - shell: !include-raw-escape: shell-scripts/repos-check-closure_apply-cherry-pick.sh
       - shell: !include-raw-escape: shell-scripts/repos-check-closure_run-check.sh

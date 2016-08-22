@@ -3,6 +3,7 @@
     version:
       - master:
           distros: 'el7,fc24'
+          node-label: 'fc24'
       - 4.0:
           distros: 'el7,fc23'
       - 3.6:
