@@ -168,7 +168,7 @@
       - copy-create-job-artifact:
           project: imgbased_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
-          project: ovirt-node-ng_master_build-artifacts-fc22-x86_64
+          project: ovirt-node-ng_master_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-nodejs_master_create-rpms-
