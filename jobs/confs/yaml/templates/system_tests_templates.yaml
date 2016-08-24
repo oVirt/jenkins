@@ -54,7 +54,6 @@
 - job-template:
     <<: *basic_system_tests
     name: '{project}_{version}_image-ng-system-tests'
-    node: ovirt-srv26.phx.ovirt.org
     triggers:
       - timed: "@midnight"
     builders:
@@ -67,7 +66,7 @@
           optional: true
           target: ovirt-system-tests/images
       - copyartifact:
-          project: 'ovirt-node-ng_ovirt-{version}_build-artifacts-fc22-x86_64'
+          project: 'ovirt-node-ng_ovirt-{version}_build-artifacts-el7-x86_64'
           which-build: upstream-build
           fallback-to-last-successful: true
           optional: true
