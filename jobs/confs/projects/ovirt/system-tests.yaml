@@ -27,6 +27,8 @@
     version:
       - 3.6:
           chroot_distro: fc23
+      - 4.0:
+          chroot_distro: fc23
     email-to: tlitovsk@redhat.com, fabiand@redhat.com
     jobs:
       - '{project}_{version}_image-ng-system-tests'
