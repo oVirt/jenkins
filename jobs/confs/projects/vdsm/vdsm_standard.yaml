@@ -53,12 +53,6 @@
       - master:
           branch: master
           repoversion: master
-      - 4.0:
-          branch: ovirt-4.0
-          repoversion: 4.0
-      - 3.6:
-          branch: ovirt-3.6
-          repoversion: 3.6
     distro:
       - el7
     arch:
