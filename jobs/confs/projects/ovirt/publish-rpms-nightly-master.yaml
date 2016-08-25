@@ -133,9 +133,9 @@
           project: ovirt-engine_master_build-artifacts-fc24-x86_64
 
       - copy-create-job-artifact:
-          project: mom_master_create-rpms-el7-x86_64_merged
+          project: mom_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
-          project: mom_master_create-rpms-fc24-x86_64_merged
+          project: mom_master_build-artifacts-fc24-x86_64
 
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-live_master_build-artifacts-

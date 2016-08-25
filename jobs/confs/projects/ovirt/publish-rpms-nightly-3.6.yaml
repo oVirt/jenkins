@@ -86,7 +86,7 @@
           project: ovirt-engine_3.6_build-artifacts-el6-x86_64
 
       - copy-create-job-artifact:
-          project: mom_3.6_create-rpms-el7-x86_64_merged
+          project: mom_3.6_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-engine-sdk-java_3.6_create-rpms-
@@ -173,4 +173,3 @@
           clean-if:
             - success: true
             - failure: false
-

@@ -124,9 +124,9 @@
           project: qemu_4.0_create-rpms-el7-ppc64le_merged
 
       - copy-create-job-artifact:
-          project: mom_4.0_create-rpms-el7-x86_64_merged
+          project: mom_4.0_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
-          project: mom_4.0_create-rpms-fc24-x86_64_merged
+          project: mom_4.0_build-artifacts-fc23-x86_64
 
       - copy-create-job-artifact:
           project: unboundid-ldapsdk_4.0_create-rpms-el7-x86_64_merged
