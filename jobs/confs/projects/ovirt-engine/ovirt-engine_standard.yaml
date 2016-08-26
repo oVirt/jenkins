@@ -41,8 +41,6 @@
           branch: master
       - 4.0:
           branch: ovirt-engine-4.0
-      - 4.0.2:
-          branch: ovirt-engine-4.0.2
       - 4.0.3:
           branch: ovirt-engine-4.0.3
       - 3.6:
@@ -58,8 +56,6 @@
       - version: master
         distro: el6
       - version: 4.0
-        distro: el6
-      - version: 4.0.2
         distro: el6
       - version: 4.0.3
         distro: el6
@@ -81,8 +77,6 @@
           branch: master
       - 4.0:
           branch: ovirt-engine-4.0
-      - 4.0.2:
-          branch: ovirt-engine-4.0.2
       - 4.0.3:
           branch: ovirt-engine-4.0.3
       - 3.6:
@@ -104,10 +98,6 @@
       - version: 4.0
         distro: el6
       - version: 4.0
-        distro: fc24
-      - version: 4.0.2
-        distro: el6
-      - version: 4.0.2
         distro: fc24
       - version: 4.0.3
         distro: el6
