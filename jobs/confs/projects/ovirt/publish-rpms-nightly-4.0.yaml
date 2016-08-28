@@ -112,8 +112,8 @@
           project-suffix: ""
 
       - copy-create-job-artifact-hosted-engine-4.0-platforms:
-          project-prefix: ovirt-hosted-engine-ha_4.0_create-rpms-
-          project-suffix: _merged
+          project-prefix: ovirt-hosted-engine-ha_4.0_build-artifacts-
+          project-suffix: ""
       - copy-create-job-artifact-hosted-engine-4.0-platforms:
           project-prefix: ovirt-hosted-engine-setup_4.0_build-artifacts-
           project-suffix: ""

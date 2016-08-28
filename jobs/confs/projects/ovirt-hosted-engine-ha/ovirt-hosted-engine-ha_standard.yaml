@@ -1,0 +1,33 @@
+- project: &base-params
+    name: ovirt-hosted-engine-ha_standard
+    project:
+      - ovirt-hosted-engine-ha
+    version:
+      - master:
+          branch: master
+      - 4.0:
+          branch: v2.0.z
+    stage:
+      - check-patch
+      - check-merged
+    distro:
+      - el7
+      - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+
+- project:
+    <<: *base-params
+    name: ovirt-hosted-engine-ha_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
