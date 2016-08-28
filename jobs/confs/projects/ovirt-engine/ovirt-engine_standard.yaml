@@ -90,8 +90,6 @@
           branch: ovirt-engine-4.0.3
       - 3.6:
           branch: ovirt-engine-3.6
-      - 3.6.9:
-          branch: ovirt-engine-3.6.9
     stage:
       - check-merged
     distro:
@@ -115,10 +113,6 @@
       - version: 3.6
         distro: fc24
       - version: 3.6
-        distro: el7
-      - version: 3.6.9
-        distro: fc24
-      - version: 3.6.9
         distro: el7
     trigger: 'on-change'
     arch: x86_64
