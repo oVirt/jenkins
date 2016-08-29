@@ -134,7 +134,7 @@
       - ioprocess
     version:
       - 0.15:
-          branch: ioprocess-0.15.1
+          branch: ioprocess-0.15
           repoversion: 3.6
     distro:
       - el6
