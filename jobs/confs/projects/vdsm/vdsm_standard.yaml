@@ -41,7 +41,7 @@
         distro: fc24
     arch:
       - x86_64:
-          node-filter: fc22 || fc23 || fc24
+          node-filter: fc23 || fc24
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
@@ -64,7 +64,7 @@
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-patch
-    node-filter: fc22 || fc23 || fc24
+    node-filter: fc23 || fc24
     arch: x86_64
     stage: check-patch
     distro:
@@ -82,19 +82,17 @@
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-merged
-    node-filter: fc22 || fc23 || fc24
+    node-filter: fc23 || fc24
     arch: x86_64
     stage: check-merged
     distro:
+      - el7
       - fc23
-      - fc24
     exclude:
       - version: master
         distro: fc23
-      - version: master
-        distro: el7
       - version: 4.0
-        distro: fc24
+        distro: el7
       - version: 3.6
-        distro: fc24
+        distro: el7
 
