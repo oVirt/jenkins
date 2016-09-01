@@ -1,10 +1,41 @@
 - project:
-    name: mom_create-rpms
+    name: mom_create-rpms-created
+    project:
+      - mom
+    trigger:
+      - created
+    version:
+      - master:
+          branch: master
+      - 4.0:
+          branch: master
+      - 3.6:
+          branch: master
+    mock-build-type: all
+    distro:
+      - fc23
+      - fc24
+      - el7
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 3.6
+        distro: fc24
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+          extra-build-packages: |
+            autoreconf
+            gettext-devel
+            automake
+            glib2-devel
+
+- project:
+    name: mom_create-rpms-merged
     project:
       - mom
     trigger:
       - merged
-      - created
     version:
       - master:
           branch: master
