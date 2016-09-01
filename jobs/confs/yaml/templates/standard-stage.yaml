@@ -72,7 +72,7 @@
     properties:
       - throttle: *standard-template-properties-throttle
       - build-discarder:
-          num-to-keep: 40
+          num-to-keep: 120
           artifact-num-to-keep: 2
 
 - job-template:
@@ -101,7 +101,7 @@
     dsl: !include-raw: groovy-scripts/standard-pipeline.groovy
     properties:
         - build-discarder:
-            num-to-keep: 40
+            num-to-keep: 120
             artifact-num-to-keep: 20
 
 - job-template: &deploy-job-template
@@ -113,7 +113,7 @@
           max-total: 1
           option: project
       - build-discarder:
-          num-to-keep: 40
+          num-to-keep: 120
           artifact-num-to-keep: 2
     parameters:
       - string:
@@ -175,7 +175,7 @@
       - github:
           url: 'https://github.com/{org}/{project}'
       - build-discarder:
-          num-to-keep: 40
+          num-to-keep: 120
           artifact-num-to-keep: 20
     scm:
       - 'github-pull':
