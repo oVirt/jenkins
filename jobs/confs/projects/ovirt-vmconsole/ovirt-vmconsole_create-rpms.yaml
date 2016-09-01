@@ -31,6 +31,10 @@
         distro: fc24
       - version: 3.6
         distro: fc24
+      - version: master
+        trigger: merged
+      - version: 4.0
+        trigger: merged
     arch: x86_64
     extra-build-packages: |
       automake

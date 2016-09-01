@@ -39,8 +39,8 @@
           project-prefix: otopi_4.0_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-all_4.0-platforms:
-          project-prefix: ovirt-vmconsole_4.0_create-rpms-
-          project-suffix: _merged
+          project-prefix: ovirt-vmconsole_4.0_build-artifacts-
+          project-suffix: ''
       - copy-create-job-artifact-all_4.0-platforms:
           project-prefix: ovirt-imageio_4.0_build-artifacts-
           project-suffix: ''
