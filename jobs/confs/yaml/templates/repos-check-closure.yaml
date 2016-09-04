@@ -45,7 +45,7 @@
           on-failure: 'nothing'
       - exported-artifacts
       - email-ext:
-          recipients: sbonazzo@redhat.com,infra@redhat.com
+          recipients: infra@ovirt.org
           send-to:
             - developers
             - requester
