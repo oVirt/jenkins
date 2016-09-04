@@ -81,8 +81,8 @@
     properties:
       - throttle: *standard-template-properties-throttle
       - build-discarder:
-          num-to-keep: 20
-          artifact-num-to-keep: 10
+          num-to-keep: 120
+          artifact-num-to-keep: 20
 
 - job-template:
     <<: *standard-template-deploy
