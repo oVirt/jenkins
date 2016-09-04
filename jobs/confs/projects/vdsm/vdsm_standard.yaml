@@ -74,8 +74,6 @@
     exclude:
       - version: master
         distro: fc23
-      - version: master
-        distro: el7
       - version: 4.0
         distro: fc24
       - version: 3.6
