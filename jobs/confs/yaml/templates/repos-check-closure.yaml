@@ -47,6 +47,7 @@
       - email-ext:
           recipients: infra@ovirt.org
           send-to:
+            - recipients
             - developers
             - requester
             - culprits
