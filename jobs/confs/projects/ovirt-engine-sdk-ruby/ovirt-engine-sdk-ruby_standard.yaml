@@ -1,26 +1,31 @@
 - project: &basic-params
     name: ovirt-engine-sdk-ruby_checks
-    project:
-      - ovirt-engine-sdk-ruby
+    project: ovirt-engine-sdk-ruby
+    stage: check-patch
+    trigger: 'on-change'
     version:
       - master:
           branch: master
       - 4.0:
           branch: sdk_4.0
-    stage:
-      - check-merged
-      - check-patch
-    trigger: 'on-change'
     distro:
       - el7
       - fc23
       - fc24
+    arch:
+      - x86_64:
+          node-filter: el7 || fc23 || fc24
+      - ppc64le:
+          node-filter: ppc64le
     exclude:
       - version: master
         distro: fc23
       - version: 4.0
         distro: fc24
-    arch: x86_64
+      - arch: ppc64le
+        distro: fc23
+      - arch: ppc64le
+        distro: fc24
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
