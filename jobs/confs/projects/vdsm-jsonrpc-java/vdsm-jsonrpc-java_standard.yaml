@@ -3,6 +3,8 @@
     version:
       - 3.6:
           branch: ovirt-3.6
+      - 4.0:
+          branch: ovirt-4.0
       - master:
           branch: master
     distro:
@@ -39,7 +41,7 @@
       - master:
           branch: master
       - 4.0:
-          branch: master
+          branch: ovirt-4.0
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
