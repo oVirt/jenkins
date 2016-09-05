@@ -8,6 +8,6 @@ if(manager.logContains(".*unresolved deps:.*")) {
     manager.addWarningBadge("Unresolved dependencies.")
     manager.buildUnstable()
 }
-if(manager.logContains(".*ERROR:.*") || manager.logContains(".*failure.*")) {
+if(manager.logContains(".*failure:.*")) {
     manager.buildFailure()
 }

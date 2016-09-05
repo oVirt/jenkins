@@ -1,13 +1,27 @@
-- project:
+- project: &base_params
     name: repos_check_closure
     version:
-      - master:
-          distros: 'el7'
-          node-label: 'fc24'
-      - 4.0:
-          distros: 'el7,fc23'
-      - 3.6:
-          distros: 'el6,el7'
+      - master
+      - 4.0
+      - 3.6
+    distro:
+      - el6
+      - el7
+      - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: el6
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: el6
+      - version: 4.0
+        distro: fc24
+      - version: 3.6
+        distro: fc23
+      - version: 3.6
+        distro: fc24
     trigger: merged
     jobs:
-      - 'repos_{version}_check-closure_{trigger}'
+      - 'repos_{version}_check-closure_{distro}_{trigger}'

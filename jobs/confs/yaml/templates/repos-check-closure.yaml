@@ -1,5 +1,5 @@
 - job-template:
-    name: 'repos_{version}_check-closure_{trigger}'
+    name: 'repos_{version}_check-closure_{distro}_{trigger}'
     scm:
       - jenkins:
           branch: 'master'
@@ -8,9 +8,9 @@
         - timed: "H 6 * * *"
     parameters:
       - string:
-          name: DISTRIBUTIONS
-          default: '{distros}'
-          description: comma-separated list of distributions to check, e.g. 'fc23, el7'
+          name: DISTRIBUTION
+          default: '{distro}'
+          description: the distribution to test
       - string:
           name: REPO_NAME
           default: 'ovirt-{version}-snapshot'
@@ -34,20 +34,21 @@
           default: false
       - string:
           name: PATCHES
-          description: comma-separated list of gerrit patches to apply
-    node: '{node-label}'
+          description: comma-separated list of jenkins repo gerrit patches to apply
     builders:
+      - shell: !include-raw: shell-scripts/global_setup.sh
+      - shell: !include-raw: shell-scripts/mock_setup.sh
       - shell: !include-raw-escape: shell-scripts/repos-check-closure_apply-cherry-pick.sh
-      - shell: !include-raw-escape: shell-scripts/repos-check-closure_run-check.sh
+      - shell: !include-raw: shell-scripts/repos-check-closure_run-check.sh
     publishers:
+      - mock-cleanup
+      - exported-artifacts
       - groovy-postbuild:
           script: !include-raw-escape: groovy-scripts/repos-check-closure_post-build.groovy
           on-failure: 'nothing'
-      - exported-artifacts
       - email-ext:
           recipients: infra@ovirt.org
           send-to:
             - recipients
-            - developers
             - requester
             - culprits
