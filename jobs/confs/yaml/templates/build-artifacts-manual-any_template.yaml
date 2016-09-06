@@ -20,3 +20,7 @@
               file-pattern: 'exported-artifacts/*.tar.gz'
     publishers:
       - exported-artifacts
+      - groovy-postbuild:
+          script: |
+            manager.addShortText(manager.build.buildVariables.get('TARGET_VERSION'))
+            manager.addShortText(manager.build.buildVariables.get('TARBALL_FILE'))
