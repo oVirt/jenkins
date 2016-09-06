@@ -14,7 +14,7 @@
       jobs:
         - '{project}_{version}_{stage}-{distro}-{arch}'
 
-- project:
+- project: &vdsm_build_artifacts_common_x86_64
     <<: *vdsm_standard_common
     name: vdsm_build-artifacts_x86_64
     stage: build-artifacts
@@ -44,6 +44,40 @@
           node-filter: fc23 || fc24
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
+
+- project:
+    <<: *vdsm_build_artifacts_common_x86_64
+    name: vdsm_build-artifacts-manual_x86_64
+    stage: build-artifacts-manual
+    version:
+      - master:
+          branch: master
+          repoversion: master
+      - 4.0:
+          branch: ovirt-4.0
+          repoversion: 4.0
+    distro:
+      - el7
+      - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
+    trigger: manual
+    jobs:
+      - '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
+
+- project:
+    <<: *vdsm_standard_common
+    name: vdsm_build-artifacts-manual-any
+    stage: build-artifacts-manual
+    version:
+      - '4.0'
+      - 'master'
+    jobs:
+      - '{project}_any_build-artifacts-manual'
 
 - project:
     <<: *vdsm_standard_common
@@ -95,4 +129,3 @@
         distro: el7
       - version: 3.6
         distro: el7
-
