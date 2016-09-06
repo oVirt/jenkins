@@ -33,3 +33,19 @@
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
+- project:
+    <<: *base-params
+    name: ovirt-log-collector_build-artifacts-manual
+    stage: build-artifacts-manual
+    trigger: 'manual'
+    jobs:
+      - '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: ovirt-log-collector_build-artifacts-manual-any
+    version:
+      - '4.0'
+      - 'master'
+    jobs:
+      - '{project}_any_build-artifacts-manual'
