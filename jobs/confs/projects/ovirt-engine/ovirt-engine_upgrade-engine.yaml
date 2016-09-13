@@ -12,6 +12,7 @@
     test-version:
       - 'master'
       - '4.0'
+      - '3.6'
     repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot/rpm/{distro}/,
         http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static/rpm/{distro}/'
     repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/{distro}/,
