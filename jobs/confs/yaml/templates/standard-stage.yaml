@@ -76,6 +76,13 @@
           artifact-num-to-keep: 2
 
 - job-template:
+    <<: *standard-template
+    name: 'jenkins_{version}_{stage}-{distro}-{arch}'
+    scm:
+      - '{project}-gerrit':
+          git-server: '{git-server}'
+
+- job-template:
     <<: *standard-template-deploy
     name: 'ovirt-engine_{version}_build-artifacts-{distro}-{arch}'
     properties:
