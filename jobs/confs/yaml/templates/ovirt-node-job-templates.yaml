@@ -28,7 +28,7 @@
           distro: '{distro}'
       - exported-artifacts
       - email:
-          recipients: tlitovsk@redhat.com
+          recipients: fabiand@redhat.com
           send-to-individuals: true
 
 - job-template:
