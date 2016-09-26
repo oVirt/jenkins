@@ -7,17 +7,7 @@ cat <<XX
 <head>
 <title>Colorized Diff</title>
 </head>
-<style>
-.diffdiv  { border: solid 1px black;           }
-.comment  { color: gray;                       }
-.diff     { color: #8A2BE2;                    }
-.minus3   { color: blue;                       }
-.plus3    { color: maroon;                     }
-.at2      { color: lime;                       }
-.plus     { color: green; background: #E7E7E7; }
-.minus    { color: red;   background: #D7D7D7; }
-.only     { color: purple;                     }
-</style>
+<LINK REL=StyleSheet HREF="/userContent/style.css">
 <body>
 <pre>
 XX
