@@ -262,7 +262,7 @@ cleanup_libvirt() {
     for UUID in $(sudo virsh list --all --uuid); do
         sudo -E virsh destroy $UUID || :
         sleep 2
-        sudo -E virsh undefine --remove-all-storage $UUID || :
+        sudo -E virsh undefine --remove-all-storage --storage vda --snapshots-metadata $UUID || :
     done
 }
 

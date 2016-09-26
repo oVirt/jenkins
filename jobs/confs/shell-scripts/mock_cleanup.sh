@@ -105,3 +105,10 @@ sudo rm -Rf /var/cache/mock/*
 # owned by root and then the 'cleanup workspace' from jenkins job fails to
 # clean and breaks the jobs
 sudo chown -R "$USER" "$WORKSPACE"
+
+# Drop all left over libvirt domains
+for UUID in $(virsh list --all --uuid); do
+  virsh destroy $UUID || :
+  sleep 2
+  virsh undefine --remove-all-storage --storage vda --snapshots-metadata $UUID || :
+done
