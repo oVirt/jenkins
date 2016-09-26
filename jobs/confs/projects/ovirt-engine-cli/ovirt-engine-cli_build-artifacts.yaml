@@ -3,8 +3,6 @@
     project:
       - ovirt-engine-cli
     version:
-      - master:
-          branch: master
       - 3.6:
           branch: cli_3.6
     stage: build-artifacts
@@ -14,11 +12,6 @@
         - el7
         - fc23
         - fc24
-    exclude:
-        - version: master
-          distro: el6
-        - version: master
-          distro: fc23
     arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
