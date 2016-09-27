@@ -257,6 +257,15 @@ cleanup_lago() {
     sudo service libvirtd restart || :
 }
 
+cleanup_libvirt() {
+    # Drop all left over libvirt domains
+    for UUID in $(sudo virsh list --all --uuid); do
+        sudo -E virsh destroy $UUID || :
+        sleep 2
+        sudo -E virsh undefine --remove-all-storage $UUID || :
+    done
+}
+
 main() {
     local workspace="${1?}"
     echo "###################################################################"
@@ -272,6 +281,7 @@ main() {
     cleanup_home || :
     cleanup_loop_devices || :
     cleanup_lago || :
+    cleanup_libvirt || :
     echo "---------------------------------------------------------------"
     sudo df -h || :
     echo "###################################################################"
