@@ -87,13 +87,15 @@
           extra-env: '{extra-env}'
           extra-make-targets: '{extra-make-targets}'
           cherry-pick: '{cherry-pick}'
+    reponame: ovirt
+    repotype: experimental
     publishers:
       - mock-cleanup
       - exported-artifacts
       - trigger-parameterized-builds:
         - project: 'deploy-to-{reponame}_{repotype}_{repoversion}'
           predefined-parameters: |
-            BUILD_ID={project}_{distro}_$BUILD_NUMBER
+            BUILD_ID={subproject}_{distro}_$BUILD_NUMBER
             BUILD_ARTIFACTS_JOBS=$BUILD_URL
           condition: SUCCESS
 
