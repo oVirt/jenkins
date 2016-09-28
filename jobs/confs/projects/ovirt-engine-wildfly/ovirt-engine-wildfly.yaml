@@ -8,6 +8,7 @@
     version:
       - master:
           branch: master
+          repoversion: master
     mock-build-type: all
     distro:
       - el7

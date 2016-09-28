@@ -115,7 +115,9 @@
     name: 'ovirt-engine-wildfly-overlay8_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
 - job-template:
-    <<: *no-deploy-releng
+    <<: *releng-template
+    reponame: ovirt
+    repotype: experimental
     name: 'ovirt-engine-wildfly-overlay10_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
 - job-template:
@@ -127,7 +129,9 @@
     name: 'ovirt-engine-wildfly8_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
 - job-template:
-    <<: *no-deploy-releng
+    <<: *releng-template
+    reponame: ovirt
+    repotype: experimental
     name: 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
 - job-template:
