@@ -6,9 +6,9 @@
       - master:
           branch: master
       - 4.0:
-          branch: master
+          branch: ovirt-4.0
       - 3.6:
-          branch: master
+          branch: ovirt-4.0
     stage: build-artifacts
     distro:
         - el6
@@ -36,11 +36,18 @@
     version:
       - master:
           branch: master
+      - 4.0:
+          branch: ovirt-4.0
     stage: check-patch
     distro:
-      - el6
       - el7
       - fc24
+      - fc23
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
     trigger: 'on-change'
     arch: x86_64
     jobs:
