@@ -38,6 +38,14 @@
             branch: master
             git-server: '{git-server}'
       builders:
+        - shell: |
+            if [ ${{GERRIT_EVENT_TYPE}} == "patchset-created" ]; then
+              status=`curl https://gerrit.ovirt.org/changes/?q=change:${{GERRIT_CHANGE_NUMBER}} | grep status | cut -d'"' -f4`
+              if [ $status == "MERGED" ]; then
+                echo "This patch has already been merged. Exiting..."
+                exit 0
+              fi
+            fi
         - cleanup-slave
         - '{stage}_builder':
             project: '{project}'
