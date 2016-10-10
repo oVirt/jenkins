@@ -24,8 +24,6 @@
         distro: fc24
       - arch: ppc64le
         distro: fc23
-      - arch: ppc64le
-        distro: fc24
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
