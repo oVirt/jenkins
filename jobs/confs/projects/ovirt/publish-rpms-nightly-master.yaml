@@ -112,6 +112,9 @@
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: vdsm_master_build-artifacts-
           project-suffix: ""
+      - copy-create-job-artifact-vdsm-master-ppc64le-platforms:
+          project-prefix: vdsm_master_build-artifacts-
+          project-suffix: ""
 
       - copy-create-job-artifact-hosted-engine-master-platforms:
           project-prefix: ovirt-hosted-engine-ha_master_build-artifacts-
