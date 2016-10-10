@@ -80,6 +80,9 @@
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-sdk_master_build-artifacts-
           project-suffix: ""
+      - copy-create-job-artifact-vdsm-master-ppc64le-platforms:
+          project-prefix: ovirt-engine-sdk_master_build-artifacts-
+          project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-sdk-java_3.6_create-rpms-
           project-suffix: _merged

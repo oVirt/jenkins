@@ -33,7 +33,25 @@
 
 - project:
     <<: *basic-params
-    name: ovirt-engine-sdk_build
+    name: ovirt-engine-sdk_build_x86_64
     stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+
+- project:
+    name: ovirt-engine-sdk_build_ppc64le
+    stage: build-artifacts
+    project:
+      - ovirt-engine-sdk
+    version:
+      - master:
+          branch: master
+    trigger: 'on-change'
+    distro:
+        - el7
+        - fc24
+    arch:
+      - ppc64le:
+          node-filter: ppc64le
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
