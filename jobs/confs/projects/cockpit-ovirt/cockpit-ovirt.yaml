@@ -7,6 +7,8 @@
     version:
       - master:
           branch: master
+      - ovirt-4.1:
+          branch: ovirt-4.1
       - ovirt-4.0:
           branch: ovirt-4.0
       - ovirt-3.6:
