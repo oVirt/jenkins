@@ -16,9 +16,7 @@
       - fc24
     arch:
       - x86_64
-    extra-build-packages: |
-      rpmdevtools
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
-          extra-build-packages: 'wget'
+          extra-build-packages: 'rpmdevtools'
 
