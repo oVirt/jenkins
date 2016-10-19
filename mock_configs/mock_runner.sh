@@ -894,7 +894,7 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 )"
                 if [[ -r "$lastlog" ]]; then
                     echo '##! ERROR vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv'
-                    echo '##! Last 20 log enties: '"$lastlog"
+                    echo '##! Last 20 log entries: '"$lastlog"
                     echo '##!'
                     tail -n 20 "$lastlog"
                     echo '##!'
@@ -904,7 +904,7 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 fi
                 echo '##!########################################################'
             else
-                echo "## FINISHED SUCCESSFULY"
+                echo "## FINISHED SUCCESSFULLY"
                 echo "##########################################################"
                 res=0
             fi
