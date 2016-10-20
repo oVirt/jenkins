@@ -20,7 +20,7 @@
       - throttle:
           enabled: true
           max-per-node: 1
-          max-total: 6
+          max-total: 10
           option: project
       - build-discarder:
           num-to-keep: 120
