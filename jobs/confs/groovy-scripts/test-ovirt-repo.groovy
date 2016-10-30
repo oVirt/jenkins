@@ -240,11 +240,10 @@ def notify(PROJECT_NAME, BUILD_STATUS) {{
   // send to email
   node {{
       emailext (
-          subject: """[oVirt Jenkins] '${{env.JOB_NAME}}' - Build #
-          '${{env.BUILD_NUMBER}}' - '${{BUILD_STATUS}}'!""",
-          body: """Build: '${{env.BUILD_URL}}'""",
-Build Number: '${{env.BUILD_NUMBER}}'""",
-Build Status:  '${{BUILD_STATUS}}'""",
+          subject: """[oVirt Jenkins] ${{env.JOB_NAME}} - Build #${{env.BUILD_NUMBER}} - ${{BUILD_STATUS}}!""",
+          body: """Build: ${{env.BUILD_URL}},
+Build Number: ${{env.BUILD_NUMBER}},
+Build Status: ${{BUILD_STATUS}}""",
           to: 'infra@ovirt.org',
           mimeType: 'text/plain'
     )
