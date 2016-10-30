@@ -236,6 +236,22 @@ def ack_test_repo(deploy_server_url, version, credentials) {{
 }}
 
 
+def notify(PROJECT_NAME, BUILD_STATUS) {{
+  // send to email
+  node {{
+      emailext (
+          subject: """[oVirt Jenkins] '${{env.JOB_NAME}}' - Build #
+          '${{env.BUILD_NUMBER}}' - '${{BUILD_STATUS}}'!""",
+          body: """Build: '${{env.BUILD_URL}}'""",
+Build Number: '${{env.BUILD_NUMBER}}'""",
+Build Status:  '${{BUILD_STATUS}}'""",
+          to: 'infra@ovirt.org',
+          mimeType: 'text/plain'
+    )
+  }}
+}}
+
+
 def main(
     project,
     git_project,
@@ -266,8 +282,10 @@ def main(
     do_archive(scripts, distros)
     if (currentBuild.result != 'FAILURE') {{
         ack_test_repo(deploy_server_url, version, credentials_ack_repo)
+        notify(project, 'SUCCESS')
     }} else {{
         println "Not promoting testing repo, as current build is '${{currentBuild.result}}'"
+        notify(project, currentBuild.result)
     }}
 }}
 
