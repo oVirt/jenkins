@@ -281,7 +281,9 @@ def main(
     do_archive(scripts, distros)
     if (currentBuild.result != 'FAILURE') {{
         ack_test_repo(deploy_server_url, version, credentials_ack_repo)
-        notify(project, 'SUCCESS')
+        if (currentBuild.rawBuild.getPreviousCompletedBuild()?.getResult() == 'FAILURE') {{
+            notify(project, 'SUCCESS')
+        }}
     }} else {{
         println "Not promoting testing repo, as current build is '${{currentBuild.result}}'"
         notify(project, currentBuild.result)
