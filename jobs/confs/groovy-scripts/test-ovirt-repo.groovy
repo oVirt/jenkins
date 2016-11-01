@@ -281,7 +281,7 @@ def main(
     do_archive(scripts, distros)
     if (currentBuild.result != 'FAILURE') {{
         ack_test_repo(deploy_server_url, version, credentials_ack_repo)
-        if (currentBuild.rawBuild.getPreviousCompletedBuild()?.getResult() == 'FAILURE') {{
+        if (currentBuild.rawBuild.getPreviousCompletedBuild()?.getResult().toString() == 'FAILURE') {{
             notify(project, 'SUCCESS')
         }}
     }} else {{
