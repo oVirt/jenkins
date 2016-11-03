@@ -294,6 +294,10 @@ EOH
             if [[ "$mount_opt" =~ ^([^:]*)(:(.*))?$ ]]; then
                 src_mnt="${BASH_REMATCH[1]}"
                 dst_mnt="${BASH_REMATCH[3]:-$src_mnt}"
+                if [ ! -d $src_mnt ]; then
+                    echo "Creating destination folder before mounting"
+                    mkdir -p $src_mnt
+                fi
             fi
             echo "['$src_mnt', '$dst_mnt']," >> "$tmp_conf"
         done
