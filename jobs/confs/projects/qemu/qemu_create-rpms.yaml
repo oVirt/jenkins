@@ -22,6 +22,7 @@
       - el7:
           extra-repos: |
               glusterfs-centos,http://mirror.centos.org/centos/7/storage/$arch/gluster-3.8/
+              centos-73-beta,http://buildlogs.centos.org/c7.1611.00/
     arch:
       - x86_64
     jobs:
