@@ -45,6 +45,30 @@
             BUILD_ARTIFACTS_JOBS=$BUILD_URL
           condition: SUCCESS
 
+- job-template:
+    <<: *create-rpms
+    name: '{project}_{version}_create-rpms-{distro}-{arch}_created'
+    triggers:
+      - 'on-patch-created':
+          project: '{project}'
+          branch: '{branch}'
+          gerrit-server: '{gerrit-server}'
+    publishers:
+      - mock-cleanup
+      - exported-artifacts
+
+- job-template:
+    <<: *create-rpms
+    name: '{project}_{version}_create-rpms-{distro}-{arch}_merged'
+    triggers:
+      - 'on-patch-merged':
+          project: '{project}'
+          branch: '{branch}'
+          gerrit-server: '{gerrit-server}'
+    publishers:
+      - mock-cleanup
+      - exported-artifacts
+
 - job-template: &no-deploy-create-rpms
     <<: *create-rpms
     name: 'no-deploy-create-rpms'
