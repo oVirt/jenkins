@@ -4,7 +4,6 @@ MOCKS=(
     el6:epel-6-x86_64
     el7:epel-7-x86_64
     el7:epel-7-ppc64le
-    fc22:fedora-22-x86_64
     fc23:fedora-23-x86_64
     fc24:fedora-24-x86_64
     fc24:fedora-24-ppc64le
@@ -34,7 +33,7 @@ help() {
     Where the ID is the name used for it on the requirements file (usually in
     the style fc19, el6 or similar) and MOCK_CONF is the mock configuration
     name as passed to the mock -r option (usually, the configuration name
-    without extension, for example fedora-22-x86_64)
+    without extension, for example fedora-23-x86_64)
 
     Options:
         -h|--help
@@ -88,8 +87,8 @@ help() {
     To run the build script on all the chroots:
     > $0 --build-only
 
-    To run only the build artifacts script on fedoras 22 and 23
-    > $0 --build-only fc22:fedora-22-x86_64 fc23:fedora-23-x86_64
+    To run only the build artifacts script on fedoras 23 and 24
+    > $0 --build-only fc23:fedora-23-x86_64 fc24:fedora-24-x86_64
 
     To open a shell to debug the check-merged script on el7
     > $0 --merged-only --shell el7:epel-7-x86_64
@@ -271,7 +270,7 @@ import platform
 
 # Needed when running on dnf systems
 distro_maj = int(platform.linux_distribution()[1].split('.', 1)[0])
-if int(distro_maj) >= 22:
+if int(distro_maj) >= 23:
     config_opts['yum_command'] = '/usr/bin/yum-deprecated'
 
 # This alleviates the io of installing the chroot
