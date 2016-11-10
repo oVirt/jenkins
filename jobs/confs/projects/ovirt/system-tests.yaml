@@ -13,11 +13,11 @@
     name: ovirt-system-tests
     version:
       - 3.6:
-          chroot_distro: fc23
+          chroot_distro: el7
       - 4.0:
-          chroot_distro: fc23
+          chroot_distro: el7
       - master:
-          chroot_distro: fc24
+          chroot_distro: el7
 
 # type can be both image and image_ng
 # they differ in the testing used
@@ -26,9 +26,9 @@
     name: ovirt-system-image-tests
     version:
       - 3.6:
-          chroot_distro: fc23
+          chroot_distro: el7
       - 4.0:
-          chroot_distro: fc23
+          chroot_distro: el7
     email-to: fabiand@redhat.com
     jobs:
       - '{project}_{version}_image-ng-system-tests'
@@ -39,9 +39,9 @@
     name: ovirt-system-he-tests
     version:
       - 3.6:
-          chroot_distro: fc23
+          chroot_distro: el7
       - 4.0:
-          chroot_distro: fc23
+          chroot_distro: el7
     email-to: sbonazzo@redhat.com, infra@ovirt.org, lveyde@redhat.com
     jobs:
       - '{project}_{version}_he-system-tests'

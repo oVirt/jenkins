@@ -2,11 +2,11 @@
     name: "test_ovirt_experimental_repo"
     version:
         - 3.6:
-            chroot_distro: fc23
+            chroot_distro: el7
         - 4.0:
-            chroot_distro: fc23
+            chroot_distro: el7
         - master:
-            chroot_distro: fc24
+            chroot_distro: el7
 
     reponame: ovirt
     repotype: experimental
