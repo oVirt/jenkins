@@ -18,5 +18,7 @@
     chroot_distro: '{chroot_distro}'
     project-type: workflow
     concurrent: false
-    properties: []
+    properties:
+        - build-discarder:
+            days-to-keep: 30
     dsl: !include-raw groovy-scripts/test-ovirt-repo.groovy
