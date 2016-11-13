@@ -1,10 +1,28 @@
 - project:
-    name: ovirt-reports_master_create-rpms
+    name: ovirt-reports_master_create-rpms_created
     project:
       - ovirt-reports
-    trigger:
-      - merged
-      - created
+    distro:
+      - el6
+      - el7
+    version:
+      - 3.6:
+          extra-repos: |
+            ovirt-36-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
+            ovirt-36-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.6-snapshot-static/rpm/$distro
+          branch: ovirt-engine-reports-3.6
+    mock-build-type: all
+    arch: x86_64
+    extra-build-packages: |
+      git
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_created'
+
+
+- project:
+    name: ovirt-reports_master_create-rpms_merged
+    project:
+      - ovirt-reports
     distro:
       - el6
       - el7
@@ -20,4 +38,4 @@
     extra-build-packages: |
       git
     jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+      - '{project}_{version}_create-rpms-{distro}-{arch}_merged'

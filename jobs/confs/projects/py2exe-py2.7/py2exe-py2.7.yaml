@@ -1,11 +1,38 @@
 - project:
-    name: py2exe-py2.7
+    name: py2exe-py2.7_created
     project: ovirt-wgt-toolchain
     subproject:
         - py2exe-py2.7
-    trigger:
-      - created
-      - merged
+    version:
+      - master:
+          branch: master
+      - 4.0:
+          branch: ovirt-wgt-toolchain-4.0
+      - 3.6:
+          branch: master
+    mock-build-type: all
+    distro:
+      - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
+      - version: 3.6
+        distro: fc24
+    arch: x86_64
+    extra-build-packages: |
+      rpmdevtools
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_created'
+
+
+- project:
+    name: py2exe-py2.7_merged
+    project: ovirt-wgt-toolchain
+    subproject:
+        - py2exe-py2.7
     version:
       - master:
           branch: master
@@ -31,4 +58,4 @@
     extra-build-packages: |
       rpmdevtools
     jobs:
-      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_merged'

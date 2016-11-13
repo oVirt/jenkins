@@ -1,11 +1,36 @@
 - project:
-    name: ovirt-engine-nodejs_create-rpms
+    name: ovirt-engine-nodejs_create-rpms_created
     project: releng-tools
     subproject:
       - ovirt-engine-nodejs
-    trigger:
-      - created
-      - merged
+    version:
+      - master:
+          branch: master
+      - 4.0:
+          branch: master
+    mock-build-type: all
+    distro:
+      - el7
+      - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.0
+        distro: fc24
+    arch: x86_64
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_created':
+          extra-build-packages: |
+            rpmdevtools
+            wget
+
+
+- project:
+    name: ovirt-engine-nodejs_create-rpms_merged
+    project: releng-tools
+    subproject:
+      - ovirt-engine-nodejs
     version:
       - master:
           branch: master
@@ -25,7 +50,7 @@
         distro: fc24
     arch: x86_64
     jobs:
-      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_merged':
           extra-build-packages: |
             rpmdevtools
             wget

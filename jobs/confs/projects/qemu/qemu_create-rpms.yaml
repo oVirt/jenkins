@@ -1,12 +1,34 @@
 - project:
-    name: qemu_create-rpms
+    name: qemu_create-rpms_created
     project: releng-tools
     node-filter: 'el7 || fc23 || fc24'
     subproject:
       - qemu
-    trigger:
-      - created
-      - merged
+    version:
+      - master:
+          branch: master
+      - 4.0:
+          branch: master
+      - 3.6:
+          branch: master
+    mock-build-type: all
+    distro:
+      - el7:
+          extra-repos: |
+              glusterfs-centos,http://mirror.centos.org/centos/7/storage/$arch/gluster-3.8/
+              centos-73-beta,http://buildlogs.centos.org/c7.1611.00/
+    arch:
+      - x86_64
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_created':
+          extra-build-packages: 'wget'
+
+- project:
+    name: qemu_create-rpms_merged
+    project: releng-tools
+    node-filter: 'el7 || fc23 || fc24'
+    subproject:
+      - qemu
     version:
       - master:
           branch: master
@@ -26,18 +48,39 @@
     arch:
       - x86_64
     jobs:
-      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_merged':
           extra-build-packages: 'wget'
 
 - project:
-    name: qemu_create-rpms_ppc64le
+    name: qemu_create-rpms_ppc64le_created
     project: releng-tools
     node-filter: 'ppc64le'
     subproject:
       - qemu
-    trigger:
-      - created
-      - merged
+    version:
+      - master:
+          branch: master
+      - 4.0:
+          branch: master
+      - 3.6:
+          branch: master
+    mock-build-type: all
+    distro:
+      - el7:
+          extra-repos: |
+              glusterfs-centos,http://cbs.centos.org/repos/storage7-gluster-38-testing/$arch/os/
+    arch:
+      - ppc64le
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_created':
+          extra-build-packages: 'wget'
+
+- project:
+    name: qemu_create-rpms_ppc64le_merged
+    project: releng-tools
+    node-filter: 'ppc64le'
+    subproject:
+      - qemu
     version:
       - master:
           branch: master
@@ -56,5 +99,5 @@
     arch:
       - ppc64le
     jobs:
-      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_merged':
           extra-build-packages: 'wget'

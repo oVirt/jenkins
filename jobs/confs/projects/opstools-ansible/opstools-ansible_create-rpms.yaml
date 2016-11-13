@@ -1,11 +1,26 @@
 - project:
-    name: opstools-ansible_create-rpms
+    name: opstools-ansible_create-rpms_created
     project: releng-tools
     subproject:
       - opstools-ansible
-    trigger:
-      - created
-      - merged
+    version:
+      - master:
+          branch: master
+    mock-build-type: all
+    distro:
+      - el7
+      - fc24
+    arch:
+      - x86_64
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_created':
+          extra-build-packages: 'rpmdevtools'
+
+- project:
+    name: opstools-ansible_create-rpms_merged
+    project: releng-tools
+    subproject:
+      - opstools-ansible
     version:
       - master:
           branch: master
@@ -17,6 +32,5 @@
     arch:
       - x86_64
     jobs:
-      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_merged':
           extra-build-packages: 'rpmdevtools'
-

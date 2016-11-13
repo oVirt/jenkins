@@ -150,17 +150,61 @@
 
 - job-template:
     <<: *no-deploy-releng
-    name: 'jasperreports-server_{version}_create-rpms-{distro}-{arch}_{trigger}'
+    name: 'jasperreports-server_{version}_create-rpms-{distro}-{arch}_created'
+    triggers:
+      - 'on-patch-created-with-files':
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
+
+- job-template:
+    <<: *no-deploy-releng
+    name: 'jasperreports-server_{version}_create-rpms-el7-{arch}_merged'
+    triggers:
+      - 'on-patch-merged-with-files':
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
+
+- job-template:
+    <<: *releng-template
+    name: 'jasperreports-server_{version}_create-rpms-el6-{arch}_merged'
+    triggers:
+      - 'on-patch-merged-with-files':
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
 
 - job-template:
     <<: *no-deploy-releng
     name: 'ovirt-engine-wildfly-overlay8_{version}_create-rpms-{distro}-{arch}_{trigger}'
 
 - job-template:
+    <<: *no-deploy-releng
+    reponame: ovirt
+    repotype: experimental
+    name: 'ovirt-engine-wildfly-overlay10_{version}_create-rpms-{distro}-{arch}_created'
+    triggers:
+      - 'on-patch-created-with-files':
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
+
+- job-template:
     <<: *releng-template
     reponame: ovirt
     repotype: experimental
-    name: 'ovirt-engine-wildfly-overlay10_{version}_create-rpms-{distro}-{arch}_{trigger}'
+    name: 'ovirt-engine-wildfly-overlay10_{version}_create-rpms-{distro}-{arch}_merged'
+    triggers:
+      - 'on-patch-merged-with-files':
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
 
 - job-template:
     <<: *no-deploy-releng
@@ -174,7 +218,28 @@
     <<: *releng-template
     reponame: ovirt
     repotype: experimental
-    name: 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_{trigger}'
+    name: 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_created'
+    triggers:
+      - 'on-patch-created-with-files':
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
+    publishers:
+      - mock-cleanup
+      - exported-artifacts
+
+- job-template:
+    <<: *releng-template
+    reponame: ovirt
+    repotype: experimental
+    name: 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_merged'
+    triggers:
+      - 'on-patch-merged-with-files':
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
 
 - job-template:
     <<: *no-deploy-releng
