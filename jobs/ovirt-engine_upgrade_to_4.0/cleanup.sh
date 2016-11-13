@@ -86,7 +86,7 @@ cleanup()
         engine-cleanup --config-append="${cleanup_file}" \
         || :
     fi
-    yum -y remove "$ENGINE_PACKAGE"\* vdsm\* httpd mod_ssl || :
+    yum -y remove "ovirt*" "$ENGINE_PACKAGE"\* "vdsm*" httpd mod_ssl || :
     rm -f /root/.pgpass
     enable_engine_repos "$workspace/disabled_repos.list"
 }
