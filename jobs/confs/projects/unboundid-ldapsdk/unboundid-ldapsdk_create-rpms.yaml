@@ -1,11 +1,8 @@
 - project:
-    name: unboundid-ldapsdk_create-rpms
+    name: unboundid-ldapsdk_create-rpms_created
     project: releng-tools
     subproject:
       - unboundid-ldapsdk
-    trigger:
-      - created
-      - merged
     version:
       - master:
           branch: master
@@ -24,5 +21,35 @@
       - el7
     arch: x86_64
     jobs:
-      - '{subproject}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_created':
+          extra-build-packages: 'rpmdevtools'
+
+
+- project:
+    name: unboundid-ldapsdk_create-rpms_merged
+    project: releng-tools
+    subproject:
+      - unboundid-ldapsdk
+    version:
+      - master:
+          branch: master
+          repoversion: master
+      - 4.0:
+          branch: master
+          repoversion: 4.0
+      - 3.6:
+          branch: master
+          repoversion: 3.6
+    exclude:
+      - version: master
+        distro: el6
+      - version: 4.0
+        distro: el6
+    mock-build-type: all
+    distro:
+      - el6
+      - el7
+    arch: x86_64
+    jobs:
+      - '{subproject}_{version}_create-rpms-{distro}-{arch}_merged':
           extra-build-packages: 'rpmdevtools'
