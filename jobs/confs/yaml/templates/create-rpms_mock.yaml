@@ -65,9 +65,6 @@
           project: '{project}'
           branch: '{branch}'
           gerrit-server: '{gerrit-server}'
-    publishers:
-      - mock-cleanup
-      - exported-artifacts
 
 - job-template: &no-deploy-create-rpms
     <<: *create-rpms
