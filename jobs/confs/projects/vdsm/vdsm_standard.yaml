@@ -89,7 +89,6 @@
           repoversion: master
     distro:
       - el7
-      - fc24
     arch:
       - ppc64le:
           node-filter: ppc64le
