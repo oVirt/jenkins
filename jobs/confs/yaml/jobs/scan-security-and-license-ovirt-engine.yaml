@@ -35,5 +35,5 @@
       post-step-run-condition: 'UNSTABLE'
     publishers:
       - whitesource:
-          product-token: 5d27035e-3eba-48fd-8d6c-ade833aed0f2
+          product-token: oVirt
           policies: global
