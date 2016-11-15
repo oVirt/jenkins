@@ -20,5 +20,8 @@ for job in publish_jobs:
                 if project.text in file_list:
                     print "job %s still exists" % project.text
                 else:
-                    sys.exit("job %s does not exists" % project.text)
+                    sys.exit("job %s does not exists.\n\n"
+                             "Please first remove this job"
+                             " from nightly publishers' jobs"
+                             " and then repush the patch" % project.text)
             break
