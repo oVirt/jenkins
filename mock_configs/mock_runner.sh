@@ -6,6 +6,7 @@ MOCKS=(
     el7:epel-7-ppc64le
     fc23:fedora-23-x86_64
     fc24:fedora-24-x86_64
+    fc25:fedora-25-x86_64
     fc24:fedora-24-ppc64le
 )
 SCRIPTS=()
