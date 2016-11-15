@@ -22,9 +22,13 @@ logs=(
     ./*log
     ./*/logs
 )
+
 if [[ "$logs" ]]; then
-    tar cvzf exported-artifacts/logs.tgz "${logs[@]}"
-    rm -rf "${logs[@]}"
+    for log in "${logs[@]}"
+    do
+        echo "Copying ${log} to exported-artifacts"
+        mv $log exported-artifacts/
+    done
 fi
 
 # stop any processes running inside the chroot
