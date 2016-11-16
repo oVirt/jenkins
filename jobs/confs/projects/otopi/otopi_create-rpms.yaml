@@ -1,10 +1,28 @@
 - project:
-    name: otopi_create-rpms
+    name: otopi_create-rpms_created
     project:
       - otopi
-    trigger:
-      - merged
-      - created
+    version:
+      - 3.6:
+          branch: otopi-1.4
+    mock-build-type: all
+    distro:
+      - el6
+      - el7
+      - fc23
+    arch: x86_64
+    extra-build-packages: |
+      gettext-devel
+      automake
+      autoreconf
+      make
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_created'
+
+- project:
+    name: otopi_create-rpms_merged
+    project:
+      - otopi
     version:
       - 3.6:
           branch: otopi-1.4
@@ -21,4 +39,4 @@
       autoreconf
       make
     jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+      - '{project}_{version}_create-rpms-{distro}-{arch}_merged'

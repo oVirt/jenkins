@@ -128,7 +128,29 @@
         distro: fc24
 
 - project:
-    name: ioprocess_0.15
+    name: ioprocess_0.15_created
+    node-filter: 'el7 || fc23 || fc24'
+    project:
+      - ioprocess
+    version:
+      - 0.15:
+          branch: ioprocess-0.15
+    distro:
+      - el7
+      - fc23
+    arch: x86_64
+    mock-build-type: all
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_created':
+          extra-build-packages: |
+            automake
+            autoreconf
+            gettext-devel
+            glib2-devel
+            yajl-devel
+
+- project:
+    name: ioprocess_0.15_merged
     node-filter: 'el7 || fc23 || fc24'
     project:
       - ioprocess
@@ -137,7 +159,6 @@
           branch: ioprocess-0.15
           repoversion: 3.6
     distro:
-      - el6
       - el7
       - fc23
     arch: x86_64
@@ -146,7 +167,7 @@
       - created
     mock-build-type: all
     jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - '{project}_{version}_create-rpms-{distro}-{arch}_merged':
           extra-build-packages: |
             automake
             autoreconf

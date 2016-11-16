@@ -1,10 +1,30 @@
 - project:
-    name: ovirt-host-deploy_create-rpms
+    name: ovirt-host-deploy_create-rpms_created
     project:
       - ovirt-host-deploy
-    trigger:
-      - merged
-      - created
+    version:
+      - 3.6:
+          extra-repos: |
+            ovirt-3.6-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
+            ovirt-3.6-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.6-snapshot-static/rpm/$distro
+          branch: ovirt-host-deploy-1.4
+    mock-build-type: all
+    distro:
+      - el6
+    arch: x86_64
+    extra-configure-options: |
+      --with-otopi-sources=/dev/null
+    extra-build-packages: |
+      gettext-devel
+      automake
+      autoreconf
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_created'
+
+- project:
+    name: ovirt-host-deploy_create-rpms_merged
+    project:
+      - ovirt-host-deploy
     version:
       - 3.6:
           extra-repos: |
@@ -23,16 +43,39 @@
       automake
       autoreconf
     jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+      - '{project}_{version}_create-rpms-{distro}-{arch}_merged'
 
 
 - project:
-    name: ovirt-host-deploy_36_create-rpms
+    name: ovirt-host-deploy_36_create-rpms_created
     project:
       - ovirt-host-deploy
-    trigger:
-      - merged
-      - created
+    version:
+      - 3.6:
+          extra-repos: |
+            ovirt-3.6-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
+            ovirt-3.6-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.6-snapshot-static/rpm/$distro
+          branch: ovirt-host-deploy-1.4
+    mock-build-type: all
+    distro:
+      - el7
+      - fc23
+    arch: x86_64
+    extra-configure-options: |
+      --with-otopi-sources=/dev/null
+    extra-build-packages: |
+      gettext-devel
+      automake
+      autoreconf
+    extra-make-targets: |
+      offline-tarball
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_created'
+
+- project:
+    name: ovirt-host-deploy_36_create-rpms_merged
+    project:
+      - ovirt-host-deploy
     version:
       - 3.6:
           extra-repos: |
@@ -54,4 +97,4 @@
     extra-make-targets: |
       offline-tarball
     jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+      - '{project}_{version}_create-rpms-{distro}-{arch}_merged'

@@ -2,12 +2,28 @@
 ## the template, so if we don't want fc19 for branch master, we have to
 ## create a separated template for it
 - project:
-    name: ovirt-iso-uploader_master_create-rpms
+    name: ovirt-iso-uploader_master_create-rpms_created
     project:
       - ovirt-iso-uploader
-    trigger:
-      - merged
-      - created
+    version:
+      - 3.6:
+          extra-repos: |
+            ovirt-3.6-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
+            ovirt-3.6-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.6-snapshot-static/rpm/$distro
+          branch: ovirt-iso-uploader-3.6
+    mock-build-type: onlyrpm
+    distro:
+      - fc23
+      - el6
+      - el7
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_created'
+
+- project:
+    name: ovirt-iso-uploader_master_create-rpms_merged
+    project:
+      - ovirt-iso-uploader
     version:
       - 3.6:
           extra-repos: |
@@ -22,4 +38,4 @@
       - el7
     arch: x86_64
     jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}'
+      - '{project}_{version}_create-rpms-{distro}-{arch}_merged'

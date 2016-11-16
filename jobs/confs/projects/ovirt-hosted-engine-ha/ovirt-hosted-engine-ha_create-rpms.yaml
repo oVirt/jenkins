@@ -1,10 +1,32 @@
 - project:
-    name: ovirt-hosted-engine-ha_master_create-rpms-el7
+    name: ovirt-hosted-engine-ha_master_create-rpms-el7_created
     project:
       - ovirt-hosted-engine-ha
-    trigger:
-      - merged
-      - created
+    distro:
+      - el7
+    version:
+      - 3.6:
+          extra-repos: |
+            ovirt-36-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
+            ovirt-36-snapshot-static,http://resources.ovirt.org/pub/ovirt-3.6-snapshot-static/rpm/$distro
+          branch: ovirt-hosted-engine-ha-1.3
+    mock-build-type: onlyrpm
+    arch: x86_64
+    extra-packages: |
+      git
+      autoconf
+    jobs:
+      - '{project}_{version}_create-rpms-{distro}-{arch}_created':
+          extra-configure-options: |
+              --prefix=/usr \
+              --exec_prefix=/usr \
+              --sysconfdir=/etc \
+              --localstatedir=/var
+
+- project:
+    name: ovirt-hosted-engine-ha_master_create-rpms-el7_merged
+    project:
+      - ovirt-hosted-engine-ha
     distro:
       - el7
     version:
@@ -20,7 +42,7 @@
       git
       autoconf
     jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_{trigger}':
+      - '{project}_{version}_create-rpms-{distro}-{arch}_merged':
           extra-configure-options: |
               --prefix=/usr \
               --exec_prefix=/usr \
