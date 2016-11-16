@@ -66,27 +66,6 @@
           branch: '{branch}'
           gerrit-server: '{gerrit-server}'
 
-- job-template:
-    <<: *create-rpms
-    name: '{subproject}_{version}_create-rpms-{distro}-{arch}_created'
-    triggers:
-      - 'on-patch-created':
-          project: '{project}'
-          branch: '{branch}'
-          gerrit-server: '{gerrit-server}'
-    publishers:
-      - mock-cleanup
-      - exported-artifacts
-
-- job-template:
-    <<: *create-rpms
-    name: '{subproject}_{version}_create-rpms-{distro}-{arch}_merged'
-    triggers:
-      - 'on-patch-merged':
-          project: '{project}'
-          branch: '{branch}'
-          gerrit-server: '{gerrit-server}'
-
 - job-template: &no-deploy-create-rpms
     <<: *create-rpms
     name: 'no-deploy-create-rpms'
@@ -140,6 +119,29 @@
             BUILD_ID={subproject}_{distro}_$BUILD_NUMBER
             BUILD_ARTIFACTS_JOBS=$BUILD_URL
           condition: SUCCESS
+
+- job-template:
+    <<: *releng-template
+    name: '{subproject}_{version}_create-rpms-{distro}-{arch}_created'
+    triggers:
+      - 'on-patch-created-with-files':
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
+    publishers:
+      - mock-cleanup
+      - exported-artifacts
+
+- job-template:
+    <<: *releng-template
+    name: '{subproject}_{version}_create-rpms-{distro}-{arch}_merged'
+    triggers:
+      - 'on-patch-merged-with-files':
+          project: '{project}'
+          branch: '{branch}'
+          files: 'specs/{subproject}/.*'
+          gerrit-server: '{gerrit-server}'
 
 - job-template: &no-deploy-releng
     <<: *releng-template
