@@ -41,12 +41,10 @@
           branch: master
       - 4.0:
           branch: ovirt-engine-4.0
-      - 4.0.5:
-          branch: ovirt-engine-4.0.5
+      - 4.0.6:
+          branch: ovirt-engine-4.0.6
       - 3.6:
           branch: ovirt-engine-3.6
-      - 3.6.9:
-          branch: ovirt-engine-3.6.9
     stage:
       - check-patch
     distro:
@@ -58,19 +56,15 @@
         distro: el6
       - version: 4.0
         distro: el6
-      - version: 4.0.5
+      - version: 4.0.6
         distro: el6
       - version: 3.6
         distro: el7
-      - version: 3.6.9
-        distro: el7
       - version: 3.6
-        distro: fc24
-      - version: 3.6.9
         distro: fc24
       - version: 4.0
         distro: fc24
-      - version: 4.0.5
+      - version: 4.0.6
         distro: fc24
     trigger: 'on-change'
     arch: x86_64
@@ -86,8 +80,8 @@
           branch: master
       - 4.0:
           branch: ovirt-engine-4.0
-      - 4.0.5:
-          branch: ovirt-engine-4.0.5
+      - 4.0.6:
+          branch: ovirt-engine-4.0.6
       - 3.6:
           branch: ovirt-engine-3.6
     stage:
@@ -106,9 +100,9 @@
         distro: el6
       - version: 4.0
         distro: fc24
-      - version: 4.0.5
+      - version: 4.0.6
         distro: el6
-      - version: 4.0.5
+      - version: 4.0.6
         distro: fc24
       - version: 3.6
         distro: fc24
