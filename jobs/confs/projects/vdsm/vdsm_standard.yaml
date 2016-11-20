@@ -86,14 +86,12 @@
     version:
       - master:
           branch: master
-          repoversion: master
     distro:
       - el7
-    arch:
-      - ppc64le:
-          node-filter: ppc64le
+    arch: ppc64le
+    node-filter: ppc64le
     jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+      - '{project}_{version}_build-artifacts-{distro}-ppc64le'
 
 - project:
     <<: *vdsm_standard_common
