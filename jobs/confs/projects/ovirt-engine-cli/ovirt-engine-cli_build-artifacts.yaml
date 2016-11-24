@@ -3,6 +3,10 @@
     project:
       - ovirt-engine-cli
     version:
+      - master:
+          branch: cli_3.6
+      - 4.0:
+          branch: cli_3.6
       - 3.6:
           branch: cli_3.6
     stage: build-artifacts
