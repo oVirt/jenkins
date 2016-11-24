@@ -282,6 +282,9 @@ install_from_engine() {
     local answer_file="${1?}"
     CURRENT_STEP="SETUP::INSTALLING_ENGINE"
     # Installing 'from' version
+    # Actually install the 'to' version - in master_to_master, we install
+    # currently built engine and then "upgrade" to it
+    enable_upgrade_repos
     yum -y install "$ENGINE_PACKAGE"
     sed -i "s/CHANGE_HOSTNAME/$HOSTNAME/g" "${answer_file}"
     echo "Installing engine"
