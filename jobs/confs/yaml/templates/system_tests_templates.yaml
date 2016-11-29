@@ -5,7 +5,7 @@
       - gerrit-params:
           branch: '{branch}'
     triggers:
-      - timed: 'H 7,11,15,19 * * *'
+      - timed: 'H 2 * * *'
     scm:
       - 'ovirt-system-tests-gerrit':
           branch: 'master'
