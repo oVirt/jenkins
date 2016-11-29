@@ -4,3 +4,10 @@
       - gerrit:
           project: ovirt-engine-sdk
           git-server: '{git-server}'
+
+- scm:
+    name: python-ovirt-engine-sdk4-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-engine-sdk
+          git-server: '{git-server}'
