@@ -147,7 +147,7 @@ main()
 
     # https://github.com/paramiko/paramiko/issues/49
     # this is mostly relevant for CentOS 6
-    paramiko_ver=$(rpm -qa | grep python-paramiko)
+    paramiko_ver=$(rpm -qa | grep -e python.*-paramiko)
     if [[ "$paramiko_ver" =~ python-paramiko-1.7.5* ]]; then
         arguments+="--ssh-backend pexpect "
     fi
