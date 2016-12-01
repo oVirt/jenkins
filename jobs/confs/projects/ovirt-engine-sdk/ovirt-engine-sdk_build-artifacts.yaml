@@ -34,6 +34,8 @@
 - project:
     <<: *basic-params
     name: ovirt-engine-sdk_build_x86_64
+    stage: build-artifacts
+    project: ovirt-engine-sdk
     version:
       - master:
           branch: sdk_3.6
@@ -41,22 +43,21 @@
           branch: sdk_3.6
       - 3.6:
           branch: sdk_3.6
-    stage: build-artifacts
     jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+        - 'ovirt-engine-sdk_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     <<: *basic-params
     name: python-ovirt-engine-sdk4_build_x86_64
-    project: python-ovirt-engine-sdk4
     stage: build-artifacts
+    project: ovirt-engine-sdk
     version:
       - master:
           branch: master
       - 4.0:
           branch: sdk_4.0
     jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+        - 'python-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     name: ovirt-engine-sdk_build_ppc64le
