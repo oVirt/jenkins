@@ -108,6 +108,38 @@
 
 - job-template:
       <<: *standard-template
+      name: 'ovirt-engine-sdk-java_{version}_build-artifacts-{distro}-{arch}'
+      reponame: ovirt
+      repotype: experimental
+      publishers:
+        - mock-cleanup
+        - exported-artifacts
+        - html-reports
+        - trigger-parameterized-builds:
+          - project: 'deploy-to-{reponame}_{repotype}_{version}'
+            predefined-parameters: |
+              BUILD_ID={project}_{distro}_$BUILD_NUMBER
+              BUILD_ARTIFACTS_JOBS=$BUILD_URL
+            condition: SUCCESS
+
+- job-template:
+      <<: *standard-template
+      name: 'java-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'
+      reponame: ovirt
+      repotype: experimental
+      publishers:
+        - mock-cleanup
+        - exported-artifacts
+        - html-reports
+        - trigger-parameterized-builds:
+          - project: 'deploy-to-{reponame}_{repotype}_{version}'
+            predefined-parameters: |
+              BUILD_ID={project}_{distro}_$BUILD_NUMBER
+              BUILD_ARTIFACTS_JOBS=$BUILD_URL
+            condition: SUCCESS
+
+- job-template:
+      <<: *standard-template
       name: '{project}_{version}_build-artifacts-{distro}-ppc64le'
       reponame: ovirt
       repotype: experimental
