@@ -22,6 +22,10 @@
           branch: ovirt-4.0
           trigger: 'timed'
           trigger-times: '@weekly'
+      - ovirt-4.1-pre:
+          branch: ovirt-4.1-pre
+          trigger: 'timed'
+          trigger-times: '@weekly'
     stage: build-artifacts
     distro:
       - el7
