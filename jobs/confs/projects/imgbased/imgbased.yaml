@@ -7,8 +7,10 @@
     version:
       - master:
           branch: master
+      - ovirt-4.1:
+          branch: ovirt-4.1
       - ovirt-4.0:
-          branch: master
+          branch: ovirt-4.0
       - ovirt-3.6:
           branch: ovirt-3.6
     stage: build-artifacts
@@ -26,8 +28,10 @@
     version:
       - master:
           branch: master
+      - ovirt-4.1:
+          branch: ovirt-4.1
       - ovirt-4.0:
-          branch: master
+          branch: ovirt-4.0
       - ovirt-3.6:
           branch: ovirt-3.6
     stage:
@@ -40,6 +44,8 @@
     exclude:
       - version: master
         distro: fc23
+      - version: ovirt-4.1
+        distro: fc24
       - version: ovirt-4.0
         distro: fc24
       - version: ovirt-3.6
