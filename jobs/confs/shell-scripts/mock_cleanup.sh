@@ -100,10 +100,11 @@ if $failed; then
     exit 1
 fi
 
-# remove mock system cache, we will setup proxies to do the caching and this
-# takes lots of space between runs
-shopt -u nullglob
-sudo rm -Rf /var/cache/mock/*
+# remove mock caches that are older then 2 days:
+find /var/cache/mock/ -mindepth 1 -maxdepth 1 -type d -mtime +2 -print0 | \
+    xargs -0 -tr sudo rm -rf
+# We make no effort to leave around caches that may still be in use because
+# packages installed in them may go out of date, so may as well recreate them
 
 # restore the permissions in the working dir, as sometimes it leaves files
 # owned by root and then the 'cleanup workspace' from jenkins job fails to
