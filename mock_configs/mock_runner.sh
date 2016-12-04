@@ -172,10 +172,17 @@ prepare_chroot() {
         mock_conf \
         mock_chroot \
         mock_dir \
-        mock_conf_with_mounts
+        mock_conf_with_mounts \
+        packages
 
+    packages=(
+        $(get_data_from_file "$script" req "$dist_label")
+        $(get_data_from_file "$script" packages "$dist_label")
+        "${PACKAGES[@]}"
+    )
     mock_conf="$(
-        gen_mock_config "$base_chroot" "$dist_label" "$script"
+        gen_mock_config "$base_chroot" "$dist_label" "$script" no \
+            "${packages[@]}"
     )"
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
@@ -184,22 +191,13 @@ prepare_chroot() {
     init_chroot "${mock_chroot}" "${mock_dir}" \
         | tee -a "$LOGS_DIR/${mock_chroot}.init/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
-    makedir "$LOGS_DIR/${mock_chroot}.install_packages"
-    install_packages \
-        "$mock_chroot" \
-        "$mock_dir" \
-        $(get_data_from_file "$script" req "$dist_label")  \
-        $(get_data_from_file "$script" packages "$dist_label")  \
-        "${PACKAGES[@]}" \
-        2>&1 \
-        | tee -a "$LOGS_DIR/${mock_chroot}.install_packages/stdout_stderr.log"
-    [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
     makedir "$LOGS_DIR/${mock_chroot}.clean_rpmdb"
     clean_rpmdb "$mock_chroot" "$mock_dir" \
         | tee -a "$LOGS_DIR/${mock_chroot}.clean_rpmdb/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
     mock_conf_with_mounts="$(
-        gen_mock_config "$base_chroot" "$dist_label" "$script" "with_mounts"
+        gen_mock_config "$base_chroot" "$dist_label" "$script" "with_mounts" \
+            "${packages[@]}"
     )"
     return 0
 }
@@ -231,6 +229,7 @@ gen_mock_config() {
     local dist_label="${2?}"
     local script="${3?}"
     local with_mounts="${4:-no}"
+    local packages=("${@:5}")
     local base_conf \
         tmp_conf \
         mount_opt \
@@ -242,7 +241,8 @@ gen_mock_config() {
         tmp_chroot \
         proxy \
         repos_md5 \
-        last_gen_repo_name
+        last_gen_repo_name \
+        chroot_setup_cmd
 
     base_conf="$(get_base_conf "$MOCK_CONF_DIR" "$chroot")"
     tmp_conf="$(get_temp_conf "$chroot" "$dist_label")"
@@ -309,8 +309,8 @@ EOH
     repos=($(get_data_from_file "$script" repos "$dist_label"))
     # if we use custom repos, we don't want to mess with existing cached
     # chroots so we change the root param to have that info too
-    if [[ "$repos" != "" ]]; then
-        repos_md5=($(echo "${repos[@]}" | sort | md5sum ))
+    if [[ "$repos" != "" || "$packages" != "" ]]; then
+        repos_md5=($(echo "${repos[@]}" "${packages[@]}" | sort | md5sum ))
         tmp_chroot="${chroot}-${repos_md5[0]}"
     else
         tmp_chroot="$chroot"
@@ -318,8 +318,7 @@ EOH
     echo "Using chroot cache = /var/cache/mock/${tmp_chroot}" >&2
     echo "Using chroot dir = /var/lib/mock/${tmp_chroot}-$$" >&2
     echo "config_opts['root'] = '${tmp_chroot}'" >> "$tmp_conf"
-    echo "config_opts['unique-ext'] = '$$'" \
-    >> "$tmp_conf"
+    echo "config_opts['unique-ext'] = '$$'" >> "$tmp_conf"
     sed -n \
         -e "/config_opts\[.root.\]/d" \
         -e "1,/\[[\"\']yum.conf[\"\']\]/p" \
@@ -351,38 +350,14 @@ name="Custom $repo_name"
 EOR
     done
     sed -n -e '/\[main\]/,$p' "$base_conf" >> "$tmp_conf"
+    if [[ "$packages" != "" ]]; then
+        cat  >> "$tmp_conf" <<EOC
+config_opts['chroot_setup_cmd'] += ' ${packages[@]}'
+EOC
+    fi
     touch --date "yesterday" "$tmp_conf"
     echo "$tmp_conf"
     return 0
-}
-
-
-install_packages() {
-    local chroot="${1?}"
-    local conf_dir="${2?}"
-    local packages=("${@:3}")
-    local start \
-        end
-    start="$(date +%s)"
-    echo "========== Installing extra packages"
-    [[ "$packages" == "" ]] && return 0
-    cat <<EOC
-    $MOCK \\
-        --configdir="$conf_dir" \\
-        --root="$chroot" \\
-        --install "${packages[@]}" \\
-        --resultdir="$LOGS_DIR/${chroot}.install_packages"
-EOC
-    $MOCK \
-        --configdir="$conf_dir" \
-        --root="$chroot" \
-        --install "${packages[@]}" \
-        --resultdir="$LOGS_DIR/${chroot}.install_packages"
-    res=$?
-    end="$(date +%s)"
-    echo "Install packages took $((end - start)) seconds"
-    echo "============================"
-    return $res
 }
 
 
