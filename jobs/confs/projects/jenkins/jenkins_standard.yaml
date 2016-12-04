@@ -8,6 +8,9 @@
           branch: master
     distro:
       - el7
+      - el6
+      - fc24
+      - fc25
     arch:
       - x86_64:
           node-filter: el7
