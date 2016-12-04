@@ -75,19 +75,19 @@
           project-prefix: vdsm-jsonrpc-java_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-sdk_3.6_build-artifacts-
+          project-prefix: ovirt-engine-sdk_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-sdk_master_build-artifacts-
+          project-prefix: python-ovirt-engine-sdk4_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine-master-ppc64le-platforms:
           project-prefix: ovirt-engine-sdk_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-sdk-java_3.6_create-rpms-
-          project-suffix: _merged
-      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-sdk-java_master_build-artifacts-
+          project-suffix: ""
+      - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: java-ovirt-engine-sdk4_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-scheduler-proxy_master_build-artifacts-
