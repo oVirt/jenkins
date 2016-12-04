@@ -27,7 +27,7 @@
       - fc24
     exclude:
       - version: master
-        distro: fc23
+        distro: fc24
       - version: 4.0
         distro: fc24
       - version: 3.6
