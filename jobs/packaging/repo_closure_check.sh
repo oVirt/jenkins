@@ -25,6 +25,7 @@ FEDORA_MIRROR="http://mirrors.kernel.org/"
 GLUSTER_MIRROR="http://download.gluster.org"
 JPACKAGE_MIRROR="http://vesta.informatik.rwth-aachen.de/ftp/pub/comp/Linux/"
 COPR="http://copr-be.cloud.fedoraproject.org/results"
+VIRT_PREVIEW="http://fedorapeople.org/groups/virt/virt-preview"
 STATIC_REPO=""
 STATIC_RP=""
 EXPERIMENTAL_REPO=""
@@ -181,10 +182,12 @@ check_repo_closure() {
             --repofrompath=check-updates-"${distid}","${FEDORA_MIRROR}"/fedora/updates/"${DISTRIBUTION_VERSION}"/x86_64/ \
             --repofrompath=check-updates-testing-"${distid}","${FEDORA_MIRROR}"/fedora/updates/testing/"${DISTRIBUTION_VERSION}"/x86_64/ \
             --repofrompath=check-patternfly-"${distid}",""${COPR}/patternfly/patternfly1/fedora-${DISTRIBUTION_VERSION}-x86_64"" \
+            --repofrompath=check-virtpreview-"${distid}","${VIRT_PREVIEW}/fedora-${DISTRIBUTION_VERSION}/x86_64/" \
             --lookaside check-fedora-"${distid}" \
             --lookaside check-updates-"${distid}" \
             --lookaside check-updates-testing-"${distid}" \
             --lookaside check-patternfly-"${distid}" \
+            --lookaside check-virtpreview-"${distid}" \
             --repoid check-custom-"${distid}"
     fi
 }
