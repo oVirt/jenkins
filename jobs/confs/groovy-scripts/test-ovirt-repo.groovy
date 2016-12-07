@@ -289,30 +289,36 @@ def main(
     credentials_ack_repo
 ) {{
     stage concurrency: 1, name: 'Testing latest repo'
-    prepare_test_repo(deploy_server_url, version, credentials_prepare_test)
-    checkout(
-        project,
-        git_project,
-        git_jenkins,
-    )
-    run_checks(
-        version,
-        suits,
-        distros,
-        project,
-        git_project,
-        git_jenkins,
-        test_repo_url,
-    )
-    do_archive(suits, distros)
-    if (currentBuild.result != 'FAILURE') {{
-        ack_test_repo(deploy_server_url, version, credentials_ack_repo)
-        if (currentBuild.rawBuild.getPreviousCompletedBuild()?.getResult().toString() == 'FAILURE') {{
-            notify(project, 'SUCCESS')
-        }}
-    }} else {{
-        println "Not promoting testing repo, as current build is '${{currentBuild.result}}'"
-        notify(project, currentBuild.result)
+    try {{
+      prepare_test_repo(deploy_server_url, version, credentials_prepare_test)
+      checkout(
+          project,
+          git_project,
+          git_jenkins,
+      )
+      run_checks(
+          version,
+          suits,
+          distros,
+          project,
+          git_project,
+          git_jenkins,
+          test_repo_url,
+      )
+      do_archive(suits, distros)
+    }} catch(err) {{
+        currentBuild.result = 'FAILURE'
+        throw(err)
+    }} finally {{
+      if (currentBuild.result != 'FAILURE') {{
+          ack_test_repo(deploy_server_url, version, credentials_ack_repo)
+          if (currentBuild.rawBuild.getPreviousCompletedBuild()?.getResult().toString() == 'FAILURE') {{
+              notify(project, 'SUCCESS')
+          }}
+      }} else {{
+          println "Not promoting testing repo, as current build is '${{currentBuild.result}}'"
+          notify(project, currentBuild.result)
+      }}
     }}
 }}
 
