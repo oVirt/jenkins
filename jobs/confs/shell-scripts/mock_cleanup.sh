@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash -x
 echo "shell-scripts/mock_cleanup.sh"
 
 shopt -s nullglob
@@ -16,6 +16,10 @@ _______________________________________________________________________
 #######################################################################
 EOC
 
+# restore the permissions in the working dir, as sometimes it leaves files
+# owned by root and then the 'cleanup workspace' from jenkins job fails to
+# clean and breaks the jobs
+sudo chown -R "$USER" "$WORKSPACE"
 
 # Archive the logs, we want them anyway
 logs=(
@@ -24,8 +28,8 @@ logs=(
 )
 
 if [[ "$logs" ]]; then
-    for log in "${logs[@]}"
-    do
+    for log in "${logs[@]}"; do
+        [[ "$log" = ./exported-artifacts/* ]] && continue
         echo "Copying ${log} to exported-artifacts"
         mv $log exported-artifacts/
     done
@@ -95,21 +99,11 @@ for mock_root in /var/lib/mock/*; do
     fi
 done
 
-if $failed; then
-    echo "Aborting."
-    exit 1
-fi
-
 # remove mock caches that are older then 2 days:
 find /var/cache/mock/ -mindepth 1 -maxdepth 1 -type d -mtime +2 -print0 | \
     xargs -0 -tr sudo rm -rf
 # We make no effort to leave around caches that may still be in use because
 # packages installed in them may go out of date, so may as well recreate them
-
-# restore the permissions in the working dir, as sometimes it leaves files
-# owned by root and then the 'cleanup workspace' from jenkins job fails to
-# clean and breaks the jobs
-sudo chown -R "$USER" "$WORKSPACE"
 
 # Drop all left over libvirt domains
 for UUID in $(virsh list --all --uuid); do
@@ -117,3 +111,8 @@ for UUID in $(virsh list --all --uuid); do
   sleep 2
   virsh undefine --remove-all-storage --storage vda --snapshots-metadata $UUID || :
 done
+
+if $failed; then
+    echo "Cleanup script failed, propegating failure to job"
+    exit 1
+fi
