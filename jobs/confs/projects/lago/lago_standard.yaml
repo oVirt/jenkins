@@ -6,7 +6,6 @@
         - master:
             branch: master
       distro:
-        - fc23
         - fc24
         - el7
       trigger: 'on-change'
@@ -19,7 +18,7 @@
     <<: *lago_common
     name: lago_check-patch_standard
     stage: 'check-patch'
-    node-filter: 'nested && fc23'
+    node-filter: 'nested && fc24'
     jobs:
       - 'lago_{version}_check-patch-{distro}-{arch}'
 
@@ -30,7 +29,7 @@
     stage:
       - build-artifacts
       - check-merged:
-          node-filter: 'nested && fc23'
+          node-filter: 'nested && fc24'
     jobs:
       - 'lago_{version}_{stage}-{distro}-{arch}'
       - '{project}_{version}_deploy-to-{reponame}-snapshot'
