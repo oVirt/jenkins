@@ -1,6 +1,38 @@
-- project:
-    name: ovirt-engine_build
+- project: &base-commons
+    name: 'ovirt-engine_commons'
     project: ovirt-engine
+    distro:
+      - el6
+      - el7
+      - fc23
+      - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: master
+        distro: el6
+      - version: 4.1
+        distro: el6
+      - version: 4.1
+        distro: fc23
+      - version: 4.0
+        distro: el6
+      - version: 4.0.6
+        distro: el6
+      - version: 3.6
+        distro: fc24
+      - version: 3.6
+        distro: fc23
+      - version: 4.0
+        distro: fc24
+      - version: 4.0.6
+        distro: fc24
+    arch: x86_64
+    trigger: on-change
+
+- project:
+    <<: *base-commons
+    name: ovirt-engine_build_artifacts
     version:
       - master:
           branch: master
@@ -11,35 +43,12 @@
       - 3.6:
           branch: ovirt-engine-3.6
     stage: build-artifacts
-    trigger: 'on-change'
-    distro:
-      - el6
-      - el7
-      - fc23
-      - fc24
-    exclude:
-      - version: master
-        distro: el6
-      - version: master
-        distro: fc23
-      - version: 4.1
-        distro: el6
-      - version: 4.1
-        distro: fc23
-      - version: 4.0
-        distro: el6
-      - version: 4.0
-        distro: fc24
-      - version: 3.6
-        distro: fc24
-    arch: x86_64
     jobs:
-      - 'ovirt-engine_{version}_build-artifacts-{distro}-{arch}'
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
+    <<: *base-commons
     name: ovirt-engine_check-patch
-    project:
-      - ovirt-engine
     version:
       - master:
           branch: master
@@ -51,38 +60,14 @@
           branch: ovirt-engine-4.0.6
       - 3.6:
           branch: ovirt-engine-3.6
-    stage:
-      - check-patch
-    distro:
-      - el6
-      - el7
-      - fc24
-    exclude:
-      - version: master
-        distro: el6
-      - version: 4.1
-        distro: el6
-      - version: 4.0
-        distro: el6
-      - version: 4.0.6
-        distro: el6
-      - version: 3.6
-        distro: el7
-      - version: 3.6
-        distro: fc24
-      - version: 4.0
-        distro: fc24
-      - version: 4.0.6
-        distro: fc24
-    trigger: 'on-change'
-    arch: x86_64
+    stage: check-patch
+    trigger: on-change
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
 - project:
+    <<: *base-commons
     name: ovirt-engine_check-merge
-    project:
-      - ovirt-engine
     version:
       - master:
           branch: master
@@ -94,35 +79,7 @@
           branch: ovirt-engine-4.0.6
       - 3.6:
           branch: ovirt-engine-3.6
-    stage:
-      - check-merged
-    distro:
-      - el6
-      - el7
-      - fc23
-      - fc24
-    exclude:
-      - version: master
-        distro: el6
-      - version: master
-        distro: fc23
-      - version: 4.1
-        distro: el6
-      - version: 4.1
-        distro: fc23
-      - version: 4.0
-        distro: el6
-      - version: 4.0
-        distro: fc24
-      - version: 4.0.6
-        distro: el6
-      - version: 4.0.6
-        distro: fc24
-      - version: 3.6
-        distro: fc24
-      - version: 3.6
-        distro: el7
-    trigger: 'on-change'
-    arch: x86_64
+    stage: check-merged
+    trigger: on-change
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
