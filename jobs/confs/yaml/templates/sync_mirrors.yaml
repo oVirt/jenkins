@@ -1,0 +1,16 @@
+- job-template:
+    name: 'system-sync_mirrors-{repo}-{arch}'
+    node: mirrors
+    properties:
+      - build-discarder:
+          num-to-keep: 60
+          artifact-num-to-keep: 30
+    scm:
+      - jenkins:
+          branch: master
+          git-server: '{git-server}'
+    builders:
+      - shell: |
+          jenkins/scripts/mirror_mgr.sh resync_yum_mirror \
+            '{repo}' '{arch}' jenkins/data/mirrors-reposync.conf
+

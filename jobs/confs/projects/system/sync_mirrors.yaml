@@ -1,0 +1,9 @@
+- project:
+    name: system-sync_mirrors
+    repo:
+      - 'centos-base-el7'
+      - 'centos-updates-el7'
+    arch: x86_64
+    jobs:
+      - 'system-sync_mirrors-{repo}-{arch}'
+
