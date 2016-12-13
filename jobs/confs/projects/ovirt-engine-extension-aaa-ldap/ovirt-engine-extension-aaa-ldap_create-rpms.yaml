@@ -12,7 +12,7 @@
           extra-repos: |
             ovirt-4.0-snapshot,http://resources.ovirt.org/pub/ovirt-4.0-snapshot/rpm/$distro
             ovirt-4.0-snapshot-static,http://resources.ovirt.org/pub/ovirt-4.0-snapshot-static/rpm/$distro
-          branch: master
+          branch: ovirt-engine-extension-aaa-ldap-1.2
       - 3.6:
           extra-repos: |
             ovirt-3.6-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
@@ -57,7 +57,7 @@
           extra-repos: |
             ovirt-4.0-snapshot,http://resources.ovirt.org/pub/ovirt-4.0-snapshot/rpm/$distro
             ovirt-4.0-snapshot-static,http://resources.ovirt.org/pub/ovirt-4.0-snapshot-static/rpm/$distro
-          branch: master
+          branch: ovirt-engine-extension-aaa-ldap-1.2
           repoversion: 4.0
       - 3.6:
           extra-repos: |
