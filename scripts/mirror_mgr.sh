@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 # mirror_mgr.sh - Atomic mirror management script
 #
 # This script comtains various tools for managing oVirt CI package
@@ -24,6 +24,10 @@ MIRRORS_FSTYPE="${MIRRORS_FSTYPE:-xfs}"
 MIRRORS_MP_BASE="${MIRRORS_MP_BASE:-/var/www/html/repos}"
 MIRRORS_HTTP_BASE="${MIRRORS_HTTP_BASE:-http://mirrors.phx.ovirt.org/repos}"
 MIRRORS_CACHE="${MIRRORS_CACHE:-$HOME/mirrors_cache}"
+
+MAX_LOCK_ATTEMPTS=120
+LOCK_WAIT_INTERVAL=5
+LOCK_BASE="$HOME"
 
 main() {
     # Launch the command fuction according to the command given on the
@@ -114,7 +118,7 @@ cmd_snapshot_yum_mirror() {
         echo "Creating snapshot metadata" &&
         /bin/createrepo \
             --update --update-md-path="$repo_mp" \
-            --baseurl="$MIRRORS_HTTP_BASE/yum/$repo_name/base" \
+            --baseurl="$(repo_url $repo_name yum base)" \
             --outputdir="$snapshot_mp" \
             --workers=8 \
             "${repo_comps[@]}" \
@@ -123,6 +127,35 @@ cmd_snapshot_yum_mirror() {
     rm -f "$list_file"
     echo "$snapshot_name" > "$(latest_file $repo_name yum)"
     /usr/sbin/restorecon -R "$snapshot_mp" "$(latest_file $repo_name yum)"
+}
+
+cmd_list_latest() {
+    # List the latest repo URLs for all repos of the given type
+    # An optional 2rd parameter specifies the listing format, and causes the
+    # list to be passed through the latest_format_$format function, all other
+    # parametrs will be passed to the formatting funtion as well
+    #
+    local repo_type="${1:?}"
+    local formatter="latest_format_${2:-plain}"
+    local formatter_params=("${@:3}")
+
+    list_latest "$repo_type" | $formatter "${formatter_params[@]}"
+}
+
+cmd_write_latest_lists() {
+    local repo_type="${1:?}"
+    local varname="${2:-latest_ci_repos}"
+
+    local list_file_path="$MIRRORS_MP_BASE/$repo_type/all_latest"
+    local lock_name="latest_lists_$repo_type"
+
+    wait_for_lock "$lock_name"
+    echo "Writing lates index files for $repo_type repos"
+    list_latest "$repo_type" | tee > /dev/null \
+        >(latest_format_yaml "$varname" > "${list_file_path}.yaml") \
+        >(latest_format_json "$varname" > "${list_file_path}.json") \
+        >(latest_format_python "$varname" > "${list_file_path}.py")
+    release_lock "$lock_name"
 }
 
 verify_repo_fs() {
@@ -166,6 +199,7 @@ verify_repo_fs() {
     ensure_mount "$repo_dev_name" "$MIRRORS_MP_BASE" rw $p_fs_was_created
 
     sudo install -o "$USER" -d \
+        "$MIRRORS_MP_BASE/$repo_type" \
         "$MIRRORS_MP_BASE/$repo_type/$repo_name" \
         "$MIRRORS_MP_BASE/$repo_type/$repo_name/base"
 }
@@ -245,10 +279,92 @@ run_reposync() {
         "${extra_args[@]}"
 }
 
+list_latest() {
+    local repo_type="${1:?}"
+    local lf repo_name
+
+    for lf in $(latest_file '*' "$repo_type"); do
+        [[ "$lf" =~ ^$(latest_file '(.*)' "$repo_type")$ ]] || continue
+        repo_name="${BASH_REMATCH[1]}"
+        # If we get a '*' as the repo name it probably just means we got our
+        # pattern back instead of matches, so we just break out of the loop
+        [[ "$repo_name" = "*" ]] && break
+        echo "$repo_name $(repo_url "$repo_name" "$repo_type" "$(cat $lf)")"
+    done
+}
+
+latest_format_plain() { cat; }
+
+latest_format_yaml() {
+    local varname="${1:-latest_ci_repos}"
+    echo $'---\n'"${varname}:"
+    while read repo_name repo_url; do
+        echo "  $repo_name: '$repo_url'"
+    done
+}
+
+latest_format_json() {
+    local varname="${1:-latest_ci_repos}"
+    local json
+    echo "{ \"${varname}\": {"
+    json="$(
+        while read repo_name repo_url; do
+            echo "  \"$repo_name\": \"$repo_url\","
+        done
+    )"
+    echo "${json%%,}"
+    echo "} }"
+}
+
+latest_format_python() {
+    local varname="${1:-latest_ci_repos}"
+    local indention="${2:-}"
+    echo "${indention}${varname} = {"
+    while read repo_name repo_url; do
+        echo "${indention}    '$repo_name': '$repo_url',"
+    done
+    echo "${indention}}"
+}
+
 latest_file() {
     local repo_name="${1:?}"
     local repo_type="${2:?}"
     echo "$MIRRORS_MP_BASE/$repo_type/$repo_name/latest.txt"
+}
+
+repo_url() {
+    local repo_name="${1:?}"
+    local repo_type="${2:?}"
+    local snapshot="${3:-base}"
+
+    echo "$MIRRORS_HTTP_BASE/$repo_type/$repo_name/$snapshot"
+}
+
+wait_for_lock() {
+    local lock_name="${1:?}"
+    local max_lock_attempts="${2:-$MAX_LOCK_ATTEMPTS}"
+    local lock_wait_interval="${3:-$LOCK_WAIT_INTERVAL}"
+    local lock_path="$LOCK_BASE/${lock_name}.lock"
+
+    for ((i = 0; i < $max_lock_attempts; i++)); do
+        if (set -o noclobber; > $lock_path) 2> /dev/null; then
+            echo "Acquired lock: $lock_name"
+            trap "release_lock '$lock_name'" EXIT
+            return
+        fi
+        sleep $lock_wait_interval
+    done
+    echo "Timed out waiting for lock: $lock_name" >&2
+    exit 1
+}
+
+release_lock() {
+    local lock_name="${1:?}"
+    local lock_path="$LOCK_BASE/${lock_name}.lock"
+    if [[ -e "$lock_path" ]]; then
+        rm -f "$lock_path"
+        echo "Released lock: $lock_name"
+    fi
 }
 
 die() {

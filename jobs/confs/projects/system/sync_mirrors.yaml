@@ -7,3 +7,9 @@
     jobs:
       - 'system-sync_mirrors-{repo}-{arch}'
 
+- project:
+    name: system-mk_mirrors_index
+    repo_type: yum
+    jobs:
+      - 'system-mk_mirrors_index-{repo_type}'
+

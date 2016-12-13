@@ -1,6 +1,7 @@
-- job-template:
+- job-template: &system-sync_mirrors
     name: 'system-sync_mirrors-{repo}-{arch}'
     node: mirrors
+    concurrent: true
     properties:
       - build-discarder:
           num-to-keep: 60
@@ -13,4 +14,15 @@
       - shell: |
           jenkins/scripts/mirror_mgr.sh resync_yum_mirror \
             '{repo}' '{arch}' jenkins/data/mirrors-reposync.conf
+    publishers:
+      - trigger:
+          project: system-mk_mirrors_index-yum
 
+- job-template:
+    <<: *system-sync_mirrors
+    name: 'system-mk_mirrors_index-{repo_type}'
+    concurrent: false
+    builders:
+      - shell: |
+          jenkins/scripts/mirror_mgr.sh write_latest_lists '{repo_type}'
+    publishers: {}
