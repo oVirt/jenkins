@@ -1,4 +1,5 @@
 #!/bin/bash -xe
+set +o noglob
 
 main() {
     # dispatch tests according to what changed in git
@@ -35,8 +36,19 @@ test_standard_ci_proxy() {
     fi
 }
 
+test_mock_genconfig() {
+    # skip this test on el6 because we're no longer using it on the
+    # Jenkins slaves
+    grep -qE '^(Red Hat|CentOS) .*release 6\.' /etc/system-release && \
+        return
+    for mock_cfg in mock_configs/*.cfg; do
+        mock_configs/mock_genconfig --base "$mock_cfg" --name 'foo'
+    done
+}
+
 test_standard_ci() {
     test_standard_ci_proxy
+    test_mock_genconfig
 }
 
 main "$@"

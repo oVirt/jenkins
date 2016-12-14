@@ -16,6 +16,13 @@ class WrongRepoFormat(Exception):
     pass
 
 
+def gen_intial_config_opts():
+    return {
+        'environment': {},
+        'plugin_conf': {},
+    }
+
+
 def parse_option(string):
     if '=' not in string:
         raise WrongOptionFormat('Option specification "%s" does not match '
@@ -67,7 +74,7 @@ def check_proxy(proxy_url, test_url='http://proxy.phx.ovirt.org:5000/'):
     try:
         res = requests.get(test_url, proxies={'http': proxy_url}, timeout=5)
     except Exception as exc:
-        logging.warn("Failed to contact proxy at %s",proxy_url)
+        logging.warn("Failed to contact proxy at %s", proxy_url)
         logging.warn(exc)
         return False
     if not res.ok:
@@ -115,7 +122,7 @@ def main():
                         help='Try using the proxied config first')
     args = parser.parse_args()
 
-    config_opts = {}
+    config_opts = gen_intial_config_opts()
 
     base_config = args.base_config
     if args.try_proxy:

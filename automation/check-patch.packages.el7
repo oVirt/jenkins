@@ -1,4 +1,5 @@
 jenkins-job-builder
 python-setuptools
 python-ordereddict
+python-requests
 git
