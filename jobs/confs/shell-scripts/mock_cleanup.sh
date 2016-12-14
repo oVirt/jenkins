@@ -1,11 +1,5 @@
 #!/bin/bash -x
 echo "shell-scripts/mock_cleanup.sh"
-
-shopt -s nullglob
-
-
-WORKSPACE="$PWD"
-
 # Make clear this is the cleanup, helps reading the jenkins logs
 cat <<EOC
 _______________________________________________________________________
@@ -15,6 +9,28 @@ _______________________________________________________________________
 #                                                                     #
 #######################################################################
 EOC
+
+shopt -s nullglob
+
+WORKSPACE="${WORKSPACE:-$PWD}"
+UMOUNT_RETRIES="${UMOUNT_RETRIES:-3}"
+UMOUNT_RETRY_DELAY="${UMOUNT_RETRY_DELAY:-1s}"
+
+safe_umount() {
+    local mount="${1:?}"
+    local attempt
+    for ((attempt=0 ; attempt < $UMOUNT_RETRIES ; attempt++)); do
+        # If this is not the 1st time through the loop, Sleep a while to let
+        # the problem "solve itself"
+        [[ attempt > 0 ]] && sleep "$UMOUNT_RETRY_DELAY"
+        # Try to umount
+        sudo umount --lazy "$mount" && return 0
+        # See if the mount is already not there despite failing
+        findmnt --kernel --first "$mount" > /dev/null && return 0
+    done
+    echo "ERROR:  Failed to umount $mount."
+    return 1
+}
 
 # restore the permissions in the working dir, as sometimes it leaves files
 # owned by root and then the 'cleanup workspace' from jenkins job fails to
@@ -70,29 +86,24 @@ for mock_conf_file in "${mock_confs[@]}"; do
         echo "Found mounted dirs inside the chroot $chroot. Trying to umount."
     fi
     for mount in "${mounts[@]}"; do
-        sudo umount --lazy "$mount" \
-        || {
-            echo "ERROR:  Failed to umount $mount."
-            failed=true
-        }
+        safe_umount "$mount" || failed=true
     done
 done
 
 # Clean any leftover chroot from other jobs
 for mock_root in /var/lib/mock/*; do
     this_chroot_failed=false
-    mounts=($(mount | awk '{print $3}' | grep "$mock_root")) || :
+    mounts=($(cut -d\  -f2 /proc/mounts | grep "$mock_root" | sort -r)) || :
     if [[ "$mounts" ]]; then
         echo "Found mounted dirs inside the chroot $mock_root." \
              "Trying to umount."
     fi
     for mount in "${mounts[@]}"; do
-        sudo umount --lazy "$mount" \
-        || {
-            echo "ERROR:  Failed to umount $mount."
-            failed=true
-            this_chroot_failed=true
-        }
+        safe_umount "$mount" && continue
+        # If we got here, we failed $UMOUNT_RETRIES attempts so we should make
+        # noise
+        failed=true
+        this_chroot_failed=true
     done
     if ! $this_chroot_failed; then
         sudo rm -rf "$mock_root"
