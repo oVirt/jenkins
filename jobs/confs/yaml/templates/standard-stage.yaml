@@ -11,7 +11,7 @@
           max-total: 15
           option: project
       - build-discarder:
-          num-to-keep: 120
+          days-to-keep: 14
           artifact-num-to-keep: 60
     scm:
       - '{project}-gerrit':
@@ -173,7 +173,7 @@
     properties:
       - throttle: *standard-template-properties-throttle
       - build-discarder:
-          num-to-keep: 120
+          days-to-keep: 14
           artifact-num-to-keep: 20
 
 - job-template:
