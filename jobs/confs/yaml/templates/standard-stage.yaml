@@ -8,7 +8,7 @@
     properties:
       - throttle: &standard-template-properties-throttle
           max-per-node: 1
-          max-total: 15
+          max-total: 30
           option: project
       - build-discarder:
           days-to-keep: 14

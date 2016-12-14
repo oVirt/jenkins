@@ -7,7 +7,7 @@
       - throttle:
           enabled: true
           max-per-node: 1
-          max-total: 10
+          max-total: 30
           option: category
           categories:
             - cpu_intensive(find_bugs)
