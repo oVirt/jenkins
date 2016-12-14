@@ -48,7 +48,7 @@
           project-prefix: ovirt-iso-uploader_master_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-log-collector_master_build-artifacts-
+          project-prefix: ovirt-log-collector_4.1_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-engine-cli_3.6_build-artifacts-
