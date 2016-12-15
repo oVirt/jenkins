@@ -55,6 +55,18 @@ metadata_expire=30m
     return repos_str
 
 
+def flatten_dict(a_dict):
+    result = dict()
+    for key, value in a_dict.iteritems():
+        if isinstance(value, dict):
+            flat_value = flatten_dict(value)
+            for sub_key, sub_value in flat_value.iteritems():
+                result['{}.{}'.format(key, sub_key)] = sub_value
+        else:
+            result[key] = value
+    return result
+
+
 def dumps_dict(to_dump, dict_name):
     result_lines = []
     for key, value in to_dump.iteritems():
@@ -160,6 +172,7 @@ def main():
     config_opts['yum.conf'] = '%s' % (config_opts.get('yum.conf', '')
                                       + get_repos(args.extra_repos))
 
+    config_opts = flatten_dict(config_opts)
     print dumps_dict(config_opts, 'config_opts')
 
 
