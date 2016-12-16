@@ -2,6 +2,7 @@
     name: repos_check_closure
     version:
       - master
+      - 4.1
       - 4.0
       - 3.6
     distro:
@@ -13,6 +14,10 @@
       - version: master
         distro: el6
       - version: master
+        distro: fc23
+      - version: 4.1
+        distro: el6
+      - version: 4.1
         distro: fc23
       - version: 4.0
         distro: el6
