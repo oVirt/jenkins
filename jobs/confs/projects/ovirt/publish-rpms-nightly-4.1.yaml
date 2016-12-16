@@ -146,7 +146,7 @@
           project: mom_master_build-artifacts-fc24-x86_64
 
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-live_master_build-artifacts-
+          project-prefix: ovirt-live_4.1_build-artifacts-
           project-suffix: ""
 
       - copy-create-job-artifact:
