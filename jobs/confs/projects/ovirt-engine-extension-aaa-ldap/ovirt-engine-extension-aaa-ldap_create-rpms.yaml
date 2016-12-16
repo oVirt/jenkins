@@ -8,6 +8,11 @@
             ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
             ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
           branch: master
+      - 4.1:
+          extra-repos: |
+            ovirt-4.1-snapshot,http://resources.ovirt.org/pub/ovirt-4.1-snapshot/rpm/$distro
+            ovirt-4.1-snapshot-static,http://resources.ovirt.org/pub/ovirt-4.1-snapshot-static/rpm/$distro
+          branch: master
       - 4.0:
           extra-repos: |
             ovirt-4.0-snapshot,http://resources.ovirt.org/pub/ovirt-4.0-snapshot/rpm/$distro
@@ -28,6 +33,10 @@
       - version: master
         distro: el6
       - version: master
+        distro: fc23
+      - version: 4.1
+        distro: el6
+      - version: 4.1
         distro: fc23
       - version: 4.0
         distro: el6
@@ -53,6 +62,11 @@
             ovirt-master-snapshot-static,http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/$distro
           branch: master
           repoversion: master
+      - 4.1:
+          extra-repos: |
+            ovirt-4.1-snapshot,http://resources.ovirt.org/pub/ovirt-4.1-snapshot/rpm/$distro
+            ovirt-4.1-snapshot-static,http://resources.ovirt.org/pub/ovirt-4.1-snapshot-static/rpm/$distro
+          branch: master
       - 4.0:
           extra-repos: |
             ovirt-4.0-snapshot,http://resources.ovirt.org/pub/ovirt-4.0-snapshot/rpm/$distro
@@ -75,6 +89,10 @@
       - version: master
         distro: el6
       - version: master
+        distro: fc23
+      - version: 4.1
+        distro: el6
+      - version: 4.1
         distro: fc23
       - version: 4.0
         distro: el6
