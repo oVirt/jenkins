@@ -19,7 +19,8 @@
 LAYOUT=""
 CUSTOM_URL=""
 BASE_URL="http://resources.ovirt.org"
-CENTOS_MIRROR="http://centos.mirror.constant.com/"
+CENTOS_MIRROR="http://centos.mirror.constant.com"
+CENTOS_TESTING="http://buildlogs.centos.org/centos"
 EPEL_MIRROR="http://ftp-stud.hs-esslingen.de/pub"
 FEDORA_MIRROR="http://mirrors.kernel.org/"
 GLUSTER_MIRROR="http://download.gluster.org"
@@ -144,6 +145,7 @@ check_repo_closure() {
                 --repofrompath=check-epel-"${distid}","${EPEL_MIRROR}"/epel/"${DISTRIBUTION_VERSION}"/x86_64/ \
                 --repofrompath=centos-glusterfs37-"${distid}","${CENTOS_MIRROR}/${DISTRIBUTION_VERSION}"/storage/x86_64/gluster-3.7/ \
                 --repofrompath=check-patternfly-"${distid}","${COPR}/patternfly/patternfly1/epel-${DISTRIBUTION_VERSION}-x86_64" \
+                --repofrompath=check-centos-opstools-testing-"${distid}","${CENTOS_TESTING}/${DISTRIBUTION_VERSION}"/opstools/x86_64/ \
                 --lookaside check-updates-"${distid}" \
                 --lookaside check-extras-"${distid}" \
                 --lookaside centos-ovirt36-"${distid}" \
@@ -151,6 +153,7 @@ check_repo_closure() {
                 --lookaside centos-glusterfs37-"${distid}" \
                 --lookaside check-base-"${distid}" \
                 --lookaside check-patternfly-"${distid}" \
+                --lookaside check-centos-opstools-testing-"${distid}" \
                 --repoid check-custom-"${distid}"
         else
             repoclosure \
