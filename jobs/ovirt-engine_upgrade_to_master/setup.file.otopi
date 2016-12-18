@@ -51,3 +51,4 @@ OVESETUP_ENGINE_CONFIG/fqdn=str:CHANGE_HOSTNAME
 OVESETUP_CONFIG/websocketProxyConfig=bool:True
 OVESETUP_VMCONSOLE_PROXY_CONFIG/vmconsoleProxyConfig=bool:True
 OVESETUP_DWH_CORE/enable=bool:False
+OVESETUP_DB/engineVacuumFull=bool:False
