@@ -191,9 +191,15 @@
           project-suffix: _merged
 
       - copy-create-job-artifact:
+          project: ovirt-guest-agent_master_build-artifacts-el6-x86_64
+      - copy-create-job-artifact:
           project: ovirt-guest-agent_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-guest-agent_master_build-artifacts-fc24-x86_64
+
+      - copy-create-job-artifact-vdsm-master-platforms:
+          project-prefix: ovirt-provider-ovn_master_build-artifacts-
+          project-suffix: ""
 
     publishers:
       - email:
