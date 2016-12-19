@@ -44,6 +44,7 @@
           branch: ovirt-4.0
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
+      - '{project}_{version}_{stage}-on-demand-{distro}-{arch}'
 
 - project:
     <<: *build-artifacts-params
