@@ -5,7 +5,7 @@
       - master:
           branch: master
       - 4.1:
-          branch: ovirt-engine-4.0
+          branch: ovirt-engine-4.1
       - 4.0:
           branch: ovirt-engine-4.0
       - 3.6:
