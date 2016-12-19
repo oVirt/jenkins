@@ -135,10 +135,9 @@
       - copy-create-job-artifact:
           project: ovirt-appliance_master_build-artifacts-el7-x86_64
 
-      - copy-create-job-artifact:
-          project: ovirt-engine_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-engine_master_build-artifacts-fc24-x86_64
+      - copy-create-job-artifact-engine_4.1-platforms:
+          project-prefix: ovirt-engine_4.1_build-artifacts-
+          project-suffix: ""
 
       - copy-create-job-artifact:
           project: mom_master_build-artifacts-el7-x86_64
