@@ -32,6 +32,22 @@
                     branch-pattern: '{branch}'
 
 - trigger:
+    name: build-artifacts-on-demand_trigger_on-comment-added
+    triggers:
+      - gerrit:
+          server-name: '{gerrit-server}'
+          trigger-on:
+              - comment-added-contains-event:
+                  comment-contains-value: 'ci please build'
+          escape-quotes: true
+          projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'PLAIN'
+                    branch-pattern: '{branch}'
+
+- trigger:
     name: check-merged_trigger_on-change
     triggers:
       - gerrit:
