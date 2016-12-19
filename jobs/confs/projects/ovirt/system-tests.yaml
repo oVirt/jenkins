@@ -16,6 +16,8 @@
           chroot_distro: el7
       - 4.0:
           chroot_distro: el7
+      - 4.1:
+          chroot_distro: el7
       - master:
           chroot_distro: el7
 
