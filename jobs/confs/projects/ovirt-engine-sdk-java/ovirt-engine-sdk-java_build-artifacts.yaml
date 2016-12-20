@@ -3,10 +3,8 @@
     project:
       - ovirt-engine-sdk-java
     version:
-      - master:
-          branch: master
-      - 4.0:
-          branch: sdk_4.0
+      - 3.6:
+          branch: sdk_3.6
     stage:
       - check-merged
       - check-patch
@@ -26,9 +24,29 @@
 
 - project:
     <<: *basic-params
+    name: java-ovirt-engine-sdk4_checks
+    version:
+      - 4.0:
+          branch: sdk_4.0
+      - 4.1:
+          branch: sdk_4.1
+      - master:
+          branch: master
+    exclude:
+      - version: master
+        distro: fc23
+      - version: 4.1
+        distro: fc23
+      - version: 4.0
+        distro: fc24
+    jobs:
+        - 'java-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *basic-params
     name: ovirt-engine-sdk-java_build_x86_64
     stage: build-artifacts
-    project: ovirt-engine-sdk
+    project: ovirt-engine-sdk-java
     version:
       - master:
           branch: sdk_3.6
@@ -43,7 +61,7 @@
     <<: *basic-params
     name: java-ovirt-engine-sdk4_build_x86_64
     stage: build-artifacts
-    project: ovirt-engine-sdk
+    project: ovirt-engine-sdk-java
     version:
       - master:
           branch: master

@@ -58,6 +58,60 @@
         - exported-artifacts
         - html-reports
 
+- job-template:
+      <<: *standard-template-basic
+      name: 'java-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
+      scm:
+        - 'ovirt-engine-sdk-java-gerrit':
+            git-server: '{git-server}'
+        # Non-gerrit scm, we have to specify the branch
+        - jenkins:
+            branch: master
+            git-server: '{git-server}'
+      builders:
+        - shell: |
+            if [ ${{GERRIT_EVENT_TYPE}} == "patchset-created" ]; then
+              status=`curl https://gerrit.ovirt.org/changes/?q=change:${{GERRIT_CHANGE_NUMBER}} | grep status | cut -d'"' -f4`
+              if [ $status == "MERGED" ]; then
+                echo "This patch has already been merged. Exiting..."
+                exit 0
+              fi
+            fi
+        - cleanup-slave
+        - '{stage}_builder':
+            project: 'java-ovirt-engine-sdk4'
+            distro: '{distro}'
+            arch: '{arch}'
+            extra-env: '{extra-env}'
+            cherry-pick: '{cherry-pick}'
+
+- job-template:
+      <<: *standard-template-basic
+      name: 'python-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
+      scm:
+        - 'ovirt-engine-sdk-gerrit':
+            git-server: '{git-server}'
+        # Non-gerrit scm, we have to specify the branch
+        - jenkins:
+            branch: master
+            git-server: '{git-server}'
+      builders:
+        - shell: |
+            if [ ${{GERRIT_EVENT_TYPE}} == "patchset-created" ]; then
+              status=`curl https://gerrit.ovirt.org/changes/?q=change:${{GERRIT_CHANGE_NUMBER}} | grep status | cut -d'"' -f4`
+              if [ $status == "MERGED" ]; then
+                echo "This patch has already been merged. Exiting..."
+                exit 0
+              fi
+            fi
+        - cleanup-slave
+        - '{stage}_builder':
+            project: 'python-ovirt-engine-sdk4'
+            distro: '{distro}'
+            arch: '{arch}'
+            extra-env: '{extra-env}'
+            cherry-pick: '{cherry-pick}'
+
 - job-template: &standard-template-deploy
       <<: *standard-template
       name: '{project}_{version}_build-artifacts-{distro}-{arch}'
