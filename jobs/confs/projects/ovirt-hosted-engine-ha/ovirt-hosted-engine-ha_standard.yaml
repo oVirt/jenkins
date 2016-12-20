@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: v2.1.z
       - 4.0:
           branch: v2.0.z
     stage:
@@ -16,6 +18,8 @@
       - fc24
     exclude:
       - version: master
+        distro: fc23
+      - version: 4.1
         distro: fc23
       - version: 4.0
         distro: fc24
@@ -44,6 +48,7 @@
     name: ovirt-hosted-engine-ha_build-artifacts-manual-any
     version:
       - '4.0'
+      - '4.1'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
