@@ -118,7 +118,7 @@
           project-prefix: ovirt-hosted-engine-ha_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-hosted-engine-4.1-platforms:
-          project-prefix: ovirt-hosted-engine-setup_master_build-artifacts-
+          project-prefix: ovirt-hosted-engine-setup_4.1_build-artifacts-
           project-suffix: ""
 
       - copy-create-job-artifact:

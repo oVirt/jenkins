@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: ovirt-hosted-engine-setup-2.1
       - 4.0:
           branch: ovirt-hosted-engine-setup-2.0
       - 3.6:
@@ -18,6 +20,8 @@
       - fc24
     exclude:
       - version: master
+        distro: fc23
+      - version: 4.1
         distro: fc23
       - version: 4.0
         distro: fc24
@@ -50,6 +54,7 @@
     version:
       - '3.6'
       - '4.0'
+      - '4.1'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
