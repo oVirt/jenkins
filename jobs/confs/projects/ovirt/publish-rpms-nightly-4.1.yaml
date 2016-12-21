@@ -173,7 +173,7 @@
           project-suffix: ""
 
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-release_master_build-artifacts-
+          project-prefix: ovirt-release_4.1_build-artifacts-
           project-suffix: ""
 
       - copy-create-job-artifact:
