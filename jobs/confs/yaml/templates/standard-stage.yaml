@@ -26,6 +26,13 @@
           branch: '{branch}'
           trigger-times: '{trigger-times}'
           gerrit-server: '{gerrit-server}'
+    notifications:
+      - http:
+          url: '{notification-url}'
+          format: JSON
+          event: completed
+          timeout: 40000
+          log: 0
 
 - job-template: &standard-template
       <<: *standard-template-basic
