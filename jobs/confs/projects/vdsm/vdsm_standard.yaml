@@ -19,6 +19,7 @@
 - project: &vdsm_build_artifacts_common_x86_64
     <<: *vdsm_standard_common
     name: vdsm_build-artifacts_x86_64
+    notification-url: 'https://ovirt-ovirt-engine.getbadges.io/api/app/webhook/66f43bb2-6b98-4aab-8d1a-7acca6704dab'
     stage: build-artifacts
     version:
       - master:
