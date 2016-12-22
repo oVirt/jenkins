@@ -40,6 +40,8 @@
     exclude:
       - version: master
         distro: fc23
+      - version: 4.1
+        distro: fc23
       - version: 4.0
         distro: fc24
       - version: 3.6
@@ -72,6 +74,8 @@
     exclude:
       - version: master
         distro: fc23
+      - version: 4.1
+        distro: fc23
       - version: 4.0
         distro: fc24
     trigger: manual
@@ -84,6 +88,7 @@
     stage: build-artifacts-manual
     version:
       - '4.0'
+      - '4.1'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
@@ -95,6 +100,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: ovirt-4.1
     distro:
       - el7
     arch: ppc64le
