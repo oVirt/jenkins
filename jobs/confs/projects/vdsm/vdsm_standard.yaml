@@ -7,6 +7,8 @@
       version:
         - master:
             branch: master
+        - 4.1:
+            branch: ovirt-4.1
         - 4.0:
             branch: ovirt-4.0
         - 3.6:
@@ -22,6 +24,9 @@
       - master:
           branch: master
           repoversion: master
+      - 4.1:
+          branch: ovirt-4.1
+          repoversion: 4.1
       - 4.0:
           branch: ovirt-4.0
           repoversion: 4.0
@@ -54,6 +59,9 @@
       - master:
           branch: master
           repoversion: master
+      - 4.1:
+          branch: ovirt-4.1
+          repoversion: 4.1
       - 4.0:
           branch: ovirt-4.0
           repoversion: 4.0
