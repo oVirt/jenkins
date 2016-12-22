@@ -14,6 +14,8 @@
           branch: ovirt-4.0
       - ovirt-4.1-pre:
           branch: ovirt-4.1-pre
+      - ovirt-4.1-snapshot:
+          branch: ovirt-4.1-snapshot
     distro:
       - el7
     arch:
@@ -55,6 +57,10 @@
           branch: ovirt-4.1-pre
           trigger: 'timed'
           trigger-times: '@weekly'
+      - ovirt-4.1-snapshot:
+          branch: ovirt-4.1-snapshot
+          trigger: 'timed'
+          trigger-times: '@daily'
     jobs:
       - 'ovirt-appliance_{version}_build-artifacts-{distro}-{arch}'
 
