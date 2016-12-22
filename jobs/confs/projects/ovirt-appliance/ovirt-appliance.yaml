@@ -31,6 +31,6 @@
       - el7
     arch:
       - x86_64
-    node-filter: physical || f23 || f24
+    node-filter: physical || f24
     jobs:
       - 'ovirt-appliance_{version}_build-artifacts-{distro}-{arch}'
