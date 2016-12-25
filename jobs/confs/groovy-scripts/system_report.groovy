@@ -1,6 +1,6 @@
 import java.text.SimpleDateFormat
 
-def str_view = "00 Unstable Jobs (Production)"
+def str_view = "00 Unstable Critical"
 
 def workspace = build.getEnvironment(listener).get('WORKSPACE')
 
