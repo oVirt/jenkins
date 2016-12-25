@@ -30,6 +30,7 @@
 - project:
     <<: *basic-params
     name: python-ovirt-engine-sdk4_checks
+    project: ovirt-engine-sdk
     version:
       - 4.0:
           branch: sdk_4.0
@@ -76,6 +77,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: sdk_4.1
       - 4.0:
           branch: sdk_4.0
     jobs:

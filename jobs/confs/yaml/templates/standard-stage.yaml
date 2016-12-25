@@ -113,7 +113,7 @@
             fi
         - cleanup-slave
         - '{stage}_builder':
-            project: 'python-ovirt-engine-sdk4'
+            project: 'ovirt-engine-sdk'
             distro: '{distro}'
             arch: '{arch}'
             extra-env: '{extra-env}'
