@@ -139,6 +139,8 @@
     exclude:
       - version: master
         distro: fc23
+      - version: 4.1
+        distro: fc23
       - version: 4.0
         distro: el7
       - version: 3.6
