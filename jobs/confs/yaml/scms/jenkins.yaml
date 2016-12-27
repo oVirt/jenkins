@@ -9,7 +9,7 @@
     name: jenkins
     scm:
         - git:
-            url: 'git://{git-server}/jenkins.git'
+            url: 'http://{git-server}/jenkins.git'
             branches:
                 - '{branch}'
             basedir: jenkins
@@ -29,7 +29,7 @@
     name: jenkins-whitelist
     scm:
         - git:
-            url: 'git://{git-server}/jenkins-whitelist.git'
+            url: 'http://{git-server}/jenkins-whitelist.git'
             branches:
                 - 'master'
             basedir: jenkins-whitelist
