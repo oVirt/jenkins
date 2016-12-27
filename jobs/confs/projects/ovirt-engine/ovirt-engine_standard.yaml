@@ -4,29 +4,29 @@
     distro:
       - el6
       - el7
-      - fc23
       - fc24
+      - fc25
     exclude:
       - version: master
-        distro: fc23
-      - version: master
         distro: el6
       - version: 4.1
         distro: el6
-      - version: 4.1
-        distro: fc23
       - version: 4.0
         distro: el6
-      - version: 4.0.6
-        distro: el6
-      - version: 3.6
-        distro: fc24
-      - version: 3.6
-        distro: fc23
+      - version: 4.0
+        distro: fc25
       - version: 4.0
         distro: fc24
       - version: 4.0.6
+        distro: el6
+      - version: 4.0.6
         distro: fc24
+      - version: 4.0.6
+        distro: fc25
+      - version: 3.6
+        distro: fc24
+      - version: 3.6
+        distro: fc25
     arch: x86_64
     trigger: on-change
 
