@@ -4,6 +4,8 @@
     version:
       - master:
           branch: master
+      - 1.1:
+          branch: metamodel_1.1
       - 1.0:
           branch: metamodel_1.0
     stage: build-artifacts
