@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: model_4.1
       - 4.0:
           branch: model_4.0
     stage: check-patch
