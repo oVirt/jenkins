@@ -1,0 +1,27 @@
+- publisher:
+    name: standard-publisher
+    publishers:
+      - post-tasks:
+          - matches:
+              - log-text: '.*'
+                operator: AND
+            escalate-status: true
+            script: !include-raw: shell-scripts/collect_artifacts.sh
+          - matches:
+              - log-text: '.*'
+                operator: AND
+            escalate-status: true
+            script: !include-raw-escape: shell-scripts/mock_cleanup.sh
+      - exported-artifacts
+      - groovy-postbuild:
+          script: |
+            def project = manager.build.project
+            def index_fd = project.getWorkspace().child("exported-artifacts/index.html")
+            if (index_fd.exists()) {{
+              summary = manager.createSummary("graph.png")
+              summary.appendText(
+                '<iframe src="artifact/exported-artifacts/index.html" width=600 height=400>Report</iframe>',
+                false,
+              )
+            }}
+          on-failure: 'nothing'

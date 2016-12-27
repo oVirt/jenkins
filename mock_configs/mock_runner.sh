@@ -15,7 +15,7 @@ CLEANUP="true"
 MOCK_CONF_DIR="/etc/mock"
 MOCK="mock"
 MOUNT_POINT="$PWD"
-LOGS_DIR="logs"
+LOGS_DIR="exported-artifacts/mock_logs"
 TRY_PROXY="false"
 PACKAGES=()
 

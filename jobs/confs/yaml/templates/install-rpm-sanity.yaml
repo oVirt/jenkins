@@ -39,5 +39,5 @@
           packages: '{packages}'
           env: '{env}'
     publishers:
-      - mock-cleanup
-      - exported-artifacts
+      - standard-publisher:
+          project: '{project}'

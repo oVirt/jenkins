@@ -37,20 +37,6 @@ safe_umount() {
 # clean and breaks the jobs
 sudo chown -R "$USER" "$WORKSPACE"
 
-# Archive the logs, we want them anyway
-logs=(
-    ./*log
-    ./*/logs
-)
-
-if [[ "$logs" ]]; then
-    for log in "${logs[@]}"; do
-        [[ "$log" = ./exported-artifacts/* ]] && continue
-        echo "Copying ${log} to exported-artifacts"
-        mv $log exported-artifacts/
-    done
-fi
-
 # stop any processes running inside the chroot
 failed=false
 mock_confs=("$WORKSPACE"/*/mocker*)

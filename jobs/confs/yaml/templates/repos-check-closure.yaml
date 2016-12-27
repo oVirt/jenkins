@@ -41,8 +41,8 @@
       - shell: !include-raw-escape: shell-scripts/repos-check-closure_apply-cherry-pick.sh
       - shell: !include-raw: shell-scripts/repos-check-closure_run-check.sh
     publishers:
-      - mock-cleanup
-      - exported-artifacts
+      - standard-publisher:
+          project: 'repos'
       - groovy-postbuild:
           script: !include-raw-escape: groovy-scripts/repos-check-closure_post-build.groovy
           on-failure: 'nothing'

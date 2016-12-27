@@ -54,9 +54,10 @@ echo "########################"
 ## Get the diff
 git reset --hard $GERRIT_PATCHSET_REVISION
 changed=false
+mkdir -p "$cwd/exported-artifacts"
 diff -u "$old_xmls_dir" "$new_xmls_dir" \
 | "$cwd/jobs/confs/shell-scripts/htmldiff.sh" \
-> "$cwd/differences.html" \
+> "$cwd/exported-artifacts/differences.html" \
 || changed=true
 
 if $changed; then

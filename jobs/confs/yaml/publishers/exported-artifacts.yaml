@@ -4,10 +4,3 @@
       - archive:
           artifacts: 'exported-artifacts/**'
           allow-empty: true
-
-- publisher:
-    name: exported-artifacts-with-diff
-    publishers:
-      - archive:
-          artifacts: 'exported-artifacts/**,jenkins/differences.html'
-          allow-empty: true

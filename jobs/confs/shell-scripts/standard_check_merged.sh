@@ -24,14 +24,3 @@ cd "./$project"
     --mock-confs-dir "$WORKSPACE"/jenkins/mock_configs \
     --try-proxy \
     "$distro.*$arch"
-
-# move the exported artifacts to jenkins workspace, as they are created in the
-# project root
-mkdir -p "$WORKSPACE"/exported-artifacts
-sudo chown -R "$USER:$USER" "$WORKSPACE/exported-artifacts"
-if ls "$WORKSPACE/$project/exported-artifacts/"* &>/dev/null; then
-    sudo mv "$WORKSPACE/$project/exported-artifacts/"* \
-            "$WORKSPACE/exported-artifacts/"
-    sudo rmdir "$WORKSPACE/$project/exported-artifacts/"
-fi
-exit 0

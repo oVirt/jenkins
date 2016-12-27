@@ -61,9 +61,8 @@
             extra-env: '{extra-env}'
             cherry-pick: '{cherry-pick}'
       publishers:
-        - mock-cleanup
-        - exported-artifacts
-        - html-reports
+        - standard-publisher:
+            project: '{project}'
 
 - job-template:
       <<: *standard-template-basic
@@ -125,9 +124,8 @@
       reponame: ovirt
       repotype: experimental
       publishers:
-        - mock-cleanup
-        - exported-artifacts
-        - html-reports
+        - standard-publisher:
+            project: '{project}'
         - trigger-parameterized-builds:
           - project: 'deploy-to-{reponame}_{repotype}_{version}'
             predefined-parameters: |
@@ -159,9 +157,8 @@
       reponame: ovirt
       repotype: experimental
       publishers:
-        - mock-cleanup
-        - exported-artifacts
-        - html-reports
+        - standard-publisher:
+            project: '{project}'
         - trigger-parameterized-builds:
           - project: 'deploy-to-{reponame}_{repotype}_{version}'
             predefined-parameters: |
@@ -175,9 +172,8 @@
       reponame: ovirt
       repotype: experimental
       publishers:
-        - mock-cleanup
-        - exported-artifacts
-        - html-reports
+        - standard-publisher:
+            project: '{project}'
         - trigger-parameterized-builds:
           - project: 'deploy-to-{reponame}_{repotype}_{version}'
             predefined-parameters: |
@@ -191,9 +187,8 @@
       reponame: ovirt
       repotype: experimental
       publishers:
-        - mock-cleanup
-        - exported-artifacts
-        - html-reports
+        - standard-publisher:
+            project: '{project}'
         - trigger-parameterized-builds:
           - project: 'deploy-to-{reponame}_{repotype}_{version}'
             predefined-parameters: |
@@ -207,9 +202,8 @@
       reponame: ovirt
       repotype: experimental
       publishers:
-        - mock-cleanup
-        - exported-artifacts
-        - html-reports
+        - standard-publisher:
+            project: '{project}'
         - trigger-parameterized-builds:
           - project: 'deploy-to-{reponame}_{repotype}_{version}'
             predefined-parameters: |
@@ -222,10 +216,6 @@
       name: '{project}_{version}_build-artifacts-{distro}-ppc64le'
       reponame: ovirt
       repotype: experimental
-      publishers:
-        - mock-cleanup
-        - exported-artifacts
-        - html-reports
 
 - job-template:
     <<: *standard-template-deploy
@@ -242,9 +232,6 @@
     scm:
       - '{project}-gerrit':
           git-server: '{git-server}'
-    publishers:
-        - mock-cleanup
-        - exported-artifacts-with-diff
 
 - job-template:
     <<: *standard-template-deploy
@@ -316,7 +303,6 @@
           users:
             - c7ecbee7-5352-46da-a3c4-5aea24cd3de0
     publishers:
-      - exported-artifacts
       - trigger-parameterized-builds:
         - project: 'test-repo_{reponame}_{repotype}_{version}'
           condition: SUCCESS
@@ -398,9 +384,8 @@
           project: '{project}'
           branch: '{branch}'
     publishers:
-      - mock-cleanup
-      - exported-artifacts
-      - html-reports
+      - standard-publisher:
+          project: '{project}'
 
 - job-template:
     <<: *standard-pipeline

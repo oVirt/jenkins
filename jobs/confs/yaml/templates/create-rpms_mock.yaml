@@ -36,8 +36,8 @@
     reponame: ovirt
     repotype: experimental
     publishers:
-      - mock-cleanup
-      - exported-artifacts
+      - standard-publisher:
+          project: '{project}'
       - trigger-parameterized-builds:
         - project: 'deploy-to-{reponame}_{repotype}_{repoversion}'
           predefined-parameters: |
@@ -54,8 +54,8 @@
           branch: '{branch}'
           gerrit-server: '{gerrit-server}'
     publishers:
-      - mock-cleanup
-      - exported-artifacts
+      - standard-publisher:
+          project: '{project}'
 
 - job-template:
     <<: *create-rpms
@@ -70,8 +70,8 @@
     <<: *create-rpms
     name: 'no-deploy-create-rpms'
     publishers:
-      - mock-cleanup
-      - exported-artifacts
+      - standard-publisher:
+          project: '{project}'
 
 ## Template for the releng-based jobs
 - job-template: &releng-template
@@ -111,8 +111,8 @@
     reponame: ovirt
     repotype: experimental
     publishers:
-      - mock-cleanup
-      - exported-artifacts
+      - standard-publisher:
+          project: '{project}'
       - trigger-parameterized-builds:
         - project: 'deploy-to-{reponame}_{repotype}_{repoversion}'
           predefined-parameters: |
@@ -130,8 +130,8 @@
           files: 'specs/{subproject}/.*'
           gerrit-server: '{gerrit-server}'
     publishers:
-      - mock-cleanup
-      - exported-artifacts
+      - standard-publisher:
+          project: '{project}'
 
 - job-template:
     <<: *releng-template
@@ -147,8 +147,8 @@
     <<: *releng-template
     name: 'no-deploy-releng'
     publishers:
-      - mock-cleanup
-      - exported-artifacts
+      - standard-publisher:
+          project: '{project}'
 
 - job-template:
     <<: *no-deploy-releng
@@ -228,8 +228,8 @@
           files: 'specs/{subproject}/.*'
           gerrit-server: '{gerrit-server}'
     publishers:
-      - mock-cleanup
-      - exported-artifacts
+      - standard-publisher:
+          project: '{project}'
 
 - job-template:
     <<: *releng-template
@@ -283,8 +283,8 @@
           cherry-pick: '{cherry-pick}'
           copy-in: '{copy-in}'
     publishers:
-      - mock-cleanup
-      - exported-artifacts
+      - standard-publisher:
+          project: '{project}'
       - trigger-parameterized-builds:
         - project: 'deploy-to-{reponame}_{repotype}_{version}'
           predefined-parameters: |
