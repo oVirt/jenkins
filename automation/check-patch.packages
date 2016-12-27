@@ -1,3 +1,5 @@
+python-pip
 python-requests
+pytest
 git
 

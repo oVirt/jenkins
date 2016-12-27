@@ -11,16 +11,19 @@ main() {
     local changed_files
     changed_files="$(git show --pretty="format:" --name-only)"
 
-    if echo "$changed_files" | grep -q '^mock_configs/'; then
+    if grep -q '^mock_configs/' <<< "$changed_files"; then
         test_standard_ci "$@"
     fi
-    if echo "$changed_files" | grep -q '^jobs/'; then
+    if grep -q '^jobs/' <<< "$changed_files"; then
         # we only run jjb on el7/x86)64 so skip otherwise
         if is_jjb_test_arch; then
             test_job_configs "$@"
         else
             echo "Skipped JJB testing on this platform"
         fi
+    fi
+    if grep -q '\.py$' <<< "$changed_files"; then
+        test_python_scripts "$@"
     fi
 }
 
@@ -54,6 +57,17 @@ test_mock_genconfig() {
 test_standard_ci() {
     test_standard_ci_proxy
     test_mock_genconfig
+}
+
+test_python_scripts() {
+    mkdir -p exported-artifacts
+    pip install -r 'test-requirements.txt'
+    python -m pytest -vv --junitxml='exported-artifacts/pytest.junit.xml' test
+    if command -v py.test-3; then
+        # If we have python3 (e.g we're on fedora) run tests in python 3 too
+        python3 -m pytest -vv \
+            --junitxml='exported-artifacts/pytest3.junit.xml' test
+    fi
 }
 
 main "$@"

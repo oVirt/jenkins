@@ -5,3 +5,7 @@ python-ordereddict
 python-requests
 pytest
 git
+python3
+python3-six
+python3-requests
+python3-pytest
