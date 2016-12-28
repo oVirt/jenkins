@@ -11,11 +11,8 @@
     distro:
         - fc25
         - fc24
-        - fc23
         - el7
     exclude:
-      - version: master
-        distro: fc23
       - version: 4.1
         distro: fc25
       - version: 4.0
@@ -41,10 +38,6 @@
             branch: master
             repoversion: 4.0
     exclude:
-      - version: master
-        distro: fc23
-      - version: 4.1
-        distro: fc23
       - version: 4.0
         distro: fc24
       - version: 4.1
