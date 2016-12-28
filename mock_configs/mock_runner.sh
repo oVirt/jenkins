@@ -17,6 +17,7 @@ MOCK="mock"
 MOUNT_POINT="$PWD"
 FINAL_LOGS_DIR="exported-artifacts/mock_logs"
 TRY_PROXY="false"
+TRY_MIRRORS=""
 PACKAGES=()
 
 
@@ -66,6 +67,10 @@ help() {
         -P|--try-proxy
             If set, will try to use the proxied config and set the proxy inside
             the mock env
+
+        -M|--try-mirrors MIRRORS_URL
+            Try to download a mirror list JSON file from MIRRORS_URL for use
+            instead of given yum repos
 
         -C|--mock-confs-dir
             Directory where the base mock configs are located (default is
@@ -355,9 +360,29 @@ EOR
 config_opts['chroot_setup_cmd'] += ' ${packages[@]}'
 EOC
     fi
+    [[ "$TRY_MIRRORS" ]] && gen_mirrors_conf "$TRY_MIRRORS" >> "$tmp_conf"
     touch --date "yesterday" "$tmp_conf"
     echo "$tmp_conf"
     return 0
+}
+
+
+gen_mirrors_conf() {
+    local mirrors_url="${1?}"
+    local scripts_path
+    scripts_path="$(dirname "$(which "$0")")/../scripts"
+
+    echo "import sys"
+    echo "sys.path.append('$scripts_path')"
+    echo "try:"
+    echo "    from mirror_client import mirrors_from_http, \\"
+    echo "        inject_yum_mirrors_str"
+    echo "    config_opts['yum.conf'] = inject_yum_mirrors_str("
+    echo "        mirrors_from_http('$mirrors_url'),"
+    echo "        config_opts['yum.conf'],"
+    echo "    )"
+    echo "finally:"
+    echo "    sys.path.pop()"
 }
 
 
@@ -586,6 +611,11 @@ run_script() {
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \\
         --shell <<EOS
             set -e
+            # Remove all system repos from the environment to ensure we're not
+            # using any pakcge repos we didn't specify explicitly
+            rpm -qf /etc/system-release \
+                | xargs -r rpm -ql fedora-repos epel-release \
+                | grep '/etc/yum\.repos\.d/.*\.repo' | xargs -r rm -fv
             logdir="$MOUNT_POINT/$LOGS_DIR/${mock_chroot}.${script##*/}"
             [[ -d "\\\$logdir" ]] \\
             || mkdir -p "\\\$logdir"
@@ -627,6 +657,11 @@ EOC
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \
         --shell <<EOS
             set -e
+            # Remove all system repos from the environment to ensure we're not
+            # using any pakcge repos we didn't specify explicitly
+            rpm -qf /etc/system-release \
+                | xargs -r rpm -ql fedora-repos epel-release \
+                | grep '/etc/yum\.repos\.d/.*\.repo' | xargs -r rm -fv
             logdir="$MOUNT_POINT/$LOGS_DIR/${mock_chroot}.${script##*/}"
             [[ -d "\$logdir" ]] \\
             || mkdir -p "\$logdir"
@@ -760,6 +795,9 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
     long_opts+=",try-proxy"
     short_opts+=",P"
 
+    long_opts+=",try-mirrors:"
+    short_opts+=",M:"
+
     long_opts+=",add-package:"
     short_opts+=",a:"
 
@@ -826,6 +864,10 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 TRY_PROXY="true"
                 shift
             ;;
+            -P|--try-mirrors)
+                TRY_MIRRORS="$2"
+                shift 2
+            ;;
             -a|--add-package)
                 PACKAGES+=("$2")
                 shift 2
@@ -876,7 +918,7 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
             echo "##########################################################"
             if [[ "$res" != "0" ]]; then
                 lastlog="$( \
-                    find logs -iname \*.log \
+                    find "$LOGS_DIR" -iname \*.log \
                     | xargs ls -lt \
                     | head -n1\
                     | awk '{print $9}' \
