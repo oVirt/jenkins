@@ -13,6 +13,21 @@
             branch: ovirt-4.0
         - 3.6:
             branch: ovirt-3.6
+      distro:
+        - el7
+        - fc24
+        - fc25
+      exclude:
+        - version: master
+          distro: fc24
+        - version: 4.0
+          distro: fc25
+        - version: 4.0
+          distro: fc24
+        - version: 3.6
+          distro: fc25
+        - version: 3.6
+          distro: fc24
       jobs:
         - '{project}_{version}_{stage}-{distro}-{arch}'
 
@@ -34,14 +49,6 @@
       - 3.6:
           branch: ovirt-3.6
           repoversion: 3.6
-    distro:
-      - el7
-      - fc24
-    exclude:
-      - version: 4.0
-        distro: fc24
-      - version: 3.6
-        distro: fc24
     arch:
       - x86_64:
           node-filter: fc23 || fc24 || fc25
@@ -63,10 +70,6 @@
       - 4.0:
           branch: ovirt-4.0
           repoversion: 4.0
-    distro:
-      - el7
-      - fc24
-      - fc25
     trigger: manual
     jobs:
       - '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
@@ -104,15 +107,6 @@
     node-filter: fc23 || fc24 || fc25
     arch: x86_64
     stage: check-patch
-    distro:
-      - el7
-      - fc24
-      - fc25
-    exclude:
-      - version: 4.0
-        distro: fc24
-      - version: 3.6
-        distro: fc24
 
 - project:
     <<: *vdsm_standard_common
@@ -122,10 +116,3 @@
     stage: check-merged
     distro:
       - el7
-      - fc24
-      - fc25
-    exclude:
-      - version: 4.0
-        distro: el7
-      - version: 3.6
-        distro: el7
