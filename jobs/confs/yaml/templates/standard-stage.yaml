@@ -284,7 +284,7 @@
           max-total: 1
           option: project
       - build-discarder:
-          num-to-keep: 120
+          days-to-keep: 14
           artifact-num-to-keep: 2
     parameters:
       - string:
