@@ -9,8 +9,15 @@ VERSION={version}
 SUITE_TYPE={suite_type}
 
 WORKSPACE="$PWD"
+GIT_SUBDIR="ovirt-system-tests"
 OVIRT_SUITE="${{SUITE_TYPE}}_suite_${{VERSION}}"
-PREFIX="${{WORKSPACE}}/ovirt-system-tests/deployment-${{OVIRT_SUITE}}"
+PREFIX="${{WORKSPACE}}/${{GIT_SUBDIR}}/deployment-${{OVIRT_SUITE}}"
+OVIRT_SUITE_DIR="${{GIT_SUBDIR}}/${{SUITE_TYPE}}-suite-${{VERSION}}"
+
+## update extra source if we got it as param ###
+if ! [ -z ${CUSTOM_REPOS+x} ]; then
+    echo "$CUSTOM_REPOS" > $WORKSPACE/$OVIRT_SUITE_DIR/extra_sources
+fi
 
 chmod g+x "${{WORKSPACE}}"
 # make sure there's no prefix or lago will fail
