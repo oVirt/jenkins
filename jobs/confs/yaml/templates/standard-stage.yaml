@@ -437,3 +437,7 @@
       - file:
           name: TARBALL_FILE
           description: 'Tarball with the sources to build'
+    triggers:
+      - 'trigger_{trigger}':
+          project: '{project}'
+          branch: '{branch}'

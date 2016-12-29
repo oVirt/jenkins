@@ -77,6 +77,10 @@
     triggers:
       - timed: '{trigger-times}'
 
+- trigger:
+    name: trigger_manual
+    triggers: !!seq []
+
 # this is needed because if you reconfigure a job that had triggers with empty
 # triggers, it will not really remove any of them, you have to set at least one
 # trigger
@@ -84,7 +88,3 @@
     name: dummy-trigger
     triggers:
       - timed: ''
-
-- trigger:
-    name: build-artifacts-manual_trigger_manual
-    triggers: !!seq []
