@@ -43,6 +43,39 @@
 
 - job-template:
     <<: *basic_system_tests
+    name: '{project}_{version}_system-tests_manual'
+    parameters:
+      - custom-repos-param
+      - gerrit-params:
+          branch: '{branch}'
+    triggers:
+      - 'trigger_{trigger}':
+          project: '{project}'
+          branch: '{branch}'
+    publishers:
+      - post-tasks:
+          - matches:
+              - log-text: '.*'
+                operator: AND
+            escalate-status: true
+            script: !include-raw: shell-scripts/system_tests.collect_logs.sh
+          - matches:
+              - log-text: '.*'
+                operator: AND
+                escalate-status: true
+            script: !include-raw-escape: shell-scripts/mock_cleanup.sh
+      - junit:
+          results: 'exported-artifacts/nosetests*.xml'
+      - archive:
+          artifacts: 'exported-artifacts/**'
+          allow-empty: true
+      - email-ext:
+          always: true
+          send-to:
+            - requester
+
+- job-template:
+    <<: *basic_system_tests
     name: '{project}_{version}_he-system-tests'
     builders:
       - cleanup-slave

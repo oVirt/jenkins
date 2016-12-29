@@ -8,7 +8,7 @@
       jobs:
         - '{project}_{version}_system-tests'
 
-- project:
+- project: &basic-system-tests-common
     <<: *system-tests-common
     name: ovirt-system-tests
     version:
@@ -20,6 +20,13 @@
           chroot_distro: el7
       - master:
           chroot_distro: el7
+
+- project:
+    <<: *basic-system-tests-common
+    name: ovirt-system-tests_manual
+    trigger: manual
+    jobs:
+      - '{project}_{version}_system-tests_manual'
 
 # type can be both image and image_ng
 # they differ in the testing used
