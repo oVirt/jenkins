@@ -2,6 +2,11 @@
 set +o noglob
 
 main() {
+    # This can cause issues if standard-CI impelmentation is not safe
+    # (see https://ovirt-jira.atlassian.net/browse/OVIRT-992)
+    rm -rf exported-artifacts
+    mkdir exported-artifacts
+
     # dispatch tests according to what changed in git
     local changed_files
     changed_files="$(git show --pretty="format:" --name-only)"

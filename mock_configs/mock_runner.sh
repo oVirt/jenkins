@@ -15,7 +15,7 @@ CLEANUP="true"
 MOCK_CONF_DIR="/etc/mock"
 MOCK="mock"
 MOUNT_POINT="$PWD"
-LOGS_DIR="exported-artifacts/mock_logs"
+FINAL_LOGS_DIR="exported-artifacts/mock_logs"
 TRY_PROXY="false"
 PACKAGES=()
 
@@ -716,6 +716,16 @@ run_scripts() {
 }
 
 
+finalize() {
+    rotate_logs_dir "$PWD/$FINAL_LOGS_DIR"
+    makedir "$FINAL_LOGS_DIR"
+    echo "Collecting mock logs"
+    mv -v "$LOGS_DIR"/* "$FINAL_LOGS_DIR"
+    rmdir "$LOGS_DIR"
+    echo "##########################################################"
+}
+
+
 #### MAIN
 
 if ! [[ "$0" =~ ^.*/bash$ ]]; then
@@ -828,8 +838,8 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
         esac
     done
 
-    rotate_logs_dir "$PWD/$LOGS_DIR"
-    makedir "$LOGS_DIR"
+    LOGS_DIR="$(mktemp -d -p "." -t mock_logs.XXXXXXXX)"
+    trap finalize EXIT
 
     if [[ "$RUN_SHELL" == "true" ]]; then
         run_shell \
@@ -887,7 +897,6 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 echo "##########################################################"
                 res=0
             fi
-            echo "##########################################################"
         done
     fi
     exit $res
