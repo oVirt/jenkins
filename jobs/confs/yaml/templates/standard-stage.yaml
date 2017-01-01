@@ -58,8 +58,6 @@
             project: '{project}'
             distro: '{distro}'
             arch: '{arch}'
-            extra-env: '{extra-env}'
-            cherry-pick: '{cherry-pick}'
       publishers:
         - standard-publisher:
             project: '{project}'
@@ -88,8 +86,6 @@
             project: 'java-ovirt-engine-sdk4'
             distro: '{distro}'
             arch: '{arch}'
-            extra-env: '{extra-env}'
-            cherry-pick: '{cherry-pick}'
 
 - job-template:
       <<: *standard-template-basic
@@ -115,8 +111,6 @@
             project: 'ovirt-engine-sdk'
             distro: '{distro}'
             arch: '{arch}'
-            extra-env: '{extra-env}'
-            cherry-pick: '{cherry-pick}'
 
 - job-template: &standard-template-deploy
       <<: *standard-template

@@ -1,27 +1,60 @@
 - builder:
-    name: build-artifacts_builder
+    name: mock_runner
     builders:
       - shell: !include-raw: shell-scripts/global_setup.sh
       - shell: !include-raw: shell-scripts/mock_setup.sh
-      - shell: !include-raw: shell-scripts/standard_build_artifacts.sh
+      - shell: |
+          WORKSPACE="${{WORKSPACE:-$PWD}}"
+
+          cd "./{project}"
+          "$WORKSPACE"/jenkins/mock_configs/mock_runner.sh \
+              {action} \
+              --mock-confs-dir "$WORKSPACE"/jenkins/mock_configs \
+              --try-proxy \
+              "{distro}.*{arch}"
+
+- builder:
+    name: build-artifacts_builder
+    builders:
+      - mock_runner:
+          project: '{project}'
+          distro: '{distro}'
+          arch: '{arch}'
+          action: --build-only
 
 - builder:
     name: check-merged_builder
     builders:
-      - shell: !include-raw: shell-scripts/global_setup.sh
-      - shell: !include-raw: shell-scripts/mock_setup.sh
-      - shell: !include-raw: shell-scripts/standard_check_merged.sh
+      - mock_runner:
+          project: '{project}'
+          distro: '{distro}'
+          arch: '{arch}'
+          action: --merged-only
 
 - builder:
     name: check-patch_builder
     builders:
-      - shell: !include-raw: shell-scripts/global_setup.sh
-      - shell: !include-raw: shell-scripts/mock_setup.sh
-      - shell: !include-raw: shell-scripts/standard_check_patch.sh
+      - mock_runner:
+          project: '{project}'
+          distro: '{distro}'
+          arch: '{arch}'
+          action: --patch-only
 
 - builder:
     name: build-artifacts-manual_builder
     builders:
-      - shell: !include-raw: shell-scripts/global_setup.sh
-      - shell: !include-raw: shell-scripts/mock_setup.sh
-      - shell: !include-raw: shell-scripts/standard_build_artifacts_manual.sh
+      - shell: |
+          WORKSPACE="${{WORKSPACE:-$PWD}}"
+          TARBALL_FILE="${{TARBALL_FILE:?Tarball file not specified}}"
+
+          # remove any previous tarball from project directory
+          rm -f "$WORKSPACE/{project}"/*tar.gz
+
+          # move the tarball to the project directory
+          mv TARBALL_FILE "$WORKSPACE/{project}/$TARBALL_FILE"
+      - mock_runner:
+          project: '{project}'
+          distro: '{distro}'
+          arch: '{arch}'
+          action: '--execute-script automation/build-artifacts-manual.sh'
+
