@@ -6,6 +6,8 @@
       - build-discarder:
           num-to-keep: 60
           artifact-num-to-keep: 30
+    triggers:
+      - timed: 'H H/8 * * *'
     scm:
       - jenkins:
           branch: master
@@ -15,6 +17,7 @@
           jenkins/scripts/mirror_mgr.sh resync_yum_mirror \
             '{repo}' '{arch}' jenkins/data/mirrors-reposync.conf
     publishers:
+      - email-infra
       - trigger:
           project: system-mk_mirrors_index-yum
 
@@ -22,7 +25,9 @@
     <<: *system-sync_mirrors
     name: 'system-mk_mirrors_index-{repo_type}'
     concurrent: false
+    triggers: {}
     builders:
       - shell: |
           jenkins/scripts/mirror_mgr.sh write_latest_lists '{repo_type}'
-    publishers: {}
+    publishers:
+      - email-infra

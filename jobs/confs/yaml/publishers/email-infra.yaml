@@ -1,0 +1,7 @@
+- publisher:
+    name: 'email-infra'
+    publishers:
+      - email:
+          recipients: 'infra@ovirt.org'
+          notify-every-unstable-build: false
+          send-to-individuals: false
