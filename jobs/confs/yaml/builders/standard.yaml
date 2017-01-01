@@ -5,12 +5,14 @@
       - shell: !include-raw: shell-scripts/mock_setup.sh
       - shell: |
           WORKSPACE="${{WORKSPACE:-$PWD}}"
+          try_mirrors=(${{CI_MIRRORS_URL:+--try-mirrors "$CI_MIRRORS_URL"}})
 
           cd "./{project}"
           "$WORKSPACE"/jenkins/mock_configs/mock_runner.sh \
               {action} \
               --mock-confs-dir "$WORKSPACE"/jenkins/mock_configs \
               --try-proxy \
+              "${{try_mirrors[@]}}" \
               "{distro}.*{arch}"
 
 - builder:
