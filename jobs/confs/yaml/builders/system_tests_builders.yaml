@@ -1,5 +1,16 @@
 - builder:
     name: system-tests
     builders:
-      - shell: !include-raw: shell-scripts/system_tests.sh
-
+      - shell: |
+          ## update extra source if we got it as param ###
+          if ! [ -z ${{CUSTOM_REPOS+x}} ]; then
+            echo "$CUSTOM_REPOS" > ovirt-system-tests/extra_sources
+          fi
+      - shell: |
+          # make sure there's no prefix or lago will fail
+          rm -rf "ovirt-system-tests/deployment-{suite_type}_suite_{version}"
+      - mock_runner:
+          project: 'ovirt-system-tests'
+          distro: '{chroot_distro}'
+          arch: 'x86_64'
+          action: '--execute-script "automation/{suite_type}_suite_{version}.sh"'
