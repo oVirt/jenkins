@@ -15,7 +15,7 @@ def project = 'ovirt-system-tests'
 def git_project = "git://gerrit.ovirt.org/${{project}}"
 def git_jenkins = 'git://gerrit.ovirt.org/jenkins'
 def distros = ["${{chroot_distro}}"]
-def scripts = ["basic_suite_${{version}}.sh"]
+def suits = ["basic"]
 def deploy_server_url = "deploy-${{reponame}}-${{repotype}}@resources.ovirt.org"
 def test_repo_url = "http://plain.resources.ovirt.org/repos/${{reponame}}/${{repotype}}/${{version}}/latest.under_testing"
 
@@ -60,23 +60,29 @@ print my_str.format(distro='$distro')
 def mock_runner(script, distro) {{
     ansiColor('xterm') {{
         sh """
+            try_mirrors=(\${{CI_MIRRORS_URL:+--try-mirrors "\$CI_MIRRORS_URL"}})
+
             ../jenkins/mock_configs/mock_runner.sh \\
                 --execute-script "automation/$script" \\
                 --mock-confs-dir ../jenkins/mock_configs \\
                 --try-proxy \\
+                "\${{try_mirrors[@]}}" \
                 "${{distro}}.*x86_64"
         """
     }}
 }}
 
 def run_mock_script(
+    version,
+    suit,
     distro,
-    script,
     git_jenkins,
     project,
     git_project,
     repo_url
 ) {{
+    def reposync_config = "$suit-suite-$version/reposync-config.repo"
+    def extra_sources = 'extra_sources'
     try {{
         run_script('jenkins/jobs/confs/shell-scripts/cleanup_slave.sh')
         run_script('jenkins/jobs/confs/shell-scripts/global_setup.sh')
@@ -86,14 +92,34 @@ def run_mock_script(
         )
         dir(project) {{
             sh "git log -1"
-            sh "echo rec:$repo_url/rpm/$distro > extra_sources"
-            mock_runner(script, distro)
+            withEnv(['PYTHONPATH=../jenkins']) {{
+                sh """\
+                    #!/usr/bin/env python
+                    # Try to inject CI mirrors
+                    from scripts.mirror_client import (
+                        inject_yum_mirrors_file, mirrors_from_environ
+                    )
+
+                    inject_yum_mirrors_file(
+                        mirrors_from_environ('CI_MIRRORS_URL'),
+                        '$reposync_config'
+                    )
+                """.stripIndent()
+            }}
+            sh "echo rec:$repo_url/rpm/$distro > '$extra_sources'"
+            mock_runner("${{suit}}_suite_${{version}}.sh", distro)
         }}
     }} catch(err) {{
         println "ERROR:Got exception while running $script:"
         println err
         throw err
     }} finally {{
+        dir(project) {{
+            sh """\
+                cp '$reposync_config' exported-artifacts
+                cp '$extra_sources' exported-artifacts
+            """
+        }}
         run_script('jenkins/jobs/confs/shell-scripts/mock_cleanup.sh')
     }}
 }}
@@ -120,7 +146,8 @@ def checkout(project, git_project, git_jenkins) {{
 
 
 def run_checks(
-    scripts,
+    version,
+    suits,
     distros,
     project,
     git_project,
@@ -129,12 +156,13 @@ def run_checks(
 ) {{
     println "############################# Running checks"
     def branches = [:]
-    for (int i = 0; i < scripts.size(); i++) {{
+    for (int i = 0; i < suits.size(); i++) {{
         for (int j = 0; j < distros.size(); j++) {{
-            def script = "${{scripts[i]}}"
+            def suit = "${{suits[i]}}"
             def distro = "${{distros[j]}}"
+            def suit_dir = "$suit-suit-$version-$distro"
             def my_project = "$project"
-            branches["script_${{script}}_${{distro}}"] = {{
+            branches["${{suit}}_suit_${{distro}}"] = {{
                 node('integ-tests') {{
                     wrap([$class: 'TimestamperBuildWrapper']) {{
                         try {{
@@ -142,32 +170,33 @@ def run_checks(
                                unstash 'sources'
                                sh 'tar xzf sources.tar.gz'
                                run_mock_script(
+                                "$version",
+                                "$suit",
                                 "$distro",
-                                "$script",
                                 "$git_jenkins",
                                 "$my_project",
                                 "$git_project",
                                 "$extra_repo_url",
-                            )
+                               )
                         }} catch(err) {{
                             println err
                             currentBuild.result = 'FAILURE'
                         }}
                         sh """\
-                            rm -rf './$script-$distro'
+                            rm -rf './$suit_dir'
                             if [[ -d './$my_project/exported-artifacts' ]]; then
                                 sudo chown -R "\$USER:\$USER" './$my_project/exported-artifacts'
-                                mv './$my_project/exported-artifacts' './$script-$distro'
+                                mv './$my_project/exported-artifacts' './$suit_dir'
                             fi
-                            mkdir -p './$script-$distro'
+                            mkdir -p './$suit_dir'
                             if [[ -d ./exported-artifacts ]]; then
-                                mv ./exported-artifacts './$script-$distro'
+                                mv ./exported-artifacts './$suit_dir'
                             fi
                         """.stripIndent()
-                        println "stashing $script-$distro"
+                        println "stashing $suit-$distro"
                         stash(
-                            includes: "$script-$distro/**,$script-$distro/*",
-                            name: "$script-$distro"
+                            includes: "$suit_dir/**,$suit_dir/*",
+                            name: "$suit-$distro"
                         )
                     }}
                 }}
@@ -178,19 +207,19 @@ def run_checks(
 }}
 
 
-def do_archive(scripts, distros) {{
+def do_archive(suits, distros) {{
     println "############################# Archiving"
     node {{
         wrap([$class: 'TimestamperBuildWrapper']) {{
             sh 'rm -rf *'
             sh 'mkdir exported-artifacts'
-            for (int i = 0; i < scripts.size(); i++) {{
+            for (int i = 0; i < suits.size(); i++) {{
                 for (int j = 0; j < distros.size(); j++) {{
-                    def script = "${{scripts[i]}}"
+                    def suit = "${{suits[i]}}"
                     def distro = "${{distros[j]}}"
                     dir('exported-artifacts') {{
-                        println "unstashing $script-$distro"
-                        unstash "$script-$distro"
+                        println "unstashing $suit-$distro"
+                        unstash "$suit-$distro"
                     }}
                 }}
             }}
@@ -254,7 +283,7 @@ def main(
     distros,
     version,
     deploy_server_url,
-    scripts,
+    suits,
     test_repo_url,
     credentials_prepare_test,
     credentials_ack_repo
@@ -267,14 +296,15 @@ def main(
         git_jenkins,
     )
     run_checks(
-        scripts,
+        version,
+        suits,
         distros,
         project,
         git_project,
         git_jenkins,
         test_repo_url,
     )
-    do_archive(scripts, distros)
+    do_archive(suits, distros)
     if (currentBuild.result != 'FAILURE') {{
         ack_test_repo(deploy_server_url, version, credentials_ack_repo)
         if (currentBuild.rawBuild.getPreviousCompletedBuild()?.getResult().toString() == 'FAILURE') {{
@@ -294,7 +324,7 @@ main(
     distros,
     version,
     deploy_server_url,
-    scripts,
+    suits,
     test_repo_url,
     credentials_prepare_test,
     credentials_ack_repo
