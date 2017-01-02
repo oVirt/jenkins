@@ -66,6 +66,7 @@ cmd_resync_yum_mirror() {
     fi
 
     if [[ $sync_needed ]]; then
+        install_repo_pubkey "$repo_name" "$reposync_conf"
         echo "Resyncing repo: $repo_name"
         perform_yum_sync "$repo_name" "$repo_archs" "$reposync_conf"
     else
@@ -221,6 +222,27 @@ check_yum_sync_needed() {
             return
         fi
     done
+}
+
+install_repo_pubkey() {
+    local repo_name="${1:?}"
+    local reposync_conf="${2:?}"
+    local gpg_key_file
+
+    gpg_key_file="$(
+        sed -nr \
+            -e '/\['"$repo_name"']/{
+                :loop;
+                    s#^gpgkey\s*=\s*file://(.*)$#\1#p;
+                    n;
+                    /^\[.*\]$/q ;
+                b loop
+            }' \
+            "$reposync_conf"
+    )"
+    if [[ -n $gpg_key_file && -r "$gpg_key_file" ]]; then
+        sudo /usr/bin/rpmkeys --import "$gpg_key_file"
+    fi
 }
 
 perform_yum_sync() {

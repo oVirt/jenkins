@@ -4,6 +4,9 @@
       - 'centos-base-el7'
       - 'centos-updates-el7'
       - 'epel7'
+      - 'centos-base-el6'
+      - 'centos-updates-el6'
+      - 'epel6'
     arch: x86_64
     jobs:
       - 'system-sync_mirrors-{repo}-{arch}'
