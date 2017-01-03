@@ -1,7 +1,6 @@
 - project: &basic-params
     name: ovirt-engine-sdk-java_checks
-    project:
-      - ovirt-engine-sdk-java
+    project: ovirt-engine-sdk-java
     version:
       - 3.6:
           branch: sdk_3.6

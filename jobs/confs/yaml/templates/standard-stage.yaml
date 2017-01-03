@@ -83,7 +83,7 @@
             fi
         - cleanup-slave
         - '{stage}_builder':
-            project: 'java-ovirt-engine-sdk4'
+            project: 'ovirt-engine-sdk-java'
             distro: '{distro}'
             arch: '{arch}'
 
