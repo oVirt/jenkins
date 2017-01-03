@@ -6,6 +6,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: master
       - 4.0:
           branch: ovirt-wgt-toolchain-4.0
       - 3.6:
@@ -16,6 +18,8 @@
       - fc24
     exclude:
       - version: master
+        distro: fc23
+      - version: 4.1
         distro: fc23
       - version: 4.0
         distro: fc24
@@ -37,6 +41,9 @@
       - master:
           branch: master
           repoversion: master
+      - 4.1:
+          branch: master
+          repoversion: 4.1
       - 4.0:
           branch: ovirt-wgt-toolchain-4.0
           repoversion: 4.0
@@ -49,6 +56,8 @@
       - fc24
     exclude:
       - version: master
+        distro: fc23
+      - version: 4.1
         distro: fc23
       - version: 4.0
         distro: fc24
