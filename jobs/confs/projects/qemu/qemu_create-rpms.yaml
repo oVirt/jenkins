@@ -1,11 +1,13 @@
 - project:
     name: qemu_create-rpms_created
     project: releng-tools
-    node-filter: 'el7 || fc23 || fc24'
+    node-filter: 'el7 || fc24'
     subproject:
       - qemu
     version:
       - master:
+          branch: master
+      - 4.1:
           branch: master
       - 4.0:
           branch: master
@@ -26,13 +28,16 @@
 - project:
     name: qemu_create-rpms_merged
     project: releng-tools
-    node-filter: 'el7 || fc23 || fc24'
+    node-filter: 'el7 || fc24'
     subproject:
       - qemu
     version:
       - master:
           branch: master
           repoversion: master
+      - 4.1:
+          branch: master
+          repoversion: 4.1
       - 4.0:
           branch: master
           repoversion: 4.0
@@ -59,6 +64,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: master
       - 4.0:
           branch: master
       - 3.6:
@@ -84,6 +91,9 @@
       - master:
           branch: master
           repoversion: master
+      - 4.1:
+          branch: master
+          repoversion: 4.1
       - 4.0:
           branch: master
           repoversion: 4.0

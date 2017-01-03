@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: master
       - 4.0:
           branch: otopi-1.5
     stage:
@@ -12,11 +14,8 @@
       - check-merged
     distro:
       - el7
-      - fc23
       - fc24
     exclude:
-      - version: master
-        distro: fc23
       - version: 4.0
         distro: fc24
     trigger: 'on-change'
@@ -44,6 +43,7 @@
     name: otopi_build-artifacts-manual-any
     version:
       - '4.0'
+      - '4.1'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
