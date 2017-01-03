@@ -10,11 +10,8 @@
     trigger: 'on-change'
     distro:
         - el7
-        - fc23
         - fc24
     exclude:
-      - version: master
-        distro: fc23
       - version: 4.0
         distro: fc24
     arch: x86_64
@@ -32,10 +29,6 @@
       - master:
           branch: master
     exclude:
-      - version: master
-        distro: fc23
-      - version: 4.1
-        distro: fc23
       - version: 4.0
         distro: fc24
     jobs:
@@ -48,6 +41,8 @@
     project: ovirt-engine-sdk-java
     version:
       - master:
+          branch: sdk_3.6
+      - 4.1:
           branch: sdk_3.6
       - 4.0:
           branch: sdk_3.6
@@ -64,6 +59,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: sdk_4.1
       - 4.0:
           branch: sdk_4.0
     jobs:

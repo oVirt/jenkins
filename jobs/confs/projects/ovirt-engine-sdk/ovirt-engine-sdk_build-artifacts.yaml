@@ -12,11 +12,8 @@
     distro:
         - el6
         - el7
-        - fc23
         - fc24
     exclude:
-      - version: master
-        distro: fc23
       - version: master
         distro: el6
       - version: 4.0
@@ -40,11 +37,7 @@
           branch: master
     exclude:
       - version: master
-        distro: fc23
-      - version: master
         distro: el6
-      - version: 4.1
-        distro: fc23
       - version: 4.1
         distro: el6
       - version: 4.0
@@ -61,6 +54,8 @@
     project: ovirt-engine-sdk
     version:
       - master:
+          branch: sdk_3.6
+      - 4.1:
           branch: sdk_3.6
       - 4.0:
           branch: sdk_3.6

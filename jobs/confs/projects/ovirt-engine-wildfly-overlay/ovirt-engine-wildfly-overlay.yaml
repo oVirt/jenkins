@@ -5,11 +5,12 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: master
     mock-build-type: all
     distro:
       - el6
       - el7
-      - fc23
       - fc24
     arch: x86_64
     jobs:
@@ -26,11 +27,13 @@
       - master:
           branch: master
           repoversion: master
+      - 4.1:
+          branch: master
+          repoversion: 4.1
     mock-build-type: all
     distro:
       - el6
       - el7
-      - fc23
       - fc24
     arch: x86_64
     jobs:
