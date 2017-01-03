@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: master
       - 4.0:
           branch: ovirt-engine-dashboard-1.0
     stage:
@@ -13,11 +15,8 @@
     trigger: 'on-change'
     distro:
         - el7
-        - fc23
         - fc24
     exclude:
-      - version: master
-        distro: fc23
       - version: 4.0
         distro: fc24
     arch: x86_64
