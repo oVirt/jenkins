@@ -4,6 +4,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: ovirt-4.1
     stage:
       - check-patch
       - check-merged
@@ -22,7 +24,7 @@
       - master:
           branch: master
       - 4.1:
-          branch: master
+          branch: ovirt-4.1
     stage: build-artifacts
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
