@@ -3,6 +3,7 @@
     project: jenkins
     stage: check-patch
     trigger: 'on-change'
+    notification-url: 'https://ovirt-ovirt-engine.getbadges.io/api/app/webhook/66f43bb2-6b98-4aab-8d1a-7acca6704dab'
     version:
       - master:
           branch: master
