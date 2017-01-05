@@ -145,7 +145,7 @@
           project: ovirt-release_3.6_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
-          project: imgbased_ovirt-3.6_build-artifacts-el7-x86_64
+          project: imgbased_3.6_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
           project: ovirt-guest-agent_3.6_build-artifacts-el7-x86_64

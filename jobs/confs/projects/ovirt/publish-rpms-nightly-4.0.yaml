@@ -160,7 +160,7 @@
           project: ovirt-release_4.0_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
-          project: imgbased_ovirt-4.0_build-artifacts-el7-x86_64
+          project: imgbased_4.0_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-node-ng_ovirt-4.0-snapshot_build-artifacts-el7-x86_64
 

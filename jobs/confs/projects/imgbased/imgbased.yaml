@@ -7,12 +7,16 @@
     version:
       - master:
           branch: master
-      - ovirt-4.1:
+          repoversion: master
+      - 4.1:
           branch: ovirt-4.1
-      - ovirt-4.0:
+          repoversion: 4.1
+      - 4.0:
           branch: ovirt-4.0
-      - ovirt-3.6:
+          repoversion: 4.0
+      - 3.6:
           branch: ovirt-3.6
+          repoversion: 3.6
     stage: build-artifacts
     distro:
       - el7
@@ -28,11 +32,11 @@
     version:
       - master:
           branch: master
-      - ovirt-4.1:
+      - 4.1:
           branch: ovirt-4.1
-      - ovirt-4.0:
+      - 4.0:
           branch: ovirt-4.0
-      - ovirt-3.6:
+      - 3.6:
           branch: ovirt-3.6
     stage:
       - check-patch

@@ -174,7 +174,7 @@
           project-suffix: ""
 
       - copy-create-job-artifact:
-          project: imgbased_master_build-artifacts-el7-x86_64
+          project: imgbased_4.1_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-node-ng_master_build-artifacts-el7-x86_64
 
