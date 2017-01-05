@@ -27,25 +27,18 @@
     distro:
       - el6
       - el7
-      - fc23
       - fc24
     exclude:
       - version: master
         distro: el6
-      - version: master
-        distro: fc23
       - version: 4.1
         distro: el6
-      - version: 4.1
-        distro: fc23
       - version: 4.0
         distro: el6
       - version: 4.0
         distro: fc24
       - version: 3.6
         distro: fc24
-      - version: 3.6
-        distro: fc23
     arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_created'
@@ -67,6 +60,7 @@
             ovirt-4.1-experimental,http://resources.ovirt.org/repos/ovirt/experimental/4.1/latest.tested/rpm/$distro
             ovirt-4.1-snapshot-static,http://resources.ovirt.org/pub/ovirt-4.1-snapshot-static/rpm/$distro
           branch: master
+          repoversion: 4.1
       - 4.0:
           extra-repos: |
             ovirt-4.0-experimental,http://resources.ovirt.org/repos/ovirt/experimental/4.0/latest.tested/rpm/$distro
@@ -83,25 +77,18 @@
     distro:
       - el6
       - el7
-      - fc23
       - fc24
     exclude:
       - version: master
         distro: el6
-      - version: master
-        distro: fc23
       - version: 4.1
         distro: el6
-      - version: 4.1
-        distro: fc23
       - version: 4.0
         distro: el6
       - version: 4.0
         distro: fc24
       - version: 3.6
         distro: fc24
-      - version: 3.6
-        distro: fc23
     arch: x86_64
     jobs:
       - '{project}_{version}_create-rpms-{distro}-{arch}_merged'
