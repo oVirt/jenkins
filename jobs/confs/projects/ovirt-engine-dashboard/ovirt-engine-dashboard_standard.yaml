@@ -6,7 +6,7 @@
       - master:
           branch: master
       - 4.1:
-          branch: master
+          branch: ovirt-engine-dashboard-1.1
       - 4.0:
           branch: ovirt-engine-dashboard-1.0
     stage:
