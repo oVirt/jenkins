@@ -139,7 +139,7 @@
           project: ovirt-live_3.6_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
-          project: cockpit-ovirt_ovirt-3.6_build-artifacts-el7-x86_64
+          project: cockpit-ovirt_3.6_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
           project: ovirt-release_3.6_build-artifacts-el7-x86_64
