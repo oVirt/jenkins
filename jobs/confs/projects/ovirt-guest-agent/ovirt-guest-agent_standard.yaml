@@ -9,6 +9,8 @@
           branch: ovirt-3.6
       - 4.0:
           branch: ovirt-4.0
+      - 4.1:
+          branch: ovirt-4.1
     stage:
       - check-patch
     distro:
@@ -29,6 +31,8 @@
           branch: ovirt-3.6
       - 4.0:
           branch: ovirt-4.0
+      - 4.1:
+          branch: ovirt-4.1
     stage: build-artifacts
     distro:
       - el6
