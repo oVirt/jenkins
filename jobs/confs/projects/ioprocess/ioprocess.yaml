@@ -20,7 +20,7 @@
       - master:
           branch: master
           repoversion: master
-      - 0.16:
+      - 4.0:
           branch: ioprocess-0.16
           repoversion: 4.0
     distro:
@@ -46,7 +46,7 @@
       - master:
           branch: master
           repoversion: master
-      - 0.16:
+      - 4.0:
           branch: ioprocess-0.16
           repoversion: 4.0
     distro:
