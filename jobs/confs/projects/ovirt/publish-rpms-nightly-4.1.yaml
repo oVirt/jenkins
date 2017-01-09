@@ -95,9 +95,6 @@
           project-prefix: ovirt-optimizer_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-jboss-modules-maven-plugin_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-engine-dashboard_master_build-artifacts-
           project-suffix: ""
 

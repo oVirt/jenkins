@@ -1,0 +1,15 @@
+- project:
+    name: ovirt-jboss-modules-maven-plugin_build
+    project:
+      - ovirt-jboss-modules-maven-plugin
+    version:
+      - master:
+          branch: master
+    stage:
+      - check-patch
+    trigger: 'on-change'
+    distro:
+        - fc24
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
