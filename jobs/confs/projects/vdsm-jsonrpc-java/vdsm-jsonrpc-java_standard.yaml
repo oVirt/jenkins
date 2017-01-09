@@ -6,7 +6,7 @@
       - 4.0:
           branch: ovirt-4.0
       - 4.1:
-          branch: master
+          branch: ovirt-4.1
       - master:
           branch: master
     distro:
@@ -45,7 +45,7 @@
       - 3.6:
           branch: ovirt-3.6
       - 4.1:
-          branch: master
+          branch: ovirt-4.1
       - master:
           branch: master
       - 4.0:
