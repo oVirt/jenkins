@@ -36,6 +36,7 @@ safe_umount() {
 # owned by root and then the 'cleanup workspace' from jenkins job fails to
 # clean and breaks the jobs
 sudo chown -R "$USER" "$WORKSPACE"
+sudo chmod -R u+w "$WORKSPACE"
 
 # stop any processes running inside the chroot
 failed=false
