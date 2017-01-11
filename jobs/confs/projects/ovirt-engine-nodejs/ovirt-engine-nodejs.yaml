@@ -16,8 +16,6 @@
     exclude:
       - version: master
         distro: fc23
-      - version: 4.0
-        distro: fc24
     arch: x86_64
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_created':
@@ -46,8 +44,6 @@
     exclude:
       - version: master
         distro: fc23
-      - version: 4.0
-        distro: fc24
     arch: x86_64
     jobs:
       - '{subproject}_{version}_create-rpms-{distro}-{arch}_merged':
