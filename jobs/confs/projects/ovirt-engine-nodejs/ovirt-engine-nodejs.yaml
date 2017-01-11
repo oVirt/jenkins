@@ -22,7 +22,6 @@
           extra-build-packages: |
             rpmdevtools
             wget
-            python-requests
 
 
 - project:
@@ -51,4 +50,3 @@
           extra-build-packages: |
             rpmdevtools
             wget
-            python-requests
