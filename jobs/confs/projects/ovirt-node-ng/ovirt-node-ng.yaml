@@ -1,6 +1,41 @@
 ##############################################################################
 ###   Projects
 ##############################################################################
+- project: &base-params
+    name: ovirt-node-ng
+    project: ovirt-node-ng
+    version:
+      - master:
+          branch: master
+      - ovirt-master-experimental:
+          branch: master-experimental
+      - ovirt-4.1:
+          branch: ovirt-4.1
+      - ovirt-4.1-snapshot:
+          branch: ovirt-4.1-snapshot
+      - ovirt-4.1-pre:
+          branch: ovirt-4.1-pre
+      - ovirt-4.0-snapshot:
+          branch: ovirt-4.0-snapshot
+      - ovirt-4.0-pre:
+          branch: ovirt-4.0-pre
+      - ovirt-4.0:
+          branch: ovirt-4.0
+      - ovirt-3.6:
+          branch: ovirt-3.6
+    distro:
+      - el7
+    arch:
+      - x86_64
+    stage:
+      - check-patch
+      - check-merged
+    trigger: 'on-change'
+    node-filter: el7
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+
 - project:
     name: ovirt-node-ng_build-nightly
     project: ovirt-node-ng
