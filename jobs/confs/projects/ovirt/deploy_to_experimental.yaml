@@ -10,10 +10,5 @@
       - 3.6
     reponame: ovirt
     repotype: experimental
-    publishers:
-      - email:
-          recipients: 'infra@ovirt.org'
-          notify-every-unstable-build: true
-          send-to-individuals: false
     jobs:
       - 'deploy-to-{reponame}_{repotype}_{version}'

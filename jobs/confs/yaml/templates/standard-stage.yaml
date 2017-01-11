@@ -297,6 +297,7 @@
           users:
             - c7ecbee7-5352-46da-a3c4-5aea24cd3de0
     publishers:
+      - email-infra
       - trigger-parameterized-builds:
         - project: 'test-repo_{reponame}_{repotype}_{version}'
           condition: SUCCESS
