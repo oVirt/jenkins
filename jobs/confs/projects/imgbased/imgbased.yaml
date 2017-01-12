@@ -43,16 +43,15 @@
       - check-merged
     distro:
       - el7
-      - fc23
       - fc24
     exclude:
-      - version: master
-        distro: fc23
-      - version: ovirt-4.1
+      - version: 4.1
         distro: fc24
-      - version: ovirt-4.0
+      - version: 4.0
         distro: fc24
-      - version: ovirt-3.6
+      - version: 3.6
+        distro: fc24
+      - version: 3.6
         distro: fc24
     trigger: 'on-change'
     arch:
