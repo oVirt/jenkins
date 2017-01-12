@@ -28,7 +28,7 @@
           description: 'Repos under http://resources.ovirt.org/repos/ovirt/experimental'
       - bool:
           name: USE_EXPERIMENTAL
-          default: false
+          default: true
       - bool:
           name: CLEAN_METADATA
           default: false
