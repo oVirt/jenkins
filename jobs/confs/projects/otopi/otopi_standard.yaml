@@ -6,7 +6,7 @@
       - master:
           branch: master
       - 4.1:
-          branch: master
+          branch: otopi-1.6
       - 4.0:
           branch: otopi-1.5
     stage:
