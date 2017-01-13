@@ -39,12 +39,28 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: ovirt-4.1
+      - 4.0:
+          branch: ovirt-4.0
+      - 3.6:
+          branch: ovirt-3.6
     stage:
       - check-patch
       - check-merged
     distro:
       - el7
+      - fc23
       - fc24
+    exclude:
+      - version: master
+        distro: fc23
+      - version: ovirt-4.1
+        distro: fc23
+      - version: ovirt-4.0
+        distro: fc24
+      - version: ovirt-3.6
+        distro: fc24
     trigger: 'on-change'
     arch:
       - x86_64
