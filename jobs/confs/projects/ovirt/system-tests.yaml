@@ -4,25 +4,32 @@
       project: ovirt
       node-filter: integ-tests
       branch: master
+      version:
+        - 3.6:
+            chroot_distro: el7
+        - 4.0:
+            chroot_distro: el7
+        - 4.1:
+            chroot_distro: el7
+        - master:
+            chroot_distro: el7
       email-to: infra@ovirt.org
-      jobs:
-        - '{project}_{version}_system-tests'
-
-- project: &basic-system-tests-common
-    <<: *system-tests-common
-    name: ovirt-system-tests
-    version:
-      - 3.6:
-          chroot_distro: el7
-      - 4.0:
-          chroot_distro: el7
-      - 4.1:
-          chroot_distro: el7
-      - master:
-          chroot_distro: el7
 
 - project:
-    <<: *basic-system-tests-common
+    <<: *system-tests-common
+    name: ovirt-system-tests-nightly
+    version:
+      - 4.0:
+          chroot_distro: el7
+          flavor: stable
+      - 4.1:
+          chroot_distro: el7
+          flavor: pre
+    jobs:
+      - '{project}_{version}_system-tests_{flavor}'
+
+- project:
+    <<: *system-tests-common
     name: ovirt-system-tests_manual
     trigger: manual
     jobs:

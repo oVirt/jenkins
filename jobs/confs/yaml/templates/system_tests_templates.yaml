@@ -1,5 +1,5 @@
 - job-template: &basic_system_tests
-    name: '{project}_{version}_system-tests'
+    name: '{project}_{version}_system-tests_{flavor}'
     node: '{node-filter}'
     parameters:
       - gerrit-params:
