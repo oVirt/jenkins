@@ -39,13 +39,10 @@
           project-prefix: otopi_4.1_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-all_4.1-platforms:
-          project-prefix: ovirt-vmconsole_master_build-artifacts-
+          project-prefix: ovirt-vmconsole_4.1_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-all_4.1-platforms:
           project-prefix: ovirt-imageio_4.1_build-artifacts-
-          project-suffix: ''
-      - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-iso-uploader_master_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-log-collector_4.1_build-artifacts-
@@ -54,34 +51,28 @@
           project-prefix: ovirt-engine-cli_3.6_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-engine-extension-aaa-ldap_master_create-rpms-
+          project-prefix: ovirt-engine-extension-aaa-ldap_4.1_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-engine-extension-aaa-misc_master_create-rpms-
+          project-prefix: ovirt-engine-extension-aaa-misc_4.1_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-engine-extension-logger-log4j_master_create-rpms-
+          project-prefix: ovirt-engine-extension-logger-log4j_4.1_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-dwh_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-engine-extension-aaa-jdbc_master_create-rpms-
+          project-prefix: ovirt-engine-extension-aaa-jdbc_4.1_create-rpms-
           project-suffix: _merged
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-setup-lib_master_build-artifacts-
+          project-prefix: ovirt-setup-lib_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: vdsm-jsonrpc-java_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-engine-sdk_4.1_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: python-ovirt-engine-sdk4_4.1_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-engine-4.1-ppc64le-platforms:
-          project-prefix: ovirt-engine-sdk_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-engine-sdk-java_4.1_build-artifacts-
@@ -90,19 +81,19 @@
           project-prefix: java-ovirt-engine-sdk4_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-scheduler-proxy_master_build-artifacts-
+          project-prefix: ovirt-scheduler-proxy_4.1_build-artifacts-
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-optimizer_master_build-artifacts-
+          project-prefix: ovirt-optimizer_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-engine-dashboard_4.1_build-artifacts-
           project-suffix: ""
 
       - copy-create-job-artifact-vdsm-4.1-platforms:
-          project-prefix: ioprocess_master_build-artifacts-
+          project-prefix: ioprocess_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-vdsm-4.1-ppc64le-platforms:
-          project-prefix: ioprocess_master_build-artifacts-
+          project-prefix: ioprocess_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-vdsm-4.1-platforms:
           project-prefix: vdsm_4.1_build-artifacts-
@@ -116,16 +107,18 @@
           project-suffix: ""
 
       - copy-create-job-artifact:
-          project: qemu_master_create-rpms-el7-x86_64_merged
+          project: qemu_4.1_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
-          project: qemu_master_create-rpms-el7-ppc64le_merged
-
-      - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: opstools-ansible_master_create-rpms-
-          project-suffix: _merged
+          project: qemu_4.1_create-rpms-el7-ppc64le_merged
 
       - copy-create-job-artifact:
-          project: unboundid-ldapsdk_master_create-rpms-el7-x86_64_merged
+          project: ovirt-engine-sdk_master_build-artifacts-el7-ppc64le
+      - copy-create-job-artifact:
+          project: ovirt-engine-sdk_4.1_build-artifacts-el7-x86_64
+
+
+      - copy-create-job-artifact:
+          project: unboundid-ldapsdk_4.1_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
           project: ovirt-appliance_ovirt-4.1-snapshot_build-artifacts-el7-x86_64
 
@@ -134,22 +127,25 @@
           project-suffix: ""
 
       - copy-create-job-artifact:
-          project: mom_master_build-artifacts-el7-x86_64
+          project: mom_4.1_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
-          project: mom_master_build-artifacts-fc24-x86_64
+          project: mom_4.1_build-artifacts-fc24-x86_64
 
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-live_4.1_build-artifacts-
           project-suffix: ""
 
       - copy-create-job-artifact:
-          project: py2exe-py2.7_master_create-rpms-fc24-x86_64_merged
+          project: opstools-ansible_master_create-rpms-el7-x86_64_merged
+
       - copy-create-job-artifact:
-          project: pywin32-py2.7_master_create-rpms-fc24-x86_64_merged
+          project: py2exe-py2.7_4.1_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
-          project: python-windows_master_create-rpms-fc24-x86_64_merged
+          project: pywin32-py2.7_4.1_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
-          project: vcredist-x86_master_create-rpms-fc24-x86_64_merged
+          project: python-windows_4.1_create-rpms-fc24-x86_64_merged
+      - copy-create-job-artifact:
+          project: vcredist-x86_4.1_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
           project: nsis-simple-service-plugin_master_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
@@ -173,22 +169,24 @@
       - copy-create-job-artifact:
           project: imgbased_4.1_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
-          project: ovirt-node-ng_master_build-artifacts-el7-x86_64
+          project: ovirt-node-ng_ovirt-4.1-pre_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-engine-nodejs_master_create-rpms-
+          project-prefix: ovirt-engine-nodejs_4.1_create-rpms-
           project-suffix: _merged
 
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-engine-nodejs-modules_master_create-rpms-
+          project-prefix: ovirt-engine-nodejs-modules_4.1_create-rpms-
           project-suffix: _merged
 
       - copy-create-job-artifact:
-          project: ovirt-guest-agent_master_build-artifacts-el6-x86_64
+          project: ovirt-iso-uploader_4.1_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
-          project: ovirt-guest-agent_master_build-artifacts-el7-x86_64
+          project: ovirt-guest-agent_4.1_build-artifacts-el6-x86_64
       - copy-create-job-artifact:
-          project: ovirt-guest-agent_master_build-artifacts-fc24-x86_64
+          project: ovirt-guest-agent_4.1_build-artifacts-el7-x86_64
+      - copy-create-job-artifact:
+          project: ovirt-guest-agent_4.1_build-artifacts-fc24-x86_64
 
       - copy-create-job-artifact-vdsm-4.1-platforms:
           project-prefix: ovirt-provider-ovn_4.1_build-artifacts-
