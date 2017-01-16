@@ -87,7 +87,7 @@
           project-prefix: ovirt-engine-sdk-java_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: java-ovirt-engine-sdk4_master_build-artifacts-
+          project-prefix: java-ovirt-engine-sdk4_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-scheduler-proxy_master_build-artifacts-
