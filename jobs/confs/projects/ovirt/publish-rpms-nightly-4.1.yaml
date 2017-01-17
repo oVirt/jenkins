@@ -36,7 +36,7 @@
           project-prefix: ovirt-host-deploy_4.1_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-all_4.1-platforms:
-          project-prefix: otopi_master_build-artifacts-
+          project-prefix: otopi_4.1_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-all_4.1-platforms:
           project-prefix: ovirt-vmconsole_master_build-artifacts-
