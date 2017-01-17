@@ -97,7 +97,7 @@ def run_mock_script(
         )
         dir(project) {{
             sh "git log -1"
-            sh "echo rec:$repo_url > extra_sources"
+            sh "echo rec:$repo_url/rpm/$distro > extra_sources"
             mock_runner(script, distro)
             prepare_export_artifacts(outdir)
         }}
