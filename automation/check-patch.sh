@@ -25,6 +25,9 @@ main() {
     if grep -q '\.py$' <<< "$changed_files"; then
         test_python_scripts "$@"
     fi
+    if grep -q 'data/dummy.spec' <<< "$changed_files"; then
+        test_rpmbuild "$@"
+    fi
 }
 
 is_jjb_test_arch() {
@@ -76,6 +79,28 @@ test_python_scripts() {
         python3 -m pytest -vv \
             --junitxml='exported-artifacts/pytest3.junit.xml' test
     fi
+}
+
+test_rpmbuild() {
+    # Build an RPM to test RPM-related processes
+    local version release
+
+    version='0.1.0'
+    if git describe >& /dev/null; then
+        release="$(
+            git describe --dirty=.dr |
+            sed -re 's/-([0-9])/p\1/;s/-g/git/'
+        )"
+    else
+        release="0.0.0.git$(git describe --always --dirty=.dr)"
+    fi
+    chown $USER:$USER data/dummy.spec
+    rpmbuild \
+        --define '_rpmdir exported-artifacts' \
+        --define '_srcrpmdir exported-artifacts' \
+        --define "_version $version" \
+        --define "_release $release" \
+        -ba data/dummy.spec
 }
 
 main "$@"
