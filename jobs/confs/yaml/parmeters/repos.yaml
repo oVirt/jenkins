@@ -1,9 +1,0 @@
-- parameter:
-    name: custom-repos-param
-    parameters:
-      - text:
-          name: CUSTOM_REPOS
-          default: ''
-          description: '<h3>You can add multiple URLs, one per line.
-                        Supported formats are: YUM repo, Jenkins Build
-                        e.g http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild</h3>'
