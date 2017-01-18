@@ -7,6 +7,20 @@
             echo "$CUSTOM_REPOS" > ovirt-system-tests/extra_sources
           fi
       - shell: |
+          #!/usr/bin/env python
+          # Try to inject CI mirrors
+          import sys
+          sys.path.append('jenkins')
+          from scripts.mirror_client import (
+              inject_yum_mirrors_file, mirrors_from_environ
+          )
+
+          suit_dir = 'ovirt-system-tests/{suite_type}-suite-{version}'
+          inject_yum_mirrors_file(
+              mirrors_from_environ('CI_MIRRORS_URL'),
+              suit_dir + '/reposync-config.repo',
+          )
+      - shell: |
           # make sure there's no prefix or lago will fail
           rm -rf "ovirt-system-tests/deployment-{suite_type}_suite_{version}"
       - mock_runner:

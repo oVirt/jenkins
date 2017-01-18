@@ -15,31 +15,15 @@
           git-server: '{git-server}'
     builders:
       - cleanup-slave
-      - 'system-tests':
+      - system-tests:
           version: '{version}'
           suite_type : basic
           chroot_distro: '{chroot_distro}'
     publishers:
-      - post-tasks:
-          - matches:
-              - log-text: '.*'
-                operator: AND
-            escalate-status: true
-            script: !include-raw: shell-scripts/system_tests.collect_logs.sh
-          - matches:
-              - log-text: '.*'
-                operator: AND
-                escalate-status: true
-            script: !include-raw-escape: shell-scripts/mock_cleanup.sh
-      - junit:
-          results: 'exported-artifacts/nosetests*.xml'
-      - archive:
-          artifacts: 'exported-artifacts/**'
-          allow-empty: true
-      - email:
-          recipients: '{email-to}'
-          notify-every-unstable-build: false
-          send-to-individuals: false
+      - system-tests:
+          version: '{version}'
+          suite_type : basic
+          chroot_distro: '{chroot_distro}'
 
 - job-template:
     <<: *basic_system_tests
@@ -53,26 +37,10 @@
           project: '{project}'
           branch: '{branch}'
     publishers:
-      - post-tasks:
-          - matches:
-              - log-text: '.*'
-                operator: AND
-            escalate-status: true
-            script: !include-raw: shell-scripts/system_tests.collect_logs.sh
-          - matches:
-              - log-text: '.*'
-                operator: AND
-                escalate-status: true
-            script: !include-raw-escape: shell-scripts/mock_cleanup.sh
-      - junit:
-          results: 'exported-artifacts/nosetests*.xml'
-      - archive:
-          artifacts: 'exported-artifacts/**'
-          allow-empty: true
-      - email-ext:
-          always: true
-          send-to:
-            - requester
+      - system-tests-manual:
+          version: '{version}'
+          suite_type : basic
+          chroot_distro: '{chroot_distro}'
 
 - job-template:
     <<: *basic_system_tests
@@ -80,6 +48,11 @@
     builders:
       - cleanup-slave
       - 'system-tests':
+          version: '{version}'
+          suite_type : he_basic
+          chroot_distro: '{chroot_distro}'
+    publishers:
+      - system-tests:
           version: '{version}'
           suite_type : he_basic
           chroot_distro: '{chroot_distro}'
@@ -107,6 +80,11 @@
           filter: "exported-artifacts/*.squashfs.img"
       - cleanup-slave
       - 'system-tests':
+          version: '{version}'
+          suite_type : image_ng
+          chroot_distro: '{chroot_distro}'
+    publishers:
+      - system-tests:
           version: '{version}'
           suite_type : image_ng
           chroot_distro: '{chroot_distro}'
