@@ -7,7 +7,7 @@
           branch: master
           repoversion: master
       - 4.1:
-          branch: master
+          branch: ovirt-iso-uploader-4.0
           repoversion: 4.1
       - 4.0:
           branch: ovirt-iso-uploader-4.0
@@ -19,8 +19,6 @@
       - fc24
       - el7
     exclude:
-      - version: 4.1
-        distro: fc24
       - version: 4.0
         distro: fc24
     trigger: 'on-change'
@@ -48,6 +46,7 @@
     name: ovirt-iso-uploader_build-artifacts-manual-any
     version:
       - '4.0'
+      - '4.1'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'

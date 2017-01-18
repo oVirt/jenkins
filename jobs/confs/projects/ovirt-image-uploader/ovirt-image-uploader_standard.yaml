@@ -6,10 +6,19 @@
       - 4.0:
           branch: ovirt-image-uploader-4.0
           repoversion: 4.0
+      - 4.1:
+          branch: ovirt-image-uploader-4.0
+          repoversion: 4.1
+    exclude:
+      - version: 4.0
+        distro: fc24
+      - version: 4.1
+        distro: fc23
     stage:
       - check-patch
       - check-merged
     distro:
+      - fc24
       - fc23
       - el7
     trigger: 'on-change'
@@ -70,5 +79,6 @@
     version:
       - '3.6'
       - '4.0'
+      - '4.1'
     jobs:
       - '{project}_any_build-artifacts-manual'
