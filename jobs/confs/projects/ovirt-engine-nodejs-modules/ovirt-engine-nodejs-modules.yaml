@@ -6,6 +6,8 @@
     version:
       - master:
           branch: master
+      - 4.1:
+          branch: master
       - 4.0:
           branch: master
     mock-build-type: all
@@ -35,6 +37,9 @@
       - master:
           branch: master
           repoversion: master
+      - 4.1:
+          branch: master
+          repoversion: master
       - 4.0:
           branch: master
           repoversion: 4.0
@@ -45,6 +50,8 @@
       - fc24
     exclude:
       - version: master
+        distro: fc23
+      - version: 4.1
         distro: fc23
     arch: x86_64
     jobs:
