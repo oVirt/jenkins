@@ -191,7 +191,7 @@
           project: ovirt-guest-agent_master_build-artifacts-fc24-x86_64
 
       - copy-create-job-artifact-vdsm-4.1-platforms:
-          project-prefix: ovirt-provider-ovn_master_build-artifacts-
+          project-prefix: ovirt-provider-ovn_4.1_build-artifacts-
           project-suffix: ""
 
     publishers:
