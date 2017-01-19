@@ -3,10 +3,15 @@
     repo:
       - 'centos-base-el7'
       - 'centos-updates-el7'
+      - 'centos-extras-el7'
       - 'epel7'
       - 'centos-base-el6'
       - 'centos-updates-el6'
       - 'epel6'
+      - 'glusterfs-3.7-el7'
+      - 'glusterfs-3.8-el7'
+      - 'centos-ovirt-4.0-el7'
+      - 'centos-opstools-testing-el7'
     arch: x86_64
     jobs:
       - 'system-sync_mirrors-{repo}-{arch}'
