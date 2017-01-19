@@ -2,6 +2,12 @@
     name: system-tests
     builders:
       - shell: |
+          ## check which version of lago to use, and append to .repos
+          if [[ ${{LAGO_VERSION}} = "unstable" ]]; then
+            timestamp=$(date +%s)
+            echo "lago_injected-$timestamp,http://resources.ovirt.org/repos/lago/unstable/0.0/latest/rpm/el7/" >> ovirt-system-tests/automation/basic_suite_{version}.repos
+          fi
+      - shell: |
           ## update extra source if we got it as param ###
           if ! [ -z ${{CUSTOM_REPOS+x}} ]; then
             echo "$CUSTOM_REPOS" > ovirt-system-tests/extra_sources

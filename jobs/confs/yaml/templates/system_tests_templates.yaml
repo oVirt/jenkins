@@ -44,6 +44,12 @@
                         latest_tested repo contains the latest rpms which passed the CI.<br>
                         latest_release points to the "regular" stable repo eg: oVirt-4.0 repo<br>
                         * Please note that if we dont have a release, rc repo may be used (e.g: ovirt-4.1-pre)</h3>'
+      - choice:
+          name: LAGO_VERSION
+          choices:
+            - stable
+            - unstable
+          description: '<h3>Choose which lago version to install</h3>'
       - gerrit-params:
           branch: '{branch}'
     triggers:
