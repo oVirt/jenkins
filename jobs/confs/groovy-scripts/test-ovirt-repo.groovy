@@ -70,13 +70,15 @@ def prepare_export_artifacts(outdir) {{
 
 
 def mock_runner(script, distro) {{
-    sh """
-        ../jenkins/mock_configs/mock_runner.sh \\
-            --execute-script "automation/$script" \\
-            --mock-confs-dir ../jenkins/mock_configs \\
-            --try-proxy \\
-            "${{distro}}.*x86_64"
-    """
+    ansiColor('xterm') {{
+        sh """
+            ../jenkins/mock_configs/mock_runner.sh \\
+                --execute-script "automation/$script" \\
+                --mock-confs-dir ../jenkins/mock_configs \\
+                --try-proxy \\
+                "${{distro}}.*x86_64"
+        """
+    }}
 }}
 
 def run_mock_script(
