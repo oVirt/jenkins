@@ -69,12 +69,12 @@
       - cleanup-slave
       - 'system-tests':
           version: '{version}'
-          suite_type : he_basic
+          suite_type : he-basic
           chroot_distro: '{chroot_distro}'
     publishers:
       - system-tests:
           version: '{version}'
-          suite_type : he_basic
+          suite_type : he-basic
           chroot_distro: '{chroot_distro}'
 
 - job-template:
@@ -101,10 +101,10 @@
       - cleanup-slave
       - 'system-tests':
           version: '{version}'
-          suite_type : image_ng
+          suite_type : image-ng
           chroot_distro: '{chroot_distro}'
     publishers:
       - system-tests:
           version: '{version}'
-          suite_type : image_ng
+          suite_type : image-ng
           chroot_distro: '{chroot_distro}'
