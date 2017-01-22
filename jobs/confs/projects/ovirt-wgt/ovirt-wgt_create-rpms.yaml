@@ -41,7 +41,7 @@
       ovirt-guest-agent-windows
       vcredist-x86
       virtio-win
-      nsis-simple-service-plugin
+      nsis-simple-service-plugin-1.3.0-2
       git
       genisoimage
       rsync
@@ -108,7 +108,7 @@
       ovirt-guest-agent-windows
       vcredist-x86
       virtio-win
-      nsis-simple-service-plugin
+      nsis-simple-service-plugin-1.3.0-2
       git
       genisoimage
       rsync
