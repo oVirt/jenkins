@@ -57,18 +57,6 @@ print my_str.format(distro='$distro')
 }}
 
 
-def prepare_export_artifacts(outdir) {{
-    sh """
-        mkdir -p "../$outdir"
-        sudo chown -R "\$USER:\$USER" "../$outdir"
-        if ls exported-artifacts/* &>/dev/null; then
-            sudo mv exported-artifacts/* "../$outdir/"
-            sudo rmdir exported-artifacts
-        fi
-    """
-}}
-
-
 def mock_runner(script, distro) {{
     ansiColor('xterm') {{
         sh """
@@ -87,7 +75,6 @@ def run_mock_script(
     git_jenkins,
     project,
     git_project,
-    outdir,
     repo_url
 ) {{
     try {{
@@ -101,15 +88,13 @@ def run_mock_script(
             sh "git log -1"
             sh "echo rec:$repo_url/rpm/$distro > extra_sources"
             mock_runner(script, distro)
-            prepare_export_artifacts(outdir)
         }}
-        run_script('jenkins/jobs/confs/shell-scripts/mock_cleanup.sh')
     }} catch(err) {{
         println "ERROR:Got exception while running $script:"
         println err
-        prepare_export_artifacts(outdir)
-        run_script('jenkins/jobs/confs/shell-scripts/mock_cleanup.sh')
         throw err
+    }} finally {{
+        run_script('jenkins/jobs/confs/shell-scripts/mock_cleanup.sh')
     }}
 }}
 
@@ -162,19 +147,28 @@ def run_checks(
                                 "$git_jenkins",
                                 "$my_project",
                                 "$git_project",
-                                "$script-$distro",
                                 "$extra_repo_url",
                             )
                         }} catch(err) {{
                             println err
                             currentBuild.result = 'FAILURE'
                         }}
-                        sh "mv ./exported-artifacts/ './$script-$distro'"
-                        if(fileExists("./$my_project/exported-artifacts")) {{
-                            sh "mv ./$my_project/exported-artifacts/ './$script-$distro/'"
-                        }}
+                        sh """\
+                            rm -rf './$script-$distro'
+                            if [[ -d './$my_project/exported-artifacts' ]]; then
+                                sudo chown -R "\$USER:\$USER" './$my_project/exported-artifacts'
+                                mv './$my_project/exported-artifacts' './$script-$distro'
+                            fi
+                            mkdir -p './$script-$distro'
+                            if [[ -d ./exported-artifacts ]]; then
+                                mv ./exported-artifacts './$script-$distro'
+                            fi
+                        """.stripIndent()
                         println "stashing $script-$distro"
-                        stash includes: "$script-$distro/**,$script-$distro/*", name: "$script-$distro"
+                        stash(
+                            includes: "$script-$distro/**,$script-$distro/*",
+                            name: "$script-$distro"
+                        )
                     }}
                 }}
             }}
