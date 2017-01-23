@@ -41,8 +41,6 @@
     <<: *system-tests-common
     name: ovirt-system-image-tests
     version:
-      - 3.6:
-          chroot_distro: fc23
       - 4.0:
           chroot_distro: fc23
     email-to: fabiand@redhat.com
