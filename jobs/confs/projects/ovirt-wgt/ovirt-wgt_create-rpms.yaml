@@ -36,8 +36,8 @@
     extra-build-packages: |
       make
       mingw32-nsis
-      mingw32-spice-vdagent
-      mingw64-spice-vdagent
+      mingw32-spice-vdagent-0.8.0
+      mingw64-spice-vdagent-0.8.0
       ovirt-guest-agent-windows
       vcredist-x86
       virtio-win
@@ -103,8 +103,8 @@
     extra-build-packages: |
       make
       mingw32-nsis
-      mingw32-spice-vdagent
-      mingw64-spice-vdagent
+      mingw32-spice-vdagent-0.8.0
+      mingw64-spice-vdagent-0.8.0
       ovirt-guest-agent-windows
       vcredist-x86
       virtio-win
