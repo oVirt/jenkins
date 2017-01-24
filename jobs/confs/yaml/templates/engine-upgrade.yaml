@@ -50,7 +50,7 @@
     jdk: '{java-jdk}'
     node: '{distro}'
     triggers:
-      - on-patch-{trigger}:
+      - on-engine-upgrade-patch-{trigger}:
           project: '{project}'
           branch: '{branch}'
     wrappers:
