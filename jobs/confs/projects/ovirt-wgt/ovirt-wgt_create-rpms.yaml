@@ -68,6 +68,7 @@
           repoversion: master
       - 4.1:
           extra-repos: |
+            ovirt-4.1-snapshot,http://resources.ovirt.org/pub/ovirt-4.1-snapshot/rpm/$distro
             ovirt-4.1-snapshot-static,http://resources.ovirt.org/pub/ovirt-4.1-snapshot-static/rpm/$distro
             virtio-win,https://fedorapeople.org/groups/virt/virtio-win/repo/latest
           branch: master
