@@ -153,7 +153,7 @@
       - copy-create-job-artifact:
           project: nsis-simple-service-plugin_master_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
-          project: ovirt-wgt_master_create-rpms-fc24-x86_64_merged
+          project: ovirt-wgt_4.1_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
           project: cockpit-ovirt_4.1_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
