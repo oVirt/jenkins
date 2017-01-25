@@ -1,0 +1,16 @@
+- parameter:
+    name: github-params
+    parameters:
+      - string:
+          name: sha1
+          default: ''
+          description: |
+            Hash of the commit to check out, for manual builds, use
+            'refs/tags/0.8' replacing 0.8 by the tag you want to build
+      - string:
+          name: REFSPEC
+          default: '+refs/pull/*:refs/remotes/origin/pr/*'
+          description: |
+            Refspec to fetch from the remote repo, for manual builds you can
+            fetch just the tags with 'refs/tags/*:refs/remotes/origin/tags/*'
+

@@ -339,9 +339,23 @@
               deploy-{reponame}-snapshot@resources.ovirt.org
     publishers: []
 
-## lago specific jobs, because it's using github not gerrit
-- lago-common: &lago-common
-    name: lago-common
+- job-template:
+    <<: *standard-template
+    name: '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
+      - file:
+          name: TARBALL_FILE
+          description: 'Tarball with the sources to build'
+    triggers:
+      - 'trigger_{trigger}':
+          project: '{project}'
+          branch: '{branch}'
+
+## Github specific jobs
+- github-common: &github-common
+    name: github-common
     properties:
       - github:
           url: 'https://github.com/{org}/{project}'
@@ -356,23 +370,14 @@
           branch: master
           git-server: '{git-server}'
     parameters:
-      - string:
-          name: sha1
-          default: ''
-          description: |
-            Hash of the commit to check out, for manual builds, use
-            'refs/tags/0.8' replacing 0.8 by the tag you want to build
-      - string:
-          name: REFSPEC
-          default: '+refs/pull/*:refs/remotes/origin/pr/*'
-          description: |
-            Refspec to fetch from the remote repo, for manual builds you can
-            fetch just the tags with 'refs/tags/*:refs/remotes/origin/tags/*'
+      - github-params
+
+## github specific jobs
 
 - job-template:
     <<: *standard-template
-    <<: *lago-common
-    name: 'lago_{version}_check-patch-{distro}-{arch}'
+    <<: *github-common
+    name: '{project}_{version}_github_check-patch-{distro}-{arch}'
     triggers:
       - github-pull-check-patch:
           project: '{project}'
@@ -383,8 +388,8 @@
 
 - job-template:
     <<: *standard-template
-    <<: *lago-common
-    name: 'lago_{version}_{stage}-{distro}-{arch}'
+    <<: *github-common
+    name: '{project}_{version}_github_{stage}-{distro}-{arch}'
     scm:
       - 'github':
           project: '{project}'
@@ -403,8 +408,8 @@
 
 - job-template:
     <<: *standard-pipeline
-    <<: *lago-common
-    name: 'lago_{version}_{stage}-pipeline'
+    <<: *github-common
+    name: '{project}_{version}_github_{stage}-pipeline'
     triggers:
       - dummy-trigger:
           project: '{project}'
@@ -414,11 +419,11 @@
 # trigger yet
 - job-template:
     <<: *standard-template
-    <<: *lago-common
-    name: 'lago_{version}_{stage}-trigger'
+    <<: *github-common
+    name: '{project}_{version}_github_{stage}-trigger'
     concurrent: false
     triggers:
-      - github-pull-check-merged:
+      - 'github-pull-check-merged':
           project: '{project}'
           org: '{org}'
           branch: '{branch}'
@@ -431,7 +436,7 @@
           branch: '{branch}'
     builders:
       - trigger-builds:
-          - project: 'lago_{version}_{stage}-pipeline'
+          - project: '{project}_{version}_github_{stage}-pipeline'
             current-parameters: true
             block: true
     publishers:
@@ -442,16 +447,3 @@
           delete-on-merge: true
       - github-notifier
 
-- job-template:
-    <<: *standard-template
-    name: '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
-    parameters:
-      - gerrit-params:
-          branch: '{branch}'
-      - file:
-          name: TARBALL_FILE
-          description: 'Tarball with the sources to build'
-    triggers:
-      - 'trigger_{trigger}':
-          project: '{project}'
-          branch: '{branch}'

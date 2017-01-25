@@ -21,7 +21,7 @@
     stage: 'check-patch'
     node-filter: '(nested) && {distro}'
     jobs:
-      - 'lago_{version}_check-patch-{distro}-{arch}'
+      - '{project}_{version}_github_check-patch-{distro}-{arch}'
 
 # This is already using the pipeline
 - project:
@@ -32,7 +32,7 @@
       - check-merged:
           node-filter: 'integ-tests'
     jobs:
-      - 'lago_{version}_{stage}-{distro}-{arch}'
+      - '{project}_{version}_github_{stage}-{distro}-{arch}'
       - '{project}_{version}_deploy-to-{reponame}-snapshot'
 
 - project:
@@ -41,5 +41,5 @@
     stage:
       - check-merged
     jobs:
-      - 'lago_{version}_{stage}-trigger'
-      - 'lago_{version}_{stage}-pipeline'
+      - '{project}_{version}_github_{stage}-trigger'
+      - '{project}_{version}_github_{stage}-pipeline'
