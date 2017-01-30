@@ -171,10 +171,6 @@
       - copy-create-job-artifact:
           project: ovirt-node-ng_ovirt-4.1-pre_build-artifacts-el7-x86_64
 
-      - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-engine-nodejs-modules_4.1_create-rpms-
-          project-suffix: _merged
-
       - copy-create-job-artifact:
           project: ovirt-iso-uploader_4.1_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
