@@ -4,6 +4,8 @@
 from uuid import uuid4
 from itertools import chain
 from collections import deque
+from six.moves import map, reduce, range
+from copy import copy
 
 
 class ChangeQueue(object):
@@ -121,3 +123,175 @@ class ChangeQueue(object):
             deque(fail_list[:int(len(fail_list)/2)])
         ])
         return [], []
+
+
+class ChangeQueueWithDeps(ChangeQueue):
+    """Class for managing a change queue where changes can have dependencies on
+    one another.
+
+    The changes in the queue can be any kind of object as long as it is either
+    immutable and hashable or contains an immutable and hashable 'id' attribute
+    that will allow it to be identified as a requirement for other changes.
+    To indicate that a change depends on other changes it needs to include a
+    'requirements' property that returns a collection of required changes or
+    change ids.
+    If a change added to the queue requires a change that is not yet in the
+    queue, it is placed in an 'awaiting_deps' side-queue until the needed
+    change is added. A change will be placed in The queue before any change
+    that requires it.
+
+    Constructor arguments:
+    :param Iterable initial_state: (Optional) The initial state of the queue,
+                                   should be an iterable of iterables with at
+                                   least one member.
+    :param str test_key:           (Optional) Key identifying a currently
+                                   running test
+    :param str awaiting_deps:      (Optional) The initial state of the queue of
+                                   changes with missing dependencies. This is
+                                   a list of pairs cf changes and their missing
+                                   dependencies.
+
+    If test_key is specified (not None), then initial_state must have more then
+    one member where the last member is the list of changes being tested
+    """
+    @staticmethod
+    def _change_id(change):
+        if hasattr(change, 'id'):
+            return change.id
+        else:
+            return change
+
+    @staticmethod
+    def _change_requirements(change):
+        if hasattr(change, 'requirements'):
+            return set(change.requirements)
+        else:
+            return set()
+
+    def __init__(self, initial_state=None, test_key=None, awaiting_deps=None):
+        super(ChangeQueueWithDeps, self).__init__(initial_state, test_key)
+        if awaiting_deps is None:
+            self._awaiting_deps = deque()
+        else:
+            self._awaiting_deps = deque(awaiting_deps)
+
+    def add(self, change):
+        """Attempts to add a change to the queue
+
+        :param object change: The change to add
+
+        A change will only be added if all its dependencies are already in the
+        queue. Otherwise the change is added to the side queue until all the
+        dependencies for it are added as well.
+
+        When a change is added, changes in the side queue are also scanned to
+        check if it resolves their dependencies, and are added if it does.
+
+        Changes are checked for cyclic dependencies, if such are found changes
+        are removed from the queue
+
+        :rtype: tuple
+        :returns: A tuple containing a list of changes added to the queue at
+        this time and another list of changes that were rejected because of
+        cyclic dependencies
+        """
+        change_id = self._change_id(change)
+        dependant_ids = self._find_dependants_on(
+            change_id,
+            chain([change], (chg for chg, _ in self._awaiting_deps))
+        )
+        dependants = chain(
+            [(change, self._get_missing_deps(change))],
+            self._remove_awaiting_deps_by_ids(dependant_ids)
+        )
+        if change_id in dependant_ids:
+            # Change depends on itself - a dependency loop
+            return [], [cng for cng, _ in dependants]
+        changes_added = deque()
+        change_ids_added = set()
+        for chg, mdeps in dependants:
+            mdeps.difference_update(change_ids_added)
+            if mdeps:
+                self._awaiting_deps.append((chg, mdeps))
+            else:
+                super(ChangeQueueWithDeps, self).add(chg)
+                changes_added.append(chg)
+                change_ids_added.add(self._change_id(chg))
+        return list(changes_added), []
+
+    def _get_missing_deps(self, change):
+        """Get a set of missing dependencies for the given change
+        """
+        return \
+            self._change_requirements(change) - \
+            set(map(self._change_id, chain.from_iterable(self._state)))
+
+    @staticmethod
+    def _find_dependants_on(change_id, changes):
+        """Find in the changes collection, all changes that are directly on
+        indirectly dependant on the given change ID. The collection should also
+        include the change whose Id is given if loop detection is desired.
+
+        :rtype: set
+        :returns: a set of dependant change IDs
+        """
+        depmap = dict()
+        for change in changes:
+            for cdid in ChangeQueueWithDeps._change_requirements(change):
+                depmap.setdefault(cdid, set()).add(
+                    ChangeQueueWithDeps._change_id(change)
+                )
+        dependants = set()
+        recurse_into = deque([change_id])
+        while recurse_into:
+            c_id = recurse_into.popleft()
+            c_deps = depmap.pop(c_id, set()) - dependants
+            dependants.update(c_deps)
+            recurse_into.extend(c_deps)
+        return dependants
+
+    def _remove_awaiting_deps_by_ids(self, dep_ids):
+        self._awaiting_deps, removed_deps = reduce(
+            lambda res, dep:
+                (res[0], res[1] + [dep])
+                if self._change_id(dep[0]) in dep_ids else
+                (res[0] + [dep], res[1]),
+            self._awaiting_deps,
+            ([], [])
+        )
+        return removed_deps
+
+    def on_test_failure(self, test_key):
+        """Updated the queue when a test is successful
+
+        Works like the superclass's method, but when failed changes are
+        removed, changes that depend on them are removed as well.
+        """
+        success_list, fail_list = \
+            super(ChangeQueueWithDeps, self).on_test_failure(test_key)
+        for failed_change in copy(fail_list):
+            failed_change_id = self._change_id(failed_change)
+            dependant_ids = self._find_dependants_on(failed_change_id, chain(
+                chain.from_iterable(self._state),
+                (chg for chg, _ in self._awaiting_deps)
+            ))
+            fail_list.extend(self._remove_deps_by_ids(dependant_ids))
+            fail_list.extend(
+                adep[0] for adep in
+                self._remove_awaiting_deps_by_ids(dependant_ids)
+            )
+        return success_list, fail_list
+
+    def _remove_deps_by_ids(self, dep_ids):
+        removed_deps = deque()
+        for i in range(0, len(self._state)):
+            self._state[i], section_removed_deps = reduce(
+                lambda res, dep:
+                    (res[0], res[1] + [dep])
+                    if self._change_id(dep) in dep_ids else
+                    (res[0] + [dep], res[1]),
+                self._state[i],
+                ([], [])
+            )
+            removed_deps.extend(section_removed_deps)
+        return removed_deps
