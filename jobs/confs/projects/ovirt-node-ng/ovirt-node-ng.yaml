@@ -8,7 +8,7 @@
       - master:
           branch: master
       - ovirt-master-experimental:
-          branch: ovirt-master-experimental
+          branch: master-experimental
       - ovirt-4.1:
           branch: ovirt-4.1
       - ovirt-4.1-snapshot:
