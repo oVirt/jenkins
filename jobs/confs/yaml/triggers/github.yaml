@@ -10,9 +10,27 @@
           permit-all: false
           auto-close-on-fail: false
           allow-whitelist-orgs-as-admins: true
+          white-Vlist-target-branches:
+            - master
+          auth-id: '{github-auth-id}'
+          status-context: '{distro}-{arch}'
+
+- trigger:
+    name: github-build-check
+    triggers:
+      - github-pull-request:
+          org-list:
+            - '{org}'
+          cron: '* * * * *'
+          trigger-phrase: '^(ci build please|ci :(\+1|thumbsup):).*'
+          only-trigger-phrase: true
+          github-hooks: false
+          permit-all: false
+          auto-close-on-fail: false
+          allow-whitelist-orgs-as-admins: true
           white-list-target-branches:
             - master
-          auth-id: '3bd5b831-4709-4194-a8b0-62bc525c0bd7'
+          auth-id: '{github-auth-id}'
           status-context: '{distro}-{arch}'
 
 - trigger:
@@ -30,7 +48,7 @@
           allow-whitelist-orgs-as-admins: true
           white-list-target-branches:
             - master
-          auth-id: '3bd5b831-4709-4194-a8b0-62bc525c0bd7'
+          auth-id: '{github-auth-id}'
           status-context: 'merge-pipeline'
 
 - trigger:

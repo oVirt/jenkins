@@ -1,0 +1,41 @@
+- ovirt-web-ui_common:
+    name: ovirt-web-ui
+    ovirt-web-ui_common--key: &ovirt-web-ui_common
+      project: ovirt-web-ui
+      version:
+        - 4.1:
+            branch: ovirt-4.1
+        - master:
+            branch: master
+      distro:
+        - el7
+        - fc24
+        - fc25
+      trigger: 'on-change'
+      arch: x86_64
+      deploy-to: ovirt
+      org: oVirt
+      github-auth-id: 'ovirt-infra'
+      repotype: experimental
+
+- project:
+    <<: *ovirt-web-ui_common
+    name: ovirt-web-ui_check_patch_standard
+    stage: 'check-patch'
+    jobs:
+      - '{project}_{version}_github_check-patch-{distro}-{arch}'
+
+- project: &build-artifacts-params
+    <<: *ovirt-web-ui_common
+    name: ovirt-web-ui_checks_standard
+    stage: 'build-artifacts'
+    jobs:
+      - '{project}_{version}_github_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *build-artifacts-params
+    name: ovirt-web-ui_build-artifacts-manual
+    stage: build-artifacts-manual
+    trigger: 'manual'
+    jobs:
+      - '{project}_{version}_github_build-artifacts-manual-{distro}-{arch}'

@@ -11,8 +11,11 @@
         - el7
       trigger: 'on-change'
       arch: x86_64
+      with-deploy: never
       reponame: lago
+      deploy-to: {reponame}
       org: lago-project
+      github-auth-id: 3bd5b831-4709-4194-a8b0-62bc525c0bd7
 
 # TODO: migrate to pipeline when ready
 - project:

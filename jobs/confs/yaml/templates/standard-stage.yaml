@@ -326,6 +326,7 @@
 ## Github specific jobs
 - github-common: &github-common
     name: github-common
+    with-deploy: always
     properties:
       - github:
           url: 'https://github.com/{org}/{project}'
@@ -336,6 +337,7 @@
       - 'github-pull':
           project: '{project}'
           org: '{org}'
+          github-auth-id: '{github-auth-id}'
       - jenkins:
           branch: master
           git-server: '{git-server}'
@@ -352,29 +354,54 @@
       - github-pull-check-patch:
           project: '{project}'
           org: '{org}'
+          github-auth-id: '{github-auth-id}'
           branch: '{branch}'
           distro: '{distro}'
           arch: '{arch}'
 
-- job-template:
+- job-template: &github-template-deploy
     <<: *standard-template
     <<: *github-common
     name: '{project}_{version}_github_{stage}-{distro}-{arch}'
-    scm:
-      - 'github':
-          project: '{project}'
-          org: '{org}'
-          branch: '{branch}'
-      - jenkins:
-          branch: master
-          git-server: '{git-server}'
+    reponame: '{reponame}'
+    repotype: '{repotype}'
     triggers:
-      - dummy-trigger:
+      - 'github-build-check':
           project: '{project}'
+          stage: build_artifacts
+          org: '{org}'
+          github-auth-id: '{github-auth-id}'
           branch: '{branch}'
+          distro: '{distro}'
+          arch: '{arch}'
     publishers:
       - standard-publisher:
           project: '{project}'
+      - conditional-publisher:
+          - condition-kind: '{with-deploy}'
+            action:
+              - trigger-parameterized-builds:
+                  - project: 'deploy-to-{deploy-to}_{repotype}_{version}'
+                    predefined-parameters: |
+                      BUILD_ID={project}_{distro}_$BUILD_NUMBER
+                      BUILD_ARTIFACTS_JOBS=$BUILD_URL
+                    condition: SUCCESS    
+
+- job-template:
+    <<: *standard-template
+    <<: *github-common
+    name: '{project}_{version}_github_build-artifacts-manual-{distro}-{arch}'
+    parameters:
+      - github-params:
+          branch: master
+      - file:
+          name: TARBALL_FILE
+          description: 'Tarball with the sources to build'
+    triggers:
+      - 'trigger_{trigger}':
+          project: '{project}'
+          branch: '{branch}'
+
 
 - job-template:
     <<: *standard-pipeline
@@ -396,6 +423,7 @@
       - 'github-pull-check-merged':
           project: '{project}'
           org: '{org}'
+          github-auth-id: '{github-auth-id}'
           branch: '{branch}'
           distro: '{distro}'
           arch: '{arch}'
@@ -404,6 +432,7 @@
           project: '{project}'
           org: '{org}'
           branch: '{branch}'
+          github-auth-id: '{github-auth-id}'
     builders:
       - trigger-builds:
           - project: '{project}_{version}_github_{stage}-pipeline'
@@ -416,4 +445,3 @@
           fail-on-non-merge: true
           delete-on-merge: true
       - github-notifier
-
