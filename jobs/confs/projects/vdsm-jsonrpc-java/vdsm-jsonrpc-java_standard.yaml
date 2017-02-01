@@ -12,17 +12,12 @@
     distro:
       - el6
       - el7
-      - fc23
       - fc24
     exclude:
       - version: master
         distro: el6
-      - version: master
-        distro: fc23
       - version: 4.1
         distro: el6
-      - version: 4.1
-        distro: fc23
       - version: 4.0
         distro: el6
       - version: 4.0
