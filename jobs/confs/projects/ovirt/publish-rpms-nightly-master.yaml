@@ -180,10 +180,6 @@
           project: ovirt-node-ng_master_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-nodejs_master_create-rpms-
-          project-suffix: _merged
-
-      - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-nodejs-modules_master_create-rpms-
           project-suffix: _merged
 

@@ -160,10 +160,6 @@
           project: ovirt-node-ng_ovirt-4.0-snapshot_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact-engine_4.0-platforms:
-          project-prefix: ovirt-engine-nodejs_4.0_create-rpms-
-          project-suffix: _merged
-
-      - copy-create-job-artifact-engine_4.0-platforms:
           project-prefix: ovirt-engine-nodejs-modules_4.0_create-rpms-
           project-suffix: _merged
 
