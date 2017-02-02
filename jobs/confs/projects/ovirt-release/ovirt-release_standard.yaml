@@ -1,6 +1,7 @@
-- project:
-    name: ovirt-release
+- project: &base-commons
+    name: 'ovirt-release-commons'
     project: ovirt-release
+    trigger: on-change
     version:
       - master:
           branch: master
@@ -10,12 +11,6 @@
           branch: ovirt-4.0
       - 3.6:
           branch: ovirt-3.6
-    stage:
-      - check-patch:
-          trigger: 'on-change'
-      - build-artifacts:
-          trigger: 'timed'
-          trigger-times: '@midnight'
     distro:
       - el7
       - fc24
@@ -32,5 +27,21 @@
       - version: 3.6
         distro: fc25
     arch: x86_64
+
+- project:
+    <<: *base-commons
+    name: ovirt-release
+    project: ovirt-release
+    stage: check-patch
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-commons
+    name: ovirt-release_build-artifacts
+    trigger: 'timed'
+    trigger-times: '@midnight'
+    project: ovirt-release
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
