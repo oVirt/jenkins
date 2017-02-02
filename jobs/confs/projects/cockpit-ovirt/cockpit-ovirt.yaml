@@ -18,14 +18,21 @@
       - el7
       - fc23
       - fc24
+      - fc25
     exclude:
       - version: master
         distro: fc23
-      - version: ovirt-4.1
+      - version: 4.1
+        distro: fc25
+      - version: 4.1
         distro: fc23
-      - version: ovirt-4.0
+      - version: 4.0
+        distro: fc25
+      - version: 4.0
         distro: fc24
-      - version: ovirt-3.6
+      - version: 3.6
+        distro: fc25
+      - version: 3.6
         distro: fc24
     trigger: 'on-change'
     arch:
@@ -52,14 +59,21 @@
       - el7
       - fc23
       - fc24
+      - fc25
     exclude:
       - version: master
         distro: fc23
-      - version: ovirt-4.1
+      - version: 4.1
+        distro: fc25
+      - version: 4.1
         distro: fc23
-      - version: ovirt-4.0
+      - version: 4.0
+        distro: fc25
+      - version: 4.0
         distro: fc24
-      - version: ovirt-3.6
+      - version: 3.6
+        distro: fc25
+      - version: 3.6
         distro: fc24
     trigger: 'on-change'
     arch:
