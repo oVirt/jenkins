@@ -10,7 +10,7 @@
     stage:
       - check-patch
     distro:
-      - fc24
+      - el7
     trigger: 'on-change'
     arch: x86_64
     jobs:
