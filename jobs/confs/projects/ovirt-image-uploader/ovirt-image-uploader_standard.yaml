@@ -12,14 +12,11 @@
     exclude:
       - version: 4.0
         distro: fc24
-      - version: 4.1
-        distro: fc23
     stage:
       - check-patch
       - check-merged
     distro:
       - fc24
-      - fc23
       - el7
     trigger: 'on-change'
     arch: x86_64
@@ -52,7 +49,6 @@
     distro:
       - el6
       - el7
-      - fc23
     trigger: 'on-change'
     arch: x86_64
     jobs:
