@@ -133,14 +133,6 @@
           project: ovirt-live_4.0_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
-          project: py2exe-py2.7_4.0_create-rpms-fc23-x86_64_merged
-      - copy-create-job-artifact:
-          project: python-windows_4.0_create-rpms-fc23-x86_64_merged
-      - copy-create-job-artifact:
-          project: vcredist-x86_4.0_create-rpms-fc23-x86_64_merged
-      - copy-create-job-artifact:
-          project: nsis-simple-service-plugin_4.0_create-rpms-fc23-x86_64_merged
-      - copy-create-job-artifact:
           project: cockpit-ovirt_4.0_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact-engine_4.0-platforms:
