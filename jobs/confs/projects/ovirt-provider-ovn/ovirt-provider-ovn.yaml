@@ -12,6 +12,12 @@
     distro:
       - el7
       - fc24
+      - fc25
+    exclude:
+      - version: master
+        distro: fc24
+      - version: 4.1
+        distro: fc25
     trigger: 'on-change'
     arch: x86_64
     jobs:

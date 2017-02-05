@@ -99,7 +99,7 @@
       - copy-create-job-artifact:
           project: "{project-prefix}el7-x86_64{project-suffix}"
       - copy-create-job-artifact:
-          project: "{project-prefix}fc24-x86_64{project-suffix}"
+          project: "{project-prefix}fc25-x86_64{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-vdsm-4.1-platforms
