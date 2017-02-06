@@ -10,22 +10,29 @@
       - shell: |
           ## update extra source if we got it as param ###
           if ! [ -z ${{CUSTOM_REPOS+x}} ]; then
-            echo "$CUSTOM_REPOS" > ovirt-system-tests/extra_sources
+            echo "$CUSTOM_REPOS" > ovirt-system-tests/${{SUITE_TYPE}}-suite-${{ENGINE_VERSION}}/extra_sources
           fi
           ## update the fallback source
           if [[ ${{FALLBACK_REPO}} = "latest_tested"  ]]; then
-            echo "rec:http://plain.resources.ovirt.org/repos/ovirt/experimental/{version}/latest.tested/rpm/{chroot_distro}" >> ovirt-system-tests/extra_sources
+            echo "rec:http://plain.resources.ovirt.org/repos/ovirt/experimental/{version}/latest.tested/rpm/{chroot_distro}" >> ovirt-system-tests/${{SUITE_TYPE}}-suite-${{ENGINE_VERSION}}/extra_sources
           fi
       - shell: |
           #!/usr/bin/env python
           # Try to inject CI mirrors
           import sys
+          from os import environ
           sys.path.append('jenkins')
           from scripts.mirror_client import (
               inject_yum_mirrors_file, mirrors_from_environ
           )
 
-          suit_dir = 'ovirt-system-tests/{suite_type}-suite-{version}'
+          suit_dir = "ovirt-system-tests/{suite_type}-suite-{version}"
+          if 'SUITE_TYPE' in environ:
+              suit_dir = suit_dir.replace('$SUITE_TYPE', environ['SUITE_TYPE'])
+              suit_dir = suit_dir.replace('${{SUITE_TYPE}}', environ['SUITE_TYPE'])
+          if 'ENGINE_VERSION' in environ:
+              suit_dir = suit_dir.replace('$ENGINE_VERSION', environ['ENGINE_VERSION'])
+              suit_dir = suit_dir.replace('${{ENGINE_VERSION}}', environ['ENGINE_VERSION'])
           inject_yum_mirrors_file(
               mirrors_from_environ('CI_MIRRORS_URL'),
               suit_dir + '/reposync-config.repo',

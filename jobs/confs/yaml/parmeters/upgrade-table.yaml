@@ -1,0 +1,56 @@
+- parameter:
+    name: upgrades-table
+    parameters:
+    - choice:
+        name: ENGINE_VERSION
+        choices:
+          - 'master'
+          - '4.1'
+          - '4.0'
+          - '3.6'
+        description: '<b>Target oVirt version which will be tested.</b>
+                        <br><style type="text/css">
+                        .tg  {border-collapse:collapse;border-spacing:0;
+                        border-color:#ccc;}
+                        .tg td{font-family:Arial, sans-serif;font-size:14px;
+                        padding:10px 5px;border-style:solid;border-width:1px;
+                        overflow:hidden;
+                        word-break:normal;border-color:#ccc;color:#333;
+                        background-color:#fff;}
+                        .tg th{font-family:Arial, sans-serif;font-size:14px;
+                        font-weight:normal;padding:10px 5px;border-style:solid;
+                        border-width:1px;overflow:hidden;word-break:normal;
+                        border-color:#ccc;color:#333;background-color:#f0f0f0;}
+                        .tg .tg-m4q5{font-weight:bold;font-size:12px;
+                        font-family:Arial, Helvetica, sans-serif !important;;
+                        background-color:#c0c0c0;text-align:center;
+                        vertical-align:top}
+                        .tg .tg-mrgm{font-weight:bold;font-size:12px;
+                        background-color:#c0c0c0;text-align:center;
+                        vertical-align:top}
+                        .tg .tg-fmcx{text-decoration:underline;font-size:12px;
+                        background-color:#efefef;color:#000000;
+                        text-align:center;vertical-align:top}
+                        </style>
+                        <table class="tg">
+                          <tr>
+                            <th class="tg-m4q5">ENGINE_VERSION</th>
+                            <th class="tg-mrgm">prevrelease</th>
+                            <th class="tg-mrgm">release</th>
+                          </tr>
+                          <tr>
+                            <td class="tg-fmcx">master</td>
+                            <td class="tg-fmcx">4.0</td>
+                            <td class="tg-fmcx">4.1</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-fmcx">4.1</td>
+                            <td class="tg-fmcx">4.0</td>
+                            <td class="tg-fmcx">4.1</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-fmcx">4.0</td>
+                            <td class="tg-fmcx">----</td>
+                            <td class="tg-fmcx">4.0</td>
+                          </tr>
+                        </table>'

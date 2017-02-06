@@ -28,13 +28,6 @@
     jobs:
       - '{project}_{version}_system-tests_{flavor}'
 
-- project:
-    <<: *system-tests-common
-    name: ovirt-system-tests_manual
-    trigger: manual
-    jobs:
-      - '{project}_{version}_system-tests_manual'
-
 # type can be both image and image_ng
 # they differ in the testing used
 - project:
@@ -65,3 +58,61 @@
     email-to: sbonazzo@redhat.com, infra@ovirt.org, lveyde@redhat.com
     jobs:
       - '{project}_{version}_he-system-tests'
+
+- job:
+    name: 'ovirt-system-tests_manual'
+    node: integ-tests
+    parameters:
+      - gerrit-params:
+          branch: master
+      - upgrades-table
+      - choice:
+          name: SUITE_TYPE
+          choices:
+            - basic
+            - upgrade-from-release
+            - upgrade-from-prevrelease
+      - text:
+         name: CUSTOM_REPOS
+         default: ''
+         description: '<b>You can add multiple Jenkins build urls/Yum repos, one per line.</b><br>
+                        <u>Supported formats are:</u><br>
+                        * Jenkins Build url:<br>
+                            e.g., http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild/<br>
+                        * Yum repo: "rec:yum_repo_url"<br>
+                            e.g., <b>rec</b>:http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild/artifact/<br>'
+      - choice:
+          name: FALLBACK_REPO
+          choices:
+            - latest_tested
+            - latest_release
+          description: '<h3>Choose from which repo to take the rpms.
+                        latest_tested repo contains the latest rpms which passed CI verification.<br>
+                        latest_release points to the latest stable oVirt release; e.g., oVirt-4.0 repo<br>
+                        </h3>'
+      - choice:
+          name: LAGO_VERSION
+          choices:
+            - stable
+            - unstable
+          description: '<h3>Choose which lago version to install<br>
+                        Default uses latest stable release. Lago developers might<br>
+                        want to use "latest" to test new lago builds before a release.</h3>'
+    scm:
+      - 'ovirt-system-tests-gerrit':
+          branch: master
+          git-server: 'gerrit.ovirt.org'
+      - 'jenkins':
+          branch: master
+          git-server: 'gerrit.ovirt.org'
+    builders:
+      - cleanup-slave
+      - system-tests:
+          version: ${ENGINE_VERSION}
+          suite_type : ${SUITE_TYPE}
+          chroot_distro: el7
+    publishers:
+      - system-tests:
+          version: ${ENGINE_VERSION}
+          suite_type : ${SUITE_TYPE}
+          chroot_distro: el7
