@@ -54,8 +54,8 @@
           project-prefix: ovirt-engine-cli_3.6_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-extension-aaa-ldap_master_create-rpms-
-          project-suffix: _merged
+          project-prefix: ovirt-engine-extension-aaa-ldap_master_build-artifacts-
+          project-suffix: ''
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-extension-aaa-misc_master_create-rpms-
           project-suffix: _merged
