@@ -42,7 +42,11 @@
     name: ovirt-system-image-tests
     version:
       - 4.0:
-          chroot_distro: fc23
+          chroot_distro: fc24
+      - 4.1:
+          chroot_distro: fc24
+      - master:
+          chroot_distro: fc24
     email-to: fabiand@redhat.com
     jobs:
       - '{project}_{version}_image-ng-system-tests'
