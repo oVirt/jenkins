@@ -6,21 +6,10 @@
     version:
       - master:
           branch: master
-      - 4.0:
-          branch: ovirt-wgt-toolchain-4.0
-      - 3.6:
-          branch: master
+          repoversion: master
     mock-build-type: all
     distro:
-      - fc23
       - fc24
-    exclude:
-      - version: master
-        distro: fc23
-      - version: 4.0
-        distro: fc24
-      - version: 3.6
-        distro: fc24
     arch: x86_64
     extra-build-packages: |
       rpmdevtools
@@ -29,7 +18,7 @@
 
 
 - project:
-    name: python-windows)merged
+    name: python-windows_merged
     project: ovirt-wgt-toolchain
     subproject:
       - python-windows
@@ -40,25 +29,9 @@
       - 4.1:
           branch: master
           repoversion: 4.1
-      - 4.0:
-          branch: ovirt-wgt-toolchain-4.0
-          repoversion: 4.0
-      - 3.6:
-          branch: master
-          repoversion: 3.6
     mock-build-type: all
     distro:
-      - fc23
       - fc24
-    exclude:
-      - version: master
-        distro: fc23
-      - version: 4.1
-        distro: fc23
-      - version: 4.0
-        distro: fc24
-      - version: 3.6
-        distro: fc24
     arch: x86_64
     extra-build-packages: |
       rpmdevtools
