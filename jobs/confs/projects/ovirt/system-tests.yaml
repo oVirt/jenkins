@@ -60,6 +60,8 @@
           chroot_distro: el7
       - 4.0:
           chroot_distro: el7
+      - 4.1:
+          chroot_distro: el7
     email-to: sbonazzo@redhat.com, infra@ovirt.org, lveyde@redhat.com
     jobs:
       - '{project}_{version}_he-system-tests'
