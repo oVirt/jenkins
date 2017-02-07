@@ -16,14 +16,9 @@
       - check-patch
       - check-merged
     distro:
-      - fc23
       - fc24
       - el7
     exclude:
-      - version: master
-        distro: fc23
-      - version: 4.1
-        distro: fc23
       - version: 4.0
         distro: fc24
     trigger: 'on-change'

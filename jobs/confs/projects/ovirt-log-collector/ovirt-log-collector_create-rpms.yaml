@@ -10,7 +10,6 @@
           branch: ovirt-log-collector-3.6
     mock-build-type: onlyrpm
     distro:
-      - fc23
       - el6
       - el7
     arch: x86_64
@@ -31,7 +30,6 @@
           repoversion: 3.6
     mock-build-type: onlyrpm
     distro:
-      - fc23
       - el6
       - el7
     arch: x86_64
