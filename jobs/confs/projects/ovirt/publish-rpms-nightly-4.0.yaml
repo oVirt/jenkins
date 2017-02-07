@@ -147,9 +147,6 @@
       - copy-create-job-artifact:
           project: ovirt-node-ng_ovirt-4.0-snapshot_build-artifacts-el7-x86_64
 
-      - copy-create-job-artifact:
-          project: ovirt-guest-agent_4.0_build-artifacts-el7-x86_64
-
     publishers:
       - email:
           recipients: 'infra@ovirt.org'
