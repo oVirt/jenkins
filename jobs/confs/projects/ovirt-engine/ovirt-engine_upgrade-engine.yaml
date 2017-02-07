@@ -14,9 +14,11 @@
       - '4.1'
       - '4.0'
     repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot/rpm/{distro}/,
-        http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static/rpm/{distro}/'
+        http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static/rpm/{distro}/,
+        http://buildlogs.centos.org/centos/7/opstools/$basearch/'
     repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/{distro}/,
-        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static/rpm/{distro}/'
+        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static/rpm/{distro}/,
+        http://buildlogs.centos.org/centos/7/opstools/$basearch/'
     distro: el7
     java-jdk: 'java-1.8.0-openjdk'
     jobs:
@@ -38,9 +40,11 @@
           repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot/rpm/{distro}/,
               http://resources.ovirt.org/pub/ovirt-{test-version}-snapshot-static/rpm/{distro}/'
       - '3.6':
-          repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}/rpm/{distro}/'
+          repos-from: 'http://resources.ovirt.org/pub/ovirt-{test-version}/rpm/{distro}/,
+              http://buildlogs.centos.org/centos/7/opstools/$basearch/'
     repos-to: 'http://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/{distro}/,
-        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static/rpm/{distro}/'
+        http://resources.ovirt.org/pub/ovirt-{version}-snapshot-static/rpm/{distro}/,
+        http://buildlogs.centos.org/centos/7/opstools/$basearch/'
     distro: el7
     java-jdk: 'java-1.8.0-openjdk'
     jobs:
