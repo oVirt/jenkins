@@ -84,20 +84,6 @@
       - timed: "@midnight"
     builders:
       - shell: "rm -rf $WORKSPACE/ovirt-system-tests/images || true"
-      - copyartifact:
-          project: 'ovirt-appliance_ovirt-{version}_build-artifacts-el7-x86_64'
-          which-build: upstream-build
-          fallback-to-last-successful: true
-          filter: "exported-artifacts/*.ova"
-          optional: true
-          target: ovirt-system-tests/images
-      - copyartifact:
-          project: 'ovirt-node-ng_ovirt-{version}_build-artifacts-el7-x86_64'
-          which-build: upstream-build
-          fallback-to-last-successful: true
-          optional: true
-          target: ovirt-system-tests/images
-          filter: "exported-artifacts/*.squashfs.img"
       - cleanup-slave
       - 'system-tests':
           version: '{version}'
