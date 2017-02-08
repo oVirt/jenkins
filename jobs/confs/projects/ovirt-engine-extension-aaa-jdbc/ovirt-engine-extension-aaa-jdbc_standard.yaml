@@ -1,0 +1,49 @@
+- project: &base-params
+    name: ovirt-engine-extension-aaa-jdbc_standard
+    project:
+      - ovirt-engine-extension-aaa-jdbc
+    version:
+      - master:
+          branch: master
+      - 4.1:
+          branch: master
+      - 4.0:
+          branch: master
+      - 3.6:
+          branch: ovirt-engine-extension-aaa-jdbc-1.0
+    stage:
+      - check-patch
+    distro:
+      - el6
+      - el7
+      - fc24
+      - fc25
+    exclude:
+      - version: master
+        distro: el6
+      - version: 4.1
+        distro: el6
+      - version: 4.1
+        distro: fc25
+      - version: 4.0
+        distro: el6
+      - version: 4.0
+        distro: fc24
+      - version: 4.0
+        distro: fc25
+      - version: 3.6
+        distro: fc24
+      - version: 3.6
+        distro: fc25
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: ovirt-engine-extension-aaa-jdbc_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+

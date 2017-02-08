@@ -55,6 +55,9 @@
           project-prefix: ovirt-engine-cli_3.6_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_4.0-platforms:
+          project-prefix: ovirt-engine-extension-aaa-jdbc_4.0_build-artifacts-
+          project-suffix: ''
+      - copy-create-job-artifact-engine_4.0-platforms:
           project-prefix: ovirt-engine-extension-aaa-ldap_4.0_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_4.0-platforms:
@@ -66,9 +69,6 @@
       - copy-create-job-artifact-engine_4.0-platforms:
           project-prefix: ovirt-dwh_4.0_build-artifacts-
           project-suffix: ""
-      - copy-create-job-artifact-engine_4.0-platforms:
-          project-prefix: ovirt-engine-extension-aaa-jdbc_4.0_create-rpms-
-          project-suffix: _merged
       - copy-create-job-artifact-engine_4.0-platforms:
           project-prefix: ovirt-setup-lib_4.0_build-artifacts-
           project-suffix: ""
