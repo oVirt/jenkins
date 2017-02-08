@@ -13,13 +13,10 @@
     distro:
       - el6
       - el7
-      - fc23
       - fc24
     exclude:
       - version: master
         distro: el6
-      - version: master
-        distro: fc23
       - version: 3.6
         distro: fc24
     arch: x86_64
