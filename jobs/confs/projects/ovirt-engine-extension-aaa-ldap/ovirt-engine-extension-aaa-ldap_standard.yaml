@@ -13,7 +13,6 @@
           branch: ovirt-engine-extension-aaa-ldap-1.1
     stage:
       - check-patch
-      - check-merged
     distro:
       - el6
       - el7
