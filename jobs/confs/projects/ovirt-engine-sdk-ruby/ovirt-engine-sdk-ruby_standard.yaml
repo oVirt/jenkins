@@ -12,7 +12,6 @@
           branch: sdk_4.0
     distro:
       - el7
-      - fc23
       - fc24
     arch:
       - x86_64:
@@ -20,14 +19,8 @@
       - ppc64le:
           node-filter: ppc64le
     exclude:
-      - version: master
-        distro: fc23
-      - version: 4.1
-        distro: fc23
       - version: 4.0
         distro: fc24
-      - arch: ppc64le
-        distro: fc23
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
