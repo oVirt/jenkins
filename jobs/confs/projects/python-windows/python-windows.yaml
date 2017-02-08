@@ -10,6 +10,7 @@
     mock-build-type: all
     distro:
       - fc24
+      - fc25
     arch: x86_64
     extra-build-packages: |
       rpmdevtools
@@ -32,6 +33,10 @@
     mock-build-type: all
     distro:
       - fc24
+      - fc25
+    exclude:
+      - version: 4.1
+        distro: fc25
     arch: x86_64
     extra-build-packages: |
       rpmdevtools
