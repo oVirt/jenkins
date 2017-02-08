@@ -11,6 +11,7 @@
       - check-patch
     distro:
       - fc24
+      - fc25
     trigger: 'on-change'
     arch: x86_64
     jobs:
@@ -30,6 +31,7 @@
       - el6
       - el7
       - fc24
+      - fc25
     trigger: 'on-change'
     arch: x86_64
     jobs:
