@@ -11,6 +11,10 @@
     distro:
       - el7
       - fc24
+      - fc25
+    exclude:
+      - version: 4.1
+        distro: fc25
     arch: x86_64
     jobs:
       - 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_created':
@@ -33,6 +37,10 @@
     distro:
       - el7
       - fc24
+      - fc25
+    exclude:
+      - version: 4.1
+        distro: fc25
     arch: x86_64
     jobs:
       - 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_merged':
