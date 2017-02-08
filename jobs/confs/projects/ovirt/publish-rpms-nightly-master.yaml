@@ -132,10 +132,17 @@
       - copy-create-job-artifact:
           project: ovirt-appliance_master_build-artifacts-el7-x86_64
 
-      - copy-create-job-artifact:
-          project: ovirt-engine_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-engine_master_build-artifacts-fc24-x86_64
+      - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-engine_master_build-artifacts-
+          project-suffix: ""
+
+      - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-engine-wildfly-overlay10_master_create-rpms-
+          project-suffix: _merged
+
+      - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-engine-wildfly10_master_create-rpms-
+          project-suffix: _merged
 
       - copy-create-job-artifact:
           project: mom_master_build-artifacts-el7-x86_64
