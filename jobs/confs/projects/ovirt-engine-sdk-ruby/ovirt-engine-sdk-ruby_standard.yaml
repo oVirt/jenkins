@@ -13,12 +13,17 @@
     distro:
       - el7
       - fc24
+      - fc25
     arch:
       - x86_64:
           node-filter: el7 || fc23 || fc24
       - ppc64le:
           node-filter: ppc64le
     exclude:
+      - version: 4.1
+        distro: fc25
+      - version: 4.0
+        distro: fc25
       - version: 4.0
         distro: fc24
     jobs:
