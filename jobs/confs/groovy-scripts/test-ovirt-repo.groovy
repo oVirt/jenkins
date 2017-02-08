@@ -15,10 +15,10 @@ def project = 'ovirt-system-tests'
 def git_project = "git://gerrit.ovirt.org/${{project}}"
 def git_jenkins = 'git://gerrit.ovirt.org/jenkins'
 def distros = ["${{chroot_distro}}"]
-def suits = ["basic"]
+def suits = ["basic","upgrade-from-release","upgrade-from-prevrelease"]
 def deploy_server_url = "deploy-${{reponame}}-${{repotype}}@resources.ovirt.org"
 def test_repo_url = "http://plain.resources.ovirt.org/repos/${{reponame}}/${{repotype}}/${{version}}/latest.under_testing"
-
+ArrayList suites_to_run = [] as String[]
 
 def run_script(script_path) {{
     println "Running script $script_path"
@@ -124,26 +124,50 @@ def run_mock_script(
     }}
 }}
 
-
-def checkout(project, git_project, git_jenkins) {{
-    println "############################# Checking out the code"
-    println "$project, $git_project, $git_jenkins"
-    node ('fc23 || el7') {{
-        wrap([$class: 'TimestamperBuildWrapper']) {{
-            sh 'rm -rf ./*'
-            dir(project) {{
-                git url: git_project
-            }}
-            dir('jenkins') {{
-                git url: git_jenkins
-            }}
-            //the last slash and the explicit .git are required
-            sh "tar czf sources.tar.gz jenkins '$project'"
-            stash includes: "sources.tar.gz", name: 'sources'
-        }}
-    }}
+def prepare_suites_list(suits, suites_to_run, version, project){{
+       dir(project) {{
+       println "### Looking for suites ###"
+       for (suit in suits)
+           if (fileExists("automation/${{suit}}_suite_${{version}}.sh"))
+               suites_to_run << suit
+       }}
 }}
 
+def checkout(project, git_project, git_jenkins, suits, version, suites_to_run) {{
+   println "### Downloading code ###"
+   println "$project, $git_project, $git_jenkins"
+   wrap([$class: 'TimestamperBuildWrapper']){{
+       sh 'rm -rf ./*'
+       dir(project) {{
+           git url: git_project
+       }}
+       dir('jenkins') {{
+           git url: git_jenkins
+       }}
+       //the last slash and the explicit .git are required
+       sh "tar czf sources.tar.gz jenkins '$project'"
+       stash includes: "sources.tar.gz", name: 'sources'
+   }}
+}}
+
+def prepare_env(project,
+                git_project,
+                git_jenkins,
+                suits,
+                version,
+                suites_to_run) {{
+    println "### Preparing the environment ###"
+    println "$project, $git_project, $git_jenkins"
+    node ('fc23 || el7') {{
+        checkout(project,
+                 git_project,
+                 git_jenkins,
+                 suits,
+                 version,
+                 suites_to_run)
+        prepare_suites_list(suits, suites_to_run, version, project)
+    }}
+}}
 
 def run_checks(
     version,
@@ -155,6 +179,8 @@ def run_checks(
     extra_repo_url
 ) {{
     println "############################# Running checks"
+    if (suits.isEmpty())
+        return
     def branches = [:]
     for (int i = 0; i < suits.size(); i++) {{
         for (int j = 0; j < distros.size(); j++) {{
@@ -286,42 +312,46 @@ def main(
     suits,
     test_repo_url,
     credentials_prepare_test,
-    credentials_ack_repo
+    credentials_ack_repo,
+    suites_to_run
 ) {{
     stage concurrency: 1, name: 'Testing latest repo'
     try {{
       prepare_test_repo(deploy_server_url, version, credentials_prepare_test)
-      checkout(
-          project,
-          git_project,
-          git_jenkins,
-      )
+      prepare_env(
+                  project,
+                  git_project,
+                  git_jenkins,
+                  suits,
+                  version,
+                  suites_to_run
+                )
       run_checks(
           version,
-          suits,
+          suites_to_run,
           distros,
           project,
           git_project,
           git_jenkins,
           test_repo_url,
       )
-      do_archive(suits, distros)
+      do_archive(suites_to_run, distros)
     }} catch(err) {{
         currentBuild.result = 'FAILURE'
         throw(err)
-    }} finally {{
-      if (currentBuild.result != 'FAILURE') {{
-          ack_test_repo(deploy_server_url, version, credentials_ack_repo)
-          if (currentBuild.rawBuild.getPreviousCompletedBuild()?.getResult().toString() == 'FAILURE') {{
-              notify(project, 'SUCCESS')
-          }}
-      }} else {{
-          println "Not promoting testing repo, as current build is '${{currentBuild.result}}'"
-          notify(project, currentBuild.result)
+       }}
+      finally {{
+          if (currentBuild.result != 'FAILURE') {{
+              ack_test_repo(deploy_server_url, version, credentials_ack_repo)
+              if (currentBuild.rawBuild.getPreviousCompletedBuild()?.getResult().toString() == 'FAILURE') {{
+                  notify(project, 'SUCCESS')
+              }}
+          }} else {{
+                 println "Not promoting testing repo, as current build is '${{currentBuild.result}}'"
+                 notify(project, currentBuild.result)
+             }}
       }}
-    }}
 }}
-
 
 main(
     project,
@@ -333,5 +363,6 @@ main(
     suits,
     test_repo_url,
     credentials_prepare_test,
-    credentials_ack_repo
+    credentials_ack_repo,
+    suites_to_run
 )
