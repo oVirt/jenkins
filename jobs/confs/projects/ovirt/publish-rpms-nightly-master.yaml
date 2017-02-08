@@ -51,7 +51,7 @@
           project-prefix: ovirt-log-collector_master_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-cli_3.6_build-artifacts-
+          project-prefix: ovirt-engine-cli_master_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-extension-aaa-jdbc_master_build-artifacts-
@@ -144,10 +144,9 @@
           project-prefix: ovirt-engine-wildfly10_master_create-rpms-
           project-suffix: _merged
 
-      - copy-create-job-artifact:
-          project: mom_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: mom_master_build-artifacts-fc24-x86_64
+      - copy-create-job-artifact-vdsm-master-platforms:
+          project-prefix: mom_master_build-artifacts-
+          project-suffix: ""
 
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-live_master_build-artifacts-
@@ -156,15 +155,27 @@
       - copy-create-job-artifact:
           project: py2exe-py2.7_master_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
+          project: py2exe-py2.7_master_create-rpms-fc25-x86_64_merged
+      - copy-create-job-artifact:
           project: pywin32-py2.7_master_create-rpms-fc24-x86_64_merged
+      - copy-create-job-artifact:
+          project: pywin32-py2.7_master_create-rpms-fc25-x86_64_merged
       - copy-create-job-artifact:
           project: python-windows_master_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
+          project: python-windows_master_create-rpms-fc25-x86_64_merged
+      - copy-create-job-artifact:
           project: vcredist-x86_master_create-rpms-fc24-x86_64_merged
+      - copy-create-job-artifact:
+          project: vcredist-x86_master_create-rpms-fc25-x86_64_merged
       - copy-create-job-artifact:
           project: nsis-simple-service-plugin_master_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
+          project: nsis-simple-service-plugin_master_create-rpms-fc25-x86_64_merged
+      - copy-create-job-artifact:
           project: ovirt-wgt_master_create-rpms-fc24-x86_64_merged
+      - copy-create-job-artifact:
+          project: ovirt-wgt_master_create-rpms-fc25-x86_64_merged
 
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: cockpit-ovirt_master_build-artifacts-
@@ -175,6 +186,7 @@
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: ovirt-engine-nodejs-modules_master_build-artifacts-
           project-suffix: ""
+
 
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-sdk-ruby_master_build-artifacts-
@@ -198,6 +210,8 @@
           project: ovirt-guest-agent_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-guest-agent_master_build-artifacts-fc24-x86_64
+      - copy-create-job-artifact:
+          project: ovirt-guest-agent_master_build-artifacts-fc25-x86_64
 
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: ovirt-provider-ovn_master_build-artifacts-

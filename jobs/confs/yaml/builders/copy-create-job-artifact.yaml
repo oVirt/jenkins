@@ -17,6 +17,8 @@
           project: "{project-prefix}el7-x86_64{project-suffix}"
       - copy-create-job-artifact:
           project: "{project-prefix}fc24-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc25-x86_64{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-engine_4.1-platforms
@@ -33,6 +35,8 @@
           project: "{project-prefix}el7-ppc64le{project-suffix}"
       - copy-create-job-artifact:
           project: "{project-prefix}fc24-ppc64le{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc25-ppc64le{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-engine-4.1-ppc64le-platforms
@@ -144,6 +148,8 @@
     builders:
       - copy-create-job-artifact:
           project: "{project-prefix}el7-x86_64{project-suffix}"
+      - copy-create-job-artifact:
+          project: "{project-prefix}fc25-x86_64{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-hosted-engine-4.1-platforms
