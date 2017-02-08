@@ -29,9 +29,14 @@
     distro:
       - el7
       - fc24
+      - fc25
     exclude:
-      - version: 0.16
+      - version: 4.0
         distro: fc24
+      - version: 4.0
+        distro: fc25
+      - version: 4.1
+        distro: fc25
     arch:
       - x86_64:
           node-filter: fc23 || fc24
@@ -49,17 +54,13 @@
       - 4.1:
           branch: ioprocess-0.16
           repoversion: 4.1
-      - 4.0:
-          branch: ioprocess-0.16
-          repoversion: 4.0
     distro:
       - el7
       - fc24
+      - fc25
     exclude:
-      - version: 0.16
-        distro: el7
-      - version: 0.16
-        distro: fc24
+      - version: 4.1
+        distro: fc25
     arch:
       - ppc64le:
           node-filter: ppc64le
@@ -75,9 +76,12 @@
     distro:
       - el7
       - fc24
+      - fc25
     exclude:
       - version: 0.16
         distro: fc24
+      - version: 0.16
+        distro: fc25
 
 - project:
     <<: *ioprocess_standard_common
@@ -104,9 +108,12 @@
     distro:
       - el7
       - fc24
+      - fc25
     exclude:
       - version: 0.16
         distro: fc24
+      - version: 0.16
+        distro: fc25
 
 - project:
     <<: *ioprocess_standard_common
@@ -118,11 +125,14 @@
     distro:
       - el7
       - fc24
+      - fc25
     exclude:
       - version: 0.16
         distro: el7
       - version: 0.16
         distro: fc24
+      - version: 0.16
+        distro: fc25
 
 - project:
     name: ioprocess_0.15_created
