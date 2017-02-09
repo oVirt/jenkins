@@ -65,8 +65,8 @@
           project-prefix: ovirt-engine-extension-aaa-ldap_3.6_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine-platforms:
-          project-prefix: ovirt-engine-extension-aaa-misc_3.6_create-rpms-
-          project-suffix: _merged
+          project-prefix: ovirt-engine-extension-aaa-misc_3.6_build-artifacts-
+          project-suffix: ''
       - copy-create-job-artifact-engine-platforms:
           project-prefix: ovirt-engine-extension-logger-log4j_3.6_create-rpms-
           project-suffix: _merged
