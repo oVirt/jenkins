@@ -11,9 +11,14 @@
     distro:
         - el7
         - fc24
+        - fc25
     exclude:
       - version: 4.0
         distro: fc24
+      - version: 4.0
+        distro: fc25
+      - version: 4.1
+        distro: fc25
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -31,6 +36,10 @@
     exclude:
       - version: 4.0
         distro: fc24
+      - version: 4.0
+        distro: fc25
+      - version: 4.1
+        distro: fc25
     jobs:
         - 'java-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
 
