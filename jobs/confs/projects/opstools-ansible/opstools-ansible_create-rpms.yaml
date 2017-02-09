@@ -10,6 +10,7 @@
     distro:
       - el7
       - fc24
+      - fc25
     arch:
       - x86_64
     jobs:
@@ -29,6 +30,7 @@
     distro:
       - el7
       - fc24
+      - fc25
     arch:
       - x86_64
     jobs:
