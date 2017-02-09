@@ -144,8 +144,6 @@
     builders:
       - copy-create-job-artifact:
           project: "{project-prefix}el7-x86_64{project-suffix}"
-      - copy-create-job-artifact:
-          project: "{project-prefix}fc24-x86_64{project-suffix}"
 
 - builder:
     name: copy-create-job-artifact-hosted-engine-4.1-platforms
