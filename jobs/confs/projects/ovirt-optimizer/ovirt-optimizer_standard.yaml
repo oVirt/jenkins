@@ -47,9 +47,13 @@
       - version: 3.6
         distro: fc25
       - version: 4.0
+        distro: el6
+      - version: 4.0
         distro: fc25
       - version: 4.1
         distro: fc25
+      - version: 4.1
+        distro: el6
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
