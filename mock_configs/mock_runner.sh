@@ -8,6 +8,7 @@ MOCKS=(
     fc24:fedora-24-x86_64
     fc25:fedora-25-x86_64
     fc24:fedora-24-ppc64le
+    fc25:fedora-25-ppc64le
 )
 SCRIPTS=()
 RUN_SHELL="false"
