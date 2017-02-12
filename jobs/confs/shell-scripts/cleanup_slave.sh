@@ -136,9 +136,10 @@ cleanup_workspaces() {
     local res=0
     local base_workspace workspace
     base_workspace=~jenkins/workspace
+    echo "Cleaning up workspaces"
     for workspace in $base_workspace/*; do
         [[ -d "$workspace" ]] || continue
-        [[ "$cur_workspace" =~ ^$workspace ]] && continue
+        [[ "$workspace" =~ ^$cur_workspace ]] && continue
         echo "    $workspace"
         safe_remove "$workspace" \
         || {
