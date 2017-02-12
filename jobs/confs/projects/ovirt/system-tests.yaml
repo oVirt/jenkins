@@ -120,3 +120,16 @@
           version: ${ENGINE_VERSION}
           suite_type : ${SUITE_TYPE}
           chroot_distro: el7
+
+# Storage Hyper Converged system tests
+- project:
+    <<: *system-tests-common
+    name: ovirt-system-hc-tests
+    version:
+      - master:
+          chroot_distro: el7
+      - 4.1:
+          chroot_distro: el7
+    email-to: 'infra@ovirt.org, sabose@redhat.com'
+    jobs:
+      - '{project}_{version}_hc-system-tests'

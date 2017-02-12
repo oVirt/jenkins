@@ -98,6 +98,21 @@
 
 - job-template:
     <<: *basic_system_tests
+    name: '{project}_{version}_hc-system-tests'
+    builders:
+      - cleanup-slave
+      - 'system-tests':
+          version: '{version}'
+          suite_type : hc-basic
+          chroot_distro: '{chroot_distro}'
+    publishers:
+      - system-tests:
+          version: '{version}'
+          suite_type : hc-basic
+          chroot_distro: '{chroot_distro}'
+
+- job-template:
+    <<: *basic_system_tests
     name: '{project}_{version}_image-ng-system-tests'
     triggers:
       - timed: "@midnight"
