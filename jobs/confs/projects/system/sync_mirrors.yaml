@@ -12,6 +12,10 @@
       - 'glusterfs-3.8-el7'
       - 'centos-ovirt-4.0-el7'
       - 'centos-opstools-testing-el7'
+      - 'fedora-base-fc24'
+      - 'fedora-updates-fc24'
+      - 'fedora-base-fc25'
+      - 'fedora-updates-fc25'
     arch: x86_64
     jobs:
       - 'system-sync_mirrors-{repo}-{arch}'
