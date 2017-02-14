@@ -33,6 +33,11 @@ def orig_repos_cfg():
         mirrorlist=http://example.com/yum/mirrorlist
         failovermethod=priority
 
+        [metalink_mirrored_repo]
+        name=A mirrored repo with a metalink configuration
+        metalink=http://example.com/dnf/metalink
+        failovermethod=priority
+
         [unmirrored_repo]
         name=A non-mirrored repo
         baseurl=http://example.com/yum/another_repo
@@ -46,6 +51,7 @@ def mirrors_dict():
     return dict(
         plain_mirrored_repo='http://mirror.com/yum/repo',
         list_mirrored_repo='http://mirror.com/yum/list_repo',
+        metalink_mirrored_repo='http://mirror.com/yum/metalink_repo',
     )
 
 
@@ -65,6 +71,12 @@ def expected_repos_cfg():
         name = A mirrored repo with an (upstream) mirror list
         failovermethod = priority
         baseurl = http://mirror.com/yum/list_repo
+        proxy = _none_
+
+        [metalink_mirrored_repo]
+        name = A mirrored repo with a metalink configuration
+        failovermethod = priority
+        baseurl = http://mirror.com/yum/metalink_repo
         proxy = _none_
 
         [unmirrored_repo]
@@ -91,6 +103,11 @@ def expected_repos_proxied_cfg():
         name = A mirrored repo with an (upstream) mirror list
         failovermethod = priority
         baseurl = http://mirror.com/yum/list_repo
+
+        [metalink_mirrored_repo]
+        name = A mirrored repo with a metalink configuration
+        failovermethod = priority
+        baseurl = http://mirror.com/yum/metalink_repo
 
         [unmirrored_repo]
         name = A non-mirrored repo

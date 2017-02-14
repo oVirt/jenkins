@@ -28,6 +28,7 @@ def inject_yum_mirrors(mirrors, yum_cfg, out_cfg, allow_proxy=False):
             continue
         cfg.set(section, 'baseurl', mirrors[section])
         cfg.remove_option(section, 'mirrorlist')
+        cfg.remove_option(section, 'metalink')
         if not allow_proxy:
             cfg.set(section, 'proxy', '_none_')
     cfg.write(out_cfg)

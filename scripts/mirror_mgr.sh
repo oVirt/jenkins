@@ -17,6 +17,14 @@
 # A 'latest.txt' file is created for each mirror to allow clients to
 # determine which snapshot is the latest.
 #
+# The snapshots are built to be primarily compatible with DNF. To make them
+# also work with yum, the following rewrite rules need to be configured for the
+# HTTPD server sharing the mirrors
+#
+#   RewriteEngine On
+#   RewriteCond "%{DOCUMENT_ROOT}/$0" !-f
+#   RewriteRule "^/repos/yum/([^/]+)/([0-9-]+)/repodata/(.*)$" "/repos/yum/$1/base/repodata/$3" [R]
+#
 MIRRORS_VG="${MIRRORS_VG:-mirrors_vg}"
 MIRRORS_TP="${MIRRORS_TP:-mirrors_tp}"
 MIRRORS_LV="${MIRRORS_LV:-mirrors_lv}"
@@ -29,8 +37,10 @@ MAX_LOCK_ATTEMPTS=120
 LOCK_WAIT_INTERVAL=5
 LOCK_BASE="$HOME"
 
+OLD_MD_TO_KEEP=100
+
 main() {
-    # Launch the command fuction according to the command given on the
+    # Launch the command function according to the command given on the
     # command line
     local command="${1:?}"
     local command_args=("${@:2}")
@@ -106,26 +116,9 @@ cmd_snapshot_yum_mirror() {
     snapshot_name="$(date -u +%Y-%m-%d-%H-%M)"
     echo "Creating mirror snapshot: $snapshot_name"
     snapshot_mp="$MIRRORS_MP_BASE/yum/$repo_name/$snapshot_name"
-    sudo install -o "$USER" -d "$snapshot_mp"
+    sudo install -o "$USER" -d "$snapshot_mp" "$snapshot_mp/repodata"
+    cp -a "$repo_mp/repodata/repomd.xml" "$snapshot_mp/repodata"
 
-    [[ -f "$repo_mp/comps.xml" ]] && \
-        repo_comps=("--groupfile=$repo_mp/comps.xml")
-    list_file="$(mktemp)"
-    echo "Creating snapshot package list" && \
-        (
-            cd "$repo_mp" && \
-            repomanage --new --keep=1 --nocheck . > "$list_file"
-        ) && \
-        echo "Creating snapshot metadata" &&
-        /bin/createrepo \
-            --update --update-md-path="$repo_mp" \
-            --baseurl="$(repo_url $repo_name yum base)" \
-            --outputdir="$snapshot_mp" \
-            --workers=8 \
-            "${repo_comps[@]}" \
-            --pkglist "$list_file" \
-            "$repo_mp"
-    rm -f "$list_file"
     echo "$snapshot_name" > "$(latest_file $repo_name yum)"
     /usr/sbin/restorecon -R "$snapshot_mp" "$(latest_file $repo_name yum)"
 }
@@ -261,7 +254,15 @@ perform_yum_sync() {
     [[ -f "$repo_mp/comps.xml" ]] && \
         repo_comps=("--groupfile=$repo_mp/comps.xml")
     echo "Generating yum repo metadata for: $repo_name"
-    /bin/createrepo --update --workers=8 "${repo_comps[@]}" "$repo_mp"
+    # Repo meta data is created in a way that older repomd.xml files can be
+    # copied and moved around
+    /bin/createrepo \
+        --update \
+        --workers=8 \
+        --baseurl="$(repo_url $repo_name yum base)" \
+        --retain-old-md="$OLD_MD_TO_KEEP" \
+        "${repo_comps[@]}" \
+        "$repo_mp"
     /usr/sbin/restorecon -R "$repo_mp"
 }
 
