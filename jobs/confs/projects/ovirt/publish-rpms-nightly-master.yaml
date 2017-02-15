@@ -227,6 +227,9 @@
           source: '**/*.rpm, **/*.tar.gz, **/*.iso **/*.exe'
           target: ovirt-master-snapshot.tmp
           command: |
+            /bin/repoman ovirt-master-snapshot.tmp \
+              add /srv/resources/repos/ovirt/tested/master/rpm:latest:only-missing
+
             mkdir -p artifacts/ovirt-master-snapshot.tmp
             rm -rf artifacts/ovirt-master-snapshot.tmp/*
             mv ovirt-master-snapshot.tmp/* artifacts/ovirt-master-snapshot.tmp
