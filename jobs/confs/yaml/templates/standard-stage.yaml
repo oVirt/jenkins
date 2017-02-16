@@ -20,6 +20,8 @@
       - jenkins:
           branch: master
           git-server: '{git-server}'
+      - jenkins-whitelist:
+          git-server: '{git-server}'
     triggers:
       - '{stage}_trigger_{trigger}':
           project: '{project}'
@@ -44,7 +46,10 @@
         - jenkins:
             branch: master
             git-server: '{git-server}'
+        - jenkins-whitelist:
+            git-server: '{git-server}'
       builders:
+        - whitelist
         - shell: |
             if [ ${{GERRIT_EVENT_TYPE}} == "patchset-created" ]; then
               status=`curl https://gerrit.ovirt.org/changes/?q=change:${{GERRIT_CHANGE_NUMBER}} | grep status | cut -d'"' -f4`
@@ -59,6 +64,7 @@
             distro: '{distro}'
             arch: '{arch}'
       publishers:
+        - whitelist
         - standard-publisher:
             project: '{project}'
 
@@ -72,7 +78,10 @@
         - jenkins:
             branch: master
             git-server: '{git-server}'
+        - jenkins-whitelist:
+            git-server: '{git-server}'
       builders:
+        - whitelist
         - shell: |
             if [ ${{GERRIT_EVENT_TYPE}} == "patchset-created" ]; then
               status=`curl https://gerrit.ovirt.org/changes/?q=change:${{GERRIT_CHANGE_NUMBER}} | grep status | cut -d'"' -f4`
@@ -97,7 +106,10 @@
         - jenkins:
             branch: master
             git-server: '{git-server}'
+        - jenkins-whitelist:
+            git-server: '{git-server}'
       builders:
+        - whitelist
         - shell: |
             if [ ${{GERRIT_EVENT_TYPE}} == "patchset-created" ]; then
               status=`curl https://gerrit.ovirt.org/changes/?q=change:${{GERRIT_CHANGE_NUMBER}} | grep status | cut -d'"' -f4`
@@ -118,6 +130,7 @@
       reponame: ovirt
       repotype: experimental
       publishers:
+        - whitelist
         - standard-publisher:
             project: '{project}'
         - trigger-parameterized-builds:
@@ -151,6 +164,7 @@
       reponame: ovirt
       repotype: experimental
       publishers:
+        - whitelist
         - standard-publisher:
             project: '{project}'
         - trigger-parameterized-builds:
@@ -166,6 +180,7 @@
       reponame: ovirt
       repotype: experimental
       publishers:
+        - whitelist
         - standard-publisher:
             project: '{project}'
         - trigger-parameterized-builds:
@@ -181,6 +196,7 @@
       reponame: ovirt
       repotype: experimental
       publishers:
+        - whitelist
         - standard-publisher:
             project: '{project}'
         - trigger-parameterized-builds:
@@ -196,6 +212,7 @@
       reponame: ovirt
       repotype: experimental
       publishers:
+        - whitelist
         - standard-publisher:
             project: '{project}'
         - trigger-parameterized-builds:
@@ -225,6 +242,8 @@
     name: 'jenkins_{version}_{stage}-{distro}-{arch}'
     scm:
       - '{project}-gerrit':
+          git-server: '{git-server}'
+      - jenkins-whitelist:
           git-server: '{git-server}'
 
 - job-template:

@@ -12,6 +12,11 @@
                 branches:
                   - branch-compare-type: 'PLAIN'
                     branch-pattern: '{branch}'
+          notbuilt-message: |
+            To avoid overloading the infrastructure, a whitelist for
+            running gerrit triggered jobs has been set in place, if
+            you feel like you should be in it, please contact infra at
+            ovirt dot org.
 
 - trigger:
     name: check-patch_trigger_on-change
@@ -30,6 +35,11 @@
                 branches:
                   - branch-compare-type: 'PLAIN'
                     branch-pattern: '{branch}'
+          notbuilt-message: |
+            To avoid overloading the infrastructure, a whitelist for
+            running gerrit triggered jobs has been set in place, if
+            you feel like you should be in it, please contact infra at
+            ovirt dot org.
 
 - trigger:
     name: build-artifacts-on-demand_trigger_on-comment-added
@@ -46,6 +56,11 @@
                 branches:
                   - branch-compare-type: 'PLAIN'
                     branch-pattern: '{branch}'
+          notbuilt-message: |
+            To avoid overloading the infrastructure, a whitelist for
+            running gerrit triggered jobs has been set in place, if
+            you feel like you should be in it, please contact infra at
+            ovirt dot org.
 
 - trigger:
     name: check-merged_trigger_on-change
@@ -61,6 +76,11 @@
                 branches:
                   - branch-compare-type: 'PLAIN'
                     branch-pattern: '{branch}'
+          notbuilt-message: |
+            To avoid overloading the infrastructure, a whitelist for
+            running gerrit triggered jobs has been set in place, if
+            you feel like you should be in it, please contact infra at
+            ovirt dot org.
 
 - trigger:
     name: build-artifacts_trigger_timed
