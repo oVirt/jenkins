@@ -82,7 +82,7 @@ def dumps_dict(to_dump, dict_name):
     return '\n'.join(result_lines)
 
 
-def check_proxy(proxy_url, test_url='http://proxy.phx.ovirt.org:5000/'):
+def check_proxy(proxy_url, test_url='http://resources.ovirt.org/'):
     try:
         res = requests.get(test_url, proxies={'http': proxy_url}, timeout=5)
     except Exception as exc:
