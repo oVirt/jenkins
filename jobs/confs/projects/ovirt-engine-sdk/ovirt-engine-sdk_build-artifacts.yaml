@@ -102,20 +102,30 @@
         - 'python-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
-    name: ovirt-engine-sdk_build_ppc64le
+    <<: *basic-params
+    name: python-ovirt-engine-sdk4_build_ppc64le
     stage: build-artifacts
-    project:
-      - ovirt-engine-sdk
+    project: ovirt-engine-sdk
     version:
       - master:
           branch: master
-    trigger: 'on-change'
-    distro:
-        - el7
-        - fc24
-        - fc25
+      - 4.1:
+          branch: sdk_4.1
+    exclude:
+      - version: master
+        distro: el6
+      - version: 4.1
+        distro: el6
+      - version: 4.1
+        distro: fc25
+      - version: 4.0
+        distro: fc24
+      - version: 4.0
+        distro: fc25
+      - version: 4.0
+        distro: el6
     arch:
       - ppc64le:
           node-filter: ppc64le
     jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+        - 'python-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'

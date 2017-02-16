@@ -81,7 +81,7 @@
           project-prefix: python-ovirt-engine-sdk4_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine-master-ppc64le-platforms:
-          project-prefix: ovirt-engine-sdk_master_build-artifacts-
+          project-prefix: python-ovirt-engine-sdk4_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-sdk-java_master_build-artifacts-
