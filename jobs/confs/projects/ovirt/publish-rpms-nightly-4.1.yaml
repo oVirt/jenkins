@@ -74,6 +74,9 @@
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: python-ovirt-engine-sdk4_4.1_build-artifacts-
           project-suffix: ""
+      - copy-create-job-artifact-engine-4.1-ppc64le-platforms:
+          project-prefix: python-ovirt-engine-sdk4_4.1_build-artifacts-
+          project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-engine-sdk-java_4.1_build-artifacts-
           project-suffix: ""
@@ -111,8 +114,6 @@
       - copy-create-job-artifact:
           project: qemu_4.1_create-rpms-el7-ppc64le_merged
 
-      - copy-create-job-artifact:
-          project: ovirt-engine-sdk_master_build-artifacts-el7-ppc64le
       - copy-create-job-artifact:
           project: ovirt-engine-sdk_4.1_build-artifacts-el7-x86_64
 
