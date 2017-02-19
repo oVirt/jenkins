@@ -1,0 +1,53 @@
+- publisher:
+    name: publish-rpms-nightly-email
+    publishers:
+      - email:
+          recipients: 'infra@ovirt.org'
+          notify-every-unstable-build: true
+          send-to-individuals: false
+
+- publisher:
+    name: publish-rpms-nightly-ssh
+    publishers:
+      - ssh:
+          site: resources.ovirt.org
+          source: '**/*.rpm, **/*.tar.gz, **/*.iso **/*.exe'
+          target: 'ovirt-{version}-snapshot.tmp'
+          command: |
+            READY_WAIT_ATTEMPTS=50
+            READY_WAIT_INTERVAL=60s
+
+            mkdir -p artifacts/ovirt-{version}-snapshot.tmp
+            rm -rf artifacts/ovirt-{version}-snapshot.tmp/*
+            mv ovirt-{version}-snapshot.tmp/* artifacts/ovirt-{version}-snapshot.tmp
+            # Wait until the *.ready directory is not there (cron job is done)
+            let attempt=0
+            while [[ -d artifacts/ovirt-{version}-snapshot.ready ]]; do
+              if ((attempt >= READY_WAIT_ATTEMPTS)); then
+                echo "Timed out waiting for cron job to finish"
+                exit 1
+              fi
+              let attempt++
+              echo -n "Waiting for scan_for_artifacts.sh cron job to finish"
+              echo " (attempt $attempt of $READY_WAIT_ATTEMPTS)"
+              sleep $READY_WAIT_INTERVAL
+            done
+            mv  artifacts/ovirt-{version}-snapshot.tmp artifacts/ovirt-{version}-snapshot.ready
+
+            rm -rf ovirt-{version}-snapshot.tmp
+
+- publisher:
+    name: publish-rpms-nightly-cleanup
+    publishers:
+      - workspace-cleanup:
+          clean-if:
+            - success: true
+            - failure: false
+
+- publisher:
+    name: publish-rpms-nightly-publishers
+    publishers:
+      - publish-rpms-nightly-ssh:
+          version: '{version}'
+      - publish-rpms-nightly-cleanup
+      - publish-rpms-nightly-email

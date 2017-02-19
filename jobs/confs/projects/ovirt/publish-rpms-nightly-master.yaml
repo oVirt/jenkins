@@ -218,15 +218,21 @@
           project-suffix: ""
 
     publishers:
-      - email:
-          recipients: 'infra@ovirt.org'
-          notify-every-unstable-build: true
-          send-to-individuals: false
+      # We're not using the publish-rpms-nightly-publishers macro here because
+      # code here is different (has the new 'sync from tested' functionality).
+      # We expect the syncing from tested will simplify the publisher jobs over
+      # time to the point where they all can use the same simple job template as
+      # opposed to separate YAML per job.
+      # The publishers macros support and are needed just the older style
+      # publisher jobs for the time being
       - ssh:
           site: resources.ovirt.org
           source: '**/*.rpm, **/*.tar.gz, **/*.iso **/*.exe'
           target: ovirt-master-snapshot.tmp
           command: |
+            READY_WAIT_ATTEMPTS=50
+            READY_WAIT_INTERVAL=60s
+
             /bin/repoman ovirt-master-snapshot.tmp \
               add /srv/resources/repos/ovirt/tested/master/rpm:latest:only-missing
             find ovirt-master-snapshot.tmp -depth \
@@ -236,10 +242,20 @@
             mkdir -p artifacts/ovirt-master-snapshot.tmp
             rm -rf artifacts/ovirt-master-snapshot.tmp/*
             mv ovirt-master-snapshot.tmp/* artifacts/ovirt-master-snapshot.tmp
+            # Wait until the *.ready directory is not there (cron job is done)
+            let attempt=0
+            while [[ -d artifacts/ovirt-master-snapshot.ready ]]; do
+              if ((attempt >= READY_WAIT_ATTEMPTS)); then
+                echo "Timed out waiting for cron job to finish"
+                exit 1
+              fi
+              let attempt++
+              echo -n "Waiting for scan_for_artifacts.sh cron job to finish"
+              echo " (attempt $attempt of $READY_WAIT_ATTEMPTS)"
+              sleep $READY_WAIT_INTERVAL
+            done
             mv  artifacts/ovirt-master-snapshot.tmp  artifacts/ovirt-master-snapshot.ready
 
             rm -rf ovirt-master-snapshot.tmp
-      - workspace-cleanup:
-          clean-if:
-            - success: true
-            - failure: false
+      - publish-rpms-nightly-cleanup
+      - publish-rpms-nightly-email

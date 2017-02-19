@@ -148,22 +148,5 @@
           project-prefix: ovirt-image-uploader_3.6_build-artifacts-
 
     publishers:
-      - email:
-          recipients: 'infra@ovirt.org'
-          notify-every-unstable-build: true
-          send-to-individuals: false
-      - ssh:
-          site: resources.ovirt.org
-          source: '**/*.rpm, **/*.tar.gz, **/*.iso **/*.exe'
-          target: ovirt-3.6-snapshot.tmp
-          command: |
-            mkdir -p artifacts/ovirt-3.6-snapshot.tmp
-            rm -rf artifacts/ovirt-3.6-snapshot.tmp/*
-            mv ovirt-3.6-snapshot.tmp/* artifacts/ovirt-3.6-snapshot.tmp
-            mv  artifacts/ovirt-3.6-snapshot.tmp  artifacts/ovirt-3.6-snapshot.ready
-
-            rm -rf ovirt-3.6-snapshot.tmp
-      - workspace-cleanup:
-          clean-if:
-            - success: true
-            - failure: false
+      - publish-rpms-nightly-publishers:
+          version: 3.6
