@@ -229,6 +229,9 @@
           command: |
             /bin/repoman ovirt-master-snapshot.tmp \
               add /srv/resources/repos/ovirt/tested/master/rpm:latest:only-missing
+            find ovirt-master-snapshot.tmp -depth \
+              -type d -name repodata -print0 | \
+              xargs -0 -r rm -rf
 
             mkdir -p artifacts/ovirt-master-snapshot.tmp
             rm -rf artifacts/ovirt-master-snapshot.tmp/*
