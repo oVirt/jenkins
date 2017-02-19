@@ -122,17 +122,6 @@ def extract_builders_list(build_results) {{
 }}
 
 
-// Make sure that the global vars we extract exist, as they are not in the env object
-for(varname in ['GERRIT_REFSPEC', 'GERRIT_BRANCH', 'REFSPEC', 'sha1']){{
-    println "Setting env variable $varname"
-    if(binding.variables.containsKey(varname)) {{
-        env."$varname" = binding.variables[varname]
-    }} else {{
-        env."$varname" = ''
-    }}
-}}
-
-
 def deploy(build_results, project, branch) {{
     // Runs the deploy jobs with the build_results
     builders_list = extract_builders_list(build_results)
