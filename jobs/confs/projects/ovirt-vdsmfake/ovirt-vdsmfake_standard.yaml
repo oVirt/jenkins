@@ -4,10 +4,7 @@
       - master:
           branch: master
     distro:
-      - el6
       - el7
-      - fc24
-      - fc25
     project:
       - ovirt-vdsmfake
     stage: check-patch
