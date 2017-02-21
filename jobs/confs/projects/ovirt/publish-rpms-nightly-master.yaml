@@ -238,6 +238,9 @@
             find ovirt-master-snapshot.tmp -depth \
               -type d -name repodata -print0 | \
               xargs -0 -r rm -rf
+            find ovirt-master-snapshot.tmp \
+              -type f -name '*.rpm' -print0 | \
+              xargs -0 -r touch
 
             mkdir -p artifacts/ovirt-master-snapshot.tmp
             rm -rf artifacts/ovirt-master-snapshot.tmp/*
