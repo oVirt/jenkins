@@ -1,9 +1,10 @@
 ##############################################################################
 ###   Projects
 ##############################################################################
-- project:
+- project: &base-params
     name: imgbased
-    project: imgbased
+    project:
+      - imgbased
     version:
       - master:
           branch: master
@@ -58,3 +59,12 @@
       - x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: imgbased_build-artifacts-manual
+    stage: build-artifacts-manual
+    trigger: 'manual'
+    jobs:
+      - '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
+
