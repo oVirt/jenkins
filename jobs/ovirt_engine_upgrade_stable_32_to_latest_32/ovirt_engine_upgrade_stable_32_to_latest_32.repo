@@ -1,5 +1,0 @@
-[ovirt_engine_upgrade_stable_32_to_latest_32]
-name=Latest 3.2 ovirt-engine
-baseurl=http://resources.ovirt.org/releases/3.2/rpm/Fedora/18/
-enabled=1
-gpgcheck=0

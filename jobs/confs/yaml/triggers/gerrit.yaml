@@ -17,34 +17,6 @@
                   branch-pattern: '{branch}'
 
 - trigger:
-    name: on-engine-upgrade-patch-created
-# Remove when upgrade jobs will be moved to OST
-    triggers:
-      - gerrit:
-          server-name: '{gerrit-server}'
-          trigger-on:
-            - draft-published-event
-            - patchset-created-event:
-                exclude-drafts: true
-                exclude-no-code-change: true
-          escape-quotes: true
-          projects:
-            - project-compare-type: 'PLAIN'
-              project-pattern: '{project}'
-              branches:
-                - branch-compare-type: 'PLAIN'
-                  branch-pattern: '{branch}'
-              file-paths:
-                - compare-type: 'PLAIN'
-                  pattern: 'ovirt-engine.spec.in'
-                - compare-type: 'PLAIN'
-                  pattern: 'Makefile'
-                - compare-type: 'ANT'
-                  pattern: 'packaging/**'
-                - compare-type: 'ANT'
-                  pattern: '**/pom.xml'
-
-- trigger:
     name: on-patch-merged
     triggers:
       - gerrit:
@@ -59,30 +31,6 @@
                 - branch-compare-type: 'PLAIN'
                   branch-pattern: '{branch}'
 
-- trigger:
-    name: on-engine-upgrade-patch-merged
-# Remove when upgrade jobs will be moved to OST
-    triggers:
-      - gerrit:
-          server-name: '{gerrit-server}'
-          trigger-on:
-            - change-merged-event
-          escape-quotes: true
-          projects:
-            - project-compare-type: 'PLAIN'
-              project-pattern: '{project}'
-              branches:
-                - branch-compare-type: 'PLAIN'
-                  branch-pattern: '{branch}'
-              file-paths:
-                - compare-type: 'PLAIN'
-                  pattern: 'ovirt-engine.spec.in'
-                - compare-type: 'PLAIN'
-                  pattern: 'Makefile'
-                - compare-type: 'ANT'
-                  pattern: 'packaging/**'
-                - compare-type: 'ANT'
-                  pattern: '**/pom.xml'
 
 - trigger:
     name: on-patch-created-with-files
