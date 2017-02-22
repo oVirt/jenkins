@@ -11,7 +11,7 @@
         distro: el6
       - version: 4.1
         distro: el6
-      - version: 4.1.0
+      - version: 4.1.1
         distro: el6
       - version: 4.0
         distro: el6
@@ -19,12 +19,6 @@
         distro: fc25
       - version: 4.0
         distro: fc24
-      - version: 4.0.6
-        distro: el6
-      - version: 4.0.6
-        distro: fc24
-      - version: 4.0.6
-        distro: fc25
       - version: 3.6
         distro: fc24
       - version: 3.6
@@ -38,8 +32,8 @@
     version:
       - master:
           branch: master
-      - 4.1.0:
-          branch: ovirt-engine-4.1.0.z
+      - 4.1.1:
+          branch: ovirt-engine-4.1.1.z
       - 4.1:
           branch: ovirt-engine-4.1
       - 4.0:
@@ -57,14 +51,12 @@
     version:
       - master:
           branch: master
-      - 4.1.0:
-          branch: ovirt-engine-4.1.0.z
+      - 4.1.1:
+          branch: ovirt-engine-4.1.1.z
       - 4.1:
           branch: ovirt-engine-4.1
       - 4.0:
           branch: ovirt-engine-4.0
-      - 4.0.6:
-          branch: ovirt-engine-4.0.6
       - 3.6:
           branch: ovirt-engine-3.6
     stage: check-patch
@@ -78,14 +70,12 @@
     version:
       - master:
           branch: master
-      - 4.1.0:
-          branch: ovirt-engine-4.1.0.z
+      - 4.1.1:
+          branch: ovirt-engine-4.1.1.z
       - 4.1:
           branch: ovirt-engine-4.1
       - 4.0:
           branch: ovirt-engine-4.0
-      - 4.0.6:
-          branch: ovirt-engine-4.0.6
       - 3.6:
           branch: ovirt-engine-3.6
     stage: check-merged
