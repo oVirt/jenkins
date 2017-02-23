@@ -153,27 +153,15 @@
           project-suffix: ""
 
       - copy-create-job-artifact:
-          project: py2exe-py2.7_master_create-rpms-fc24-x86_64_merged
-      - copy-create-job-artifact:
           project: py2exe-py2.7_master_create-rpms-fc25-x86_64_merged
-      - copy-create-job-artifact:
-          project: pywin32-py2.7_master_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
           project: pywin32-py2.7_master_create-rpms-fc25-x86_64_merged
       - copy-create-job-artifact:
-          project: python-windows_master_create-rpms-fc24-x86_64_merged
-      - copy-create-job-artifact:
           project: python-windows_master_create-rpms-fc25-x86_64_merged
-      - copy-create-job-artifact:
-          project: vcredist-x86_master_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
           project: vcredist-x86_master_create-rpms-fc25-x86_64_merged
       - copy-create-job-artifact:
-          project: nsis-simple-service-plugin_master_create-rpms-fc24-x86_64_merged
-      - copy-create-job-artifact:
           project: nsis-simple-service-plugin_master_create-rpms-fc25-x86_64_merged
-      - copy-create-job-artifact:
-          project: ovirt-wgt_master_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
           project: ovirt-wgt_master_create-rpms-fc25-x86_64_merged
 
@@ -208,8 +196,6 @@
           project: ovirt-guest-agent_master_build-artifacts-el6-x86_64
       - copy-create-job-artifact:
           project: ovirt-guest-agent_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-guest-agent_master_build-artifacts-fc24-x86_64
       - copy-create-job-artifact:
           project: ovirt-guest-agent_master_build-artifacts-fc25-x86_64
 
