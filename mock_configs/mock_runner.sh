@@ -197,9 +197,9 @@ prepare_chroot() {
     init_chroot "${mock_chroot}" "${mock_dir}" \
         | tee -a "$LOGS_DIR/${mock_chroot}.init/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
-    makedir "$LOGS_DIR/${mock_chroot}.clean_rpmdb"
-    clean_rpmdb "$mock_chroot" "$mock_dir" \
-        | tee -a "$LOGS_DIR/${mock_chroot}.clean_rpmdb/stdout_stderr.log"
+    makedir "$LOGS_DIR/${mock_chroot}.populate_mock"
+    populate_mock "$mock_chroot" "$mock_dir" \
+        | tee -a "$LOGS_DIR/${mock_chroot}.populate_mock/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
     mock_conf_with_mounts="$(
         gen_mock_config "$base_chroot" "$dist_label" "$script" "with_mounts" \
@@ -300,7 +300,7 @@ EOH
             if [[ "$mount_opt" =~ ^([^:]*)(:(.*))?$ ]]; then
                 src_mnt="${BASH_REMATCH[1]}"
                 dst_mnt="${BASH_REMATCH[3]:-$src_mnt}"
-                if [ ! -d $src_mnt ]; then
+                if [[ ! -e "$src_mnt" ]]; then
                     echo "Creating destination folder before mounting"
                     mkdir -p $src_mnt
                 fi
@@ -414,38 +414,38 @@ EOC
 }
 
 
-clean_rpmdb() {
+populate_mock() {
     local chroot="${1?}"
     local conf_dir="${2?}"
-    local packages=("${@:3}")
     local start \
-        end
+        end \
+        src_mnt \
+        dst_mnt \
+        file_mount_points \
+        file_mount_point_dirs
     start="$(date +%s)"
-    echo "========== Cleaning rpmdb"
-    cat <<EOC2
-    $MOCK \\
-        --configdir="$conf_dir" \\
-        --root="$chroot" \\
-        --resultdir="$LOGS_DIR/${chroot}.clean_rpmdb" \\
-        --shell <<EOC
-            set -e
-            logdir="$MOUNT_POINT/$LOGS_DIR/${chroot}.clean_rpmdb"
-            [[ -d \$logdir ]] \\
-            || mkdir -p "\$logdir"
-            # Fix that allows using yum inside the chroot on dnf enabled
-            # distros
-            [[ -d /etc/dnf ]] && [[ -e /etc/yum/yum.conf ]] && cat /etc/yum/yum.conf > /etc/dnf/dnf.conf
-            rm -Rf /var/lib/rpm/__* &>\$logdir/rpmbuild.log
-            rpm --rebuilddb &>>\$logdir/rpmbuild.log
-EOC
-EOC2
+    echo "========== Populating mock environment"
+    file_mount_points=()
+    file_mount_point_dirs=()
+    for mount_opt in $(get_data_from_file "$script" mounts "$dist_label"); do
+        [[ "$mount_opt" == "" ]] && continue
+        if [[ "$mount_opt" =~ ^([^:]*)(:(.*))?$ ]]; then
+            src_mnt="${BASH_REMATCH[1]}"
+            dst_mnt="${BASH_REMATCH[3]:-$src_mnt}"
+            if [[ -e "$src_mnt" && ! -d "$src_mnt" ]]; then
+                echo "Will create mount point for file: $src_mnt" >&2
+                file_mount_points+=("'$dst_mnt'")
+                file_mount_point_dirs+=("'$(dirname $dst_mnt)'")
+            fi
+        fi
+    done
     $MOCK \
         --configdir="$conf_dir" \
         --root="$chroot" \
-        --resultdir="$LOGS_DIR/${chroot}.clean_rpmdb" \
+        --resultdir="$LOGS_DIR/${chroot}.populate_mock" \
         --shell <<EOC
             set -e
-            logdir="$MOUNT_POINT/$LOGS_DIR/${chroot}.clean_rpmdb"
+            logdir="$MOUNT_POINT/$LOGS_DIR/${chroot}.populate_mock"
             [[ -d \$logdir ]] \\
             || mkdir -p "\$logdir"
             # Fix that allows using yum inside the chroot on dnf enabled
@@ -453,11 +453,13 @@ EOC2
             [[ -d /etc/dnf ]] && [[ -e /etc/yum/yum.conf ]] && cat /etc/yum/yum.conf > /etc/dnf/dnf.conf
             rm -Rf /var/lib/rpm/__* &>\$logdir/rpmbuild.log
             rpm --rebuilddb &>>\$logdir/rpmbuild.log
+            [[ -z "${file_mount_point_dirs[@]}" ]] || mkdir -p ${file_mount_point_dirs[@]}
+            [[ -z "${file_mount_points[@]}" ]] || touch ${file_mount_points[@]}
 EOC
     res=$?
     end="$(date +%s)"
-    echo "Clean rpmdb took $((end - start)) seconds"
-    echo "============================"
+    echo "Populating mock took $((end - start)) seconds"
+    echo "================================"
     return $res
 }
 
