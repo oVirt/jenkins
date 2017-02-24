@@ -9,7 +9,6 @@
     mock-build-type: all
     distro:
       - el7
-      - fc24
       - fc25
     arch:
       - x86_64
@@ -29,7 +28,6 @@
     mock-build-type: all
     distro:
       - el7
-      - fc24
       - fc25
     arch:
       - x86_64
