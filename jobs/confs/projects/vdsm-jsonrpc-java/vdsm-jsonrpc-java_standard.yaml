@@ -17,6 +17,8 @@
     exclude:
       - version: master
         distro: el6
+      - version: master
+        distro: fc24
       - version: 4.1
         distro: el6
       - version: 4.1
