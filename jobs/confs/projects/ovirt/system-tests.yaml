@@ -72,6 +72,8 @@
             - basic
             - upgrade-from-release
             - upgrade-from-prevrelease
+            - he-basic
+            - hc-basic
       - text:
          name: CUSTOM_REPOS
          default: ''
