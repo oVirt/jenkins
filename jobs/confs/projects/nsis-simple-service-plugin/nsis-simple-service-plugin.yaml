@@ -6,10 +6,19 @@
     version:
       - master:
           branch: master
+          repoversion: master
+      - 4.1:
+          branch: master
+          repoversion: 4.1
     mock-build-type: all
     distro:
       - fc24
       - fc25
+    exclude:
+      - version: master
+        distro: fc24
+      - version: 4.1
+        distro: fc25
     arch: x86_64
     extra-build-packages: |
       rpmdevtools
@@ -26,10 +35,18 @@
       - master:
           branch: master
           repoversion: master
+      - 4.1:
+          branch: master
+          repoversion: 4.1
     mock-build-type: all
     distro:
       - fc24
       - fc25
+    exclude:
+      - version: master
+        distro: fc24
+      - version: 4.1
+        distro: fc25
     arch: x86_64
     extra-build-packages: |
       rpmdevtools
