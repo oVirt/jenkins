@@ -30,7 +30,7 @@
     stage:
       - build-artifacts
       - check-merged:
-          node-filter: '(nested) && {distro}'
+          node-filter: 'integ-tests'
     jobs:
       - 'lago_{version}_{stage}-{distro}-{arch}'
       - '{project}_{version}_deploy-to-{reponame}-snapshot'
