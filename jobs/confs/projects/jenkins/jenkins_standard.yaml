@@ -8,10 +8,14 @@
       - master:
           branch: master
     distro:
-      - el7
-      - el6
-      - fc24
-      - fc25
+      - el7:
+          node-filter: el7
+      - el6:
+          node-filter: el7
+      - fc24:
+          node-filter: fc24
+      - fc25:
+          node-filter: fc25
     arch: x86_64
     jobs:
         - 'jenkins_{version}_{stage}-{distro}-{arch}'

@@ -5,3 +5,4 @@ python-ordereddict
 python-requests
 pytest
 git
+docker
