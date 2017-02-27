@@ -1,0 +1,56 @@
+- project: &base-params
+    name: ovirt-engine-metrics_build
+    project:
+      - ovirt-engine-metrics
+    version:
+      - master:
+          branch: master
+      - 4.1:
+          branch: master
+    stage: build-artifacts
+    distro:
+        - el7
+        - fc24
+        - fc25
+    exclude:
+      - version: master
+        distro: fc24
+      - version: 4.1
+        distro: fc25
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+
+- project:
+    name: ovirt-engine-metrics_checks
+    project:
+      - ovirt-engine-metrics
+    version:
+      - master:
+          branch: master
+      - 4.1:
+          branch: master
+    stage: check-patch
+    distro:
+      - el7
+      - fc24
+      - fc25
+    exclude:
+      - version: master
+        distro: fc24
+      - version: 4.1
+        distro: fc25
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: ovirt-engine-metrics_build-artifacts-manual
+    stage: build-artifacts-manual
+    trigger: 'manual'
+    jobs:
+      - '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
+
