@@ -6,7 +6,7 @@ from six.moves.configparser import RawConfigParser
 import requests
 from requests.exceptions import ConnectionError
 from os import environ
-
+import glob
 
 def inject_yum_mirrors(mirrors, yum_cfg, out_cfg, allow_proxy=False):
     """Inject yum mirrors into the given yum configuration
@@ -65,6 +65,19 @@ def inject_yum_mirrors_file(mirrors, file_name, allow_proxy=False):
         with open(file_name, 'r+') as wf:
             inject_yum_mirrors(mirrors, rf, wf, allow_proxy)
             wf.truncate()
+
+
+def inject_yum_mirrors_file_by_pattern(mirrors, file_pattern, allow_proxy=False):
+    """Inject yum mirrors into the given yum configuration file
+
+    :param Mapping mirrors:  A mapping of mirror names to URLs
+    :param str file_pattern: YUM configuration file glob pattern to adjust
+    :param bool allow_proxy: Wether to allow accessing the mirrors via HTTP
+                             proxies (defaults to False)
+    :returns: None
+    """
+    for file_name in glob.glob(file_pattern):
+        inject_yum_mirrors_file(mirrors, file_name, allow_proxy)
 
 
 def mirrors_from_http(

@@ -81,7 +81,7 @@ def run_mock_script(
     git_project,
     repo_url
 ) {{
-    def reposync_config = "$suit-suite-$version/reposync-config.repo"
+    def reposync_config = "$suit-suite-$version/*.repo"
     def extra_sources = 'extra_sources'
     try {{
         run_script('jenkins/jobs/confs/shell-scripts/cleanup_slave.sh')
@@ -97,10 +97,10 @@ def run_mock_script(
                     #!/usr/bin/env python
                     # Try to inject CI mirrors
                     from scripts.mirror_client import (
-                        inject_yum_mirrors_file, mirrors_from_environ
+                        inject_yum_mirrors_file_by_pattern, mirrors_from_environ
                     )
 
-                    inject_yum_mirrors_file(
+                    inject_yum_mirrors_file_by_pattern(
                         mirrors_from_environ('CI_MIRRORS_URL'),
                         '$reposync_config'
                     )
@@ -116,7 +116,7 @@ def run_mock_script(
     }} finally {{
         dir(project) {{
             sh """\
-                cp '$reposync_config' exported-artifacts
+                cp $reposync_config exported-artifacts
                 cp '$extra_sources' exported-artifacts
             """
         }}

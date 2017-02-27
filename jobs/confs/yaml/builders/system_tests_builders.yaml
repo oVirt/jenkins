@@ -23,7 +23,7 @@
           from os import environ
           sys.path.append('jenkins')
           from scripts.mirror_client import (
-              inject_yum_mirrors_file, mirrors_from_environ
+              inject_yum_mirrors_file_by_pattern, mirrors_from_environ
           )
 
           suit_dir = "ovirt-system-tests/{suite_type}-suite-{version}"
@@ -33,9 +33,9 @@
           if 'ENGINE_VERSION' in environ:
               suit_dir = suit_dir.replace('$ENGINE_VERSION', environ['ENGINE_VERSION'])
               suit_dir = suit_dir.replace('${{ENGINE_VERSION}}', environ['ENGINE_VERSION'])
-          inject_yum_mirrors_file(
+          inject_yum_mirrors_file_by_pattern(
               mirrors_from_environ('CI_MIRRORS_URL'),
-              suit_dir + '/reposync-config.repo',
+              suit_dir + '/*.repo',
           )
       - shell: |
           # make sure there's no prefix or lago will fail

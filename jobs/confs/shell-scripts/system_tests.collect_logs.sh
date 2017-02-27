@@ -21,7 +21,7 @@ fi
 # export reposync-config.repo and extra_sources so we know the
 # repose we used
 suit_dir="ovirt-system-tests/${{SUITE_TYPE}}-suite-${{VERSION}}"
-cp "$suit_dir/reposync-config.repo" exported-artifacts
+cp "$suit_dir"/*.repo exported-artifacts
 if [[ -f 'ovirt-system-tests/extra_sources' ]]; then
     cp ovirt-system-tests/extra_sources exported-artifacts
 fi
