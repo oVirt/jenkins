@@ -326,7 +326,7 @@
 # deploy-to-* template instead
 - job-template:
     <<: *deploy-job-template
-    name: '{project}_{version}_deploy-to-{reponame}-snapshot'
+    name: '{project}_{version}_github_deploy-to-{reponame}-snapshot'
     node: '{node-filter}'
     builders:
       - shell: |

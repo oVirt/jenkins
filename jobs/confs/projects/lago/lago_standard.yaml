@@ -33,7 +33,7 @@
           node-filter: 'integ-tests'
     jobs:
       - '{project}_{version}_github_{stage}-{distro}-{arch}'
-      - '{project}_{version}_deploy-to-{reponame}-snapshot'
+      - '{project}_{version}_github_deploy-to-{reponame}-snapshot'
 
 - project:
     <<: *lago_common

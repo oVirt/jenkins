@@ -30,7 +30,7 @@ def main(project, branch, trigger_stage) {{
 @NonCPS
 def get_jobs_names(project, version, trigger) {{
     def pattern = ~/^${{project}}_${{version}}_${{trigger}}/
-    if (env.JOB_NAME == "${{project}}_${{version}}_github_${{trigger}}-pipeline" ) {{
+    if (env.JOB_NAME == "${{project}}_${{version}}_github_check-merged-pipeline" ) {{
         pattern = ~/^${{project}}_${{version}}_github_${{trigger}}/
     }}
     def jobs_names = Jenkins.instance.items.findAll {{ job ->
