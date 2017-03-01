@@ -185,6 +185,10 @@
           project-prefix: ovirt-provider-ovn_4.1_build-artifacts-
           project-suffix: ""
 
+      - copy-create-job-artifact-engine_4.1-platforms:
+          project-prefix: ovirt-engine-metrics_4.1_build-artifacts-
+          project-suffix: ""
+
     publishers:
       - publish-rpms-nightly-publishers:
           version: 4.1

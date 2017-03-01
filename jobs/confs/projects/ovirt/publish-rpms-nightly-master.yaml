@@ -203,6 +203,10 @@
           project-prefix: ovirt-provider-ovn_master_build-artifacts-
           project-suffix: ""
 
+      - copy-create-job-artifact-engine_master-platforms:
+          project-prefix: ovirt-engine-metrics_master_build-artifacts-
+          project-suffix: ""
+
     publishers:
       # We're not using the publish-rpms-nightly-publishers macro here because
       # code here is different (has the new 'sync from tested' functionality).
