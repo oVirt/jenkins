@@ -97,6 +97,9 @@
       - copy-create-job-artifact-engine_4.0-platforms:
           project-prefix: ovirt-optimizer_4.0_build-artifacts-
           project-suffix: ""
+      - copy-create-job-artifact-engine_4.0-platforms:
+          project-prefix: ovirt-engine-dashboard_4.0_build-artifacts-
+          project-suffix: ""
 
       - copy-create-job-artifact-vdsm-4.0-platforms:
           project-prefix: ioprocess_4.0_build-artifacts-

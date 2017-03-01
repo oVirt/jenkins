@@ -15,8 +15,11 @@
     trigger: 'on-change'
     distro:
         - el7
+        - fc24
         - fc25
     exclude:
+      - version: 4.0
+        distro: fc24
       - version: 4.0
         distro: fc25
       - version: 4.1
