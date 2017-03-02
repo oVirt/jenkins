@@ -16,11 +16,9 @@
         - fc24
         - fc25
     exclude:
-      - version: 4.0
+      - version: master
         distro: fc24
       - version: 4.1
-        distro: fc25
-      - version: 4.0
         distro: fc25
 
     arch: x86_64
