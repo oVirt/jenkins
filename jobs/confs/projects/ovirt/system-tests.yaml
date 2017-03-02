@@ -59,6 +59,17 @@
     jobs:
       - '{project}_{version}_he-system-tests'
 
+# oVirt Ansible suite
+- project:
+    <<: *system-tests-common
+    name: ovirt-ansible-tests
+    version:
+      - master:
+          chroot_distro: el7
+    email-to: mperina@redhat.com,omachace@redhat.com
+    jobs:
+      - '{project}_{version}-ansible-system-tests'
+
 - job:
     name: 'ovirt-system-tests_manual'
     node: integ-tests
