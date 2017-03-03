@@ -1,0 +1,6 @@
+- scm:
+    name: ovirt-engine-phantomjs-gerrit
+    scm:
+      - gerrit:
+          project: ovirt-engine-phantomjs
+          git-server: '{git-server}'
