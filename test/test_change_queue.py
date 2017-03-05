@@ -8,12 +8,13 @@ from math import log, ceil
 from copy import copy
 from six.moves import range
 from six import iteritems
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 import re
 from base64 import b64encode
+from textwrap import dedent
 
 from scripts.change_queue import ChangeQueue, ChangeQueueWithDeps, \
-    GerritPatchset
+    GerritPatchset, JobRunSpec
 
 
 def _enlist_state(state):
@@ -372,3 +373,23 @@ class TestGerritPatchset(object):
         assert ps.refspec == env['GERRIT_REFSPEC']
         assert ps.patchset_number == int(env['GERRIT_PATCHSET_NUMBER'])
         assert ps.commit_message == msg
+
+
+class TestJobRunSpec(object):
+    def test_as_properties_file(self, tmpdir):
+        params = OrderedDict((
+            ('string1', 'some string'),
+            ('string2', 'some other string'),
+            ('some_bool', True),
+            ('some_false_bool', False),
+        ))
+        expected_props = dedent("""
+            string1=some string
+            string2=some other string
+            some_bool=true
+            some_false_bool=false
+        """).lstrip()
+        jrc = JobRunSpec('some-job', params)
+        out_file = tmpdir.join('output.properties')
+        jrc.as_properties_file(str(out_file))
+        assert expected_props == out_file.read()

@@ -5,6 +5,7 @@ from uuid import uuid4
 from itertools import chain
 from collections import deque, namedtuple
 from six.moves import map, reduce, range
+from six import iteritems
 from copy import copy
 from os import environ
 from base64 import b64decode
@@ -368,3 +369,15 @@ class GerritPatchset(namedtuple('_GerritPatchset', (
             ).decode(),
             topic=env['GERRIT_TOPIC'],
         )
+
+
+class JobRunSpec(namedtuple('_JobRunSpec', ('job_name', 'params'))):
+    """Class representing a specification for running a Jenkins job"""
+    def as_properties_file(self, file_name='job_params.properties'):
+        with open(file_name, 'w') as fil:
+            for name, value in iteritems(self.params):
+                if isinstance(value, bool):
+                    str_value = 'true' if value else 'false'
+                else:
+                    str_value = str(value)
+                fil.write('{0}={1}\n'.format(str(name), str_value))
