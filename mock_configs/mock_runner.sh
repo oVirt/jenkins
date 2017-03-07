@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
 
-MOCKS=(
-    el6:epel-6-x86_64
-    el7:epel-7-x86_64
-    el7:epel-7-ppc64le
-    fc23:fedora-23-x86_64
-    fc24:fedora-24-x86_64
-    fc25:fedora-25-x86_64
-    fc24:fedora-24-ppc64le
-    fc25:fedora-25-ppc64le
-)
+shopt -s nullglob
+
 SCRIPTS=()
 RUN_SHELL="false"
 CLEANUP="true"
@@ -518,12 +510,16 @@ resolve_file() {
 
 resolve_mock() {
     local mock="${1?}"
-    local full_mock
+    local mock_dir="${2?}"
+    local full_mock \
+        mocks
     if [[ "${mock}" =~ ^.+:.+$ ]]; then
         echo "$mock"
         return 0
     fi
-    for full_mock in "${MOCKS[@]}"; do
+
+    mocks=($(cat "$mock_dir"/*.mrmap))
+    for full_mock in "${mocks[@]}"; do
         if [[ "$full_mock" =~ $mock ]]; then
             echo "$full_mock"
             return 0
@@ -829,13 +825,7 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 set -x
             ;;
             -s|--shell)
-                mock_env="$(resolve_mock "$2")" \
-                || {
-                    echo "Unable to find mock env $mock_env" \
-                        "use one of" "${MOCKS[@]}" \
-                    >&2
-                    exit 1
-                }
+                mock_env_regexp="$2"
                 shift 2
                 RUN_SHELL="true"
             ;;
@@ -883,6 +873,14 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
         esac
     done
 
+    if [ ! -z "$mock_env_regexp" ]; then
+        mock_env="$(resolve_mock "$mock_env_regexp" "$MOCK_CONF_DIR")" \
+        || {
+            echo "Unable to find mock env $mock_env" >&2
+            exit 1
+        }
+    fi
+
     LOGS_DIR="$(mktemp -d -p "." -t mock_logs.XXXXXXXX)"
     trap finalize EXIT
 
@@ -899,11 +897,9 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
             mocks=("${MOCKS[@]}")
         fi
         for mock_env in "${mocks[@]}"; do
-            full_mock_env="$(resolve_mock "$mock_env")" \
+            full_mock_env="$(resolve_mock "$mock_env" "$MOCK_CONF_DIR")" \
             || {
-                echo "Unable to find mock env $mock_env" \
-                     "use one of" "${MOCKS[@]}" \
-                >&2
+                echo "Unable to find mock env $mock_env" >&2
                 exit 1
             }
             start="$(date +%s)"
