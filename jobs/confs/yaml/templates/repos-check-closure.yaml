@@ -46,9 +46,3 @@
       - groovy-postbuild:
           script: !include-raw-escape: groovy-scripts/repos-check-closure_post-build.groovy
           on-failure: 'nothing'
-      - email-ext:
-          recipients: infra@ovirt.org
-          send-to:
-            - recipients
-            - requester
-            - culprits
