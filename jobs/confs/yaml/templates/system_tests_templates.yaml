@@ -76,6 +76,7 @@
           version: '{version}'
           suite_type : he-basic
           chroot_distro: '{chroot_distro}'
+          email-to: '{email-to}'
 
 - job-template:
     <<: *basic_system_tests

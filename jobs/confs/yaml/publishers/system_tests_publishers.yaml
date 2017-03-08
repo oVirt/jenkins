@@ -25,10 +25,11 @@
           version: '{version}'
           suite_type : '{suite_type}'
           chroot_distro: '{chroot_distro}'
-      - email:
+      - email-ext:
           recipients: '{email-to}'
-          notify-every-unstable-build: false
-          send-to-individuals: false
+          failure: true
+          fixed: true
+          unstable: true
 
 - publisher:
     name: system-tests-manual
