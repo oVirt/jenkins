@@ -4,11 +4,13 @@
 from uuid import uuid4
 from itertools import chain
 from collections import deque, namedtuple
-from six.moves import map, reduce, range
+from six.moves import map, reduce, range, cPickle
 from six import iteritems
 from copy import copy
-from os import environ
-from base64 import b64decode
+from os import environ, path, makedirs
+from base64 import b64decode, b64encode
+from bz2 import compress, decompress, BZ2File
+from contextlib import contextmanager
 
 
 class ChangeQueue(object):
@@ -381,3 +383,94 @@ class JobRunSpec(namedtuple('_JobRunSpec', ('job_name', 'params'))):
                 else:
                     str_value = str(value)
                 fil.write('{0}={1}\n'.format(str(name), str_value))
+
+
+class NotInJenkins(Exception):
+    def __init__(self):
+        super(NotInJenkins, self).__init__('This Code must run from Jenkins')
+
+
+class JenkinsObject(object):
+    """Base class for objects that run inside Jenkins
+    """
+    ARTIFACTS_DIR = 'exported-artifacts'
+
+    @staticmethod
+    def param_str_to_object(param_str):
+        """Convert a string that supposedly came from a job parameter into a
+        change object
+        """
+        return cPickle.loads(decompress(b64decode(param_str.encode())))
+
+    @staticmethod
+    def object_to_param_str(change):
+        """Convert a change object into a format suitable for passing in job
+        parameters
+        """
+        return b64encode(compress(cPickle.dumps(change))).decode()
+
+    @staticmethod
+    def verify_in_jenkins():
+        """Verify that we are running inside Jenkins"""
+        if 'JOB_BASE_NAME' not in environ:
+            raise NotInJenkins
+
+    @classmethod
+    def get_job_name(cls):
+        cls.verify_in_jenkins()
+        return environ['JOB_BASE_NAME']
+
+    @classmethod
+    def verify_artifacts_dir(cls):
+        try:
+            makedirs(cls.ARTIFACTS_DIR)
+        except OSError as e:
+            # errno 17 is returned when the directory exists
+            if e.errno != 17:
+                raise
+
+    @classmethod
+    def object_from_artifact(cls, artifact_file, fallback_cls=None):
+        fd = None
+        try:
+            fd = BZ2File(path.join(cls.ARTIFACTS_DIR, artifact_file))
+            return cPickle.loads(fd.read())
+        except IOError as e:
+            # errno 2 is 'No such file or directory'
+            if e.errno == 2 and fallback_cls is not None:
+                return fallback_cls()
+            raise
+        finally:
+            if fd is not None:
+                fd.close()
+
+    @classmethod
+    def object_to_artifact(cls, obj, artifact_file):
+        cls.verify_artifacts_dir()
+        fd = None
+        try:
+            fd = BZ2File(path.join(cls.ARTIFACTS_DIR, artifact_file), 'w')
+            fd.write(cPickle.dumps(obj))
+        finally:
+            if fd is not None:
+                fd.close()
+
+    @classmethod
+    def load_from_artifact(cls, artifact_file=None, fallback_to_new=True):
+        if artifact_file is None:
+            artifact_file = cls.__name__ + '.dat'
+        return cls.object_from_artifact(
+            artifact_file, cls if fallback_to_new else None
+        )
+
+    def save_to_artifact(self, artifact_file=None):
+        if artifact_file is None:
+            artifact_file = self.__class__.__name__ + '.dat'
+        self.object_to_artifact(self, artifact_file)
+
+    @classmethod
+    @contextmanager
+    def persist_in_artifacts(cls, artifact_file=None):
+        obj = cls.load_from_artifact(artifact_file)
+        yield obj
+        obj.save_to_artifact(artifact_file)
