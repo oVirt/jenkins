@@ -4,6 +4,7 @@ python-setuptools
 python-ordereddict
 python-requests
 pytest
+python-mock
 git
 python3
 python3-six

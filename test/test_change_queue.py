@@ -13,9 +13,14 @@ import re
 from base64 import b64encode
 from textwrap import dedent
 from os import path
+try:
+    from unittest.mock import MagicMock, call, sentinel
+except ImportError:
+    from mock import MagicMock, call, sentinel
 
 from scripts.change_queue import ChangeQueue, ChangeQueueWithDeps, \
-    GerritPatchset, JobRunSpec, JenkinsObject, NotInJenkins
+    GerritPatchset, JobRunSpec, JenkinsObject, NotInJenkins, \
+    JenkinsChangeQueueObject
 
 
 def _enlist_state(state):
@@ -523,3 +528,49 @@ class TestJenkinsObject(object):
             assert id(nobj) != id(lobj)
             assert obj == lobj
             assert obj != nobj
+
+
+class TestJenkinsChangeQueueObject(object):
+    def test_queue_job_name(self, not_jenkins_env):
+        jcqo = JenkinsChangeQueueObject()
+        out = jcqo.queue_job_name('QQQ')
+        assert out == 'QQQ_change-queue'
+        with pytest.raises(NotInJenkins):
+            out = jcqo.queue_job_name()
+        jcqo.get_queue_name = MagicMock(side_effect=('QNQN',))
+        out = jcqo.queue_job_name()
+        assert out == 'QNQN_change-queue'
+
+    def test_tester_job_name(self, not_jenkins_env):
+        jcqo = JenkinsChangeQueueObject()
+        out = jcqo.tester_job_name('QQQ')
+        assert out == 'QQQ_change-queue-tester'
+        with pytest.raises(NotInJenkins):
+            out = jcqo.tester_job_name()
+        jcqo.get_queue_name = MagicMock(side_effect=('QNQN',))
+        out = jcqo.tester_job_name()
+        assert out == 'QNQN_change-queue-tester'
+
+    @pytest.mark.parametrize(
+        ('job_name', 'exp_queue_name'),
+        [
+            ('QQQ_change-queue', 'QQQ'),
+            ('QQQ_change-queue-tester', 'QQQ'),
+            ('foo-bar', None),
+        ]
+    )
+    def test_job_to_queue_name(self, job_name, exp_queue_name):
+        out_queue_name = JenkinsChangeQueueObject.job_to_queue_name(job_name)
+        assert exp_queue_name == out_queue_name
+
+    def test_get_queue_name(self, not_jenkins_env):
+        jcqo = JenkinsChangeQueueObject()
+        jcqo.verify_in_jenkins = MagicMock()
+        jcqo.get_job_name = MagicMock(side_effect=(sentinel.job_name,))
+        jcqo.job_to_queue_name = MagicMock(side_effect=(sentinel.queue_name,))
+        out = jcqo.get_queue_name()
+        assert jcqo.verify_in_jenkins.called
+        assert jcqo.get_job_name.called
+        assert jcqo.job_to_queue_name.called
+        assert jcqo.job_to_queue_name.call_args == call(sentinel.job_name)
+        assert out == sentinel.queue_name

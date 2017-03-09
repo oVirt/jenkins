@@ -4,5 +4,6 @@ python-setuptools
 python-ordereddict
 python-requests
 pytest
+python-mock
 git
 docker

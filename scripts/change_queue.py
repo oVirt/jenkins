@@ -474,3 +474,38 @@ class JenkinsObject(object):
         obj = cls.load_from_artifact(artifact_file)
         yield obj
         obj.save_to_artifact(artifact_file)
+
+
+class JenkinsChangeQueueObject(JenkinsObject):
+    """Utility base class to objects that represent the change queue in Jenkins
+    """
+    QUEUE_JOB_SUFFIX = '_change-queue'
+    TESTER_JOB_SUFFIX = '_change-queue-tester'
+
+    def queue_job_name(self, queue_name=None):
+        if queue_name is None:
+            queue_name = self.get_queue_name()
+        return str(queue_name) + self.QUEUE_JOB_SUFFIX
+
+    def tester_job_name(self, queue_name=None):
+        if queue_name is None:
+            queue_name = self.get_queue_name()
+        return str(queue_name) + self.TESTER_JOB_SUFFIX
+
+    @classmethod
+    def job_to_queue_name(cls, job_name):
+        if job_name.endswith(cls.QUEUE_JOB_SUFFIX):
+            return job_name[:-len(cls.QUEUE_JOB_SUFFIX)]
+        if job_name.endswith(cls.TESTER_JOB_SUFFIX):
+            return job_name[:-len(cls.TESTER_JOB_SUFFIX)]
+        return None
+
+    def get_queue_name(self):
+        self.verify_in_jenkins()
+        return self.job_to_queue_name(self.get_job_name())
+
+    def get_queue_job_run_spec(self, queue_action, action_arg):
+        return JobRunSpec(
+            job_name=self.queue_job_name(),
+            params=dict(QUEUE_ACTION=queue_action, ACTION_ARG=action_arg),
+        )
