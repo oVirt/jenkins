@@ -20,7 +20,7 @@ except ImportError:
 
 from scripts.change_queue import ChangeQueue, ChangeQueueWithDeps, \
     GerritPatchset, JobRunSpec, JenkinsObject, NotInJenkins, \
-    JenkinsChangeQueueObject
+    JenkinsChangeQueueObject, JenkinsChangeQueue
 
 
 def _enlist_state(state):
@@ -574,3 +574,74 @@ class TestJenkinsChangeQueueObject(object):
         assert jcqo.job_to_queue_name.called
         assert jcqo.job_to_queue_name.call_args == call(sentinel.job_name)
         assert out == sentinel.queue_name
+
+
+class TestJenkinsChangeQueue(object):
+    def test_persistance(self, jenkins_env):
+        changes = [1, 2, 3]
+        with JenkinsChangeQueue.persist_in_artifacts() as queue:
+            for change in changes:
+                queue.add(change)
+        queue = None
+        assert queue is None
+        with JenkinsChangeQueue.persist_in_artifacts() as queue:
+            assert [changes] == _enlist_state(queue._state)
+            for change in changes:
+                queue.add(change)
+        queue = None
+        assert queue is None
+        with JenkinsChangeQueue.persist_in_artifacts() as queue:
+            assert [changes * 2] == _enlist_state(queue._state)
+
+    def test_report_change_status(self):
+        queue_name = 'some-queue-name'
+        states = ('successful', 'failed', 'added', 'rejected')
+        change_at_fault = sentinel.change_at_fault
+        for status in states:
+            chg = MagicMock(('report_status',))
+            JenkinsChangeQueue._report_change_status(
+                chg, status, queue_name, change_at_fault
+            )
+            assert chg.report_status.call_count == 1
+            assert chg.report_status.call_args == \
+                call(status, queue_name, change_at_fault)
+
+        chg = MagicMock(())
+        for status in states:
+            JenkinsChangeQueue._report_change_status(
+                chg, status, queue_name, change_at_fault
+            )
+        assert not chg.called
+
+    @pytest.mark.parametrize(
+        ('action', 'arg', 'to_param', 'rep_calls'),
+        [
+            ('add', 'some-change', True, 2),
+            ('on_test_success', 'some-test-key', False, 2),
+            ('on_test_failure', 'some-test-key', False, 2),
+            ('get_next_test', None, False, 0),
+        ]
+    )
+    def test_act_on_job_params(self, action, arg, to_param, rep_calls):
+        jcq = JenkinsChangeQueue()
+        jcq.get_queue_name = MagicMock()
+        jcq._report_changes_status = MagicMock()
+        jcq._build_change_list = MagicMock()
+        jcq._write_status_file = MagicMock()
+        act_func = MagicMock(side_effect=((1, 2),))
+        setattr(jcq, action, act_func)
+        if arg is not None:
+            if to_param:
+                action_arg_prm = jcq.object_to_param_str(arg)
+            else:
+                action_arg_prm = arg
+        else:
+            action_arg_prm = None
+        jcq.act_on_job_params(action, action_arg_prm)
+        assert act_func.called
+        if arg is not None:
+            assert act_func.call_args == call(arg)
+        else:
+            assert act_func.call_args == call()
+        assert jcq._report_changes_status.call_count == rep_calls
+        assert jcq._write_status_file.called

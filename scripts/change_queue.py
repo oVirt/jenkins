@@ -509,3 +509,153 @@ class JenkinsChangeQueueObject(JenkinsObject):
             job_name=self.queue_job_name(),
             params=dict(QUEUE_ACTION=queue_action, ACTION_ARG=action_arg),
         )
+
+
+class NotCQJob(Exception):
+    def __init__(self):
+        super(NotCQJob, self).__init__(
+            'This code must be run from a change queue Jenkins job'
+        )
+
+
+class InvalidChangeQueueAction(Exception):
+    def __init__(self, bad_action):
+        super(InvalidChangeQueueAction, self).__init__(
+            "Invalid queue action specified: '{}'".format(str(bad_action))
+        )
+
+
+class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
+    """Class for representing a change queue in the context of Jenkins.
+
+    A change queue is represented in Jenkins as a job. The queue state is
+    maintained between job invocations by dumping it from memory into a file
+    that will be preserved as a build artifact.
+    Changes and test results are submitted to the queue by triggering the queue
+    job with specific parameters. Test instructions are also dumped to files to
+    be passed to testing jobs as build artifacts.
+    """
+    def get_queue_name(self):
+        queue_name = super(JenkinsChangeQueue, self).get_queue_name()
+        if queue_name is None or \
+                self.get_job_name() != self.queue_job_name(queue_name):
+            raise NotCQJob
+        return queue_name
+
+    def act_on_job_params(self, queue_action, action_arg):
+        """Perform the queue action according to parameters passed to the job
+
+        This method is probably what the queue jobs will call. Apart from
+        performing the queue action it will also run reporting methods on
+        change objects to report their status, create changes list file if
+        requested, and a status HTML file showing the state of the queue.
+        """
+        queue_name = self.get_queue_name()
+        if queue_action == 'add':
+            change = self.param_str_to_object(action_arg)
+            added, rejected = self.add(change)
+            self._report_changes_status(queue_name, 'added', added)
+            self._report_changes_status(queue_name, 'rejected', rejected)
+        elif queue_action == 'on_test_success':
+            test_key = action_arg
+            success_list, fail_list = self.on_test_success(test_key)
+            self._report_changes_status(queue_name, 'successful', success_list)
+            self._report_changes_status(queue_name, 'failed', fail_list)
+        elif queue_action == 'on_test_failure':
+            test_key = action_arg
+            success_list, fail_list = self.on_test_failure(test_key)
+            self._report_changes_status(queue_name, 'successful', success_list)
+            self._report_changes_status(queue_name, 'failed', fail_list)
+        elif queue_action == 'get_next_test':
+            test_key, change_list = self.get_next_test()
+            if test_key is not None:
+                self._build_change_list(test_key, change_list)
+        else:
+            raise InvalidChangeQueueAction(queue_action)
+        self._write_status_file()
+
+    @classmethod
+    def _report_changes_status(cls, changes, status, queue_name):
+        """Call methods on changes to report their status
+        """
+        if not changes:
+            return
+        # We always blame things on the 1st change
+        change_at_fault = changes[0]
+        for change in changes:
+            cls._report_change_status(
+                change, status, queue_name, change_at_fault
+            )
+
+    @staticmethod
+    def _report_change_status(change, status, queue_name, change_at_fault):
+        """Call methods on change to report its status
+
+        Try to call the report_status method on the change object passing it
+        the status, the queue_name and the change to blame.
+        """
+        getattr(change, 'report_status', (lambda *x: None))(
+            status, queue_name, change_at_fault
+        )
+
+    @staticmethod
+    def _build_change_list(test_key, change_list):
+        JenkinsTestedChangeList((test_key, change_list)).save_to_artifact()
+
+    def _write_status_file(self):
+        # TODO: Write html file showing queue status
+        pass
+
+
+class JenkinsChangeQueueClient(JenkinsChangeQueueObject):
+    """Class for representing the change queue for Jenkins jobs that need to
+    communicate with it via Jenkins` job triggering mechanisms
+
+    Constructor arguments:
+    :param str queue_name: The name of the change queue we want to communicate
+                           with. It is represented as a job in Jenkins.
+    """
+    def __init__(self, queue_name):
+        self._queue_name = queue_name
+
+    def get_queue_name(self):
+        # Override inherited method because we get queue name as parameter and
+        # not from job name
+        return self._queue_name
+
+    def add(self, change):
+        """Add a change object to the change queue
+
+        :rtype: JobRunSpec
+        :returns: A specification of which job to run with what parameters in
+                  order to add the change to the queue
+        """
+        return self.get_queue_job_run_spec(
+            queue_action='add',
+            action_arg=self.object_to_param_str(change),
+        )
+
+
+class JenkinsTestedChangeList(JenkinsChangeQueueObject, namedtuple(
+    '_JenkinsTestedChangeList', ('test_key', 'change_list')
+)):
+    """Class for representing the set of changes to be tested in a change queue
+    tester job.
+
+    Also includes the mechanisms to report test results back to the queue
+    """
+    def on_test_success(self):
+        """Report a successful test to the queue
+        :rtype: JobRunSpec
+        :returns: A specification of which job to run with what parameters in
+                  order to add the change to the queue
+        """
+        return self.get_queue_job_run_spec('on_test_success', self.test_key)
+
+    def on_test_failure(self):
+        """Report a successful test to the queue
+        :rtype: JobRunSpec
+        :returns: A specification of which job to run with what parameters in
+                  order to add the change to the queue
+        """
+        return self.get_queue_job_run_spec('on_test_failure', self.test_key)
