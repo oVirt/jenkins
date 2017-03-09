@@ -97,7 +97,6 @@
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-dashboard_master_build-artifacts-
           project-suffix: ""
-
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: ioprocess_master_build-artifacts-
           project-suffix: ""
@@ -110,56 +109,23 @@
       - copy-create-job-artifact-vdsm-master-ppc64le-platforms:
           project-prefix: vdsm_master_build-artifacts-
           project-suffix: ""
-
       - copy-create-job-artifact-hosted-engine-master-platforms:
           project-prefix: ovirt-hosted-engine-ha_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-hosted-engine-master-platforms:
           project-prefix: ovirt-hosted-engine-setup_master_build-artifacts-
           project-suffix: ""
-
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: opstools-ansible_master_create-rpms-
-          project-suffix: _merged
-
-      - copy-create-job-artifact:
-          project: unboundid-ldapsdk_master_create-rpms-el7-x86_64_merged
       - copy-create-job-artifact:
           project: ovirt-appliance_master_build-artifacts-el7-x86_64
-
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine_master_build-artifacts-
           project-suffix: ""
-
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-wildfly-overlay10_master_create-rpms-
-          project-suffix: _merged
-
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine-wildfly10_master_create-rpms-
-          project-suffix: _merged
-
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: mom_master_build-artifacts-
           project-suffix: ""
-
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-live_master_build-artifacts-
           project-suffix: ""
-
-      - copy-create-job-artifact:
-          project: py2exe-py2.7_master_create-rpms-fc25-x86_64_merged
-      - copy-create-job-artifact:
-          project: pywin32-py2.7_master_create-rpms-fc25-x86_64_merged
-      - copy-create-job-artifact:
-          project: python-windows_master_create-rpms-fc25-x86_64_merged
-      - copy-create-job-artifact:
-          project: vcredist-x86_master_create-rpms-fc25-x86_64_merged
-      - copy-create-job-artifact:
-          project: nsis-simple-service-plugin_master_create-rpms-fc25-x86_64_merged
-      - copy-create-job-artifact:
-          project: ovirt-wgt_master_create-rpms-fc25-x86_64_merged
-
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: cockpit-ovirt_master_build-artifacts-
           project-suffix: ""
@@ -169,35 +135,28 @@
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: ovirt-engine-nodejs-modules_master_build-artifacts-
           project-suffix: ""
-
-
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-sdk-ruby_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine-master-ppc64le-platforms:
           project-prefix: ovirt-engine-sdk-ruby_master_build-artifacts-
           project-suffix: ""
-
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-release_master_build-artifacts-
           project-suffix: ""
-
       - copy-create-job-artifact:
           project: imgbased_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-node-ng_master_build-artifacts-el7-x86_64
-
       - copy-create-job-artifact:
           project: ovirt-guest-agent_master_build-artifacts-el6-x86_64
       - copy-create-job-artifact:
           project: ovirt-guest-agent_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-guest-agent_master_build-artifacts-fc25-x86_64
-
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: ovirt-provider-ovn_master_build-artifacts-
           project-suffix: ""
-
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-metrics_master_build-artifacts-
           project-suffix: ""
