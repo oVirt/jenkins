@@ -9,7 +9,7 @@
       - check-patch
       - check-merged
     distro:
-        - fc24
+        - fc25
     trigger: 'on-change'
     arch:
       - x86_64
