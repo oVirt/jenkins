@@ -5,5 +5,6 @@ python-ordereddict
 python-requests
 pytest
 python-mock
+python-jinja2
 git
 docker

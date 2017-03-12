@@ -5,9 +5,11 @@ python-ordereddict
 python-requests
 pytest
 python-mock
+python-jinja2
 git
 python3
 python3-six
 python3-requests
 python3-pytest
+python3-jinja2
 docker

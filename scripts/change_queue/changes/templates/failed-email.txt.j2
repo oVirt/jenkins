@@ -1,0 +1,42 @@
+{%- if change.id == change_at_fault.id -%}
+
+Subject: Change {{ change.presentable_id }} failed system tests
+
+{% filter wordwrap -%}
+Change {{ change.presentable_id }} is probably the reason behind recent system
+test failures in the "{{ queue_name }}" change queue and needs to be fixed.
+{%- endfilter %}
+
+{% filter wordwrap -%}
+This change had been removed from the testing queue.
+Artifacts build from this change will not be released until it is fixed.
+{%- endfilter %}
+{% if change.url is not none %}
+For further details about the change see:
+{{ change.url }}
+{% endif -%}
+
+{%- else -%}
+
+Subject: Change {{ change.presentable_id }} depends on a failed change
+
+{% filter wordwrap -%}
+Change {{ change_at_fault.presentable_id }} that this change depends on or
+contains, was detected to cause testing failures by the "{{ queue_name }}"
+change queue.
+{%- endfilter %}
+
+{% filter wordwrap -%}
+This change had been removed from the testing queue.
+Artifacts built from this change will not be released until the issue is fixed.
+{%- endfilter %}
+{% if change.url is not none %}
+For further details about the change see:
+{{ change.url }}
+{% endif -%}
+{% if change.id != change_at_fault.id and change_at_fault.url is not none %}
+For further details about the change that caused the testing failures see:
+{{ change_at_fault.url }}
+{% endif -%}
+
+{%- endif -%}

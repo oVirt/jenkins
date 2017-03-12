@@ -1,0 +1,11 @@
+Subject: Change {{ change.presentable_id }} passed system tests
+
+{% filter wordwrap -%}
+Change {{ change.presentable_id }} successfully passed the system tests invoked
+from the "{{ queue_name }}" queue.
+{%- endfilter %}
+{% if change.url is not none %}
+For further details about the change see:
+{{ change.url }}
+{% endif -%}
+
