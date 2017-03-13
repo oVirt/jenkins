@@ -16,9 +16,21 @@
               "{distro}.*{arch}"
 
 - builder:
+    name: standard_stage
+    builders:
+      - whitelist
+      - check_if_patch_merged
+      - cleanup-slave
+      - mock_runner:
+          project: '{project}'
+          distro: '{distro}'
+          arch: '{arch}'
+          action: '{action}'
+
+- builder:
     name: build-artifacts_builder
     builders:
-      - mock_runner:
+      - standard_stage:
           project: '{project}'
           distro: '{distro}'
           arch: '{arch}'
@@ -27,7 +39,7 @@
 - builder:
     name: check-merged_builder
     builders:
-      - mock_runner:
+      - standard_stage:
           project: '{project}'
           distro: '{distro}'
           arch: '{arch}'
@@ -36,7 +48,7 @@
 - builder:
     name: check-patch_builder
     builders:
-      - mock_runner:
+      - standard_stage:
           project: '{project}'
           distro: '{distro}'
           arch: '{arch}'
@@ -54,9 +66,8 @@
 
           # move the tarball to the project directory
           mv TARBALL_FILE "$WORKSPACE/{project}/$TARBALL_FILE"
-      - mock_runner:
+      - standard_stage:
           project: '{project}'
           distro: '{distro}'
           arch: '{arch}'
           action: '--execute-script automation/build-artifacts-manual.sh'
-
