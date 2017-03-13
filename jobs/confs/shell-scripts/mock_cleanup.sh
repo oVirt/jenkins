@@ -138,8 +138,10 @@ for UUID in $(virsh list --all --uuid); do
   virsh undefine --remove-all-storage --storage vda --snapshots-metadata $UUID || :
 done
 
-#Cleanup docker leftovers
-docker_cleanup || failed=true
+if [[ -x /bin/docker ]]; then
+    #Cleanup docker leftovers.
+    docker_cleanup || failed=true
+fi
 
 if $failed; then
     echo "Cleanup script failed, propegating failure to job"
