@@ -4,3 +4,10 @@
       - github:
           project: lago
           org: lago-project
+
+- scm:
+    name: lago-demo
+    scms:
+      - github:
+          project: lago-demo
+          org: lago-project
