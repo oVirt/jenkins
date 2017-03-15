@@ -118,11 +118,6 @@
           project-prefix: ovirt-hosted-engine-setup_master_build-artifacts-
           project-suffix: ""
 
-      - copy-create-job-artifact:
-          project: qemu_master_create-rpms-el7-x86_64_merged
-      - copy-create-job-artifact:
-          project: qemu_master_create-rpms-el7-ppc64le_merged
-
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: opstools-ansible_master_create-rpms-
           project-suffix: _merged
