@@ -4,7 +4,7 @@
 from jinja2 import Environment, PackageLoader
 import email
 from six import string_types
-from collections import Iterable
+from collections import Iterable, namedtuple
 import smtplib
 import re
 from textwrap import wrap
@@ -202,3 +202,14 @@ class EmailNotifyingChange(DisplayableChange):
         finally:
             if smtp is not None:
                 smtp.quit()
+
+
+class NumberChange(EmailNotifyingChange, namedtuple('_NumberChange', (
+    'id', 'number', 'recipients'
+))):
+    """Dummy change class that just contains numbers. It is mostly for testing
+    purposes
+    """
+    @property
+    def presentable_id(self):
+        return '{id} [{number}]'.format(id=self.id, number=self.number)

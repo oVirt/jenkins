@@ -650,22 +650,24 @@ class TestJenkinsChangeQueue(object):
         assert not chg.called
 
     @pytest.mark.parametrize(
-        ('action', 'arg', 'to_param', 'rep_calls'),
+        ('act', 'arg', 'to_param', 'rep_calls', 'tst_calls'),
         [
-            ('add', 'some-change', True, 2),
-            ('on_test_success', 'some-test-key', False, 2),
-            ('on_test_failure', 'some-test-key', False, 2),
-            ('get_next_test', None, False, 0),
+            ('add', 'some-change', True, 2, 1),
+            ('on_test_success', 'some-test-key', False, 2, 1),
+            ('on_test_failure', 'some-test-key', False, 2, 1),
+            ('get_next_test', None, False, 0, 0),
         ]
     )
-    def test_act_on_job_params(self, action, arg, to_param, rep_calls):
+    def test_act_on_job_params(self, act, arg, to_param, rep_calls, tst_calls):
         jcq = JenkinsChangeQueue()
+        jcq._cleanup_result_files = MagicMock()
         jcq.get_queue_name = MagicMock()
         jcq._report_changes_status = MagicMock()
         jcq._build_change_list = MagicMock()
         jcq._write_status_file = MagicMock()
+        jcq._schedule_tester_run = MagicMock()
         act_func = MagicMock(side_effect=((1, 2),))
-        setattr(jcq, action, act_func)
+        setattr(jcq, act, act_func)
         if arg is not None:
             if to_param:
                 action_arg_prm = jcq.object_to_param_str(arg)
@@ -673,11 +675,13 @@ class TestJenkinsChangeQueue(object):
                 action_arg_prm = arg
         else:
             action_arg_prm = None
-        jcq.act_on_job_params(action, action_arg_prm)
+        jcq.act_on_job_params(act, action_arg_prm)
+        assert jcq._cleanup_result_files.called
         assert act_func.called
         if arg is not None:
             assert act_func.call_args == call(arg)
         else:
             assert act_func.call_args == call()
         assert jcq._report_changes_status.call_count == rep_calls
+        assert jcq._schedule_tester_run.call_count == tst_calls
         assert jcq._write_status_file.called

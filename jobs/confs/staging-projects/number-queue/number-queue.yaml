@@ -1,0 +1,68 @@
+- job:
+    name: numbers_builder
+    parameters:
+      - string:
+          name: NUMBER
+          default: '7'
+          description: The number to push to the queue
+      - string:
+          name: NOTIFICATION_ADDRESS
+          default: infra@ovirt.org
+          description: Address to notify about change related events
+    concurrent: false
+    properties:
+      - build-discarder:
+          days-to-keep: 14
+          artifact-num-to-keep: 60
+    scm:
+      - jenkins:
+          branch: master
+          git-server: 'gerrit.ovirt.org'
+    builders:
+      - shell: |
+          #!/usr/bin/env python
+          import sys
+          from os import environ
+
+          sys.path.append('jenkins')
+          from scripts.change_queue import JenkinsChangeQueueClient
+          from scripts.change_queue.changes import NumberChange
+
+          change = NumberChange(
+              id=environ['BUILD_ID'],
+              number=int(environ['NUMBER']),
+              recipients=environ['NOTIFICATION_ADDRESS'],
+          )
+          change.url = environ['BUILD_URL']
+
+          JenkinsChangeQueueClient('numbers').add(change).as_properties_file()
+    publishers:
+      - trigger-parameterized-builds:
+        - project: numbers_change-queue
+          property-file: job_params.properties
+          condition: SUCCESS
+
+- job:
+    name: numbers_change-queue
+    project-type: workflow
+    quiet-period: 0
+    parameters:
+      - string:
+          name: QUEUE_ACTION
+      - string:
+          name: ACTION_ARG
+    properties:
+      - build-discarder:
+          num-to-keep: 100
+          artifact-num-to-keep: 100
+    dsl: !include-raw: groovy-scripts/pipeline-loader.groovy
+
+- job:
+    name: numbers_change-queue-tester
+    project-type: workflow
+    quiet-period: 0
+    properties:
+      - build-discarder:
+          num-to-keep: 100
+          artifact-num-to-keep: 100
+    dsl: !include-raw: groovy-scripts/pipeline-loader.groovy

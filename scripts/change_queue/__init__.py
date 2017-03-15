@@ -8,7 +8,7 @@ from collections import deque, namedtuple
 from six.moves import map, reduce, range, cPickle
 from six import iteritems
 from copy import copy
-from os import environ, path, makedirs
+from os import environ, path, makedirs, unlink
 from base64 import b64decode, b64encode
 from bz2 import compress, decompress, BZ2File
 from contextlib import contextmanager
@@ -383,7 +383,17 @@ class GerritPatchset(namedtuple('_GerritPatchset', (
 
 class JobRunSpec(namedtuple('_JobRunSpec', ('job_name', 'params'))):
     """Class representing a specification for running a Jenkins job"""
-    def as_properties_file(self, file_name='job_params.properties'):
+    default_properties_file = 'job_params.properties'
+    default_pipelins_build_step_json_file = 'build_args.json'
+
+    @staticmethod
+    def _clean_file(file_name):
+        if path.exists(file_name):
+            unlink(file_name)
+
+    def as_properties_file(self, file_name=None):
+        if file_name is None:
+            file_name = self.default_properties_file
         with open(file_name, 'w') as fil:
             for name, value in iteritems(self.params):
                 if isinstance(value, bool):
@@ -391,6 +401,12 @@ class JobRunSpec(namedtuple('_JobRunSpec', ('job_name', 'params'))):
                 else:
                     str_value = str(value)
                 fil.write('{0}={1}\n'.format(str(name), str_value))
+
+    @classmethod
+    def clean_properties_file(cls, file_name=None):
+        if file_name is None:
+            file_name = cls.default_properties_file
+        cls._clean_file(file_name)
 
     def as_pipeline_build_step(self):
         step_struct = dict(job=self.job_name, parameters=[])
@@ -405,9 +421,17 @@ class JobRunSpec(namedtuple('_JobRunSpec', ('job_name', 'params'))):
             step_struct['parameters'].append(param_struct)
         return step_struct
 
-    def as_pipeline_build_step_json(self, file_name='build_args.json'):
+    def as_pipeline_build_step_json(self, file_name=None):
+        if file_name is None:
+            file_name = self.default_pipelins_build_step_json_file
         with open(file_name, 'w') as fil:
-            json.dump(self.as_pipeline_build_step, fil)
+            json.dump(self.as_pipeline_build_step(), fil)
+
+    @classmethod
+    def clean_pipeline_build_step_json(cls, file_name=None):
+        if file_name is None:
+            file_name = cls.default_pipelins_build_step_json_file
+        cls._clean_file(file_name)
 
 
 class NotInJenkins(Exception):
@@ -492,6 +516,14 @@ class JenkinsObject(object):
         if artifact_file is None:
             artifact_file = self.__class__.__name__ + '.dat'
         self.object_to_artifact(self, artifact_file)
+
+    @classmethod
+    def clean_artifact(cls, artifact_file=None):
+        if artifact_file is None:
+            artifact_file = cls.__name__ + '.dat'
+        artifact_path = path.join(cls.ARTIFACTS_DIR, artifact_file)
+        if path.exists(artifact_path):
+            unlink(artifact_path)
 
     @classmethod
     @contextmanager
@@ -581,6 +613,7 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
         change objects to report their status, create changes list file if
         requested, and a status HTML file showing the state of the queue.
         """
+        self._cleanup_result_files()
         queue_name = self.get_queue_name()
         if queue_action == 'add':
             change = self.param_str_to_object(action_arg)
@@ -588,20 +621,23 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
                 DisplayableChangeWrapper(change).presentable_id
             ))
             added, rejected = self.add(change)
-            self._report_changes_status(queue_name, 'added', added)
-            self._report_changes_status(queue_name, 'rejected', rejected)
+            self._report_changes_status(added, 'added', queue_name)
+            self._report_changes_status(rejected, 'rejected', queue_name)
+            self._schedule_tester_run()
         elif queue_action == 'on_test_success':
             test_key = action_arg
             logger.info('Queue action: on_test_success {0}'.format(test_key))
             success_list, fail_list = self.on_test_success(test_key)
-            self._report_changes_status(queue_name, 'successful', success_list)
-            self._report_changes_status(queue_name, 'failed', fail_list)
+            self._report_changes_status(success_list, 'successful', queue_name)
+            self._report_changes_status(fail_list, 'failed', queue_name)
+            self._schedule_tester_run()
         elif queue_action == 'on_test_failure':
             test_key = action_arg
             logger.info('Queue action: on_test_failure {0}'.format(test_key))
             success_list, fail_list = self.on_test_failure(test_key)
-            self._report_changes_status(queue_name, 'successful', success_list)
-            self._report_changes_status(queue_name, 'failed', fail_list)
+            self._report_changes_status(success_list, 'successful', queue_name)
+            self._report_changes_status(fail_list, 'failed', queue_name)
+            self._schedule_tester_run()
         elif queue_action == 'get_next_test':
             logger.info('Queue action: get_next_test')
             test_key, change_list = self.get_next_test()
@@ -611,12 +647,18 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
             raise InvalidChangeQueueAction(queue_action)
         self._write_status_file()
 
+    @staticmethod
+    def _cleanup_result_files():
+        JenkinsTestedChangeList.clean_artifact()
+        JobRunSpec.clean_pipeline_build_step_json()
+
     @classmethod
     def _report_changes_status(cls, changes, status, queue_name):
         """Call methods on changes to report their status
         """
         if not changes:
             return
+        logger.info('Reporting {0} {1} changes'.format(len(changes), status))
         # We always blame things on the 1st change
         change_at_fault = changes[0]
         for change in changes:
@@ -635,9 +677,13 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
             status, queue_name, change_at_fault
         )
 
+    def _schedule_tester_run(self):
+        logger.info('Scheduling testes job run')
+        JobRunSpec(self.tester_job_name(), {}).as_pipeline_build_step_json()
+
     @staticmethod
     def _build_change_list(test_key, change_list):
-        JenkinsTestedChangeList((test_key, change_list)).save_to_artifact()
+        JenkinsTestedChangeList(test_key, change_list).save_to_artifact()
 
     def _write_status_file(self):
         # TODO: Write html file showing queue status
