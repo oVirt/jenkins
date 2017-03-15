@@ -28,13 +28,30 @@
         distro: fc24
       - version: 3.6
         distro: fc25
-    arch: x86_64
 
 - project:
     <<: *base-commons
     name: ovirt-release
     project: ovirt-release
     stage: check-patch
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-commons
+    name: ovirt-release-ppc64le
+    project: ovirt-release
+    version:
+      - master:
+          branch: master
+      - 4.1:
+          branch: ovirt-4.1
+    distro:
+      - el7
+    stage: check-patch
+    arch: ppc64le
+    node-filter: ppc64le
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
@@ -45,5 +62,6 @@
     trigger-times: '@midnight'
     project: ovirt-release
     stage: build-artifacts
+    arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
