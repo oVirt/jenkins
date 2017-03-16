@@ -33,22 +33,10 @@
 
 
       - copy-create-job-artifact-all_master-platforms:
-          project-prefix: ovirt-host-deploy_master_build-artifacts-
-          project-suffix: ''
-      - copy-create-job-artifact-all_master-platforms:
-          project-prefix: otopi_master_build-artifacts-
-          project-suffix: ''
-      - copy-create-job-artifact-all_master-platforms:
           project-prefix: ovirt-vmconsole_master_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-all_master-platforms:
           project-prefix: ovirt-imageio_master_build-artifacts-
-          project-suffix: ''
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-iso-uploader_master_build-artifacts-
-          project-suffix: ''
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-log-collector_master_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine-cli_master_build-artifacts-
@@ -67,9 +55,6 @@
           project-suffix: ''
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-dwh_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-setup-lib_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: vdsm-jsonrpc-java_master_build-artifacts-
@@ -109,25 +94,11 @@
       - copy-create-job-artifact-vdsm-master-ppc64le-platforms:
           project-prefix: vdsm_master_build-artifacts-
           project-suffix: ""
-      - copy-create-job-artifact-hosted-engine-master-platforms:
-          project-prefix: ovirt-hosted-engine-ha_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-hosted-engine-master-platforms:
-          project-prefix: ovirt-hosted-engine-setup_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact:
-          project: ovirt-appliance_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact-engine_master-platforms:
           project-prefix: ovirt-engine_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: mom_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-live_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-vdsm-master-platforms:
-          project-prefix: cockpit-ovirt_master_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-vdsm-master-platforms:
           project-prefix: ovirt-engine-nodejs_master_build-artifacts-
@@ -141,13 +112,6 @@
       - copy-create-job-artifact-engine-master-ppc64le-platforms:
           project-prefix: ovirt-engine-sdk-ruby_master_build-artifacts-
           project-suffix: ""
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-release_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact:
-          project: imgbased_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-node-ng_master_build-artifacts-el7-x86_64
       - copy-create-job-artifact:
           project: ovirt-guest-agent_master_build-artifacts-el6-x86_64
       - copy-create-job-artifact:
