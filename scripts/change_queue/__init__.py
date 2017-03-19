@@ -11,6 +11,7 @@ from os import environ, path, makedirs
 from base64 import b64decode, b64encode
 from bz2 import compress, decompress, BZ2File
 from contextlib import contextmanager
+import json
 
 
 class ChangeQueue(object):
@@ -383,6 +384,23 @@ class JobRunSpec(namedtuple('_JobRunSpec', ('job_name', 'params'))):
                 else:
                     str_value = str(value)
                 fil.write('{0}={1}\n'.format(str(name), str_value))
+
+    def as_pipeline_build_step(self):
+        step_struct = dict(job=self.job_name, parameters=[])
+        for name, value in iteritems(self.params):
+            param_struct = dict(name=name)
+            if isinstance(value, bool):
+                param_struct['value'] = value
+                param_struct['$class'] = 'BooleanParameterValue'
+            else:
+                param_struct['value'] = str(value)
+                param_struct['$class'] = 'StringParameterValue'
+            step_struct['parameters'].append(param_struct)
+        return step_struct
+
+    def as_pipeline_build_step_json(self, file_name='build_args.json'):
+        with open(file_name, 'w') as fil:
+            json.dump(self.as_pipeline_build_step, fil)
 
 
 class NotInJenkins(Exception):

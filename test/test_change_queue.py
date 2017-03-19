@@ -400,6 +400,42 @@ class TestJobRunSpec(object):
         jrc.as_properties_file(str(out_file))
         assert expected_props == out_file.read()
 
+    def test_as_pipeline_build_step(self):
+        expected = dict(
+            job='some-job',
+            parameters=[
+                {
+                    '$class': 'StringParameterValue',
+                    'name': 'string1',
+                    'value': 'some string',
+                },
+                {
+                    '$class': 'StringParameterValue',
+                    'name': 'string2',
+                    'value': 'some other string',
+                },
+                {
+                    '$class': 'BooleanParameterValue',
+                    'name': 'some_bool',
+                    'value': True,
+                },
+                {
+                    '$class': 'BooleanParameterValue',
+                    'name': 'some_false_bool',
+                    'value': False,
+                },
+            ]
+        )
+        params = OrderedDict((
+            ('string1', 'some string'),
+            ('string2', 'some other string'),
+            ('some_bool', True),
+            ('some_false_bool', False),
+        ))
+        jrc = JobRunSpec('some-job', params)
+        out = jrc.as_pipeline_build_step()
+        assert expected == out
+
 
 class RandomJenkinsObject(JenkinsObject, namedtuple('_RandomJenkinsObject', (
     'int', 'string', 'list', 'tuple'
