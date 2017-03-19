@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """test_change_queue.py - Tests for change_queue.python
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 import pytest
 import random
 from math import log, ceil

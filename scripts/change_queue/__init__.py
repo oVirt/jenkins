@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """change_queue.py - Change queue management functions
 """
+from __future__ import absolute_import, print_function
 from uuid import uuid4
 from itertools import chain
 from collections import deque, namedtuple
@@ -12,6 +13,12 @@ from base64 import b64decode, b64encode
 from bz2 import compress, decompress, BZ2File
 from contextlib import contextmanager
 import json
+import logging
+
+from .changes import DisplayableChangeWrapper
+
+
+logger = logging.getLogger(__name__)
 
 
 class ChangeQueue(object):
@@ -493,6 +500,12 @@ class JenkinsObject(object):
         yield obj
         obj.save_to_artifact(artifact_file)
 
+    @staticmethod
+    def setup_logging(level=logging.INFO):
+        """Globally setup logging so its useful in Jenkins"""
+        logging.basicConfig()
+        logging.getLogger().level = level
+
 
 class JenkinsChangeQueueObject(JenkinsObject):
     """Utility base class to objects that represent the change queue in Jenkins
@@ -571,20 +584,26 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
         queue_name = self.get_queue_name()
         if queue_action == 'add':
             change = self.param_str_to_object(action_arg)
+            logger.info('Queue action: add {0}'.format(
+                DisplayableChangeWrapper(change).presentable_id
+            ))
             added, rejected = self.add(change)
             self._report_changes_status(queue_name, 'added', added)
             self._report_changes_status(queue_name, 'rejected', rejected)
         elif queue_action == 'on_test_success':
             test_key = action_arg
+            logger.info('Queue action: on_test_success {0}'.format(test_key))
             success_list, fail_list = self.on_test_success(test_key)
             self._report_changes_status(queue_name, 'successful', success_list)
             self._report_changes_status(queue_name, 'failed', fail_list)
         elif queue_action == 'on_test_failure':
             test_key = action_arg
+            logger.info('Queue action: on_test_failure {0}'.format(test_key))
             success_list, fail_list = self.on_test_failure(test_key)
             self._report_changes_status(queue_name, 'successful', success_list)
             self._report_changes_status(queue_name, 'failed', fail_list)
         elif queue_action == 'get_next_test':
+            logger.info('Queue action: get_next_test')
             test_key, change_list = self.get_next_test()
             if test_key is not None:
                 self._build_change_list(test_key, change_list)
