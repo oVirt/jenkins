@@ -7,8 +7,6 @@
       version:
         - 3.6:
             chroot_distro: el7
-        - 4.0:
-            chroot_distro: el7
         - 4.1:
             chroot_distro: el7
         - master:
@@ -19,9 +17,6 @@
     <<: *system-tests-common
     name: ovirt-system-tests-nightly
     version:
-      - 4.0:
-          chroot_distro: el7
-          flavor: stable
       - 4.1:
           chroot_distro: el7
           flavor: pre
@@ -34,8 +29,6 @@
     <<: *system-tests-common
     name: ovirt-system-image-tests
     version:
-      - 4.0:
-          chroot_distro: fc24
       - 4.1:
           chroot_distro: fc24
       - master:
@@ -50,8 +43,6 @@
     name: ovirt-system-he-tests
     version:
       - 3.6:
-          chroot_distro: el7
-      - 4.0:
           chroot_distro: el7
       - 4.1:
           chroot_distro: el7
