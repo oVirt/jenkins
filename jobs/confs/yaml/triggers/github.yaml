@@ -4,9 +4,9 @@
       - github-pull-request:
           org-list:
             - '{org}'
-          cron: '* * * * *'
+          cron: '*/10 * * * *'
           trigger-phrase: '^(ci test please|ci :(\+1|thumbsup):).*'
-          github-hooks: false
+          github-hooks: true
           permit-all: false
           auto-close-on-fail: false
           allow-whitelist-orgs-as-admins: true
@@ -21,10 +21,10 @@
       - github-pull-request:
           org-list:
             - '{org}'
-          cron: '* * * * *'
+          cron: '*/10 * * * *'
           trigger-phrase: '^(ci build please|ci :(\+1|thumbsup):).*'
           only-trigger-phrase: true
-          github-hooks: false
+          github-hooks: true
           permit-all: false
           auto-close-on-fail: false
           allow-whitelist-orgs-as-admins: true
