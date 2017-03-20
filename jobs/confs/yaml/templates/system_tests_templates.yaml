@@ -24,6 +24,7 @@
           version: '{version}'
           suite_type : basic
           chroot_distro: '{chroot_distro}'
+          email-to: '{email-to}'
 
 - job-template:
     <<: *basic_system_tests
@@ -61,6 +62,7 @@
           version: '{version}'
           suite_type : basic
           chroot_distro: '{chroot_distro}'
+          email-to: '{email-to}'
 
 - job-template:
     <<: *basic_system_tests
@@ -92,6 +94,7 @@
           version: '{version}'
           suite_type : ansible
           chroot_distro: '{chroot_distro}'
+          email-to: '{email-to}'
 
 - job-template:
     <<: *basic_system_tests
@@ -110,3 +113,4 @@
           version: '{version}'
           suite_type : image-ng
           chroot_distro: '{chroot_distro}'
+          email-to: '{email-to}'
