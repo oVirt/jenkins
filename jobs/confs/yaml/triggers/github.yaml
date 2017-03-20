@@ -10,7 +10,7 @@
           permit-all: false
           auto-close-on-fail: false
           allow-whitelist-orgs-as-admins: true
-          white-Vlist-target-branches:
+          white-list-target-branches:
             - master
           auth-id: '{github-auth-id}'
           status-context: '{distro}-{arch}'
