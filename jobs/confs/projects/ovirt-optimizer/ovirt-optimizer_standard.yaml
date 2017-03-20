@@ -18,6 +18,8 @@
     exclude:
       - version: master
         distro: el6
+      - version: master
+        distro: fc24
       - version: 3.6
         distro: fc24
       - version: 3.6
@@ -42,6 +44,8 @@
     exclude:
       - version: master
         distro: el6
+      - version: master
+        distro: fc24
       - version: 3.6
         distro: fc24
       - version: 3.6
