@@ -7,7 +7,6 @@
           branch: master
     stage:
       - check-patch
-      - check-merged
     distro:
         - fc25
     trigger: 'on-change'
