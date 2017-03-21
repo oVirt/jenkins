@@ -6,6 +6,7 @@ def main() {
     }
     stage('running queue logic') {
         run_queue_action_py()
+        currentBuild.displayName = get_build_display_name()
     }
     stage('saving artifacts') {
         archive 'exported-artifacts/**'
@@ -32,7 +33,6 @@ def load_queue_state() {
     ])
 }
 
-
 def prepare_python_env() {
     sh """\
         #!/bin/bash -xe
@@ -43,7 +43,6 @@ def prepare_python_env() {
         fi
     """.stripIndent()
 }
-
 
 def run_queue_action_py() {
     withEnv(['PYTHONPATH=jenkins']) {
@@ -61,6 +60,20 @@ def run_queue_action_py() {
                 )
         """.stripIndent()
     }
+}
+
+@NonCPS
+def get_build_display_name() {
+    def name_from_log = currentBuild.rawBuild.getLog(50).findResult {
+        def match = (it =~ /Queue action: (.+)/)
+        if(match.asBoolean()) {
+            return match[0][1]
+        }
+    }
+    if(name_from_log) {
+        return "${currentBuild.id} ${name_from_log}"
+    }
+    return currentBuild.id
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from

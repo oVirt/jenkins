@@ -8,6 +8,7 @@ def main() {
     load_counter_state()
     if(!has_changes) {
         echo "Change queue is empty, exiting"
+        currentBuild.displayName = "#${currentBuild.id} [EOQ]"
         save_counter_state()
         return
     }
@@ -21,6 +22,7 @@ def main() {
         }
         throw(e)
     } finally {
+        currentBuild.displayName = get_build_display_name()
         save_counter_state()
     }
     stage('reporting results') {
@@ -136,6 +138,20 @@ def run_tests_py() {
             counter.sum = new_sum
             logger.info('New cumulative sum: {0}'.format(counter.sum))
     """.stripIndent()
+}
+
+@NonCPS
+def get_build_display_name() {
+    def name_from_log = currentBuild.rawBuild.getLog(50).findResult {
+        def match = (it =~ /New cumulative sum: (\d+)/)
+        if(match.asBoolean()) {
+            return match[0][1]
+        }
+    }
+    if(name_from_log) {
+        return "#${currentBuild.id} [sum: ${name_from_log}]"
+    }
+    return "#${currentBuild.id}"
 }
 
 def report_test_results(result) {

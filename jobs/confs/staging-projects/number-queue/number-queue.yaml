@@ -37,6 +37,10 @@
 
           JenkinsChangeQueueClient('numbers').add(change).as_properties_file()
     publishers:
+      - groovy-postbuild:
+          script: |
+            manager.build.displayName = \
+              "#${manager.build.id} [${manager.getEnvVariable('NUMBER')}]"
       - trigger-parameterized-builds:
         - project: numbers_change-queue
           property-file: job_params.properties
