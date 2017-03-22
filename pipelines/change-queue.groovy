@@ -7,6 +7,7 @@ def main() {
     stage('running queue logic') {
         run_queue_action_py()
         currentBuild.displayName = get_build_display_name()
+        show_queue_status()
     }
     stage('saving artifacts') {
         archive 'exported-artifacts/**'
@@ -74,6 +75,22 @@ def get_build_display_name() {
         return "${currentBuild.id} ${name_from_log}"
     }
     return currentBuild.id
+}
+
+def show_queue_status() {
+    def status_file = 'exported-artifacts/queue-status.html'
+    if(!fileExists(status_file)) {
+        echo "Queue status file not found"
+        return
+    }
+    echo "Showing queue status"
+    add_summary('gear2.png', readFile(status_file))
+}
+
+@NonCPS
+def add_summary(icon, html) {
+    def summary = manager.createSummary(icon)
+    summary.appendText(html, false)
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from

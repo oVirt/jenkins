@@ -1,0 +1,144 @@
+<style type="text/css">
+    .queue-status * {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+    .queue-column {
+        width: 250px;
+        padding: 10px;
+        float: left;
+    }
+    .queue-column-header {
+        padding-bottom: 10px;
+        text-align: center;
+    }
+    .queue-section {
+        padding-top: 10px;
+        border-top: 1px solid lightgray;
+    }
+    .queue-change {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    #queue-changes-under-test    .queue-change { background: DarkSeaGreen; }
+    #queue-changes-sected-off    .queue-change { background: LightSteelBlue; }
+    #queue-changes-untested      .queue-change { background: LightGrey; }
+    #queue-changes-awaiting-deps .queue-change {
+        background: MediumPurple;
+        position: relative;
+    }
+
+    .queue-total {
+        height: 24px;
+        padding-top: 2px;
+        padding-left: 26px;
+        background: url('/images/24x24/clipboard.png') no-repeat left center;
+        margin: 4px;
+    }
+    .queue-test-running {
+        height: 24px;
+        padding-top: 2px;
+        padding-left: 26px;
+        background: url('/images/24x24/blue_anime.gif') no-repeat left center;
+        margin: 4px;
+    }
+    .queue-test {
+        height: 24px;
+        padding-top: 2px;
+        padding-left: 26px;
+        background: url('/images/24x24/grey.png') no-repeat left center;
+        margin: 4px;
+    }
+    .queue-change-adeps {
+        background: beige;
+        border: 1px dashed black;
+        font-size: smaller;
+        position: absolute;
+        width: 218px;
+        padding: 5px 5px;
+        top: 90%;
+        left: 5px;
+        z-index: 1;
+        display: none;
+        overflow: hidden;
+    }
+    #queue-changes-awaiting-deps .queue-change:hover .queue-change-adeps {
+        display: block;
+    }
+    .queue-change-adeps-title {
+        display: block;
+    }
+</style>
+<p><strong>Change queue status</strong></p>
+{% if num_changes > 1 -%}
+    <p class="queue-total"><u>{{ num_changes }}</u> queued changes</p>
+{% elif num_changes < 1 -%}
+    <p class="queue-total">Queue is empty</p>
+{% else -%}
+    <p class="queue-total"><u>{{ num_changes }}</u> queued change</p>
+{% endif -%}
+{% if test_key is none -%}
+    <p class="queue-test">No running test</p>
+{% else -%}
+    <p class="queue-test-running">Running test key: <u>{{ test_key }}</u></p>
+{% endif -%}
+{% macro render_change_id(change) -%}
+    {%- if change.url is none -%}
+        {{ change.presentable_id|e }}
+    {%- else -%}
+        <a href="{{ change.url }}">{{ change.presentable_id|e }}</a>
+    {%- endif -%}
+{%- endmacro %}
+{% macro render_queue_section(changes) -%}
+    <div class="queue-section">
+        {% for change in changes %}
+            <div class="queue-change">{{ render_change_id(change) }}</div>
+        {% endfor %}
+    </div>
+{%- endmacro %}
+{% if num_changes >= 1 %}
+    <div class="queue-status">
+        <div class="queue-column" id="queue-changes-under-test">
+            <div class="queue-column-header">Changes under test</div>
+            {% if state|length > 1 %}
+                {{ render_queue_section(state|first) }}
+            {% else %}
+                {{ render_queue_section([]) }}
+            {% endif %}
+        </div>
+        <div class="queue-column" id="queue-changes-sected-off">
+            <div class="queue-column-header">Sected-off changes</div>
+            {% for section in state[1:-1] %}
+                {{ render_queue_section(section) }}
+            {% else %}
+                {{ render_queue_section([]) }}
+            {% endfor %}
+        </div>
+        <div class="queue-column" id="queue-changes-untested">
+            <div class="queue-column-header">Untested changes</div>
+            {{ render_queue_section(state|last) }}
+        </div>
+        {% if awaiting_deps|length > 0 %}
+            <div class="queue-column" id="queue-changes-awaiting-deps">
+                <div class="queue-column-header">Awaiting dependencies</div>
+                <div class="queue-section">
+                    {% for change, deps in awaiting_deps %}
+                        <div class="queue-change">
+                            {{ render_change_id(change) }}
+                            <div class="queue-change-adeps">
+                                <span class="queue-change-adeps-title">
+                                    Awaiting for:
+                                </span>
+                                {% for dep in deps -%}
+                                    {{ ',' if not loop.first }}
+                                    <span class="queue-change-dep">{{ dep }}</span>
+                                {%- endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}

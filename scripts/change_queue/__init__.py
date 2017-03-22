@@ -14,6 +14,7 @@ from bz2 import compress, decompress, BZ2File
 from contextlib import contextmanager
 import json
 import logging
+from jinja2 import Environment, PackageLoader
 
 from .changes import DisplayableChangeWrapper
 
@@ -686,8 +687,29 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
         JenkinsTestedChangeList(test_key, change_list).save_to_artifact()
 
     def _write_status_file(self):
-        # TODO: Write html file showing queue status
-        pass
+        env = self._get_jinja_env()
+        tmpl = env.get_template('queue-status.html.j2')
+        num_changes = sum(map(len, self._state), len(self._awaiting_deps))
+        displayable_state = \
+            [list(map(DisplayableChangeWrapper, subs)) for subs in self._state]
+        displayable_awaiting_deps = [
+            (DisplayableChangeWrapper(chg), deps)
+            for chg, deps in self._awaiting_deps
+        ]
+        result_file = path.join(self.ARTIFACTS_DIR, 'queue-status.html')
+        with open(result_file, 'w') as fil:
+            fil.writelines(tmpl.generate(
+                num_changes=num_changes,
+                state=displayable_state,
+                awaiting_deps=displayable_awaiting_deps,
+                test_key=self._test_key,
+            ))
+
+    @classmethod
+    def _get_jinja_env(cls):
+        if not hasattr(cls, '_jinja_env'):
+            cls._jinja_env = Environment(loader=PackageLoader(__name__))
+        return cls._jinja_env
 
 
 class JenkinsChangeQueueClient(JenkinsChangeQueueObject):
