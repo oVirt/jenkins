@@ -15,3 +15,18 @@
       - gerrit:
           project: ovirt-engine
           git-server: '{git-server}'
+
+
+- scm:
+    name: ovirt-engine_coverity-analysis
+    scm:
+        - git:
+            url: 'git://{git-server}/ovirt-engine.git'
+            branches:
+              - 'origin/{branch}'
+            basedir: ovirt-engine
+            scm-name: ovirt-engine
+            wipe-workspace: true
+            prune: true
+            clean:
+                after: true

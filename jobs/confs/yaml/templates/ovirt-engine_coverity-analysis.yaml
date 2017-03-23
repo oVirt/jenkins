@@ -1,0 +1,19 @@
+- job-template: &ovirt-engine_coverity-analysis
+    name: '{project}_{version}_coverity-analysis'
+    node: '{node-filter}'
+    version: '{version}'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
+    triggers:
+      - timed: "H H * * 1,4"
+    scm:
+      - '{project}_coverity-analysis':
+          branch: 'master'
+          git-server: '{git-server}'
+      - 'jenkins':
+          branch: 'master'
+          git-server: '{git-server}'
+    jdk: 'java-1.8.0-openjdk'
+    builders:
+      - shell: !include-raw: shell-scripts/coverity_analysis.sh

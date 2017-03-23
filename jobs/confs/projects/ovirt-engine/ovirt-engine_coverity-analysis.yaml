@@ -1,0 +1,9 @@
+- project:
+    name: 'ovirt-engine_coverity-analysis'
+    node-filter: 'el7'
+    version:
+      - master:
+          branch: 'master'
+    project: 'ovirt-engine'
+    jobs:
+      - '{project}_{version}_coverity-analysis'
