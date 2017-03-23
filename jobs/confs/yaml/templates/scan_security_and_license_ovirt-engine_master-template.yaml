@@ -1,16 +1,16 @@
-- job:
-    name: scan_security_and_license_ovirt-engine_master
+- job-template:
+    name: 'scan_security_and_license_ovirt-engine_{version}'
     project-type: maven
     node: 'el7 || fc23'
     triggers:
-        - timed: "H 1 * * *"
+      - timed: "H 1 * * *"
     scm:
       - ovirt-engine:
-          git-server: 'gerrit.ovirt.org'
-          branch: 'master'
+          branch: '{branch}'
+          git-server: '{git-server}'
       - jenkins:
-          git-server: 'gerrit.ovirt.org'
-          branch: 'master'
+          branch: '{branch}'
+          git-server: '{git-server}'
     prebuilders:
       - shell: |
           mkdir -p "${WORKSPACE}/tmp"

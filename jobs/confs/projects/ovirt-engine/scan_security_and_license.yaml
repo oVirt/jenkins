@@ -1,0 +1,7 @@
+- project:
+    name: scan_security_and_license
+    version:
+      - master:
+          branch: 'master'
+    jobs:
+      - 'scan_security_and_license_ovirt-engine_{version}'
