@@ -51,7 +51,7 @@
 
     publishers:
         - email-ext:
-            recipients: dcaro@redhat.com, eedri@redhat.com, ykaul@redhat.com, vishnu.srkmr@gmail.com, amarchuk@redhat.com
+            recipients: eedri@redhat.com, ykaul@redhat.com, amarchuk@redhat.com
             content-type: text
             subject: Alert-Old-Patches Build ${BUILD_NUMBER}
             attach-build-log: true
