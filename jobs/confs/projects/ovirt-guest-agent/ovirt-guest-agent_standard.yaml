@@ -12,6 +12,9 @@
     distro:
       - fc24
       - fc25
+    exclude:
+      - version: master
+        distro: fc24
     trigger: 'on-change'
     arch: x86_64
     jobs:
@@ -32,6 +35,9 @@
       - el7
       - fc24
       - fc25
+    exclude:
+      - version: master
+        distro: fc24
     trigger: 'on-change'
     arch: x86_64
     jobs:
