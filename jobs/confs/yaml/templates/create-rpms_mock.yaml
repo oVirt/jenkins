@@ -244,10 +244,6 @@
           gerrit-server: '{gerrit-server}'
 
 - job-template:
-    <<: *no-deploy-releng
-    name: 'ebay-cors-filter_{version}_create-rpms-{distro}-{arch}_{trigger}'
-
-- job-template:
     name: 'ovirt-engine_{version}_create-rpms-{distro}-{arch}_{trigger}'
     node: '{node-filter}'
     parameters:
