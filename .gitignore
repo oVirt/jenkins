@@ -3,3 +3,7 @@
 *\#
 .\#*
 /.project
+*.pyc
+__pycache__
+.cache
+/exported-artifacts
