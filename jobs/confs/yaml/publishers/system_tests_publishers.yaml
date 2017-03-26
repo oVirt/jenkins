@@ -13,7 +13,9 @@
                 escalate-status: true
             script: !include-raw-escape: shell-scripts/mock_cleanup.sh
       - junit:
-          results: 'exported-artifacts/nosetests*.xml'
+          results: >
+            exported-artifacts/**/*.junit.xml,
+            exported-artifacts/nosetests*.xml
       - archive:
           artifacts: 'exported-artifacts/**'
           allow-empty: true
