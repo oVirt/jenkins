@@ -3,4 +3,5 @@ python-requests
 pytest
 python-mock
 python-jinja2
+python-paramiko
 git

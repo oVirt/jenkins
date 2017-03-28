@@ -2,8 +2,14 @@
 """test_gerrit.py - Tests for gerrit.py
 """
 from __future__ import absolute_import, print_function
+import pytest
+import random
 from base64 import b64encode
 from six import iteritems
+try:
+    from unittest.mock import MagicMock, call
+except ImportError:
+    from mock import MagicMock, call
 
 from scripts.gerrit import GerritPatchset
 
@@ -44,3 +50,45 @@ class TestGerritPatchset(object):
         assert ps.refspec == env['GERRIT_REFSPEC']
         assert ps.patchset_number == int(env['GERRIT_PATCHSET_NUMBER'])
         assert ps.commit_message == msg
+
+    @pytest.mark.parametrize(
+        ('args', 'kwargs', 'exp_args'),
+        [
+            ([], dict(abandon=True), '--abandon'),
+            (
+                [], dict(label={'verify': 1, 'code-review': -1}),
+                '--label code-review=-1 --label verify=1',
+            ),
+            (
+                [], dict(verify=1, code_review=-1),
+                '--label code-review=-1 --label verify=1',
+            ),
+            (
+                [], dict(label={'verify': -1}, verify=1, code_review=-1),
+                '--label code-review=-1 --label verify=-1',
+            ),
+            ([], dict(message="foo mc'foo"), "--message 'foo mc'\"'\"'foo'"),
+            (
+                ['bar', "mc'bar"], dict(message="foo"),
+                "--message 'foo bar mc'\"'\"'bar'",
+            ),
+            (['foo', 7], dict(), "--message 'foo 7'"),
+            ([], dict(publish=True), '--publish'),
+            ([], dict(rebase=True), '--rebase'),
+            ([], dict(restore=True), '--restore'),
+            ([], dict(submit=True), '--submit'),
+        ]
+    )
+    def test_review(self, args, kwargs, exp_args):
+        cnum = random.randint(1000, 100000)
+        psnum = random.randint(0, 100)
+        # Fake a change object that has the methods we need
+        change = MagicMock(
+            spec_set=('number', 'server'), number=cnum,
+            **{'server.run_ssh_command.return_value': None}
+        )
+        ps = GerritPatchset(change, None, psnum, None, None, None, None)
+        exp_cmd = 'review {0},{1} {2}'.format(cnum, psnum, exp_args)
+        ps.review(*args, **kwargs)
+        assert change.server.run_ssh_command.called
+        assert change.server.run_ssh_command.call_args == call(exp_cmd)

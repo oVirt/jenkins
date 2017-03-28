@@ -38,9 +38,9 @@ def prepare_python_env() {
     sh """\
         #!/bin/bash -xe
         if [[ -e '/usr/bin/dnf' ]]; then
-            sudo dnf install -y python-jinja2
+            sudo dnf install -y python-jinja2 python-paramiko
         else
-            sudo yum install -y python-jinja2
+            sudo yum install -y python-jinja2 python-paramiko
         fi
     """.stripIndent()
 }

@@ -20,6 +20,13 @@
           git-server: 'gerrit.ovirt.org'
     builders:
       - shell: |
+          #!/bin/bash -xe
+          if [[ -e '/usr/bin/dnf' ]]; then
+              sudo dnf install -y python-jinja2 python-paramiko
+          else
+              sudo yum install -y python-jinja2 python-paramiko
+          fi
+      - shell: |
           #!/usr/bin/env python
           import sys
           from os import environ
