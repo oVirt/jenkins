@@ -32,45 +32,6 @@
           mkdir $WORKSPACE/artifacts
 
 
-      - copy-create-job-artifact-all_master-platforms:
-          project-prefix: ovirt-vmconsole_master_build-artifacts-
-          project-suffix: ''
-      - copy-create-job-artifact-all_master-platforms:
-          project-prefix: ovirt-imageio_master_build-artifacts-
-          project-suffix: ''
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-scheduler-proxy_master_build-artifacts-
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-optimizer_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-vdsm-master-platforms:
-          project-prefix: ioprocess_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-vdsm-master-ppc64le-platforms:
-          project-prefix: ioprocess_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-vdsm-master-platforms:
-          project-prefix: vdsm_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-vdsm-master-ppc64le-platforms:
-          project-prefix: vdsm_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-engine_master-platforms:
-          project-prefix: ovirt-engine_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-vdsm-master-platforms:
-          project-prefix: mom_master_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact:
-          project: ovirt-guest-agent_master_build-artifacts-el6-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-guest-agent_master_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-guest-agent_master_build-artifacts-fc25-x86_64
-      - copy-create-job-artifact-vdsm-master-platforms:
-          project-prefix: ovirt-provider-ovn_master_build-artifacts-
-          project-suffix: ""
-
     publishers:
       # We're not using the publish-rpms-nightly-publishers macro here because
       # code here is different (has the new 'sync from tested' functionality).
