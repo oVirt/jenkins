@@ -1,10 +1,10 @@
-{%- if change.id == change_at_fault.id -%}
+{%- if change.id == cause.id -%}
 
 Subject: Change {{ change.presentable_id }} failed system tests
 
 {% filter wordwrap -%}
 Change {{ change.presentable_id }} is probably the reason behind recent system
-test failures in the "{{ queue_name }}" change queue and needs to be fixed.
+test failures in the "{{ qname }}" change queue and needs to be fixed.
 {%- endfilter %}
 
 {% filter wordwrap -%}
@@ -15,14 +15,18 @@ Artifacts build from this change will not be released until it is fixed.
 For further details about the change see:
 {{ change.url }}
 {% endif -%}
+{% if test_url is not none %}
+For failed test results see:
+{{ test_url }}
+{% endif -%}
 
 {%- else -%}
 
 Subject: Change {{ change.presentable_id }} depends on a failed change
 
 {% filter wordwrap -%}
-Change {{ change_at_fault.presentable_id }} that this change depends on or
-contains, was detected to cause testing failures by the "{{ queue_name }}"
+Change {{ cause.presentable_id }} that this change depends on or
+contains, was detected to cause testing failures by the "{{ qname }}"
 change queue.
 {%- endfilter %}
 
@@ -34,9 +38,13 @@ Artifacts built from this change will not be released until the issue is fixed.
 For further details about the change see:
 {{ change.url }}
 {% endif -%}
-{% if change.id != change_at_fault.id and change_at_fault.url is not none %}
+{% if change.id != cause.id and cause.url is not none %}
 For further details about the change that caused the testing failures see:
-{{ change_at_fault.url }}
+{{ cause.url }}
+{% endif -%}
+{% if test_url is not none %}
+For failed test results see:
+{{ test_url }}
 {% endif -%}
 
 {%- endif -%}

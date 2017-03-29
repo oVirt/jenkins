@@ -2,10 +2,14 @@ Subject: Change {{ change.presentable_id }} passed system tests
 
 {% filter wordwrap -%}
 Change {{ change.presentable_id }} successfully passed the system tests invoked
-from the "{{ queue_name }}" queue.
+from the "{{ qname }}" queue.
 {%- endfilter %}
 {% if change.url is not none %}
 For further details about the change see:
 {{ change.url }}
+{% endif -%}
+{% if test_url is not none %}
+For test results of last test that included this change see:
+{{ test_url }}
 {% endif -%}
 

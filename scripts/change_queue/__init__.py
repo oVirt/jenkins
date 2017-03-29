@@ -74,6 +74,11 @@ class ChangeQueue(object):
                 self._test_key = str(uuid4())
         return (self._test_key, change_list)
 
+    def test_key_match(self, test_key):
+        """Returns True if the given test_key matches the last generated one
+        """
+        return test_key is not None and test_key == self._test_key
+
     def on_test_success(self, test_key):
         """Updated the queue when a test is successful
 
@@ -90,7 +95,7 @@ class ChangeQueue(object):
                   returned changes will be removed from the queue. On ignored
                   calls empty lists are returned
         """
-        if test_key is None or test_key != self._test_key:
+        if not self.test_key_match(test_key):
             return [], []
         success_list = list(self._state.popleft())
         if len(self._state) > 1:
@@ -121,7 +126,7 @@ class ChangeQueue(object):
                   returned changes will be removed from the queue. On ignored
                   calls empty lists are returned
         """
-        if test_key is None or test_key != self._test_key:
+        if not self.test_key_match(test_key):
             return [], []
         self._test_key = None
         fail_list = list(self._state.popleft())
@@ -373,8 +378,18 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
             raise NotCQJob
         return queue_name
 
-    def act_on_job_params(self, queue_action, action_arg):
+    def act_on_job_params(self, queue_action, action_arg, actor_url=None):
         """Perform the queue action according to parameters passed to the job
+
+        :param str queue_action: The queue action to perform ('add',
+                                 'on_test_success', 'on_test_failure', or
+                                 'get_next_test')
+        :param str action_arg:   An argument to the queue_action if needed.
+                                 Objects to be added need to be serialized with
+                                 JenkinsObject.object_to_param_str
+        :param str actor_url:    (Optional) The URL of the thing (typically a
+                                 job build) that asked for the queue action.
+                                 This is used in reporting
 
         This method is probably what the queue jobs will call. Apart from
         performing the queue action it will also run reporting methods on
@@ -382,29 +397,31 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
         requested, and a status HTML file showing the state of the queue.
         """
         self._cleanup_result_files()
-        queue_name = self.get_queue_name()
         if queue_action == 'add':
             change = self.param_str_to_object(action_arg)
             logger.info('Queue action: add {0}'.format(
                 DisplayableChangeWrapper(change).presentable_id
             ))
             added, rejected = self.add(change)
-            self._report_changes_status(added, 'added', queue_name)
-            self._report_changes_status(rejected, 'rejected', queue_name)
+            qname = self.get_queue_name()
+            self._report_changes_status(added, 'added', qname)
+            self._report_changes_status(rejected, 'rejected', qname)
             self._schedule_tester_run()
         elif queue_action == 'on_test_success':
             test_key = action_arg
             logger.info('Queue action: on_test_success {0}'.format(test_key))
+            if self.test_key_match(test_key):
+                self._last_successful_test = actor_url
             success_list, fail_list = self.on_test_success(test_key)
-            self._report_changes_status(success_list, 'successful', queue_name)
-            self._report_changes_status(fail_list, 'failed', queue_name)
+            self._post_test_report(success_list, fail_list)
             self._schedule_tester_run()
         elif queue_action == 'on_test_failure':
             test_key = action_arg
             logger.info('Queue action: on_test_failure {0}'.format(test_key))
+            if self.test_key_match(test_key):
+                self._last_failed_test = actor_url
             success_list, fail_list = self.on_test_failure(test_key)
-            self._report_changes_status(success_list, 'successful', queue_name)
-            self._report_changes_status(fail_list, 'failed', queue_name)
+            self._post_test_report(success_list, fail_list)
             self._schedule_tester_run()
         elif queue_action == 'get_next_test':
             logger.info('Queue action: get_next_test')
@@ -420,29 +437,38 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
         JenkinsTestedChangeList.clean_artifact()
         JobRunSpec.clean_pipeline_build_step_json()
 
+    def _post_test_report(self, success_list, fail_list):
+        qname = self.get_queue_name()
+        self._report_changes_status(
+            success_list, 'successful', qname,
+            getattr(self, '_last_successful_test', None)
+        )
+        self._report_changes_status(
+            fail_list, 'failed', qname,
+            getattr(self, '_last_failed_test', None)
+        )
+
     @classmethod
-    def _report_changes_status(cls, changes, status, queue_name):
+    def _report_changes_status(cls, changes, status, qname, test_url=None):
         """Call methods on changes to report their status
         """
         if not changes:
             return
         logger.info('Reporting {0} {1} changes'.format(len(changes), status))
         # We always blame things on the 1st change
-        change_at_fault = changes[0]
+        cause = changes[0]
         for change in changes:
-            cls._report_change_status(
-                change, status, queue_name, change_at_fault
-            )
+            cls._report_change_status(change, status, qname, cause, test_url)
 
     @staticmethod
-    def _report_change_status(change, status, queue_name, change_at_fault):
+    def _report_change_status(change, status, qname, cause, test_url=None):
         """Call methods on change to report its status
 
         Try to call the report_status method on the change object passing it
-        the status, the queue_name and the change to blame.
+        the status, the qname, the change to blame and the test job URL.
         """
         getattr(change, 'report_status', (lambda *x: None))(
-            status, queue_name, change_at_fault
+            status, qname, cause, test_url
         )
 
     def _schedule_tester_run(self):

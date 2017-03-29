@@ -1,17 +1,17 @@
 Subject: Change {{ change.presentable_id }} removed from test queue
 
 {% filter wordwrap -%}
-Change {{ change.presentable_id }} was removed from the "{{ queue_name }}" queue
+Change {{ change.presentable_id }} was removed from the "{{ qname }}" queue
 without being tested because a change dependency loop
-{%- if change.id == change_at_fault.id -%}.
-{%- else %} caused by {{ change_at_fault.presentable_id }}.
+{%- if change.id == cause.id -%}.
+{%- else %} caused by {{ cause.presentable_id }}.
 {%- endif -%}
 {%- endfilter %}
 {% if change.url is not none %}
 For further details about the change see:
 {{ change.url }}
 {% endif -%}
-{% if change.id != change_at_fault.id and change_at_fault.url is not none %}
+{% if change.id != cause.id and cause.url is not none %}
 For further details about the change that caused the dependency loop see:
-{{ change_at_fault.url }}
+{{ cause.url }}
 {% endif -%}

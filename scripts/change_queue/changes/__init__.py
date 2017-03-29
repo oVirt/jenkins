@@ -151,23 +151,23 @@ class EmailNotifyingChange(DisplayableChange):
         return cls._jinja_env
 
     def _get_status_message_text(
-        self, status, queue_name, change_at_fault, recipients, originator
+        self, status, qname, cause, test_url, recipients, originator
     ):
         env = self._get_jinja_env()
         tmpl = env.get_template(status + '-email.txt.j2')
         return tmpl.render(
-            change=self, queue_name=queue_name,
-            change_at_fault=DisplayableChangeWrapper(change_at_fault),
+            change=self, qname=qname,
+            cause=DisplayableChangeWrapper(cause), test_url=test_url,
             recipients=recipients, originator=originator,
         )
 
-    def _get_status_message(self, status, queue_name, change_at_fault):
+    def _get_status_message(self, status, qname, cause, test_url):
         recipients = getattr(self, status + '_recipients')
         if not recipients:
             return None
         originator = getattr(self, status + '_originator')
         msg = email.message_from_string(self._get_status_message_text(
-            status, queue_name, change_at_fault, recipients, originator)
+            status, qname, cause, test_url, recipients, originator)
         )
         if 'To' not in msg:
             msg['To'] = ', '.join(recipients)
@@ -179,8 +179,22 @@ class EmailNotifyingChange(DisplayableChange):
     # unsafe parts
     _report_status_lock = Lock()
 
-    def report_status(self, status, queue_name, change_at_fault, lock=None):
+    def report_status(self, status, qname, cause, test_url=None, lock=None):
         """Sends an email to report about the change status
+
+        :param str status:   The reported status ('added', 'rejected',
+                             'successful' or 'failed')
+        :param str qname:    The name of the queue that change was managed in
+        :param object cause: If diagnosed, the change object that caused this
+                             change to be removed from the queue (on test
+                             failure or rejection). May be None or even this
+                             change itself
+        :param str test_url: The url of a failed or a successful test that is
+                             the cause for the change status report. May be
+                             none for statuses that do not follow a test run
+                             (e.g. 'added' or 'rejected')
+        :param Lock lock:    (Optional) A lock object to lock critical sections
+                             in this method is invoked from multiple threads
 
         This method may be called in parallel on different changes by multiple
         thread, so it can be passed a lock to allow it to lock execution for
@@ -191,7 +205,7 @@ class EmailNotifyingChange(DisplayableChange):
         if lock is None:
             lock = self._report_status_lock
         with lock:
-            msg = self._get_status_message(status, queue_name, change_at_fault)
+            msg = self._get_status_message(status, qname, cause, test_url)
             if msg is None:
                 return
             smtp_host = getattr(self, 'smtp_host')

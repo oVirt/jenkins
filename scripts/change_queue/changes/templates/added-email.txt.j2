@@ -2,7 +2,7 @@ Subject: Change {{ change.presentable_id }} queued for testing
 
 {% filter wordwrap -%}
 Change {{ change.presentable_id }} was successfully added into the
-"{{ queue_name }}" queue for testing. Further messages will be sent when test
+"{{ qname }}" queue for testing. Further messages will be sent when test
 results are available.
 {%- endfilter %}
 {% if change.url is not none %}

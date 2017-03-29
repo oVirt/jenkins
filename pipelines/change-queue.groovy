@@ -47,6 +47,12 @@ def prepare_python_env() {
 
 def run_queue_action_py() {
     withEnv(['PYTHONPATH=jenkins']) {
+        def upstreamBuild = get_upstream_build()
+        if(upstreamBuild) {
+            upstreamBuild = "'${env.JENKINS_URL}${upstreamBuild['build_url']}'"
+        } else {
+            upstreamBuild = 'None'
+        }
         prepare_python_env()
         sh """\
             #!/usr/bin/env python
@@ -57,7 +63,7 @@ def run_queue_action_py() {
             JenkinsChangeQueue.setup_logging()
             with JenkinsChangeQueue.persist_in_artifacts() as cq:
                 cq.act_on_job_params(
-                    '${params.QUEUE_ACTION}', '${params.ACTION_ARG}'
+                    '${params.QUEUE_ACTION}', '${params.ACTION_ARG}', ${upstreamBuild}
                 )
         """.stripIndent()
     }
@@ -91,6 +97,21 @@ def show_queue_status() {
 def add_summary(icon, html) {
     def summary = manager.createSummary(icon)
     summary.appendText(html, false)
+}
+
+@NonCPS
+def get_upstream_build() {
+    return currentBuild.rawBuild.getCauses().findResult() {
+        if(it instanceof hudson.model.Cause.UpstreamCause) {
+            return [
+                job_name: it.upstreamProject,
+                build_number: it.upstreamBuild,
+                description: it.shortDescription,
+                jub_url: it.upstreamUrl,
+                build_url: it.upstreamRun.url,
+            ]
+        }
+    }
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from

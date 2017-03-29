@@ -403,22 +403,23 @@ class TestJenkinsChangeQueue(object):
             assert [changes * 2] == _enlist_state(queue._state)
 
     def test_report_change_status(self):
-        queue_name = 'some-queue-name'
+        qname = 'some-queue-name'
         states = ('successful', 'failed', 'added', 'rejected')
-        change_at_fault = sentinel.change_at_fault
+        cause = sentinel.cause
+        test_url = sentinel.test_url
         for status in states:
             chg = MagicMock(('report_status',))
             JenkinsChangeQueue._report_change_status(
-                chg, status, queue_name, change_at_fault
+                chg, status, qname, cause, test_url
             )
             assert chg.report_status.call_count == 1
             assert chg.report_status.call_args == \
-                call(status, queue_name, change_at_fault)
+                call(status, qname, cause, test_url)
 
         chg = MagicMock(())
         for status in states:
             JenkinsChangeQueue._report_change_status(
-                chg, status, queue_name, change_at_fault
+                chg, status, qname, cause
             )
         assert not chg.called
 
