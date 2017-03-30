@@ -98,7 +98,8 @@ def run_tests_py() {
     prepare_python_env()
     sh """\
         #!/usr/bin/env python
-        from scripts.change_queue import JenkinsTestedChangeList, JenkinsObject
+        from scripts.change_queue import JenkinsTestedChangeList
+        from scripts.jenkins_objects import JenkinsObject
         import logging
         from six.moves import range
 
