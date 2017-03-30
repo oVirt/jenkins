@@ -30,7 +30,8 @@
              # so I had to include raw xml to make work
           xml: |
             <hudson.tasks.junit.JUnitResultArchiver plugin="junit@1.14">
-              <testResults>exported-artifacts/**/*.junit.xml</testResults>
+              <testResults>exported-artifacts/**/*.junit.xml,
+              exported-artifacts/**/nosetests*</testResults>
               <keepLongStdio>true</keepLongStdio>
               <healthScaleFactor>1.0</healthScaleFactor>
               <allowEmptyResults>true</allowEmptyResults>

@@ -12,10 +12,17 @@
                 operator: AND
                 escalate-status: true
             script: !include-raw-escape: shell-scripts/mock_cleanup.sh
-      - junit:
-          results: >
-            exported-artifacts/**/*.junit.xml,
-            exported-artifacts/nosetests*.xml
+      - raw: # the current stable version of jjb (1.6) does not support
+             # 'allow-empty-results' in the junit plugin (added in 2.0),
+             # so I had to include raw xml to make work
+          xml: |
+            <hudson.tasks.junit.JUnitResultArchiver plugin="junit@1.14">
+              <testResults>exported-artifacts/**/*.junit.xml,
+              exported-artifacts/**/nosetests*</testResults>
+              <keepLongStdio>true</keepLongStdio>
+              <healthScaleFactor>1.0</healthScaleFactor>
+              <allowEmptyResults>true</allowEmptyResults>
+            </hudson.tasks.junit.JUnitResultArchiver>
       - archive:
           artifacts: 'exported-artifacts/**'
           allow-empty: true
