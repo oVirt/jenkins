@@ -96,14 +96,10 @@
                         latest_tested repo contains the latest rpms which passed CI verification.<br>
                         latest_release points to the latest stable oVirt release; e.g., oVirt-4.0 repo<br>
                         </h3>'
-      - choice:
-          name: LAGO_VERSION
-          choices:
-            - stable
-            - unstable
-          description: '<h3>Choose which lago version to install<br>
-                        Default uses latest stable release. Lago developers might<br>
-                        want to use "latest" to test new lago builds before a release.</h3>'
+      - string:
+          name: LAGO_CUSTOM_REPO
+          default: ''
+          description: '<b>Leave empty</b>, unless you want to use a custom repository to install lago from.'
     scm:
       - 'ovirt-system-tests-gerrit':
           branch: master

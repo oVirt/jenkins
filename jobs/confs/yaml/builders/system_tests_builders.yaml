@@ -2,10 +2,14 @@
     name: system-tests
     builders:
       - shell: |
+          #!/bin/bash -ex
           ## check which version of lago to use, and append to .repos
-          if [[ ${{LAGO_VERSION}} = "unstable" ]]; then
-            timestamp=$(date +%s)
-            echo "lago_injected-$timestamp,http://resources.ovirt.org/repos/lago/unstable/0.0/latest/rpm/el7/" >> ovirt-system-tests/automation/basic_suite_{version}.repos
+          if ! [[ -z "${{LAGO_CUSTOM_REPO// }}" ]]; then
+              timestamp=$(date +%s)
+              for repo in $(find ovirt-system-tests/automation/ -type f -name '*.repos'); do
+                  sed -i '/^lago/ d' "$repo"
+                  echo "lago_injected-$timestamp,$LAGO_CUSTOM_REPO" >> "$repo"
+              done
           fi
       - shell: |
           ## update extra source if we got it as param ###
