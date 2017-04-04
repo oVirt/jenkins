@@ -90,20 +90,21 @@ class ChangeQueue(object):
         key following the last call to get_next_test, this call will be ignored
 
         :rtype: tuple
-        :returns: A tuple of successful changes list and failed changes list if
-                  we now have enough information to determine them. The
-                  returned changes will be removed from the queue. On ignored
-                  calls empty lists are returned
+        :returns: A tuple of successful changes list, failed changes list if
+                  we now have enough information to determine them and the
+                  change that caused the failure if we know which one is it.
+                  The changes in the returned lists will be removed from the
+                  queue. On ignored calls empty lists are returned
         """
         if not self.test_key_match(test_key):
-            return [], []
+            return [], [], None
         success_list = list(self._state.popleft())
         if len(self._state) > 1:
-            fail_list = self.on_test_failure(test_key)[1]
+            _, fail_list, cause = self.on_test_failure(test_key)
         else:
-            fail_list = []
+            fail_list, cause = [], None
         self._test_key = None
-        return success_list, fail_list
+        return success_list, fail_list, cause
 
     def on_test_failure(self, test_key):
         """Updated the queue when a test failed
@@ -127,17 +128,17 @@ class ChangeQueue(object):
                   calls empty lists are returned
         """
         if not self.test_key_match(test_key):
-            return [], []
+            return [], [], None
         self._test_key = None
         fail_list = list(self._state.popleft())
         if len(fail_list) == 1:
             self._state = deque([deque(chain.from_iterable(self._state))])
-            return [], fail_list
+            return [], fail_list, next(iter(fail_list), None)
         self._state.extendleft([
             deque(fail_list[int(len(fail_list)/2):]),
             deque(fail_list[:int(len(fail_list)/2)])
         ])
-        return [], []
+        return [], [], None
 
 
 class ChangeQueueWithDeps(ChangeQueue):
@@ -282,7 +283,7 @@ class ChangeQueueWithDeps(ChangeQueue):
         Works like the superclass's method, but when failed changes are
         removed, changes that depend on them are removed as well.
         """
-        success_list, fail_list = \
+        success_list, fail_list, cause = \
             super(ChangeQueueWithDeps, self).on_test_failure(test_key)
         for failed_change in copy(fail_list):
             failed_change_id = self._change_id(failed_change)
@@ -295,7 +296,7 @@ class ChangeQueueWithDeps(ChangeQueue):
                 adep[0] for adep in
                 self._remove_awaiting_deps_by_ids(dependant_ids)
             )
-        return success_list, fail_list
+        return success_list, fail_list, cause
 
     def _remove_deps_by_ids(self, dep_ids):
         removed_deps = deque()
@@ -412,16 +413,16 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
             logger.info('Queue action: on_test_success {0}'.format(test_key))
             if self.test_key_match(test_key):
                 self._last_successful_test = actor_url
-            success_list, fail_list = self.on_test_success(test_key)
-            self._post_test_report(success_list, fail_list)
+            success_list, fail_list, cause = self.on_test_success(test_key)
+            self._post_test_report(success_list, fail_list, cause)
             self._schedule_tester_run()
         elif queue_action == 'on_test_failure':
             test_key = action_arg
             logger.info('Queue action: on_test_failure {0}'.format(test_key))
             if self.test_key_match(test_key):
                 self._last_failed_test = actor_url
-            success_list, fail_list = self.on_test_failure(test_key)
-            self._post_test_report(success_list, fail_list)
+            success_list, fail_list, cause = self.on_test_failure(test_key)
+            self._post_test_report(success_list, fail_list, cause)
             self._schedule_tester_run()
         elif queue_action == 'get_next_test':
             logger.info('Queue action: get_next_test')
@@ -437,28 +438,26 @@ class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
         JenkinsTestedChangeList.clean_artifact()
         JobRunSpec.clean_pipeline_build_step_json()
 
-    def _post_test_report(self, success_list, fail_list):
+    def _post_test_report(self, success_list, fail_list, cause):
         qname = self.get_queue_name()
         self._report_changes_status(
-            success_list, 'successful', qname,
+            success_list, 'successful', qname, cause,
             getattr(self, '_last_successful_test', None)
         )
         self._report_changes_status(
-            fail_list, 'failed', qname,
+            fail_list, 'failed', qname, cause,
             getattr(self, '_last_failed_test', None)
         )
 
     @classmethod
-    def _report_changes_status(cls, changes, status, qname, test_url=None):
+    def _report_changes_status(cls, changes, status, qname, cause, turl=None):
         """Call methods on changes to report their status
         """
         if not changes:
             return
         logger.info('Reporting {0} {1} changes'.format(len(changes), status))
-        # We always blame things on the 1st change
-        cause = changes[0]
         for change in changes:
-            cls._report_change_status(change, status, qname, cause, test_url)
+            cls._report_change_status(change, status, qname, cause, turl)
 
     @staticmethod
     def _report_change_status(change, status, qname, cause, test_url=None):

@@ -80,9 +80,11 @@ class TestChangeQueue(object):
     def test_on_test_success(self, initq, inittk, tk,
                              expsl, expfl, expq, exptk):
         queue = ChangeQueue(initq, inittk)
-        outsl, outfl = queue.on_test_success(tk)
+        outsl, outfl, outc = queue.on_test_success(tk)
         assert expsl == outsl
         assert expfl == outfl
+        # For simple queues failure cause is the 1st change in the fail list
+        assert next(iter(expfl), None) == outc
         assert expq == _enlist_state(queue._state)
         assert queue._test_key == exptk
 
@@ -105,9 +107,11 @@ class TestChangeQueue(object):
     )
     def test_on_test_failure(self, initq, inittk, tk, expfl, expq, exptk):
         queue = ChangeQueue(initq, inittk)
-        outsl, outfl = queue.on_test_failure(tk)
+        outsl, outfl, outc = queue.on_test_failure(tk)
         assert [] == outsl
         assert expfl == outfl
+        # For simple queues failure cause is the 1st change in the fail list
+        assert next(iter(expfl), None) == outc
         assert expq == _enlist_state(queue._state)
         assert queue._test_key == exptk
 
@@ -130,9 +134,9 @@ class TestChangeQueue(object):
                 assert test_list
                 print(test_list)
                 if bad_changes & set(test_list):
-                    _, fail_list = queue.on_test_failure(test_key)
+                    _, fail_list, _ = queue.on_test_failure(test_key)
                 else:
-                    _, fail_list = queue.on_test_success(test_key)
+                    _, fail_list, _ = queue.on_test_success(test_key)
                 if fail_list:
                     found_bad |= set(fail_list)
                     if len(found_bad) >= num_bad:
@@ -331,9 +335,11 @@ class TestChangeQueueWithDeps(object):
         queue = ChangeQueueWithDeps(
             (map(_cwds_fv, s) for s in initq), 'k1', map(_c2adep, initwd)
         )
-        outsl, outfl = queue.on_test_failure('k1')
+        outsl, outfl, outc = queue.on_test_failure('k1')
         assert [] == outsl
         assert expfl == list(map(ChangeQueueWithDeps._change_id, outfl))
+        # For dep queues, failure cause is the 1st change in the fail list
+        assert next(iter(expfl), None) == ChangeQueueWithDeps._change_id(outc)
         assert [list(map(_cwds_fv, s)) for s in expq] == \
             _enlist_state(queue._state)
         assert list(map(_c2adep, expwd)) == list(queue._awaiting_deps)
@@ -424,15 +430,15 @@ class TestJenkinsChangeQueue(object):
         assert not chg.called
 
     @pytest.mark.parametrize(
-        ('act', 'arg', 'to_param', 'rep_calls', 'tst_calls'),
+        ('act', 'arg', 'rvl', 'tp', 'rep_calls', 'tst_calls'),
         [
-            ('add', 'some-change', True, 2, 1),
-            ('on_test_success', 'some-test-key', False, 2, 1),
-            ('on_test_failure', 'some-test-key', False, 2, 1),
-            ('get_next_test', None, False, 0, 0),
+            ('add', 'some-change', 2, True, 2, 1),
+            ('on_test_success', 'some-test-key', 3, False, 2, 1),
+            ('on_test_failure', 'some-test-key', 3, False, 2, 1),
+            ('get_next_test', None, 2, False, 0, 0),
         ]
     )
-    def test_act_on_job_params(self, act, arg, to_param, rep_calls, tst_calls):
+    def test_act_on_job_params(self, act, arg, rvl, tp, rep_calls, tst_calls):
         jcq = JenkinsChangeQueue()
         jcq._cleanup_result_files = MagicMock()
         jcq.get_queue_name = MagicMock()
@@ -440,10 +446,10 @@ class TestJenkinsChangeQueue(object):
         jcq._build_change_list = MagicMock()
         jcq._write_status_file = MagicMock()
         jcq._schedule_tester_run = MagicMock()
-        act_func = MagicMock(side_effect=((1, 2),))
+        act_func = MagicMock(side_effect=(tuple(range(rvl)),))
         setattr(jcq, act, act_func)
         if arg is not None:
-            if to_param:
+            if tp:
                 action_arg_prm = jcq.object_to_param_str(arg)
             else:
                 action_arg_prm = arg
