@@ -23,9 +23,10 @@
           from os import environ
           sys.path.append('jenkins')
           from scripts.mirror_client import (
-              inject_yum_mirrors_file_by_pattern, mirrors_from_environ
+              inject_yum_mirrors_file_by_pattern, mirrors_from_environ, setupLogging
           )
 
+          setupLogging()
           suit_dir = "ovirt-system-tests/{suite_type}-suite-{version}"
           if 'SUITE_TYPE' in environ:
               suit_dir = suit_dir.replace('$SUITE_TYPE', environ['SUITE_TYPE'])
