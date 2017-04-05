@@ -15,7 +15,7 @@ except ImportError:
     from mock import MagicMock, call, sentinel
 
 from scripts.change_queue import ChangeQueue, ChangeQueueWithDeps, \
-    JenkinsChangeQueueObject, JenkinsChangeQueue
+    JenkinsChangeQueueObject, JenkinsChangeQueue, ChangeQueueWithStreams
 from scripts.jenkins_objects import NotInJenkins
 
 
@@ -343,6 +343,107 @@ class TestChangeQueueWithDeps(object):
         assert [list(map(_cwds_fv, s)) for s in expq] == \
             _enlist_state(queue._state)
         assert list(map(_c2adep, expwd)) == list(queue._awaiting_deps)
+
+
+class TestChangeQueueWithStreams(object):
+    @staticmethod
+    def str_to_chg(s):
+        data = iter(str(s).split('s'))
+        return MagicMock(
+            ('id', 'stream_id', '__eq__', '__repr__'),
+            id=next(data),
+            stream_id=next(data, None),
+            __eq__=lambda self, chg: self.id == chg.id,
+            __repr__=lambda self: str(s),
+        )
+
+    def test_str_to_chg(self):
+        c1 = self.str_to_chg('1sA')
+        assert c1.id == '1'
+        assert c1.stream_id == 'A'
+        c2 = self.str_to_chg(1)
+        assert c2.id == '1'
+        assert c2.stream_id is None
+        assert c1 == c2
+        c3 = self.str_to_chg('2sA')
+        assert c3.id == '2'
+        assert c3.stream_id == c1.stream_id
+        assert c3 != c1
+        c4 = self.str_to_chg('1sA')
+        assert c4.id == c1.id
+        assert c4.stream_id == c1.stream_id
+        assert c4 == c1
+        assert id(c4) != id(c1)
+
+    @classmethod
+    def str_list_to_sm(cls, clist):
+        return dict(
+            (chg.stream_id, chg)
+            for chg in map(cls.str_to_chg, clist)
+            if chg.stream_id is not None
+        )
+
+    def test_str_list_to_sm(self):
+        sm = self.str_list_to_sm(['1sA', '2sB'])
+        assert 'A' in sm
+        assert sm['A'].id == '1'
+        assert 'B' in sm
+        assert sm['B'].id == '2'
+        assert sm['A'] == self.str_to_chg('1sA')
+        assert sm == dict(A=self.str_to_chg('1sA'), B=self.str_to_chg('2sB'))
+
+    @pytest.mark.parametrize(
+        ('initqc', 'initsm', 'expfl', 'expc', 'expsm'),
+        [
+            (1, [], [1], 1, []),
+            ('1sA', [], ['1sA'], '1sA', ['1sA']),
+            ('2sA', ['1sA'], ['2sA'], '1sA', ['1sA']),
+            (2, ['1sA'], [2], 2, ['1sA']),
+            ('2sB', ['1sA'], ['2sB'], '2sB', ['1sA', '2sB']),
+            ('3sA', ['1sA', '2sB'], ['3sA'], '1sA', ['1sA', '2sB']),
+        ],
+    )
+    def test_on_test_failure(self, initqc, initsm, expfl, expc, expsm):
+        queue = ChangeQueueWithStreams(
+            [[self.str_to_chg(initqc)], []],
+            'tk1', self.str_list_to_sm(initsm)
+        )
+        outsl, outfl, outc = queue.on_test_failure('tk1')
+        assert outsl == []
+        assert outfl == list(map(self.str_to_chg, expfl))
+        assert outc == self.str_to_chg(expc)
+        assert _enlist_state(queue._state) == [[]]
+        assert queue._stream_map == self.str_list_to_sm(expsm)
+
+    @pytest.mark.parametrize(
+        ('initqs', 'initsm', 'expsl', 'expfl', 'expc', 'expsm'),
+        [
+            ([1], [], [1], [], None, []),
+            (['1sA'], [], ['1sA'], [], None, []),
+            (['2sA'], ['1sA'], ['2sA'], [], None, []),
+            ([2], ['1sA'], [2], [], None, ['1sA']),
+            (['2sB'], ['1sA'], ['2sB'], [], None, ['1sA']),
+            (['2sA', '3sA'], ['1sA'], ['2sA'], ['3sA'], '3sA', ['3sA']),
+            (['2sB', '3sA'], ['1sA'], ['2sB'], ['3sA'], '1sA', ['1sA']),
+            (['2sA', '3sA'], [], ['2sA'], ['3sA'], '3sA', ['3sA']),
+            ([2, '3sB'], ['1sA'], [2], ['3sB'], '3sB', ['1sA', '3sB']),
+            ([2, '3sB'], ['1sA', '4sB'], [2], ['3sB'], '4sB', ['1sA', '4sB']),
+        ],
+    )
+    def test_on_test_success(self, initqs, initsm, expsl, expfl, expc, expsm):
+        queue = ChangeQueueWithStreams(
+            list(map(lambda x: [x], map(self.str_to_chg, initqs))) + [[]],
+            'tk1', self.str_list_to_sm(initsm)
+        )
+        outsl, outfl, outc = queue.on_test_success('tk1')
+        assert outsl == list(map(self.str_to_chg, expsl))
+        assert outfl == list(map(self.str_to_chg, expfl))
+        if expc is None:
+            assert outc is None
+        else:
+            assert outc == self.str_to_chg(expc)
+        assert _enlist_state(queue._state) == [[]]
+        assert queue._stream_map == self.str_list_to_sm(expsm)
 
 
 class TestJenkinsChangeQueueObject(object):

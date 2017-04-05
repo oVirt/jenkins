@@ -7,7 +7,7 @@ except ImportError:
     from mock import sentinel
 
 from scripts.change_queue.changes import DisplayableChange, \
-    DisplayableChangeWrapper
+    DisplayableChangeWrapper, ChangeInStream, ChangeInStreamWrapper
 
 
 class TestDisplayableChange(object):
@@ -70,3 +70,30 @@ class TestDisplayableChangeWrapper(object):
         assert chg.url is None
         obj.url = sentinel.url
         assert chg.url == sentinel.url
+
+
+class TestChangeInStream(object):
+    def test_stream_id(self):
+        chg = ChangeInStream()
+        assert chg.stream_id is None
+        chg.stream_id = sentinel.stream_id
+        assert chg.stream_id == sentinel.stream_id
+
+
+class TestChangeInStreamWrapper(object):
+    class SomeObject(object):
+        pass
+
+    def test_stream_id(self):
+        obj = self.SomeObject()
+        chg = ChangeInStreamWrapper(obj)
+        assert chg.stream_id is None
+        obj.stream_id = sentinel.stream_id
+        assert chg.stream_id == sentinel.stream_id
+
+    def test_stream_id_on_in_stream(self):
+        obj = ChangeInStream()
+        chg = ChangeInStreamWrapper(obj)
+        assert chg.stream_id is None
+        obj.stream_id = sentinel.stream_id
+        assert chg.stream_id == sentinel.stream_id

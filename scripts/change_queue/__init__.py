@@ -11,7 +11,7 @@ from os import path
 import logging
 from jinja2 import Environment, PackageLoader
 
-from .changes import DisplayableChangeWrapper
+from .changes import DisplayableChangeWrapper, ChangeInStreamWrapper
 from scripts.jenkins_objects import JenkinsObject, JobRunSpec
 
 
@@ -162,9 +162,9 @@ class ChangeQueueWithDeps(ChangeQueue):
                                    least one member.
     :param str test_key:           (Optional) Key identifying a currently
                                    running test
-    :param str awaiting_deps:      (Optional) The initial state of the queue of
+    :param Iterable awaiting_deps: (Optional) The initial state of the queue of
                                    changes with missing dependencies. This is
-                                   a list of pairs cf changes and their missing
+                                   a list of pairs of changes and their missing
                                    dependencies.
 
     If test_key is specified (not None), then initial_state must have more then
@@ -311,6 +311,102 @@ class ChangeQueueWithDeps(ChangeQueue):
             )
             removed_deps.extend(section_removed_deps)
         return removed_deps
+
+
+class ChangeQueueWithStreams(ChangeQueue):
+    """Class for managing change queues with change stream tracking
+
+    Change streams are sources of changes where each change contains all the
+    previous changes. Examples of such change sources are package repositories
+    and SCM branches.
+
+    Failures in change streams typically happen in sequences, once a change
+    causes a testing failure, all subsequent changes will also fail until a
+    fixing change is submitted. In this case it makes sense to keep track of
+    the first failing change in a sequence, and report it as causing all
+    subsequent failures that have to do with changes in the same stream.
+
+    For a change to belong to a change stream, it need to have a 'stream_id'
+    property that wither returns 'None' (which means no stream) or a hashable
+    object.
+
+    Constructor arguments:
+    :param Iterable initial_state: (Optional) The initial state of the queue,
+                                   should be an iterable of iterables with at
+                                   least one member.
+    :param str test_key:           (Optional) Key identifying a currently
+                                   running test
+    :param Iterable stream_map:    (Optional) The initial state of the mapping
+                                   of change stream IDs to failure-sequence
+                                   starting changes.
+
+    If test_key is specified (not None), then initial_state must have more then
+    one member where the last member is the list of changes being tested
+    """
+    def __init__(self, initial_state=None, test_key=None, stream_map=None):
+        super(ChangeQueueWithStreams, self).__init__(initial_state, test_key)
+        if stream_map is None:
+            self._stream_map = dict()
+        else:
+            self._stream_map = dict(
+                getattr(
+                    stream_map, 'iteritems', getattr(
+                        stream_map, 'items', getattr(stream_map, '__iter__')
+                    )
+                )()
+            )
+
+    def _get_cause_from_stream(self, cause):
+        """Given a failure causing change, if we're seeing a failure sequence
+        for that change`s stream, return the first failing change in the
+        sequence
+        """
+        cause_stream_id = ChangeInStreamWrapper(cause).stream_id
+        if cause_stream_id is None:
+            return cause
+        return self._stream_map.setdefault(cause_stream_id, cause)
+
+    def on_test_failure(self, test_key):
+        """Updated the queue when a test is successful
+
+        Works like the superclass's method, but if the failed change belongs
+        to a change stream in which we see a sequence of failed changed, the
+        first failing change in the sequence will be returned as the failure
+        cause.
+        """
+        if hasattr(self, '_orig_cause'):
+            del self._orig_cause
+        success_list, fail_list, cause = \
+            super(ChangeQueueWithStreams, self).on_test_failure(test_key)
+        return success_list, fail_list, self._get_cause_from_stream(cause)
+
+    def on_test_success(self, test_key):
+        """Updated the queue when a test is successful
+
+        Works like the superclass's method, but if a successful change belongs
+        to a change stream in which we seen a sequence of failed changed, we
+        store the information about the sequence having ended.
+        """
+        # We want the superclass on_test_success to call the superclass
+        # on_test_failure because we want to get the original failure cause if
+        # any and not the one that our version of on_test_failure calculates
+        orig_on_test_failure = self.__dict__.get('on_test_failure')
+        self.on_test_failure = \
+            super(ChangeQueueWithStreams, self).on_test_failure
+        try:
+            success_list, fail_list, cause = \
+                super(ChangeQueueWithStreams, self).on_test_success(test_key)
+        finally:
+            if orig_on_test_failure is None:
+                del self.on_test_failure
+            else:
+                self.on_test_failure = orig_on_test_failure
+        for succ_chg in success_list:
+            succ_stream_id = ChangeInStreamWrapper(succ_chg).stream_id
+            if succ_stream_id is None:
+                continue
+            self._stream_map.pop(succ_stream_id, None)
+        return success_list, fail_list, self._get_cause_from_stream(cause)
 
 
 class JenkinsChangeQueueObject(JenkinsObject):

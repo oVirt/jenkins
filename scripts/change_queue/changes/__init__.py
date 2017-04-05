@@ -37,6 +37,19 @@ class DisplayableChangeWrapper(DisplayableChange, object_proxy):
     """
 
 
+class ChangeInStream(object_witp_opt_attrs):
+    """Base/Mixin class that ensure an object has the attributes that allow it
+    to be used as a chage object with the ChangeQueueWithStreams class
+    """
+    default_stream_id = None
+
+
+class ChangeInStreamWrapper(ChangeInStream, object_proxy):
+    """Wrapper ckass to make non in-stream changes not fail code attempting to
+    get stream information
+    """
+
+
 class EmailNotifyingChange(DisplayableChange):
     """Base/Mixin class for changes that can send email notifications on queue
     events
