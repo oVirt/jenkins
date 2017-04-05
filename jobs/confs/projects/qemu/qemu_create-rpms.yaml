@@ -85,9 +85,6 @@
     subproject:
       - qemu
     version:
-      - master:
-          branch: master
-          repoversion: master
       - 4.1:
           branch: master
           repoversion: 4.1
