@@ -1,5 +1,8 @@
 #!/bin/bash -xe
 echo "shell-scripts/jenkins_check_yaml.sh"
+
+source automation/parameters.sh
+
 ## assign branch to patch
 branch_name=$(date +%s)
 git branch $branch_name
@@ -18,8 +21,8 @@ done
 echo "Generating new xmls"
 pushd "$confs_dir"
 # Needed for that commit where we check old dir structure vs new
-[[ -d "${confs_dir}/projects" ]] \
-&& yaml_dir_extended="$yaml_dir:${confs_dir}/projects" \
+[[ -d "${confs_dir}/$JJB_PROJECTS_DIR" ]] \
+&& yaml_dir_extended="$yaml_dir:${confs_dir}/$JJB_PROJECTS_DIR" \
 || yaml_dir_extended="$yaml_dir"
 jenkins-jobs \
     --allow-empty \
@@ -40,8 +43,8 @@ if ! [[ -d "$confs_dir" ]]; then
 fi
 pushd "$confs_dir"
 # Needed for that commit where we check old dir structure vs new
-[[ -d "${confs_dir}/projects" ]] \
-&& yaml_dir_extended="$yaml_dir:${confs_dir}/projects" \
+[[ -d "${confs_dir}/$JJB_PROJECTS_DIR" ]] \
+&& yaml_dir_extended="$yaml_dir:${confs_dir}/$JJB_PROJECTS_DIR" \
 || yaml_dir_extended="$yaml_dir"
 jenkins-jobs \
     --allow-empty \
