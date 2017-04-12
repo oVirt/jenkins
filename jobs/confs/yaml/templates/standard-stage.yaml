@@ -97,18 +97,16 @@
 - job-template: &standard-template-deploy
       <<: *standard-template
       name: '{project}_{version}_build-artifacts-{distro}-{arch}'
-      reponame: ovirt
-      repotype: experimental
       publishers:
         - whitelist
         - standard-publisher:
             project: '{project}'
-        - trigger-parameterized-builds:
-          - project: 'deploy-to-{reponame}_{repotype}_{version}'
-            predefined-parameters: |
-              BUILD_ID={project}_{distro}_$BUILD_NUMBER
-              BUILD_ARTIFACTS_JOBS=$BUILD_URL
-            condition: SUCCESS
+        - 'build-artifacts_publisher-when_{trigger}':
+            project: '{project}'
+            version: '{version}'
+            distro: '{distro}'
+            reponame: ovirt
+            repotype: experimental
 
 - job-template:
       <<: *standard-template
@@ -131,72 +129,22 @@
 - job-template:
       <<: *standard-template
       name: 'ovirt-engine-sdk_{version}_build-artifacts-{distro}-{arch}'
-      reponame: ovirt
-      repotype: experimental
-      publishers:
-        - whitelist
-        - standard-publisher:
-            project: '{project}'
-        - trigger-parameterized-builds:
-          - project: 'deploy-to-{reponame}_{repotype}_{version}'
-            predefined-parameters: |
-              BUILD_ID={project}_{distro}_$BUILD_NUMBER
-              BUILD_ARTIFACTS_JOBS=$BUILD_URL
-            condition: SUCCESS
 
 - job-template:
       <<: *standard-template
       name: 'python-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'
-      reponame: ovirt
-      repotype: experimental
-      publishers:
-        - whitelist
-        - standard-publisher:
-            project: '{project}'
-        - trigger-parameterized-builds:
-          - project: 'deploy-to-{reponame}_{repotype}_{version}'
-            predefined-parameters: |
-              BUILD_ID={project}_{distro}_$BUILD_NUMBER
-              BUILD_ARTIFACTS_JOBS=$BUILD_URL
-            condition: SUCCESS
 
 - job-template:
       <<: *standard-template
       name: 'ovirt-engine-sdk-java_{version}_build-artifacts-{distro}-{arch}'
-      reponame: ovirt
-      repotype: experimental
-      publishers:
-        - whitelist
-        - standard-publisher:
-            project: '{project}'
-        - trigger-parameterized-builds:
-          - project: 'deploy-to-{reponame}_{repotype}_{version}'
-            predefined-parameters: |
-              BUILD_ID={project}_{distro}_$BUILD_NUMBER
-              BUILD_ARTIFACTS_JOBS=$BUILD_URL
-            condition: SUCCESS
 
 - job-template:
       <<: *standard-template
       name: 'java-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'
-      reponame: ovirt
-      repotype: experimental
-      publishers:
-        - whitelist
-        - standard-publisher:
-            project: '{project}'
-        - trigger-parameterized-builds:
-          - project: 'deploy-to-{reponame}_{repotype}_{version}'
-            predefined-parameters: |
-              BUILD_ID={project}_{distro}_$BUILD_NUMBER
-              BUILD_ARTIFACTS_JOBS=$BUILD_URL
-            condition: SUCCESS
 
 - job-template:
       <<: *standard-template
       name: '{project}_{version}_build-artifacts-{distro}-ppc64le'
-      reponame: ovirt
-      repotype: experimental
 
 - job-template:
     <<: *standard-template-deploy
@@ -385,7 +333,7 @@
                     predefined-parameters: |
                       BUILD_ID={project}_{distro}_$BUILD_NUMBER
                       BUILD_ARTIFACTS_JOBS=$BUILD_URL
-                    condition: SUCCESS    
+                    condition: SUCCESS
 
 - job-template:
     <<: *standard-template

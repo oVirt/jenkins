@@ -1,0 +1,41 @@
+- job-template:
+    name: 'deploy-to-{reponame}_{repotype}'
+    project-type: workflow
+    quiet-period: 0
+    concurrent: true
+    properties:
+      - build-discarder:
+          num-to-keep: 100
+          artifact-num-to-keep: 100
+    triggers:
+      - gerrit:
+          server-name: '{gerrit-server}'
+          trigger-on:
+            - change-merged-event
+          escape-quotes: true
+          projects:
+            - project-compare-type: 'REG_EXP'
+              project-pattern: '.*'
+              branches:
+                - branch-compare-type: 'REG_EXP'
+                  branch-pattern: '.*'
+          skip-vote:
+            successful: true
+            failed: true
+            unstable: true
+            notbuilt: true
+          silent-start: true
+          failure-message: >
+            Failed to deploy built artifacts to the 'experimental' repo. The
+            'infra' team was already notified.
+          successful-message: >
+            Built artifacts successfully deployed to the 'experimental' repo for
+            OST testing.
+          unstable-message: >
+            One ore more 'build-artifacts' jobs failed. Artifacts will not be
+            deployed to the 'experimental' repo.
+          notbuilt-message: >
+            No artifacts found for deploying to the 'experimental' repo. You
+            will need to create some 'build-artifacts' jobs if you want to
+            participate in the 'experimental' flow.
+    dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
