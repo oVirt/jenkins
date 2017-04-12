@@ -36,3 +36,14 @@
               <healthScaleFactor>1.0</healthScaleFactor>
               <allowEmptyResults>true</allowEmptyResults>
             </hudson.tasks.junit.JUnitResultArchiver>
+      - conditional-publisher:
+          - condition-kind: shell
+            condition-command: >
+                find exported-artifacts/find-bugs/ -name "*.xml" | grep -e ".*"
+            action:
+                - findbugs:
+                    pattern: 'exported-artifacts/find-bugs/*.xml'
+                    rank-priority: true
+                    thresholds:
+                        unstable:
+                            total-all: 0
