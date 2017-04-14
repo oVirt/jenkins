@@ -16,6 +16,8 @@
           node-filter: fc24
       - fc25:
           node-filter: fc25
+      - fc26:
+          node-filter: fc26
     arch: x86_64
     jobs:
         - 'jenkins_{version}_{stage}-{distro}-{arch}'
