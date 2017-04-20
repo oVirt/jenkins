@@ -59,6 +59,12 @@
 
 - job:
     name: 'ovirt-system-tests_manual'
+    concurrent: true
+    properties:
+        - throttle:
+            enabled: true
+            option: project
+            max-total: 3
     node: integ-tests
     parameters:
       - gerrit-params:
