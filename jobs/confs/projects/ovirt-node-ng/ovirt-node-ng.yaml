@@ -15,12 +15,6 @@
           branch: ovirt-4.1-snapshot
       - ovirt-4.1-pre:
           branch: ovirt-4.1-pre
-      - ovirt-4.0-snapshot:
-          branch: ovirt-4.0-snapshot
-      - ovirt-4.0:
-          branch: ovirt-4.0
-      - ovirt-3.6:
-          branch: ovirt-3.6
     distro:
       - el7
     arch:
@@ -48,12 +42,6 @@
           branch: ovirt-4.1-snapshot
       - ovirt-4.1-pre:
           branch: ovirt-4.1-pre
-      - ovirt-4.0-snapshot:
-          branch: ovirt-4.0-snapshot
-      - ovirt-4.0:
-          branch: ovirt-4.0
-      - ovirt-3.6:
-          branch: ovirt-3.6
     stage: build-artifacts
     distro:
       - el7
