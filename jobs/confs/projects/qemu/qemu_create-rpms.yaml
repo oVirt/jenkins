@@ -9,10 +9,6 @@
           branch: master
       - 4.1:
           branch: master
-      - 4.0:
-          branch: master
-      - 3.6:
-          branch: master
     mock-build-type: all
     distro:
       - el7:
@@ -35,12 +31,6 @@
       - 4.1:
           branch: master
           repoversion: 4.1
-      - 4.0:
-          branch: master
-          repoversion: 4.0
-      - 3.6:
-          branch: master
-          repoversion: 3.6
     mock-build-type: all
     distro:
       - el7:
@@ -63,10 +53,6 @@
           branch: master
       - 4.1:
           branch: master
-      - 4.0:
-          branch: master
-      - 3.6:
-          branch: master
     mock-build-type: all
     distro:
       - el7:
@@ -88,12 +74,6 @@
       - 4.1:
           branch: master
           repoversion: 4.1
-      - 4.0:
-          branch: master
-          repoversion: 4.0
-      - 3.6:
-          branch: master
-          repoversion: 3.6
     mock-build-type: all
     distro:
       - el7:
