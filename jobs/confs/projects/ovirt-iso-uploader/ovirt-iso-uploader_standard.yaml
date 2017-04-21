@@ -9,9 +9,6 @@
       - 4.1:
           branch: ovirt-iso-uploader-4.0
           repoversion: 4.1
-      - 4.0:
-          branch: ovirt-iso-uploader-4.0
-          repoversion: 4.0
     stage:
       - check-patch
       - check-merged
@@ -22,10 +19,6 @@
     exclude:
       - version: master
         distro: fc24
-      - version: 4.0
-        distro: fc24
-      - version: 4.0
-        distro: fc25
       - version: 4.1
         distro: fc25
     trigger: 'on-change'
@@ -52,7 +45,6 @@
     <<: *base-params
     name: ovirt-iso-uploader_build-artifacts-manual-any
     version:
-      - '4.0'
       - '4.1'
       - 'master'
     jobs:
