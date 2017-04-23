@@ -41,4 +41,5 @@
               after: false
             use-author: true
             wipe-workspace: false
+            skip-tag: true
             prune: true

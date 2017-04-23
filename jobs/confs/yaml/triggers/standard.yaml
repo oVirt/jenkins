@@ -27,6 +27,11 @@
           branch: '{branch}'
 
 - trigger:
+    name: poll-upstream-sources_trigger_timed
+    triggers:
+        - poll-upstream-sources_stage
+
+- trigger:
     name: check-patch_trigger_on-change
     triggers:
       - gerrit:

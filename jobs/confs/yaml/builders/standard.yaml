@@ -56,6 +56,16 @@
           action: --patch-only
 
 - builder:
+    name: poll-upstream-sources_builder
+    builders:
+      - poll-upstream-sources_stage
+      - standard_stage:
+          project: '{project}'
+          distro: '{distro}'
+          arch: '{arch}'
+          action: '--execute-script automation/poll-upstream-sources.sh'
+
+- builder:
     name: build-artifacts-manual_builder
     builders:
       - shell: |
