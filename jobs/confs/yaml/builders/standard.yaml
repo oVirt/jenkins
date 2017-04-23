@@ -21,6 +21,7 @@
       - whitelist
       - check_if_patch_merged
       - cleanup-slave
+      - upstream-source-collector
       - mock_runner:
           project: '{project}'
           distro: '{distro}'

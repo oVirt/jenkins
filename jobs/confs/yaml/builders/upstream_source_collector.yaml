@@ -1,0 +1,4 @@
+- builder:
+    name: upstream-source-collector
+    builders:
+        - shell: !include-raw: python-scripts/upstream-source-collector.py
