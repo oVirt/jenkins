@@ -25,10 +25,6 @@
 #   RewriteCond "%{DOCUMENT_ROOT}/$0" !-f
 #   RewriteRule "^/repos/yum/([^/]+)/([0-9-]+)/repodata/(.*)$" "/repos/yum/$1/base/repodata/$3" [R]
 #
-MIRRORS_VG="${MIRRORS_VG:-mirrors_vg}"
-MIRRORS_TP="${MIRRORS_TP:-mirrors_tp}"
-MIRRORS_LV="${MIRRORS_LV:-mirrors_lv}"
-MIRRORS_FSTYPE="${MIRRORS_FSTYPE:-xfs}"
 MIRRORS_MP_BASE="${MIRRORS_MP_BASE:-/var/www/html/repos}"
 MIRRORS_HTTP_BASE="${MIRRORS_HTTP_BASE:-http://mirrors.phx.ovirt.org/repos}"
 MIRRORS_CACHE="${MIRRORS_CACHE:-$HOME/mirrors_cache}"
@@ -61,19 +57,14 @@ cmd_resync_yum_mirror() {
     local repo_archs="${2:?}"
     local reposync_conf="${3:?}"
 
-    local fs_was_created
     local sync_needed
 
     mkdir -p "$MIRRORS_CACHE"
 
-    verify_repo_fs "$repo_name" yum fs_was_created
+    verify_repo_fs "$repo_name" yum
 
-    if [[ $fs_was_created ]]; then
-        sync_needed=true
-    else
-        check_yum_sync_needed \
-            "$repo_name" "$repo_archs" "$reposync_conf" sync_needed
-    fi
+    check_yum_sync_needed \
+        "$repo_name" "$repo_archs" "$reposync_conf" sync_needed
 
     if [[ $sync_needed ]]; then
         install_repo_pubkey "$repo_name" "$reposync_conf"
@@ -155,42 +146,6 @@ cmd_write_latest_lists() {
 verify_repo_fs() {
     local repo_name="${1:?}"
     local repo_type="${2:?}"
-    local p_fs_was_created="${3:?}"
-    local repo_dev_name
-    local repo_mp
-
-    sudo vgs --noheadings -o 'vg_name' "$MIRRORS_VG" | \
-        grep -q "$MIRRORS_VG" || \
-        die "Cannot find volume group $MIRRORS_VG"
-
-    if ! sudo lvs --noheadings -o 'lv_name' "$MIRRORS_VG/$MIRRORS_TP" | \
-        grep -q "$MIRRORS_TP"
-    then
-        echo "Creating mirros thin pool: $MIRRORS_TP"
-        sudo lvcreate \
-            --name "$MIRRORS_TP" \
-            --type thin-pool \
-            --extents=50%VG \
-            "$MIRRORS_VG"
-    fi
-
-    repo_dev_name="/dev/$MIRRORS_VG/$MIRRORS_LV"
-    if [[ ! -b "$repo_dev_name" ]]; then
-        echo "Createing mirrors base volume: $MIRRORS_LV"
-        sudo lvcreate \
-            --name "$repo_name" \
-            --thin \
-            --virtualsize=100G \
-            --thinpool "$MIRRORS_TP" \
-            "$MIRRORS_VG"
-        eval $p_fs_was_created=true
-    fi
-    if ! sudo blkid -p -n "$MIRRORS_FSTYPE" -s '' "$repo_dev_name"; then
-        echo "Createing mirror base $MIRRORS_FSTYPE at: $repo_dev_name"
-        sudo mkfs -t xfs "$repo_dev_name"
-        eval $p_fs_was_created=true
-    fi
-    ensure_mount "$repo_dev_name" "$MIRRORS_MP_BASE" rw $p_fs_was_created
 
     sudo install -o "$USER" -d \
         "$MIRRORS_MP_BASE/$repo_type" \
@@ -264,26 +219,6 @@ perform_yum_sync() {
         "${repo_comps[@]}" \
         "$repo_mp"
     /usr/sbin/restorecon -R "$repo_mp"
-}
-
-ensure_mount() {
-    local device="${1:?}"
-    local mount_point="${2:?}"
-    local opts="${3:-rw},noatime"
-    local p_was_mounted="${4:?}"
-
-    local fstab_line
-
-    sudo mkdir -p "$mount_point"
-    fstab_line="$device $mount_point $MIRRORS_FSTYPE $opts 0 0"
-    if ! grep -qF "$fstab_line" /etc/fstab; then
-        sudo sed -i -e $'$a\\\n'"$fstab_line" /etc/fstab
-        eval $p_was_mounted=true
-    fi
-    if ! grep -q " $mount_point " /proc/mounts ; then
-        sudo mount $mount_point
-        eval $p_was_mounted=true
-    fi
 }
 
 run_reposync() {
