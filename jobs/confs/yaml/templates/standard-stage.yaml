@@ -6,6 +6,9 @@
           branch: '{branch}'
     concurrent: true
     properties:
+      - inject: &standard-template-properties-inject
+          properties-content: |
+            PROJECT: {project}
       - throttle: &standard-template-properties-throttle
           max-per-node: 1
           max-total: 30
@@ -25,6 +28,7 @@
     triggers:
       - '{stage}_trigger_{trigger}':
           project: '{project}'
+          trigger-repo: '{trigger-repo}'
           branch: '{branch}'
           trigger-times: '{trigger-times}'
           gerrit-server: '{gerrit-server}'
@@ -35,6 +39,9 @@
           event: completed
           timeout: 40000
           log: 0
+    wrappers:
+        - default-wrapper
+        - inject-git-push-credentials
 
 - job-template: &standard-template
       <<: *standard-template-basic
@@ -118,6 +125,7 @@
             trigger-times: '{trigger-times}'
             gerrit-server: '{gerrit-server}'
       properties:
+        - inject: *standard-template-properties-inject
         - throttle:
             max-per-node: 1
             max-total: 1
@@ -136,6 +144,7 @@
             trigger-times: '{trigger-times}'
             gerrit-server: '{gerrit-server}'
       properties:
+        - inject: *standard-template-properties-inject
         - throttle:
             max-per-node: 1
             max-total: 1
@@ -168,6 +177,7 @@
     <<: *standard-template-deploy
     name: 'ovirt-appliance_{version}_build-artifacts-{distro}-{arch}'
     properties:
+      - inject: *standard-template-properties-inject
       - throttle: *standard-template-properties-throttle
       - build-discarder:
           num-to-keep: 120
@@ -186,6 +196,7 @@
     <<: *standard-template-deploy
     name: 'ovirt-engine_{version}_build-artifacts-{distro}-{arch}'
     properties:
+      - inject: *standard-template-properties-inject
       - throttle: *standard-template-properties-throttle
       - build-discarder:
           days-to-keep: 14
@@ -195,6 +206,7 @@
     <<: *standard-template-deploy
     name: '{project}_{version}_build-artifacts-{distro}-{arch}{_big_artifacts}'
     properties:
+      - inject: *standard-template-properties-inject
       - throttle: *standard-template-properties-throttle
       - build-discarder:
           num-to-keep: 2

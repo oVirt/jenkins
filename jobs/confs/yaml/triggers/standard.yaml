@@ -19,6 +19,14 @@
             ovirt dot org.
 
 - trigger:
+    name: build-artifacts_trigger_on-custom-repo-change
+    triggers:
+      - build-artifacts_trigger_on-change:
+          gerrit-server: '{gerrit-server}'
+          project: '{trigger-repo}'
+          branch: '{branch}'
+
+- trigger:
     name: check-patch_trigger_on-change
     triggers:
       - gerrit:
@@ -42,6 +50,14 @@
             ovirt dot org.
 
 - trigger:
+    name: check-patch_trigger_on-custom-repo-change
+    triggers:
+      - check-patch_trigger_on-change:
+          gerrit-server: '{gerrit-server}'
+          project: '{trigger-repo}'
+          branch: '{branch}'
+
+- trigger:
     name: build-artifacts-on-demand_trigger_on-comment-added
     triggers:
       - gerrit:
@@ -63,6 +79,14 @@
             ovirt dot org.
 
 - trigger:
+    name: build-artifacts-on-demand_trigger_on-custom-repo-comment-added
+    triggers:
+      - build-artifacts-on-demand_trigger_on-comment-added:
+          gerrit-server: '{gerrit-server}'
+          project: '{trigger-repo}'
+          branch: '{branch}'
+
+- trigger:
     name: check-merged_trigger_on-change
     triggers:
       - gerrit:
@@ -81,6 +105,14 @@
             running gerrit triggered jobs has been set in place, if
             you feel like you should be in it, please contact infra at
             ovirt dot org.
+
+- trigger:
+    name: check-merged_trigger_on-custom-repo-change
+    triggers:
+      - check-merged_trigger_on-change:
+          gerrit-server: '{gerrit-server}'
+          project: '{trigger-repo}'
+          branch: '{branch}'
 
 - trigger:
     name: build-artifacts_trigger_timed

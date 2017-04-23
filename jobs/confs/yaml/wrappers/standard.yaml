@@ -1,0 +1,10 @@
+- wrapper:
+    name: default-wrapper
+    wrappers:
+      - timeout:
+          fail: true
+          timeout: 360
+          type: absolute
+          write-description: 'Timed out'
+      - timestamps
+      - ansicolor
