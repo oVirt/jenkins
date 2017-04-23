@@ -1,8 +1,6 @@
 - project:
     name: "test_ovirt_experimental_repo"
     version:
-        - 3.6:
-            chroot_distro: el7
         - 4.1:
             chroot_distro: el7
         - master:

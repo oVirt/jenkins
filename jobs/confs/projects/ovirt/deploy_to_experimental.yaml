@@ -7,7 +7,6 @@
       - master
       - 4.1
       - 4.0
-      - 3.6
     reponame: ovirt
     repotype: experimental
     jobs:
