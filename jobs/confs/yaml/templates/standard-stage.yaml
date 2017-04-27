@@ -59,7 +59,7 @@
             project: '{project}'
 
 - job-template:
-      <<: *standard-template-basic
+      <<: *standard-template
       name: 'java-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
       scm:
         - 'ovirt-engine-sdk-java-gerrit':
@@ -77,7 +77,7 @@
             arch: '{arch}'
 
 - job-template:
-      <<: *standard-template-basic
+      <<: *standard-template
       name: 'python-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
       scm:
         - 'ovirt-engine-sdk-gerrit':
