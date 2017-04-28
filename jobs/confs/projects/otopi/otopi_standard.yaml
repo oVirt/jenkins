@@ -14,9 +14,12 @@
       - el7
       - fc24
       - fc25
+      - fc26
     exclude:
       - version: master
         distro: fc24
+      - version: 4.1
+        distro: fc26
       - version: 4.1
         distro: fc25
     trigger: 'on-change'
