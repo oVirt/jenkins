@@ -458,7 +458,9 @@ class InvalidChangeQueueAction(Exception):
         )
 
 
-class JenkinsChangeQueue(JenkinsChangeQueueObject, ChangeQueueWithDeps):
+class JenkinsChangeQueue(
+    JenkinsChangeQueueObject, ChangeQueueWithStreams, ChangeQueueWithDeps
+):
     """Class for representing a change queue in the context of Jenkins.
 
     A change queue is represented in Jenkins as a job. The queue state is
@@ -652,3 +654,25 @@ class JenkinsTestedChangeList(JenkinsChangeQueueObject, namedtuple(
                   order to add the change to the queue
         """
         return self.get_queue_job_run_spec('on_test_failure', self.test_key)
+
+    @property
+    def visible_changes(self):
+        """Changes in a change stream are not independed of one another. When
+        we run tests with changes in the same stream, the latest change in the
+        stream essentially hides all previous changes in the same stream.
+
+        rtype: Iterable
+        returns: an Iterable over change_list that includes only the latest
+                 changes from each stream as well as changes without streams.
+        """
+        if not hasattr(self, '_visible_changes'):
+            self._visible_changes = deque([], len(self.change_list))
+            seen_streams = set()
+            for change in reversed(self.change_list):
+                stream_id = ChangeInStreamWrapper(change).stream_id
+                if stream_id is not None and stream_id in seen_streams:
+                    continue
+                self._visible_changes.appendleft(change)
+                if stream_id is not None:
+                    seen_streams.add(stream_id)
+        return iter(self._visible_changes)

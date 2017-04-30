@@ -15,7 +15,8 @@ except ImportError:
     from mock import MagicMock, call, sentinel
 
 from scripts.change_queue import ChangeQueue, ChangeQueueWithDeps, \
-    JenkinsChangeQueueObject, JenkinsChangeQueue, ChangeQueueWithStreams
+    JenkinsChangeQueueObject, JenkinsChangeQueue, ChangeQueueWithStreams, \
+    JenkinsTestedChangeList
 from scripts.jenkins_objects import NotInJenkins
 
 
@@ -566,3 +567,16 @@ class TestJenkinsChangeQueue(object):
         assert jcq._report_changes_status.call_count == rep_calls
         assert jcq._schedule_tester_run.call_count == tst_calls
         assert jcq._write_status_file.called
+
+
+class TestJenkinsTestedChangeList(object):
+    @staticmethod
+    def str_to_strmchg(s):
+        return TestChangeQueueWithStreams.str_to_chg(s)
+
+    def test_visible_changes(self):
+        changes = list(map(self.str_to_strmchg, ['1sA', 2, '3sB', '4sA']))
+        expeted = list(map(self.str_to_strmchg, [2, '3sB', '4sA']))
+        jtcl = JenkinsTestedChangeList('k1', changes)
+        out = list(jtcl.visible_changes)
+        assert expeted == out
