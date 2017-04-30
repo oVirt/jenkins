@@ -40,17 +40,6 @@
                   -DskipTests
                   -s
                   "$WORKSPACE"/jenkins/xml/artifactory-ovirt-org-settings.xml'
-      - master:
-          branch: master
-          java-jdk: 'java-1.8.0-openjdk'
-          node-label: 'el7 || fc23 || fc24'
-          goals: 'clean
-                  install
-                  findbugs:findbugs
-                  -U
-                  -DskipTests
-                  -s
-                  "$WORKSPACE"/jenkins/xml/artifactory-ovirt-org-settings.xml'
     jobs:
       - '{project}_{version}_find-bugs_{trigger}'
 

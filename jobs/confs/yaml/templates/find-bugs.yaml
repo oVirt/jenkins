@@ -122,26 +122,3 @@
     name: find-bugs-merged-4.1-trigger
     triggers:
       - timed: '@midnight'
-
-- trigger:
-    name: find-bugs-merged-master-trigger
-    triggers:
-      - gerrit:
-          silent: false
-          server-name: '{gerrit-server}'
-          trigger-on:
-            - change-merged-event
-          escape-quotes: true
-          projects:
-              - project-compare-type: 'PLAIN'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'PLAIN'
-                    branch-pattern: '{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: '**/*.java'
-                  - compare-type: ANT
-                    pattern: '**/*.xml'
-          failure-message: 'There was an infra issue, please contact infra@ovirt.org'
-          unstable-message: 'The patch does not pass the findbugs test'
