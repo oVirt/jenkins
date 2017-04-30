@@ -6,3 +6,7 @@ python-jinja2
 python-paramiko
 PyYAML
 git
+python2-pyxdg
+python34-pyxdg
+xdg-utils
+xdg-user-dirs

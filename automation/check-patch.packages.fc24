@@ -17,3 +17,7 @@ python3-jinja2
 python3-paramiko
 python3-PyYAML
 docker
+python2-pyxdg
+python3-pyxdg
+xdg-utils
+xdg-user-dirs

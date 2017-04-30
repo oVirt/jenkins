@@ -1,0 +1,11 @@
+pyxdg
+python-setuptools
+python-ordereddict
+python-requests
+pytest
+python-jinja2
+python-pip
+python-mock
+python-paramiko
+PyYAML
+git

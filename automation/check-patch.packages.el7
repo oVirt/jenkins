@@ -13,3 +13,7 @@ python34-paramiko
 python34-PyYAML
 git
 docker
+python2-pyxdg
+python34-pyxdg
+xdg-utils
+xdg-user-dirs
