@@ -5,30 +5,6 @@
       - created
       - merged
     version:
-      - 3.6:
-          branch: ovirt-engine-3.6
-          java-jdk: 'java-1.7.0-openjdk'
-          node-label: 'el6 || el7'
-          goals: 'clean
-                  install
-                  findbugs:findbugs
-                  -U
-                  -P
-                  findbugs-general
-                  -DskipTests
-                  -s
-                  "$WORKSPACE"/jenkins/xml/artifactory-ovirt-org-settings.xml'
-      - 4.0:
-          branch: ovirt-engine-4.0
-          java-jdk: 'java-1.8.0-openjdk'
-          node-label: 'el7 || fc23'
-          goals: 'clean
-                  install
-                  findbugs:findbugs
-                  -U
-                  -DskipTests
-                  -s
-                  "$WORKSPACE"/jenkins/xml/artifactory-ovirt-org-settings.xml'
       - 4.1:
           branch: ovirt-engine-4.1
           java-jdk: 'java-1.8.0-openjdk'

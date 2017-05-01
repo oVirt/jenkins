@@ -109,16 +109,6 @@
                             be in it, please contact infra at ovirt dot org.'
 
 - trigger:
-    name: find-bugs-merged-3.6-trigger
-    triggers:
-      - timed: '@midnight'
-
-- trigger:
-    name: find-bugs-merged-4.0-trigger
-    triggers:
-      - timed: '@midnight'
-
-- trigger:
     name: find-bugs-merged-4.1-trigger
     triggers:
       - timed: '@midnight'
