@@ -31,7 +31,7 @@
           chroot_distro: fc24
       - master:
           chroot_distro: fc24
-    email-to: fabiand@redhat.com
+    email-to: 'sbonazzo@redhat.com, yturgema@redhat.com'
     jobs:
       - '{project}_{version}_image-ng-system-tests'
 
