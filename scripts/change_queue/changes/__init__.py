@@ -11,6 +11,7 @@ from textwrap import wrap
 from threading import Lock
 
 from scripts.object_utils import object_witp_opt_attrs, object_proxy
+from scripts.gerrit import GerritPatchset
 
 
 class DisplayableChange(object_witp_opt_attrs):
@@ -240,3 +241,58 @@ class NumberChange(EmailNotifyingChange, namedtuple('_NumberChange', (
     @property
     def presentable_id(self):
         return '{id} [{number}]'.format(id=self.id, number=self.number)
+
+
+class GerritMergedChange(namedtuple('_GerritMergedChange', (
+    'gerrit_patchset'
+))):
+    """A change class for changes that get created as a result of merging
+    patches to Gerrit repos
+
+    Merged patches are members of a change stream that is identified by the
+    same project and branche (As well as server and port in case multiple
+    Gerrit servers are used)
+    """
+    @classmethod
+    def from_jenkins_env(cls):
+        return cls(gerrit_patchset=GerritPatchset.from_jenkins_env())
+
+    @property
+    def id(self):
+        return (
+            self.gerrit_patchset.server.host,
+            self.gerrit_patchset.server.port,
+            self.gerrit_patchset.change.number,
+            self.gerrit_patchset.patchset_number,
+        )
+
+    @property
+    def presentable_id(self):
+        return '{0},{1} ({2})'.format(
+            self.gerrit_patchset.change.number,
+            self.gerrit_patchset.patchset_number,
+            self.gerrit_patchset.project.name,
+        )
+
+    @property
+    def url(self):
+        # The change url Gerrit gives us is not good enough for looking into
+        # individual patchsets, so we need to fix it
+        ch_nstr = str(self.gerrit_patchset.change.number)
+        ch_url = self.gerrit_patchset.change.url
+        ch_psnstr = str(self.gerrit_patchset.patchset_number)
+        if ch_url.endswith('/' + ch_nstr):
+            real_ch_url = \
+                '{0}/#/c/{1}'.format(ch_url[:-len(ch_nstr) - 1], ch_nstr)
+        else:
+            real_ch_url = ch_url
+        return '/'.join((real_ch_url, ch_psnstr))
+
+    @property
+    def stream_id(self):
+        return (
+            self.gerrit_patchset.server.host,
+            self.gerrit_patchset.server.port,
+            self.gerrit_patchset.project.name,
+            self.gerrit_patchset.branch.name,
+        )

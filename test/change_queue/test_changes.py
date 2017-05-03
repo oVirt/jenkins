@@ -2,12 +2,14 @@
 """change_queue/test_changes.py - Tests for change_queue.changes
 """
 try:
-    from unittest.mock import sentinel
+    import pytest
+    from unittest.mock import MagicMock, sentinel
 except ImportError:
-    from mock import sentinel
+    from mock import MagicMock, sentinel
 
 from scripts.change_queue.changes import DisplayableChange, \
-    DisplayableChangeWrapper, ChangeInStream, ChangeInStreamWrapper
+    DisplayableChangeWrapper, ChangeInStream, ChangeInStreamWrapper, \
+    GerritMergedChange
 
 
 class TestDisplayableChange(object):
@@ -97,3 +99,35 @@ class TestChangeInStreamWrapper(object):
         assert chg.stream_id is None
         obj.stream_id = sentinel.stream_id
         assert chg.stream_id == sentinel.stream_id
+
+
+class TestGerritMergedChange(object):
+    @pytest.fixture
+    def a_gerrit_patchset(self):
+        return MagicMock(**{
+            'change.url': 'http://some.gerrit/1234567',
+            'change.number': 1234567,
+            'patchset_number': 8,
+            'project.name': 'some_project',
+            'branch.name': 'some_branch',
+            'server.host': 'some.gerrit',
+            'server.port': 29418,
+        })
+
+    @pytest.fixture
+    def a_gerrit_merged_change(self, a_gerrit_patchset):
+        return GerritMergedChange(a_gerrit_patchset)
+
+    def test_id(self, a_gerrit_merged_change):
+        assert a_gerrit_merged_change.id == ('some.gerrit', 29418, 1234567, 8)
+
+    def test_presentable_id(self, a_gerrit_merged_change):
+        assert a_gerrit_merged_change.presentable_id == \
+            '1234567,8 (some_project)'
+
+    def test_url(self, a_gerrit_merged_change):
+        assert a_gerrit_merged_change.url == 'http://some.gerrit/#/c/1234567/8'
+
+    def test_stream_id(self, a_gerrit_merged_change):
+        assert a_gerrit_merged_change.stream_id == \
+            ('some.gerrit', 29418, 'some_project', 'some_branch')
