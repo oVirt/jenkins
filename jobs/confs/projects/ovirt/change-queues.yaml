@@ -1,0 +1,13 @@
+- project:
+    name: standard-enqueue
+    jobs:
+      - 'standard-enqueue'
+
+- project:
+    name: ovirt_change-queueus
+    queue-name:
+      - ovirt-master
+      - ovirt-4.1
+    jobs:
+      - '{queue-name}_change-queue'
+      - '{queue-name}_change-queue-tester'

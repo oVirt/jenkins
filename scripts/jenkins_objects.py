@@ -81,14 +81,14 @@ class JenkinsObject(object):
         """Convert a string that supposedly came from a job parameter into a
         change object
         """
-        return cPickle.loads(decompress(b64decode(param_str.encode())))
+        return cPickle.loads(decompress(b64decode(param_str.encode('utf8'))))
 
     @staticmethod
     def object_to_param_str(change):
         """Convert a change object into a format suitable for passing in job
         parameters
         """
-        return b64encode(compress(cPickle.dumps(change))).decode()
+        return b64encode(compress(cPickle.dumps(change))).decode('utf8')
 
     @staticmethod
     def verify_in_jenkins():

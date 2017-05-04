@@ -63,7 +63,9 @@ def checkout_repo(Map named_args) {
 def get_pipeline_for_job(name) {
     print("Searching pipeline script for '${name}'")
     def job_to_pipelines = [
+        /^standard-enqueue$/: '$0.groovy',
         /^numbers_change-queue-tester$/: '$0.groovy',
+        /^ovirt-(.*)_change-queue-tester$/: 'ovirt_change-queue-tester.groovy',
         /^(.*)_change-queue$/: 'change-queue.groovy',
         /^deploy-to-.*$/: 'deployer.groovy',
     ]

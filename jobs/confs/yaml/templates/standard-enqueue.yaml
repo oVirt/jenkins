@@ -1,0 +1,28 @@
+- job-template:
+    name: 'standard-enqueue'
+    project-type: workflow
+    quiet-period: 0
+    concurrent: false
+    properties:
+      - build-discarder:
+          num-to-keep: 100
+          artifact-num-to-keep: 100
+    triggers:
+      - gerrit:
+          server-name: '{gerrit-server}'
+          trigger-on:
+            - change-merged-event
+          escape-quotes: true
+          projects:
+            - project-compare-type: 'REG_EXP'
+              project-pattern: '.*'
+              branches:
+                - branch-compare-type: 'REG_EXP'
+                  branch-pattern: '.*'
+          skip-vote:
+            successful: true
+            failed: true
+            unstable: true
+            notbuilt: true
+          silent: true
+    dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy

@@ -144,9 +144,9 @@ class GerritPatchset(namedtuple('_GerritPatchset', (
             ),
             revision=env['GERRIT_PATCHSET_REVISION'],
             commit_message=b64decode(
-                env['GERRIT_CHANGE_COMMIT_MESSAGE'].encode()
-            ).decode(),
-            topic=env['GERRIT_TOPIC'],
+                env['GERRIT_CHANGE_COMMIT_MESSAGE'].encode('utf8')
+            ).decode('utf8'),
+            topic=env.get('GERRIT_TOPIC'),
         )
 
     @property

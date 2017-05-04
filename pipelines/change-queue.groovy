@@ -23,7 +23,12 @@ def main() {
 }
 
 def load_queue_state() {
-    dir('exported-artifacts') { deleteDir() }
+    dir('exported-artifacts') {
+        deleteDir()
+        // We touch a file to make sure the exported-artifacts directory gets
+        // recreated
+        touch file: 'queue-status.html'
+    }
     step([
         $class: 'CopyArtifact',
         filter: 'exported-artifacts/JenkinsChangeQueue.dat',

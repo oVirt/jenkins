@@ -503,8 +503,8 @@ class JenkinsChangeQueue(
             ))
             added, rejected = self.add(change)
             qname = self.get_queue_name()
-            self._report_changes_status(added, 'added', qname)
-            self._report_changes_status(rejected, 'rejected', qname)
+            self._report_changes_status(added, 'added', qname, None)
+            self._report_changes_status(rejected, 'rejected', qname, None)
             self._schedule_tester_run()
         elif queue_action == 'on_test_success':
             test_key = action_arg
