@@ -12,11 +12,14 @@
       - el7
       - fc24
       - fc25
+      - fc26
     exclude:
       - version: master
         distro: fc24
       - version: 4.1
         distro: fc25
+      - version: 4.1
+        distro: fc26
     arch: x86_64
     jobs:
       - 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_created':
@@ -40,11 +43,14 @@
       - el7
       - fc24
       - fc25
+      - fc26
     exclude:
       - version: master
         distro: fc24
       - version: 4.1
         distro: fc25
+      - version: 4.1
+        distro: fc26
     arch: x86_64
     jobs:
       - 'ovirt-engine-wildfly10_{version}_create-rpms-{distro}-{arch}_merged':
