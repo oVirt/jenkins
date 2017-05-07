@@ -1,10 +1,12 @@
+---
 - project: &base-params
     name: 'ovirt-vdsmfake_standard_common'
     version:
       - master:
           branch: master
     distro:
-      - el7
+      - el7:
+          node-filter: el7
     project:
       - ovirt-vdsmfake
     stage: check-patch
@@ -23,4 +25,4 @@
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
       - '{project}_{version}_{stage}-on-demand-{distro}-{arch}'
-
+...
