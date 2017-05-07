@@ -2,6 +2,10 @@
     name: system-tests
     builders:
       - shell: |
+          if [[ ${{CREATE_IMAGES}} = "yes" ]]; then
+              touch ovirt-system-tests/CREATE_IMAGES.marker
+          fi
+      - shell: |
           #!/bin/bash -ex
           ## check which version of lago to use, and append to .repos
           if ! [[ -z "${{LAGO_CUSTOM_REPO// }}" ]]; then

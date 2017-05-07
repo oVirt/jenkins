@@ -100,6 +100,15 @@
           name: LAGO_CUSTOM_REPO
           default: ''
           description: '<b>Leave empty</b>, unless you want to use a custom repository to install lago from.'
+      - choice:
+          name: CREATE_IMAGES
+          choices:
+            - 'no'
+            - 'yes'
+          description: '<h3>If all the tests end with success, create images of the vms.<br>
+                        The archive with the images can be found in exported-artifacts.
+                        </h3>'
+
     scm:
       - 'ovirt-system-tests-gerrit':
           branch: master
