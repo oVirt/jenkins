@@ -33,6 +33,16 @@ def main() {
             return
         }
         stage('Wait for builds to finish') {
+            waitUntil {
+                update_builds_status(siblings)
+                all_builds_dequeued(siblings)
+            }
+            all_succeeded = !any_builds_removed_from_queue(siblings)
+            if(!all_succeeded) {
+                echo 'Some build jobs were removed from build queue, aborting'
+                currentBuild.result = 'UNSTABLE'
+                return
+            }
             waitUntil { all_builds_done(siblings) }
             all_succeeded = all_builds_succeeded(siblings)
             if(!all_succeeded) {
@@ -58,7 +68,11 @@ def main() {
 @NonCPS
 def buildsToStr(builds) {
     return builds.findResults({
-        "- job: ${it.job_name} build: ${it.build_id} (${it.build_url})"
+        if('build_id' in it) {
+            "- job: ${it.job_name} build: ${it.build_id} (${it.build_url})"
+        } else {
+            "- job: ${it.job_name} (queued id: ${it.queue_id})"
+        }
     }).join("\n")
 }
 
@@ -74,6 +88,40 @@ def find_sibling_builds(job_pattern = /.*/) {
 
 @NonCPS
 def find_gerrit_sibling_builds(job_pattern = /.*/) {
+    find_gerrit_sibling_queued_builds(job_pattern) +
+    find_gerrit_sibling_schedualed_builds(job_pattern)
+}
+
+@NonCPS
+def find_gerrit_sibling_queued_builds(job_pattern = /.*/) {
+    return jenkins.model.Jenkins.instance.queue.items.toList().findResults {
+        if(it.task == currentBuild.rawBuild.parent) {
+            // skip builds of this job
+            return
+        }
+        if(!(it.task.name =~ job_pattern)) {
+            // skip jobs that do not match given pattern
+            return
+        }
+        def build_params = it.getAction(hudson.model.ParametersAction)
+        if(!build_params) {
+            return
+        }
+        if(
+            build_params.getParameter('GERRIT_NAME')?.value == params['GERRIT_NAME'] &&
+            build_params.getParameter('GERRIT_EVENT_HASH')?.value == params['GERRIT_EVENT_HASH']
+        ) {
+            return [
+                job_name: it.task.name,
+                job_url: it.task.url,
+                queue_id: it.id,
+            ]
+        }
+    }
+}
+
+@NonCPS
+def find_gerrit_sibling_schedualed_builds(job_pattern = /.*/) {
     return jenkins.model.Jenkins.instance.allItems(
         hudson.model.Job
     ).findResults { job ->
@@ -108,6 +156,53 @@ def find_gerrit_sibling_builds(job_pattern = /.*/) {
                 ]
             }
         }
+    }
+}
+
+@NonCPS
+def update_builds_status(builds) {
+    builds.each {
+        if(('build_id' in it) || !('queue_id' in it)) {
+            return it
+        }
+        def job = Jenkins.instance.getItem(it.job_name)
+        def build = job.builds.find { bld -> bld.queueId == it['queue_id'] }
+        if(build == null) {
+            if(Jenkins.instance.queue.getItem(it['queue_id']) != null) {
+                return it
+            }
+        } else {
+            it.putAll([
+                build_id: build.id,
+                build_url: build.url
+            ])
+            print "job: ${it.job_name} build: ${it.build_id} " +
+                "(${it.build_url}) moved from queued to running"
+        }
+        it.remove('queue_id')
+        return it
+    }
+}
+
+@NonCPS
+def all_builds_dequeued(builds) {
+    return !builds.any {
+        if('queue_id' in it) {
+            print("${it.job_name} still queued")
+            return true
+        }
+        return false
+    }
+}
+
+@NonCPS
+def any_builds_removed_from_queue(builds) {
+    return builds.any {
+        if((it.queue_id == null) && (it.build_id == null)) {
+            print("${it.job_name} have been manually removed from queue")
+            return true
+        }
+        return false
     }
 }
 
