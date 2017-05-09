@@ -11,3 +11,10 @@
       - github:
           project: lago-demo
           org: lago-project
+
+- scm:
+    name: lago-ost-plugin
+    scms:
+      - github:
+          project: lago-ost-plugin
+          org: lago-project

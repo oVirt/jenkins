@@ -1,0 +1,45 @@
+- lago_ost_plugin_common:
+    name: lago_ost_plugin_common
+    lago_common--key: &lago_ost_plugin_common
+      project: lago-ost-plugin
+      version:
+        - master:
+            branch: master
+      distro:
+        - fc24
+        - fc25
+        - el7
+      trigger: 'on-change'
+      arch: x86_64
+      with-deploy: never
+      org: lago-project
+      github-auth-id: 3bd5b831-4709-4194-a8b0-62bc525c0bd7
+
+- project:
+    <<: *lago_ost_plugin_common
+    name: lago-ost-plugin_check-patch_standard
+    stage: 'check-patch'
+    node-filter: 'integ-tests'
+    jobs:
+      - '{project}_{version}_github_check-patch-{distro}-{arch}'
+
+- project:
+    <<: *lago_ost_plugin_common
+    name: lago-ost-plugin_checks_standard
+    reponame: lago
+    stage:
+      - build-artifacts
+      - check-merged:
+          node-filter: 'integ-tests'
+    jobs:
+      - '{project}_{version}_github_{stage}-{distro}-{arch}'
+      - '{project}_{version}_github_deploy-to-{reponame}-snapshot'
+
+- project:
+    <<:  *lago_ost_plugin_common
+    name: lago-ost-plugin_checks_standard_pipeline
+    stage:
+      - check-merged
+    jobs:
+      - '{project}_{version}_github_{stage}-trigger'
+      - '{project}_{version}_github_{stage}-pipeline'
