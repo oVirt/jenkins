@@ -233,11 +233,34 @@ def get_versions(projects_and_versions) {
 
 def trigger_ost(reponame, repotype, versions) {
     print "Triggering OST versions: ${versions}"
+    def missing_flows = []
     for(i = 0; i < versions.size(); ++i) {
-        build(
-            job: "test-repo_${reponame}_${repotype}_${versions[i]}",
-            wait: false
-        )
+        try {
+            build(
+                job: "test-repo_${reponame}_${repotype}_${versions[i]}",
+                wait: false
+            )
+        } catch(Exception e) {
+            missing_flows << versions[i]
+        }
+    }
+    if(missing_flows.size() > 0) {
+        setGerritReview unsuccessfulMessage: """
+            Deploying some artifacts to 'experimental' FAILED.
+
+            This project includes 'build-artifacts' jobs for oVirt versions for
+            which an 'experimental' testing flow does not currently exist. This
+            is either because support for that version of oVirt had ended or
+            because an 'experimental' flow was not yet created.
+
+            Specifically, artifacts built for the following oVirt versions were
+            not deployed:
+              ${missing_flows.join(', ')}
+
+            Please remove 'build-artifacts' jobs for obsolete oVirt versions.
+        """.stripIndent()
+        error "Attempted to deploy to missing 'experimental' flows:" +
+            missing_flows.join(', ')
     }
 }
 
