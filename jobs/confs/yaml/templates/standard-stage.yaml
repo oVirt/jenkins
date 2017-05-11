@@ -128,6 +128,24 @@
 
 - job-template:
       <<: *standard-template
+      name: 'python-ovirt-engine-sdk4_{version}_{stage}-on-demand-{distro}-{arch}'
+      triggers:
+        - '{stage}-on-demand_trigger_on-comment-added':
+            project: '{project}'
+            branch: '{branch}'
+            trigger-times: '{trigger-times}'
+            gerrit-server: '{gerrit-server}'
+      properties:
+        - throttle:
+            max-per-node: 1
+            max-total: 1
+            option: project
+        - build-discarder:
+            days-to-keep: 14
+            artifact-num-to-keep: 60
+
+- job-template:
+      <<: *standard-template
       name: 'ovirt-engine-sdk_{version}_build-artifacts-{distro}-{arch}'
 
 - job-template:

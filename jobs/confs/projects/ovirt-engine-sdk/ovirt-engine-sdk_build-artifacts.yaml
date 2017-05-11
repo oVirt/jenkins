@@ -102,6 +102,7 @@
         distro: el6
     jobs:
         - 'python-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'
+        - 'python-ovirt-engine-sdk4_{version}_{stage}-on-demand-{distro}-{arch}'
 
 - project:
     <<: *basic-params
