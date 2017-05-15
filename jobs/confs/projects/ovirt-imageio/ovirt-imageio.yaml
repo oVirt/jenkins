@@ -34,15 +34,6 @@
         - 4.1:
             branch: ovirt-4.1
             repoversion: 4.1
-    exclude:
-      - version: master
-        distro: fc24
-      - version: 4.0
-        distro: fc24
-      - version: 4.1
-        distro: fc25
-      - version: 4.0
-        distro: fc25
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
