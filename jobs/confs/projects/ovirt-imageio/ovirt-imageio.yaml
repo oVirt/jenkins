@@ -9,6 +9,7 @@
         - check-patch
         - check-merged
     distro:
+        - fc26
         - fc25
         - fc24
         - el7
@@ -17,6 +18,8 @@
         distro: fc24
       - version: 4.1
         distro: fc25
+      - version: 4.1
+        distro: fc26
     trigger: 'on-change'
     arch:
         - x86_64
