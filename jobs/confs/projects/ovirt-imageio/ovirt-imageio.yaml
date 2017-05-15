@@ -34,7 +34,7 @@
             branch: master
             repoversion: master
         - 4.1:
-            branch: master
+            branch: ovirt-4.1
             repoversion: 4.1
         - 4.0:
             branch: master
