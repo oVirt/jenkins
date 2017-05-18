@@ -8,8 +8,10 @@ from textwrap import dedent
 import random
 import re
 from os import path
+import json
 
-from scripts.jenkins_objects import JenkinsObject, NotInJenkins, JobRunSpec
+from scripts.jenkins_objects import JenkinsObject, NotInJenkins, JobRunSpec, \
+    BuildPtr, BuildsList
 
 
 class TestJobRunSpec(object):
@@ -66,6 +68,143 @@ class TestJobRunSpec(object):
         jrc = JobRunSpec('some-job', params)
         out = jrc.as_pipeline_build_step()
         assert expected == out
+
+
+class TestBuildPtr(object):
+    @pytest.mark.parametrize(
+        ('init_prms', 'exp'),
+        [
+            (
+                dict(job_name='jn', job_url='ju', queue_id=7),
+                dict(job_name='jn', job_url='ju', queue_id=7)
+            ),
+            (
+                dict(job_name='jn', job_url='ju', build_id=9, build_url='bu'),
+                dict(job_name='jn', job_url='ju', build_id=9, build_url='bu'),
+            ),
+            (
+                dict(job_name='jn', job_url='ju'),
+                dict(job_name='jn', job_url='ju'),
+            ),
+            (
+                dict(job_name='jn', job_url='ju', queue_id=8, build_id=9),
+                dict(job_name='jn', job_url='ju', queue_id=8),
+            ),
+        ]
+    )
+    def test_as_dict(self, init_prms, exp):
+        bp = BuildPtr(**init_prms)
+        assert exp == bp.as_dict()
+
+    @pytest.mark.parametrize(
+        ('init_prms',),
+        [
+            (dict(job_name='jn', job_url='ju', queue_id=7),),
+            (dict(job_name='jn', job_url='ju', build_id=9, build_url='bu'),),
+            (dict(job_name='jn', job_url='ju'),),
+            (dict(job_name='jn', job_url='ju', queue_id=8, build_id=9),),
+        ]
+    )
+    def test_eq(self, init_prms):
+        o1 = BuildPtr(**init_prms)
+        o2 = BuildPtr(**init_prms)
+        assert id(o1) != id(o2)
+        assert o1 == o2
+
+    def test_get_full_url(self, monkeypatch):
+        bp = BuildPtr(
+            job_name='j3', job_url='u3', build_id=5, build_url='/u3/5'
+        )
+        url = bp.get_full_url(jenkins_url='http://jenkins.example.com')
+        assert 'http://jenkins.example.com/u3/5' == url
+        monkeypatch.setenv('JENKINS_URL', 'http://jenkins.example.org')
+        url = bp.get_full_url()
+        assert 'http://jenkins.example.org/u3/5' == url
+        monkeypatch.delenv('JENKINS_URL', raising=False)
+        with pytest.raises(NotInJenkins):
+            bp.get_full_url()
+
+
+class TestBuildsList(object):
+    def test_init(self):
+        assert BuildsList() == []
+        data = [
+            BuildPtr(job_name='j1', job_url='u1', queue_id=1),
+            BuildPtr(job_name='j2', job_url='u2', build_id=2, build_url='bu2'),
+        ]
+        bl = BuildsList(data)
+        assert bl == data
+        data = [
+            BuildPtr(job_name='j1', job_url='u1', queue_id=1),
+            dict(job_name='j2', job_url='u2', build_id=2, build_url='bu2'),
+        ]
+        with pytest.raises(TypeError):
+            BuildsList(data)
+
+    @property
+    def data(self):
+        return [
+            dict(job_name='j1', job_url='u1', queue_id=1),
+            dict(job_name='j2', job_url='/u2', build_id=2, build_url='/u2/2'),
+        ]
+
+    @property
+    def more_data(self):
+        return [
+            dict(job_name='j3', job_url='/u3', build_id=5, build_url='/u3/5'),
+            dict(job_name='j4', job_url='/u4', build_id=3, build_url='/u4/3'),
+        ]
+
+    @property
+    def data_str(self):
+        return json.dumps(self.data)
+
+    def test_from_dict_list(self):
+        bl = BuildsList.from_dict_list(self.data)
+        assert len(self.data) == len(bl)
+        assert next((False for b in bl if not isinstance(b, BuildPtr)), True)
+
+    def test_from_json_str(self):
+        exp = BuildsList.from_dict_list(self.data)
+        bl = BuildsList.from_json_str(self.data_str)
+        assert id(exp) != id(bl)
+        assert exp == bl
+
+    def test_from_env_json(self, monkeypatch):
+        exp = BuildsList.from_dict_list(self.data)
+        monkeypatch.setenv('BUILDS_LIST', self.data_str)
+        bl = BuildsList.from_env_json()
+        assert id(exp) != id(bl)
+        assert exp == bl
+        monkeypatch.delenv('BUILDS_LIST', raising=False)
+        bl = BuildsList.from_env_json()
+        assert bl == []
+
+    def test_add(self):
+        bl1 = BuildsList.from_dict_list(self.data)
+        bl2 = BuildsList.from_dict_list(self.more_data)
+        exp_data = self.data + self.more_data
+        exp_bl = BuildsList.from_dict_list(exp_data)
+        out_bl = bl1 + bl2
+        assert id(out_bl) != id(exp_bl)
+        assert out_bl == exp_bl
+        assert len(out_bl) == len(self.data) + len(self.more_data)
+        assert isinstance(out_bl, BuildsList)
+
+    def test_as_repoman_conf(self, monkeypatch):
+        monkeypatch.setenv('JENKINS_URL', 'http://jenkins.example.org')
+        exp = dedent("""
+            http://jenkins.example.org/u3/5
+            http://jenkins.example.org/u4/3
+        """).lstrip()
+        bl = BuildsList.from_dict_list(self.more_data)
+        out = bl.as_repoman_conf()
+        assert exp == out
+
+    def test_as_dict_list(self):
+        bl = BuildsList.from_dict_list(self.data)
+        out = bl.as_dict_list()
+        assert self.data == out
 
 
 class RandomJenkinsObject(JenkinsObject, namedtuple('_RandomJenkinsObject', (

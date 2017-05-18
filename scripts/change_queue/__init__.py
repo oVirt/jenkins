@@ -11,8 +11,9 @@ from os import path
 import logging
 from jinja2 import Environment, PackageLoader
 
-from .changes import DisplayableChangeWrapper, ChangeInStreamWrapper
-from scripts.jenkins_objects import JenkinsObject, JobRunSpec
+from .changes import DisplayableChangeWrapper, ChangeInStreamWrapper, \
+    ChangeWithBuildsWrapper
+from scripts.jenkins_objects import JenkinsObject, JobRunSpec, BuildsList
 
 
 logger = logging.getLogger(__name__)
@@ -676,3 +677,14 @@ class JenkinsTestedChangeList(JenkinsChangeQueueObject, namedtuple(
                 if stream_id is not None:
                     seen_streams.add(stream_id)
         return iter(self._visible_changes)
+
+    @property
+    def visible_builds(self):
+        """Get all builds from visible changes
+
+        rtype: BuildsList
+        returns: the set of builds tracked by visible_changes
+        """
+        return BuildsList(chain.from_iterable(
+            ChangeWithBuildsWrapper(c).builds for c in self.visible_changes
+        ))

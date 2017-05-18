@@ -12,6 +12,7 @@ from threading import Lock
 
 from scripts.object_utils import object_witp_opt_attrs, object_proxy
 from scripts.gerrit import GerritPatchset
+from scripts.jenkins_objects import BuildsList
 
 
 class DisplayableChange(object_witp_opt_attrs):
@@ -46,7 +47,7 @@ class ChangeInStream(object_witp_opt_attrs):
 
 
 class ChangeInStreamWrapper(ChangeInStream, object_proxy):
-    """Wrapper ckass to make non in-stream changes not fail code attempting to
+    """Wrapper class to make non in-stream changes not fail code attempting to
     get stream information
     """
 
@@ -243,9 +244,23 @@ class NumberChange(EmailNotifyingChange, namedtuple('_NumberChange', (
         return '{id} [{number}]'.format(id=self.id, number=self.number)
 
 
-class GerritMergedChange(namedtuple('_GerritMergedChange', (
-    'gerrit_patchset'
-))):
+class ChangeWithBuilds(object_witp_opt_attrs):
+    """Base/Mixin class for change objects that track build jobs to get built
+    artifacts
+
+    Builds are specified as a BuildsList object
+    """
+    default_builds = BuildsList()
+
+    def set_builds_from_env(self, env_var='BUILDS_LIST'):
+        self.builds = BuildsList.from_env_json(env_var)
+
+
+class ChangeWithBuildsWrapper(ChangeWithBuilds, object_proxy):
+    """Wrapper class to make changes appear like they have builds"""
+
+
+class GerritMergedChange(ChangeWithBuilds):
     """A change class for changes that get created as a result of merging
     patches to Gerrit repos
 
@@ -253,9 +268,18 @@ class GerritMergedChange(namedtuple('_GerritMergedChange', (
     same project and branche (As well as server and port in case multiple
     Gerrit servers are used)
     """
+    def __init__(self, gerrit_patchset):
+        self._gerrit_patchset = gerrit_patchset
+
+    @property
+    def gerrit_patchset(self):
+        return self._gerrit_patchset
+
     @classmethod
     def from_jenkins_env(cls):
-        return cls(gerrit_patchset=GerritPatchset.from_jenkins_env())
+        o = cls(gerrit_patchset=GerritPatchset.from_jenkins_env())
+        o.set_builds_from_env()
+        return o
 
     @property
     def id(self):

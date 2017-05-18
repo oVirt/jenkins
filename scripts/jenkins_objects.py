@@ -3,12 +3,13 @@
 """
 from __future__ import absolute_import, print_function
 from collections import namedtuple
-from six.moves import cPickle
+from six.moves import cPickle, map
 from six import iteritems
 from os import environ, path, makedirs, unlink
 from base64 import b64decode, b64encode
 from bz2 import compress, decompress, BZ2File
 from contextlib import contextmanager
+from itertools import chain
 import json
 import logging
 
@@ -69,6 +70,100 @@ class JobRunSpec(namedtuple('_JobRunSpec', ('job_name', 'params'))):
 class NotInJenkins(Exception):
     def __init__(self):
         super(NotInJenkins, self).__init__('This Code must run from Jenkins')
+
+
+class BuildPtr(object):
+    """Class for tracking job Builds
+
+    Constructor arguments:
+    :param str job_name:  The name of the job who`se build this is tracking
+    :param str job_url:   The url of the job who`se build this is tracking
+    :param str queue_id:  (Optional) The queue identifier for the build if it
+                          is queued in jenkins
+    :param str build_id:  (Optional) The build identifier for the build if it
+                          already started running
+    :param str build_url: (Optional) The build URL for the build if it already
+                          started runing. This must be specified if build_id is
+                          specified
+
+    queue_id and build_id are mutually exclusive. If queue_id is given build_id
+    and build_url would be ignored
+    """
+    def __init__(self, job_name, job_url, queue_id=None, build_id=None,
+                 build_url=None):
+        self.job_name, self.job_url = job_name, job_url
+        self.queue_id = queue_id
+        self.build_id, self.build_url = build_id, build_url
+        if queue_id is not None:
+            self.build_id, self.build_url = None, None
+
+    def as_dict(self):
+        """Return build information as a dict"""
+        return dict(
+            (k, v) for k, v in iteritems(self.__dict__) if v is not None
+        )
+
+    def __eq__(self, bp):
+        return isinstance(bp, self.__class__) and self.__dict__ == bp.__dict__
+
+    def get_full_url(self, jenkins_url=None):
+        if jenkins_url is None:
+            if 'JENKINS_URL' in environ:
+                jenkins_url = environ['JENKINS_URL']
+            else:
+                raise NotInJenkins
+        return jenkins_url + self.build_url
+
+
+class BuildsList(list):
+    """Class for tracking a set of builds
+    """
+    default_json_file = 'builds_list.json'
+
+    def __init__(self, some_builds=[]):
+        def _verify_is_bp(obj):
+            if isinstance(obj, BuildPtr):
+                return obj
+            raise TypeError('All members of BuildsList must be "BuildPtr"s')
+
+        super(BuildsList, self).__init__(map(_verify_is_bp, some_builds))
+
+    @classmethod
+    def from_dict_list(cls, data=[]):
+        """Initialize a BuildsList from a list of dicts
+        """
+        return cls(BuildPtr(**d) for d in data)
+
+    @classmethod
+    def from_json_str(cls, json_str):
+        """Build the list from a JSON string
+        """
+        return cls.from_dict_list(json.loads(json_str))
+
+    @classmethod
+    def from_env_json(cls, env_var='BUILDS_LIST'):
+        """Build the list from a JSON string in an env var
+        """
+        return cls.from_json_str(environ.get(env_var, '[]'))
+
+    def __add__(self, other_bl):
+        return BuildsList(chain(self, other_bl))
+
+    def as_repoman_conf(self, jenkins_url=None):
+        return ''.join(b.get_full_url(jenkins_url) + '\n' for b in self)
+
+    def as_repoman_conf_file(self, file_name, jenkins_url=None):
+        with open(file_name, 'w') as fil:
+            fil.write(self.as_repoman_conf(jenkins_url))
+
+    def as_dict_list(self):
+        return list(b.as_dict() for b in self)
+
+    def as_json_file(self, file_name=None):
+        if file_name is None:
+            file_name = self.default_json_file
+        with open(file_name, 'w') as fil:
+            json.dump(self.as_dict_list(), fil)
 
 
 class JenkinsObject(object):
