@@ -1,6 +1,8 @@
 // standard-enqueue.groovy - Jenkins pipeline script for submitting changes to
 //                           change queues
 //
+import groovy.json.JsonOutput
+
 def main() {
     def siblings
     def queues
@@ -31,8 +33,10 @@ def main() {
             return
         }
         stage('Enqueue change') {
-            echo "Will enqueue to: ${queues.join(' ')}"
-            enqueue_change_to(queues)
+            withEnv(["BUILDS_LIST=${JsonOutput.toJson(siblings)}"]) {
+                echo "Will enqueue to: ${queues.join(' ')}"
+                enqueue_change_to(queues)
+            }
         }
     } catch(Exception e) {
         // email_notify('FAILURE')
