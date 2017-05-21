@@ -78,6 +78,7 @@
             - upgrade-from-prevrelease
             - he-basic
             - hc-basic
+            - image-ng
       - text:
          name: CUSTOM_REPOS
          default: ''
