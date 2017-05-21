@@ -28,44 +28,6 @@
 
 - job-template:
     <<: *basic_system_tests
-    name: '{project}_{version}_system-tests_manual'
-    parameters:
-      - text:
-         name: CUSTOM_REPOS
-         default: ''
-         description: '<h3>You can add multiple URLs, one per line.
-                        Supported formats are: YUM repo, Jenkins Build
-                        e.g http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild</h3>'
-      - choice:
-          name: FALLBACK_REPO
-          choices:
-            - latest_tested
-            - latest_release
-          description: '<h3>Chooce from which repo to take the rpms.
-                        latest_tested repo contains the latest rpms which passed the CI.<br>
-                        latest_release points to the "regular" stable repo eg: oVirt-4.0 repo<br>
-                        * Please note that if we dont have a release, rc repo may be used (e.g: ovirt-4.1-pre)</h3>'
-      - choice:
-          name: LAGO_VERSION
-          choices:
-            - stable
-            - unstable
-          description: '<h3>Choose which lago version to install</h3>'
-      - gerrit-params:
-          branch: '{branch}'
-    triggers:
-      - 'trigger_{trigger}':
-          project: '{project}'
-          branch: '{branch}'
-    publishers:
-      - system-tests-manual:
-          version: '{version}'
-          suite_type : basic
-          chroot_distro: '{chroot_distro}'
-          email-to: '{email-to}'
-
-- job-template:
-    <<: *basic_system_tests
     name: '{project}_{version}_he-system-tests'
     builders:
       - cleanup-slave

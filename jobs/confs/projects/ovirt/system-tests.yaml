@@ -90,8 +90,8 @@
       - choice:
           name: FALLBACK_REPO
           choices:
-            - latest_tested
             - latest_release
+            - latest_tested
           description: '<h3>Choose from which repo to take the rpms.
                         latest_tested repo contains the latest rpms which passed CI verification.<br>
                         latest_release points to the latest stable oVirt release; e.g., oVirt-4.0 repo<br>
