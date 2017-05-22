@@ -1,7 +1,12 @@
 // ovirt_change-queue-tester - Test pipeline for oVirt change queues
 //
-def main() {
+def loader_main(loader) {
+    def ovirt_release = get_queue_ovirt_release()
     def has_changes
+    // Copy methods from loader to this script
+    metaClass.checkout_repo = loader.&checkout_repo
+    metaClass.checkout_jenkins_repo = loader.&checkout_jenkins_repo
+
     stage('querying changes to test') {
         has_changes = get_test_changes()
     }
@@ -13,18 +18,18 @@ def main() {
     try {
         try {
             def change_date
-            stage('loading changes date') {
+            stage('loading changes data') {
                 prepare_python_env()
                 change_date = load_change_data()
             }
             stage('waiting for artifact builds') {
                 wait_for_artifacts(change_date.builds)
             }
-            stage('preparing test date') {
+            stage('preparing test data') {
                 prepare_test_data(change_date)
             }
             stage('running tests') {
-                run_tests()
+                run_tests(ovirt_release)
             }
         } catch(Exception e) {
             stage('reporting results') {
@@ -37,6 +42,11 @@ def main() {
         }
     } finally {
         archiveArtifacts allowEmptyArchive: true, artifacts: 'exported-artifacts/**'
+        step([
+            $class: 'JUnitResultArchiver',
+            testResults: 'exported-artifacts/**/*xml',
+            allowEmptyResults: true
+        ])
     }
     stage('publishing successful artifacts') {
         //TODO
@@ -107,9 +117,8 @@ def prepare_test_data(change_date) {
     }
 }
 
-def run_tests() {
-    echo "Sleeping for a while to allow changes to accumulate in the queue"
-    sleep time: 3, unit: 'MINUTES'
+def run_tests(ovirt_release) {
+    run_ost_tests(ovirt_release)
 }
 
 def report_test_results(result) {
@@ -126,6 +135,16 @@ def report_test_results(result) {
     build_args = readJSON(file: 'build_args.json')
     build_args['wait'] = true
     build build_args
+}
+
+@NonCPS
+def get_queue_ovirt_release() {
+    def match = (env.JOB_NAME =~ /^ovirt-(.*)_change-queue-tester$/)
+    if(match.asBoolean()) {
+        return match[0][1]
+    } else {
+        error "Failed to detect oVirt release from job name"
+    }
 }
 
 def prepare_python_env() {
@@ -213,6 +232,120 @@ def all_builds_succeeded(builds) {
 def make_extra_sources(builds) {
     return builds.collect { "${env.JENKINS_URL}${it.build_url}" }.join("\n")
 }
+
+def run_ost_tests(ovirt_release) {
+    def ost_suit_types = get_available_ost_suit_types(ovirt_release)
+    echo "Will run the following OST ($ovirt_release) " +
+        "suits: ${ost_suit_types.join(', ')}"
+    def branches = [:]
+    for(suit_type in ost_suit_types) {
+        branches["${suit_type}-suit"] = \
+            mk_ost_runner(ovirt_release, suit_type, 'el7')
+    }
+    parallel branches
+}
+
+def get_available_ost_suit_types(ovirt_release) {
+    def suit_types_to_use = ["basic"]
+    def available_suits = []
+    checkout_ost_repo()
+    dir('ovirt-system-tests') {
+        for(suit_type in suit_types_to_use) {
+            if(fileExists("automation/${suit_type}_suite_${ovirt_release}.sh"))
+                available_suits << suit_type
+        }
+    }
+    return available_suits
+}
+
+def mk_ost_runner(ovirt_release, suit_type, distro) {
+    return {
+        def suit_dir = "$suit_type-suit-$ovirt_release-$distro"
+        // stash an empty file so we don`t get errors in no artifacts get stashed
+        writeFile file: '__no_artifacts_stashed__', text: ''
+        stash includes: '__no_artifacts_stashed__', name: suit_dir
+        try {
+            node('integ-tests') {
+                run_ost_on_node(ovirt_release, suit_type, distro, suit_dir)
+            }
+        } finally {
+            dir("exported-artifacts/$suit_dir") {
+                unstash suit_dir
+            }
+        }
+    }
+}
+
+def checkout_ost_repo() {
+    checkout_repo('ovirt-system-tests')
+}
+
+def run_jjb_script(script_name) {
+    def script_path = "jenkins/jobs/confs/shell-scripts/$script_name"
+    echo "Running JJB script: ${script_path}"
+    def script = readFile(script_path)
+    withEnv(["WORKSPACE=${pwd()}"]) {
+        sh script
+    }
+}
+
+def run_ost_on_node(ovirt_release, suit_type, distro, stash_name) {
+    checkout_jenkins_repo()
+    checkout_ost_repo()
+    run_jjb_script('cleanup_slave.sh')
+    run_jjb_script('global_setup.sh')
+    run_jjb_script('mock_setup.sh')
+    try {
+        def reposync_config = "$suit_type-suite-$ovirt_release/*.repo"
+        inject_mirrors('ovirt-system-tests', reposync_config)
+        dir('ovirt-system-tests') {
+            stash includes: reposync_config, name: "$stash_name-injected"
+            unstash 'extra_sources'
+            mock_runner("${suit_type}_suite_${ovirt_release}.sh", distro)
+        }
+    } finally {
+        dir('ovirt-system-tests/exported-artifacts') {
+            unstash "$stash_name-injected"
+            stash includes: '**', name: stash_name
+        }
+        run_jjb_script('mock_cleanup.sh')
+    }
+}
+
+def inject_mirrors(project, file_pattern) {
+    withEnv(["PYTHONPATH=${pwd()}/jenkins"]) {
+        dir(project) {
+            sh """\
+                #!/usr/bin/env python
+                # Try to inject CI mirrors
+                from scripts.mirror_client import (
+                    inject_yum_mirrors_file_by_pattern,
+                    mirrors_from_environ, setupLogging
+                )
+
+                setupLogging()
+                inject_yum_mirrors_file_by_pattern(
+                    mirrors_from_environ('CI_MIRRORS_URL'),
+                    '$file_pattern'
+                )
+            """.stripIndent()
+        }
+    }
+}
+
+def mock_runner(script, distro) {
+    sh """
+        try_mirrors=(\${CI_MIRRORS_URL:+--try-mirrors "\$CI_MIRRORS_URL"})
+
+        ../jenkins/mock_configs/mock_runner.sh \\
+            --execute-script "automation/$script" \\
+            --mock-confs-dir ../jenkins/mock_configs \\
+            --try-proxy \\
+            "\${try_mirrors[@]}" \
+            "${distro}.*x86_64"
+    """
+}
+
 
 // We need to return 'this' so the actual pipeline job can invoke functions from
 // this script
