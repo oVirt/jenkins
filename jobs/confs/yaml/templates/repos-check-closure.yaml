@@ -36,8 +36,8 @@
           name: PATCHES
           description: comma-separated list of jenkins repo gerrit patches to apply
     builders:
-      - shell: !include-raw: shell-scripts/global_setup.sh
-      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw-escape: shell-scripts/global_setup.sh
+      - shell: !include-raw-escape: shell-scripts/mock_setup.sh
       - shell: !include-raw-escape: shell-scripts/repos-check-closure_apply-cherry-pick.sh
       - shell: !include-raw: shell-scripts/repos-check-closure_run-check.sh
     publishers:

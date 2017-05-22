@@ -1,7 +1,7 @@
 #!/bin/bash -xe
 echo "shell-scripts/mock_setup.sh"
 
-docker_setup () {{
+docker_setup () {
     #Install docker engine and start the service
     sudo yum -y install docker
     sudo systemctl restart docker
@@ -11,7 +11,7 @@ docker_setup () {{
     fi
     echo "[DOCKER SETUP] Docker service started"
     return 0
-}}
+}
 
 
 shopt -s nullglob
@@ -28,12 +28,12 @@ mock_dir="$WORKSPACE/mock"
 chroots=("$WORKSPACE"/mock/*)
 arch=$(uname -i)
 echo "arch is $arch"
-for chroot in "${{chroots[@]}}"; do
+for chroot in "${chroots[@]}"; do
     echo "Cleaning up chroot $chroot"
     ### Generate the mock configuration
     pushd "$WORKSPACE"/jenkins/mock_configs
-    mock_conf="${{chroot##*/}}"
-    base_conf="${{mock_conf%%$arch*}}$arch"
+    mock_conf="${chroot##*/}"
+    base_conf="${mock_conf%%$arch*}$arch"
     echo "base_conf is $base_conf"
     echo "#### Generating mock configuration"
     ./mock_genconfig \
@@ -53,21 +53,21 @@ for chroot in "${{chroots[@]}}"; do
     echo "Killing all mock orphan processes, if any."
     $my_mock \
         --orphanskill \
-    || {{
+    || {
         echo "ERROR:  Failed to kill orphans on $chroot."
         failed=true
-    }}
+    }
 
-    mounts=($(mount | awk '{{print $3}}' | grep "$chroot")) || :
+    mounts=($(mount | awk '{print $3}' | grep "$chroot")) || :
     if [[ "$mounts" ]]; then
         echo "Found mounted dirs inside the chroot $chroot. Trying to umount."
     fi
-    for mount in "${{mounts[@]}}"; do
+    for mount in "${mounts[@]}"; do
         sudo umount --lazy "$mount" \
-        || {{
+        || {
             echo "ERROR:  Failed to umount $mount."
             failed=true
-        }}
+        }
     done
 done
 

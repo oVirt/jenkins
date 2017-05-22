@@ -33,30 +33,6 @@ def run_script(script_path) {{
     }}
 }}
 
-
-def run_script_template(script_tpl_path, distro) {{
-    def script_path = script_tpl_path.split('/')[-1]
-    def curdir = pwd()
-    println "Running template script $script_tpl_path"
-    //pipeline plugin removes the WORKSPACE env var
-    withEnv(["WORKSPACE=$curdir"]) {{
-        sh """
-            set -eo pipefail
-            rm -f "$script_path"
-            cat "$script_tpl_path" \\
-            | python -c "
-import sys
-my_str=sys.stdin.read()
-print my_str.format(distro='$distro')
-" \\
-            > "$script_path"
-            chmod +x "$script_path"
-            "./$script_path"
-        """
-    }}
-}}
-
-
 def mock_runner(script, distro) {{
     ansiColor('xterm') {{
         sh """
@@ -86,10 +62,7 @@ def run_mock_script(
     try {{
         run_script('jenkins/jobs/confs/shell-scripts/cleanup_slave.sh')
         run_script('jenkins/jobs/confs/shell-scripts/global_setup.sh')
-        run_script_template(
-            'jenkins/jobs/confs/shell-scripts/mock_setup.sh',
-            distro
-        )
+        run_script('jenkins/jobs/confs/shell-scripts/mock_setup.sh')
         dir(project) {{
             sh "git log -1"
             withEnv(['PYTHONPATH=../jenkins']) {{

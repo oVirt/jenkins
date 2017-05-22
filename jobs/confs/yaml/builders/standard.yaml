@@ -1,8 +1,8 @@
 - builder:
     name: mock_runner
     builders:
-      - shell: !include-raw: shell-scripts/global_setup.sh
-      - shell: !include-raw: shell-scripts/mock_setup.sh
+      - shell: !include-raw-escape: shell-scripts/global_setup.sh
+      - shell: !include-raw-escape: shell-scripts/mock_setup.sh
       - shell: |
           WORKSPACE="${{WORKSPACE:-$PWD}}"
           try_mirrors=(${{CI_MIRRORS_URL:+--try-mirrors "$CI_MIRRORS_URL"}})
