@@ -1,0 +1,11 @@
+- property:
+    name: default-properties
+    properties:
+      - throttle:
+          enabled: false
+          max-per-node: 1
+          max-total: 3
+          option: project
+      - build-discarder:
+          num-to-keep: 120
+          artifact-num-to-keep: 60

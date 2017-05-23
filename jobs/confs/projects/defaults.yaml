@@ -14,14 +14,7 @@
     git-server: 'gerrit.ovirt.org'
     gerrit-server: 'gerrit.ovirt.org'
     properties:
-      - throttle:
-          enabled: false
-          max-per-node: 1
-          max-total: 3
-          option: project
-      - build-discarder:
-          num-to-keep: 120
-          artifact-num-to-keep: 60
+      - default-properties
     wrappers:
       - default-wrapper
 
