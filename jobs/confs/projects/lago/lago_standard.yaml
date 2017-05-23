@@ -8,6 +8,7 @@
       distro:
         - fc24
         - fc25
+        - fc26
         - el7
       trigger: 'on-change'
       arch: x86_64
