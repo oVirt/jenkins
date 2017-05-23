@@ -1,8 +1,9 @@
 // pipeline-loader.groovy - Generic starting point for pipelines. Loads
 //                          the actual pipeline code from the 'jenkins' repo
 //
+def pipeline
+
 node() { wrap([$class: 'TimestamperBuildWrapper']) { ansiColor('xterm') {
-    def pipeline
     stage('loading code') {
         dir('jenkins') {
             checkout_jenkins_repo()
@@ -17,20 +18,45 @@ node() { wrap([$class: 'TimestamperBuildWrapper']) { ansiColor('xterm') {
         }
     }
     echo "Launching pipeline script"
-    pipeline.main()
+    if(pipeline.metaClass.respondsTo(pipeline, 'loader_main')) {
+        pipeline.loader_main(this)
+    } else {
+        pipeline.main()
+    }
 }}}
+if(
+    pipeline.metaClass.respondsTo(pipeline, 'loader_main') &&
+    pipeline.metaClass.respondsTo(pipeline, 'main')
+) {
+    pipeline.main()
+}
 
 def checkout_jenkins_repo() {
+    checkout_repo(
+        repo_name: 'jenkins',
+        refspec: 'refs/heads/master',
+    )
+}
+
+def checkout_repo(String repo_name, String refspec='refs/heads/master') {
     checkout(
         changelog: false, poll: false, scm: [
             $class: 'GitSCM',
             branches: [[name: 'myhead']],
             userRemoteConfigs: [[
-            refspec: '+refs/heads/master:myhead',
-            url: 'https://gerrit.ovirt.org/jenkins'
+                refspec: "+${refspec}:myhead",
+                url: "https://gerrit.ovirt.org/${repo_name}"
             ]]
         ]
     )
+}
+
+def checkout_repo(Map named_args) {
+    if('refspec' in named_args) {
+        checkout_repo(named_args.repo_name, named_args.refspec)
+    } else {
+        checkout_repo(named_args.repo_name)
+    }
 }
 
 @NonCPS
