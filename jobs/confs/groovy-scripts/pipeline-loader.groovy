@@ -5,8 +5,8 @@ def pipeline
 
 node() { wrap([$class: 'TimestamperBuildWrapper']) { ansiColor('xterm') {
     stage('loading code') {
+        checkout_jenkins_repo()
         dir('jenkins') {
-            checkout_jenkins_repo()
             def pipeline_file = get_pipeline_for_job(env.JOB_NAME)
             if(pipeline_file == null) {
                 error "Could not find a matching pipeline for this job"
@@ -39,16 +39,18 @@ def checkout_jenkins_repo() {
 }
 
 def checkout_repo(String repo_name, String refspec='refs/heads/master') {
-    checkout(
-        changelog: false, poll: false, scm: [
-            $class: 'GitSCM',
-            branches: [[name: 'myhead']],
-            userRemoteConfigs: [[
-                refspec: "+${refspec}:myhead",
-                url: "https://gerrit.ovirt.org/${repo_name}"
-            ]]
-        ]
-    )
+    dir(repo_name) {
+        checkout(
+            changelog: false, poll: false, scm: [
+                $class: 'GitSCM',
+                branches: [[name: 'myhead']],
+                userRemoteConfigs: [[
+                    refspec: "+${refspec}:myhead",
+                    url: "https://gerrit.ovirt.org/${repo_name}"
+                ]]
+            ]
+        )
+    }
 }
 
 def checkout_repo(Map named_args) {
