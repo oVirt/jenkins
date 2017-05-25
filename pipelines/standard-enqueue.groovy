@@ -5,7 +5,7 @@ import groovy.json.JsonOutput
 
 def main() {
     def siblings
-    def queues
+    def queues_and_builds
 
     try {
         if(params.GERRIT_PROJECT) {
@@ -23,7 +23,7 @@ def main() {
                     builds_projecs_and_versions(siblings)
                 currentBuild.displayName =
                     "${currentBuild.id} ${pnv2str(projects_and_versions)}"
-                queues = versions_to_queues(get_versions(projects_and_versions))
+                queues_and_builds = builds_per_queue(siblings)
             } else {
                 echo 'Did not find any sibling builds'
                 currentBuild.result = 'NOT_BUILT'
@@ -33,10 +33,8 @@ def main() {
             return
         }
         stage('Enqueue change') {
-            withEnv(["BUILDS_LIST=${JsonOutput.toJson(siblings)}"]) {
-                echo "Will enqueue to: ${queues.join(' ')}"
-                enqueue_change_to(queues)
-            }
+            echo "Will enqueue to: ${queues_and_builds.keySet().join(' ')}"
+            enqueue_change_to(queues_and_builds)
         }
     } catch(Exception e) {
         // email_notify('FAILURE')
@@ -161,13 +159,13 @@ def pnv2str(projects_and_versions) {
 }
 
 @NonCPS
-def get_versions(projects_and_versions) {
-    projects_and_versions.collectMany([] as Set) { it.value.keySet() }
+def builds_per_queue(builds) {
+    builds.groupBy { version_to_queue(build_project_and_version(it)[1]) }
 }
 
 @NonCPS
-def versions_to_queues(versions) {
-    versions.collect { "ovirt-${it}" }
+def version_to_queue(version) {
+    "ovirt-${version}"
 }
 
 def email_notify(status, recipients='infra@ovirt.org') {
@@ -190,26 +188,28 @@ def email_notify(status, recipients='infra@ovirt.org') {
     )
 }
 
-def enqueue_change_to(queues) {
+def enqueue_change_to(queues_and_builds) {
     prepare_python_env()
     def enqueue_steps = [:]
-    for(int i = 0; i < queues.size(); ++i) {
-        def queue = queues[i]
-        enqueue_steps[queue] = get_queue_build_step(queue)
+    def queues_and_builds_a = map_to_arr(queues_and_builds)
+    for(i = 0; i < queues_and_builds_a.size(); ++i) {
+        def queue = queues_and_builds_a[i][0]
+        def builds = queues_and_builds_a[i][1]
+        enqueue_steps[queue] = get_queue_build_step(queue, builds)
     }
     parallel enqueue_steps
 }
 
-def get_queue_build_step(queue) {
+def get_queue_build_step(queue, builds) {
     return {
-        def build_args = get_queue_build_args(queue)
+        def build_args = get_queue_build_args(queue, builds)
         build build_args
     }
 }
 
-def get_queue_build_args(queue) {
+def get_queue_build_args(queue, builds) {
     def json_file = "${queue}_build_args.json"
-    withEnv(['PYTHONPATH=jenkins']) {
+    withEnv(['PYTHONPATH=jenkins', "BUILDS_LIST=${JsonOutput.toJson(builds)}"]) {
         sh """\
             #!/usr/bin/env python
             from scripts.change_queue import JenkinsChangeQueueClient
@@ -234,6 +234,11 @@ def prepare_python_env() {
             sudo yum install -y python-jinja2 python-paramiko
         fi
     """.stripIndent()
+}
+
+@NonCPS
+def map_to_arr(map) {
+    map.collect { k, v -> [k, v] }
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from
