@@ -16,15 +16,20 @@
       - el7
       - fc24
       - fc25
+      - fc26
     exclude:
       - version: master
         distro: fc24
       - version: 4.1
         distro: fc25
+      - version: 4.1
+        distro: fc26
       - version: 4.0
         distro: fc25
       - version: 4.0
         distro: fc24
+      - version: 4.0
+        distro: fc26
     trigger: 'on-change'
     arch:
       - x86_64
@@ -48,11 +53,16 @@
       - el7
       - fc24
       - fc25
+      - fc26
     exclude:
       - version: master
         distro: fc24
       - version: 4.1
         distro: fc25
+      - version: 4.1
+        distro: fc26
+      - version: 4.0
+        distro: fc26
       - version: 4.0
         distro: fc25
       - version: 4.0
