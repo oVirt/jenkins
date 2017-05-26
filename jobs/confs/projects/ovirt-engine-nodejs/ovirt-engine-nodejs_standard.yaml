@@ -15,11 +15,14 @@
         - el7
         - fc24
         - fc25
+        - fc26
     exclude:
       - version: master
         distro: fc24
       - version: 4.1
         distro: fc25
+      - version: 4.1
+        distro: fc26
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
