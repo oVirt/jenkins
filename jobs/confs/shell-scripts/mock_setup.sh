@@ -1,6 +1,15 @@
 #!/bin/bash -xe
 echo "shell-scripts/mock_setup.sh"
 
+extra_packages() {
+    # Add extra packages we need for mock_runner.sh
+    if [[ -e '/usr/bin/dnf' ]]; then
+        sudo dnf -y install python3-PyYAML PyYAML
+    else
+        sudo yum -y install python34-PyYAML PyYAML
+    fi
+}
+
 docker_setup () {
     #Install docker engine and start the service
     sudo yum -y install docker
@@ -71,6 +80,7 @@ for chroot in "${chroots[@]}"; do
     done
 done
 
+extra_packages || failed=true
 docker_setup || failed=true
 
 # If we failed in any step, abort to avoid breaking the host
