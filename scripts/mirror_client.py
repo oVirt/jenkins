@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """mirror_client.py - Clinet for oVirt CI transactional mirrors
 """
-from six.moves import StringIO
+from six.moves import StringIO, range
 from six.moves.configparser import RawConfigParser
 import requests
 from requests.exceptions import ConnectionError, Timeout
@@ -10,6 +10,7 @@ import glob
 import logging
 
 HTTP_TIMEOUT = 30
+HTTP_RETRIES = 3
 
 logger = logging.getLogger(__name__)
 
@@ -110,11 +111,20 @@ def mirrors_from_http(
     else:
         proxies = dict(http=None, https=None)
     try:
-        resp = requests.get(url, proxies=proxies, timeout=HTTP_TIMEOUT)
-        if resp.status_code == 200:
-            return resp.json().get(json_varname, dict())
+        for attempt in range(0, HTTP_RETRIES):
+            try:
+                resp = requests.get(url, proxies=proxies, timeout=HTTP_TIMEOUT)
+                if resp.status_code == 200:
+                    return resp.json().get(json_varname, dict())
+                else:
+                    return dict()
+            except ValueError:
+                # When JSON parsing fails we get a ValueError
+                pass
+            logger.warn('Encountered error getting data from mirrors server' +
+                        ' in attempt {0}/{1}'.format(attempt, HTTP_RETRIES))
         else:
-            return dict()
+            raise
     except ConnectionError:
         logger.warn('Failed to connect to mirrors server')
         return dict()
