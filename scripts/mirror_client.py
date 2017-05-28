@@ -3,11 +3,14 @@
 """
 from six.moves import StringIO, range
 from six.moves.configparser import RawConfigParser
+from six.moves.urllib.parse import urlparse
 import requests
 from requests.exceptions import ConnectionError, Timeout
 from os import environ
 import glob
 import logging
+import yaml
+from collections import Mapping
 
 HTTP_TIMEOUT = 30
 HTTP_RETRIES = 3
@@ -133,6 +136,23 @@ def mirrors_from_http(
         return dict()
 
 
+def mirrors_from_file(file_name):
+    """Load mirrors from a local file
+
+    :param str filename: The file to load mirrors from
+
+    The file can be JNOS or YAML formatted
+
+    :rtype: dict
+    """
+    data = None
+    with open(file_name, 'r') as f:
+        data = yaml.safe_load(f)
+    if not isinstance(data, Mapping):
+        raise ValueError("Invalid mirrors data in '{0}'".format(file_name))
+    return data
+
+
 def mirrors_from_environ(
     env_varname='CI_MIRRORS_URL',
     json_varname='latest_ci_repos',
@@ -153,7 +173,11 @@ def mirrors_from_environ(
     """
     if env_varname not in environ:
         return dict()
-    return mirrors_from_http(environ[env_varname], json_varname, allow_proxy)
+    parsed = urlparse(environ[env_varname])
+    if parsed.scheme == 'http' or parsed.scheme == 'https':
+        return mirrors_from_http(parsed.geturl(), json_varname, allow_proxy)
+    if parsed.scheme == '' or parsed.scheme == 'file':
+        return mirrors_from_file(parsed.path)
 
 
 def setupLogging(level=logging.INFO):

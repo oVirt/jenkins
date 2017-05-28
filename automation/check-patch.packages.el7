@@ -7,7 +7,9 @@ pytest
 python-mock
 python-jinja2
 python-paramiko
+PyYAML
 python34-jinja2
 python34-paramiko
+python34-PyYAML
 git
 docker

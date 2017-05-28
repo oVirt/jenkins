@@ -6,14 +6,20 @@ from six.moves import StringIO
 import pytest
 from six.moves.BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import json
+import yaml
 from threading import Thread
 from six.moves.urllib.parse import urljoin
 import requests
 from time import sleep
 from os import environ
+try:
+    from unittest.mock import MagicMock, call, sentinel
+except ImportError:
+    from mock import MagicMock, call, sentinel
 
 from scripts.mirror_client import (
-    inject_yum_mirrors, inject_yum_mirrors_str, mirrors_from_http
+    inject_yum_mirrors, inject_yum_mirrors_str, mirrors_from_http,
+    mirrors_from_file, mirrors_from_environ,
 )
 
 
@@ -213,3 +219,66 @@ def test_mirrors_from_http(mirror_server, mirrors_dict):
     assert result == {}
     result = mirrors_from_http(mirror_server['bad_port_url'])
     assert result == {}
+
+
+def test_mirrors_from_file(mirrors_dict, tmpdir):
+    json_file = tmpdir.join('mirrors.json')
+    with json_file.open('w') as f:
+        json.dump(mirrors_dict, f)
+    json_out = mirrors_from_file(str(json_file))
+    assert id(mirrors_dict) != id(json_out)
+    assert mirrors_dict == json_out
+    yaml_file = tmpdir.join('mirrors.yaml')
+    with yaml_file.open('w') as f:
+        yaml.safe_dump(mirrors_dict, f)
+    yaml_out = mirrors_from_file(str(yaml_file))
+    assert id(mirrors_dict) != id(yaml_out)
+    assert id(json_out) != id(yaml_out)
+    assert mirrors_dict == yaml_out
+
+
+def test_mirrors_from_bad_file(tmpdir):
+    bad_file = tmpdir.join('not_mirrors.txt')
+    bad_file.write('--not-mirrors-data--')
+    with pytest.raises(ValueError):
+        mirrors_from_file(str(bad_file))
+
+
+def test_mirrors_from_environ_http(monkeypatch):
+    mirrors_from_http = MagicMock(side_effect=[sentinel.http_mirrors])
+    mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
+    monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
+                        mirrors_from_http)
+    monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
+                        mirrors_from_file)
+    http_url = 'http://mirrors.example.com'
+    monkeypatch.setenv('CI_MIRRORS_URL', http_url)
+    out = mirrors_from_environ()
+    assert out == sentinel.http_mirrors
+    assert mirrors_from_http.called
+    assert mirrors_from_http.call_args == \
+        call(http_url, 'latest_ci_repos', False)
+    assert not mirrors_from_file.called
+
+
+@pytest.mark.parametrize(
+    ('in_path', 'passed_path'),
+    [
+        ('/path/to/mirrors.yaml', '/path/to/mirrors.yaml'),
+        ('file:///path/to/mirrors.yaml', '/path/to/mirrors.yaml'),
+        ('path/to/mirrors.yaml', 'path/to/mirrors.yaml'),
+    ]
+)
+def test_mirrors_from_environ_file(monkeypatch, in_path, passed_path):
+    mirrors_from_http = MagicMock(side_effect=[sentinel.http_mirrors])
+    mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
+    monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
+                        mirrors_from_http)
+    monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
+                        mirrors_from_file)
+    monkeypatch.setenv('CI_MIRRORS_URL', in_path)
+    out = mirrors_from_environ()
+    assert out == sentinel.file_mirrors
+    assert mirrors_from_file.called
+    assert mirrors_from_file.call_args == call(passed_path)
+    assert not mirrors_from_http.called
