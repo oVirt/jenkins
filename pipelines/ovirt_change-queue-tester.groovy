@@ -17,16 +17,20 @@ def loader_main(loader) {
     }
     try {
         try {
-            def change_date
+            def change_data
             stage('loading changes data') {
                 prepare_python_env()
-                change_date = load_change_data()
+                change_data = load_change_data()
+                if(change_data.summary) {
+                    currentBuild.displayName = \
+                        "#${currentBuild.id} ${change_data.summary}"
+                }
             }
             stage('waiting for artifact builds') {
-                wait_for_artifacts(change_date.builds)
+                wait_for_artifacts(change_data.builds)
             }
             stage('preparing test data') {
-                prepare_test_data(change_date)
+                prepare_test_data(change_data)
             }
             stage('running tests') {
                 run_tests(ovirt_release)
@@ -82,15 +86,20 @@ def load_change_data() {
     withEnv(['PYTHONPATH=jenkins']) {
         sh """\
             #!/usr/bin/env python
+            from __future__ import print_function
             from scripts.change_queue import JenkinsTestedChangeList
 
             JenkinsTestedChangeList.setup_logging()
             cl = JenkinsTestedChangeList.load_from_artifact()
             cl.visible_builds.as_json_file()
+            print(cl.get_test_summary())
+            with open('summary.txt', 'w') as f:
+                f.write(cl.get_test_build_title())
         """.stripIndent()
     }
     return [
-        builds: readJSON(file: 'builds_list.json')
+        builds: readJSON(file: 'builds_list.json'),
+        summary: readFile('summary.txt'),
     ]
 }
 
@@ -108,9 +117,9 @@ def wait_for_artifacts(builds) {
     }
 }
 
-def prepare_test_data(change_date) {
+def prepare_test_data(change_data) {
     dir('exported-artifacts') {
-        def extra_sources = make_extra_sources(change_date.builds)
+        def extra_sources = make_extra_sources(change_data.builds)
         print "extra_sources\n-------------\n${extra_sources}"
         writeFile(file: 'extra_sources', text: extra_sources)
         stash includes: 'extra_sources', name: 'extra_sources'

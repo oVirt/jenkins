@@ -580,3 +580,23 @@ class TestJenkinsTestedChangeList(object):
         jtcl = JenkinsTestedChangeList('k1', changes)
         out = list(jtcl.visible_changes)
         assert expeted == out
+
+    def test_get_test_build_title(self):
+        changes = list(map(self.str_to_strmchg, range(1, 4)))
+        change = changes[0]
+        jtcl = JenkinsTestedChangeList('k1', [])
+        assert jtcl.get_test_build_title() == ''
+        jtcl = JenkinsTestedChangeList('k1', [change])
+        assert jtcl.get_test_build_title() == '[1: 1]'
+        jtcl = JenkinsTestedChangeList('k1', changes)
+        assert jtcl.get_test_build_title() == '[3]'
+
+    def test_get_test_summary(self):
+        changes = list(map(self.str_to_strmchg, range(1, 4)))
+        change = changes[0]
+        jtcl = JenkinsTestedChangeList('k1', [])
+        assert jtcl.get_test_summary() == 'No change to test'
+        jtcl = JenkinsTestedChangeList('k1', [change])
+        assert jtcl.get_test_summary() == 'Testing a single change: 1'
+        jtcl = JenkinsTestedChangeList('k1', changes)
+        assert jtcl.get_test_summary() == 'Testing 3 changes'

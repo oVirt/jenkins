@@ -528,6 +528,7 @@ class JenkinsChangeQueue(
             test_key, change_list = self.get_next_test()
             if test_key is not None:
                 self._build_change_list(test_key, change_list)
+                self._running_test_url = actor_url
         else:
             raise InvalidChangeQueueAction(queue_action)
         self._write_status_file()
@@ -594,6 +595,7 @@ class JenkinsChangeQueue(
                 state=displayable_state,
                 awaiting_deps=displayable_awaiting_deps,
                 test_key=self._test_key,
+                test_url=getattr(self, '_running_test_url', None),
             ))
 
     @classmethod
@@ -688,3 +690,32 @@ class JenkinsTestedChangeList(JenkinsChangeQueueObject, namedtuple(
         return BuildsList(chain.from_iterable(
             ChangeWithBuildsWrapper(c).builds for c in self.visible_changes
         ))
+
+    def __len__(self):
+        return len(self.change_list)
+
+    def get_test_build_title(self):
+        """Return a textual job build title test being performed
+        rtype: str
+        """
+        if len(self) <= 0:
+            return ''
+        elif len(self) == 1:
+            return '[1: {0}]'.format(
+                DisplayableChangeWrapper(self.change_list[0]).presentable_id
+            )
+        else:
+            return '[{0}]'.format(len(self))
+
+    def get_test_summary(self):
+        """Return a textual summary on the test being performed
+        rtype: str
+        """
+        if len(self) <= 0:
+            return 'No change to test'
+        elif len(self) == 1:
+            return 'Testing a single change: {0}'.format(
+                DisplayableChangeWrapper(self.change_list[0]).presentable_id
+            )
+        else:
+            return 'Testing {0} changes'.format(len(self))

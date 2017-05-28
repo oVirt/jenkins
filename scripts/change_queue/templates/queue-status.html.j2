@@ -81,7 +81,12 @@
 {% if test_key is none -%}
     <p class="queue-test">No running test</p>
 {% else -%}
-    <p class="queue-test-running">Running test key: <u>{{ test_key }}</u></p>
+    {% if test_url is none -%}
+        <p class="queue-test-running">Running test key: <u>{{ test_key }}</u></p>
+    {% else -%}
+        <p class="queue-test-running">Running test key:
+        <a href="{{ test_url }}">{{ test_key }}</a></p>
+    {% endif -%}
 {% endif -%}
 {% macro render_change_id(change) -%}
     {%- if change.url is none -%}

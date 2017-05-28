@@ -1,11 +1,15 @@
 // change-queue.groovy - Jenkins Pipeline script for managing change queues
 //
 def main() {
+    def upstreamBuild = null
+
     stage('loading queue state') {
         load_queue_state()
+        upstreamBuild = get_upstream_build()
+        show_upstream_build(upstreamBuild)
     }
     stage('running queue logic') {
-        run_queue_action_py()
+        run_queue_action_py(upstreamBuild)
         currentBuild.displayName = get_build_display_name()
         show_queue_status()
     }
@@ -39,6 +43,20 @@ def load_queue_state() {
     ])
 }
 
+def show_upstream_build(upstreamBuild) {
+    if(upstreamBuild == null) {
+        return
+    }
+    if(upstreamBuild.job_name == "${env.JOB_NAME}-tester") {
+        manager.addShortText(
+            "<a href=\"${env.JENKINS_URL}${upstreamBuild.build_url}\">" +
+            "<img src=\"/images/16x16/gear2.png\">" +
+            "test #${upstreamBuild.build_number}</a>",
+            'black', 'white', 'none', ''
+        )
+    }
+}
+
 def prepare_python_env() {
     sh """\
         #!/bin/bash -xe
@@ -50,9 +68,8 @@ def prepare_python_env() {
     """.stripIndent()
 }
 
-def run_queue_action_py() {
+def run_queue_action_py(upstreamBuild) {
     withEnv(['PYTHONPATH=jenkins']) {
-        def upstreamBuild = get_upstream_build()
         if(upstreamBuild) {
             upstreamBuild = "'${env.JENKINS_URL}${upstreamBuild['build_url']}'"
         } else {
