@@ -112,6 +112,7 @@
             project: '{project}'
             version: '{version}'
             distro: '{distro}'
+            email-to: '{email-to}'
             reponame: ovirt
             repotype: experimental
 

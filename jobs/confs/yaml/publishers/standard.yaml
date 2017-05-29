@@ -61,3 +61,8 @@
             BUILD_ID={project}_{distro}_$BUILD_NUMBER
             BUILD_ARTIFACTS_JOBS=$BUILD_URL
           condition: SUCCESS
+      - email-ext:
+          recipients: '{email-to}'
+          failure: true
+          fixed: true
+          unstable: true
