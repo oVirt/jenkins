@@ -14,8 +14,12 @@ WORKSPACE=$PWD
 FLUSH_CACHE="${FLUSH_CACHE:-false}"
 JOBS_FILTERS=(${JOBS_FILTERS:+${JOBS_FILTERS//,/ }})
 
+# This parameter will be defined as a global parameterrameter for
+# all jobs in Jenkins configuration
+JJB_PROJECTS_FOLDER=${JJB_PROJECTS_FOLDER:?variable not set or empty}
+
 confs_dir="${WORKSPACE}/jenkins/jobs/confs"
-yaml_dir="${confs_dir}/yaml:${confs_dir}/projects"
+yaml_dir="${confs_dir}/yaml:${confs_dir}/${JJB_PROJECTS_FOLDER}"
 conf_file="${HOME}/.jenkinsjobsrc"
 options=()
 
@@ -24,8 +28,8 @@ if [[ "$FLUSH_CACHE" == "true" ]]; then
     options+=("--flush-cache")
 fi
 cd "$confs_dir"
-[[ -d "${confs_dir}/projects" ]] \
-&& yaml_dir_extended="$yaml_dir:${confs_dir}/projects" \
+[[ -d "${confs_dir}/${JJB_PROJECTS_FOLDER}" ]] \
+&& yaml_dir_extended="$yaml_dir:${confs_dir}/${JJB_PROJECTS_FOLDER}" \
 || yaml_dir_extended="$yaml_dir"
 jenkins-jobs \
     -l debug \

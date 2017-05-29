@@ -1,5 +1,10 @@
 #!/bin/bash -xe
 echo "shell-scripts/jenkins_cleanup_yaml.sh"
+
+# This parameter will be defined as a global parameterrameter for
+# all jobs in Jenkins configuration
+JJB_PROJECTS_FOLDER=${JJB_PROJECTS_FOLDER:?variable not set or empty}
+
 ## LIST REMOVED JOBS FROM YAML SINCE LAST COMMIT
 new_xmls_dir="$WORKSPACE/new_xmls"
 old_xmls_dir="$WORKSPACE/old_xmls"
@@ -16,8 +21,8 @@ done
 echo "Generating new xmls"
 pushd "$confs_dir"
 # Needed for that commit where we check old dir structure vs new
-[[ -d "${confs_dir}/projects" ]] \
-&& yaml_dir_extended="$yaml_dir:${confs_dir}/projects" \
+[[ -d "${confs_dir}/${JJB_PROJECTS_FOLDER}" ]] \
+&& yaml_dir_extended="$yaml_dir:${confs_dir}/${JJB_PROJECTS_FOLDER}" \
 || yaml_dir_extended="$yaml_dir"
 jenkins-jobs \
     --allow-empty \
@@ -38,8 +43,8 @@ if ! [[ -d "$confs_dir" ]]; then
 else
     pushd "$confs_dir"
     # Needed for that commit where we check old dir structure vs new
-    [[ -d "${confs_dir}/projects" ]] \
-    && yaml_dir_extended="$yaml_dir:${confs_dir}/projects" \
+    [[ -d "${confs_dir}/${JJB_PROJECTS_FOLDER}" ]] \
+    && yaml_dir_extended="$yaml_dir:${confs_dir}/${JJB_PROJECTS_FOLDER}" \
     || yaml_dir_extended="$yaml_dir"
     jenkins-jobs \
         --allow-empty \
