@@ -43,6 +43,7 @@
           branch: ovirt-4.1-snapshot
           trigger: 'timed'
           trigger-times: '@daily'
+    email-to: 'infra@ovirt.org, yturgema@redhat.com'
     jobs:
       - 'ovirt-appliance_{version}_build-artifacts-{distro}-{arch}'
 
