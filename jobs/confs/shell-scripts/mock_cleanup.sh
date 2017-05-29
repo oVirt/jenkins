@@ -135,7 +135,7 @@ find /var/cache/mock/ -mindepth 1 -maxdepth 1 -type d -mtime +2 -print0 | \
 for UUID in $(virsh list --all --uuid); do
   virsh destroy $UUID || :
   sleep 2
-  virsh undefine --remove-all-storage --storage vda --snapshots-metadata $UUID || :
+  virsh undefine --remove-all-storage --snapshots-metadata $UUID || :
 done
 
 if [[ -x /bin/docker ]]; then
