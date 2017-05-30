@@ -119,8 +119,6 @@
 
 
       - copy-create-job-artifact:
-          project: unboundid-ldapsdk_4.1_create-rpms-el7-x86_64_merged
-      - copy-create-job-artifact:
           project: ovirt-appliance_ovirt-4.1-snapshot_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact-engine_4.1-platforms:
