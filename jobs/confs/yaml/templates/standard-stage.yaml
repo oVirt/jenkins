@@ -42,6 +42,12 @@
     wrappers:
         - default-wrapper
         - inject-git-push-credentials
+        - credentials-binding:
+            - username-password-separated:
+                credential-id: 'ci-containers_intermediate-repository'
+                username: 'CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME'
+                password: 'CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD'
+
 
 - job-template: &standard-template
       <<: *standard-template-basic
