@@ -270,14 +270,9 @@ cleanup_docker () {
     echo "CLEANUP: Stop all running containers and remove unwanted images"
     sudo docker ps -q -a | xargs -r sudo docker rm -f
     [[ $? -ne 0 ]] && fail=true
-    sudo docker images --format "{{.Repository}},{{.ID}}" | \
-        sed -nr \
-            -e "/^docker.io\/($DOCKER_REPOS_WHITELIST)(\/?[^\/]+)?,/d" \
-            -e "s/^.*,(.*)/\1/p" | \
+    sudo docker images --format "{{.Repository}}:{{.Tag}}" | \
+        grep -Ev "^docker\.io/(${DOCKER_REPOS_WHITELIST})[:/].*" | \
         xargs -r sudo docker rmi -f
-    [[ $? -ne 0 ]] && fail=true
-
-    sudo systemctl restart docker
     [[ $? -ne 0 ]] && fail=true
 
     if ! $fail; then
