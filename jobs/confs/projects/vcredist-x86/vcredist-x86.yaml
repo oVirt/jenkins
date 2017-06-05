@@ -10,6 +10,7 @@
           branch: master
     mock-build-type: all
     distro:
+      - el7
       - fc24
       - fc25
       - fc26
@@ -41,6 +42,7 @@
           repoversion: 4.1
     mock-build-type: all
     distro:
+      - el7
       - fc24
       - fc25
       - fc26
