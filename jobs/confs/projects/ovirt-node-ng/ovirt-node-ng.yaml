@@ -7,8 +7,6 @@
     version:
       - master:
           branch: master
-      - ovirt-master-experimental:
-          branch: master-experimental
       - ovirt-4.1:
           branch: ovirt-4.1
       - ovirt-4.1-snapshot:
@@ -34,8 +32,6 @@
     version:
       - master:
           branch: master
-      - ovirt-master-experimental:
-          branch: master-experimental
       - ovirt-4.1:
           branch: ovirt-4.1
       - ovirt-4.1-snapshot:
