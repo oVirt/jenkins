@@ -14,6 +14,7 @@
         - el7
         - fc24
         - fc25
+        - fc26
     exclude:
       - version: master
         distro: el6
@@ -21,10 +22,14 @@
         distro: fc24
       - version: 4.1
         distro: fc25
+      - version: 4.1
+        distro: fc26
       - version: 4.0
         distro: fc24
       - version: 4.0
         distro: fc25
+      - version: 4.0
+        distro: fc26
       - version: 4.0
         distro: el6
     arch: x86_64
@@ -49,10 +54,14 @@
         distro: fc24
       - version: 4.1
         distro: el6
+      - version: 4.1
+        distro: fc26
       - version: 4.0
         distro: fc24
       - version: 4.0
         distro: fc25
+      - version: 4.0
+        distro: fc26
       - version: 4.0
         distro: el6
     jobs:
@@ -94,10 +103,14 @@
         distro: fc24
       - version: 4.1
         distro: el6
+      - version: 4.1
+        distro: fc26
       - version: 4.0
         distro: fc24
       - version: 4.0
         distro: fc25
+      - version: 4.0
+        distro: fc26
       - version: 4.0
         distro: el6
     jobs:
@@ -121,10 +134,14 @@
         distro: fc24
       - version: 4.1
         distro: el6
+      - version: 4.1
+        distro: fc26
       - version: 4.0
         distro: fc24
       - version: 4.0
         distro: fc25
+      - version: 4.0
+        distro: fc26
       - version: 4.0
         distro: el6
     arch:
