@@ -8,7 +8,6 @@
     distro:
       - el7
       - fc25
-      - fc26
 
 - project:
     <<: *base-commons
@@ -16,21 +15,6 @@
     project: ovirt-host
     stage: check-patch
     arch: x86_64
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
-
-- project:
-    <<: *base-commons
-    name: ovirt-host-ppc64le
-    project: ovirt-host
-    version:
-      - master:
-          branch: master
-    distro:
-      - el7
-    stage: check-patch
-    arch: ppc64le
-    node-filter: ppc64le
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
