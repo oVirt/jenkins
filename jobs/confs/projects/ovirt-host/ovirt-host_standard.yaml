@@ -37,8 +37,6 @@
 - project:
     <<: *base-commons
     name: ovirt-host_build-artifacts
-    trigger: 'timed'
-    trigger-times: '@midnight'
     project: ovirt-host
     stage: build-artifacts
     arch: x86_64
