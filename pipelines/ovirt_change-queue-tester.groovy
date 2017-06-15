@@ -20,7 +20,7 @@ def loader_main(loader) {
             def change_data
             stage('loading changes data') {
                 prepare_python_env()
-                change_data = load_change_data()
+                change_data = load_change_data(ovirt_release)
                 if(change_data.summary) {
                     currentBuild.displayName = \
                         "#${currentBuild.id} ${change_data.summary}"
@@ -82,12 +82,18 @@ def get_test_changes() {
     return fileExists('exported-artifacts/JenkinsTestedChangeList.dat')
 }
 
-def load_change_data() {
+def load_change_data(ovirt_release) {
+    def mirrors_file_name = 'mirrors.yaml'
+    def mirrors_file_path = "exported-artifacts/$mirrors_file_name"
     withEnv(['PYTHONPATH=jenkins']) {
         sh """\
             #!/usr/bin/env python
             from __future__ import print_function
+            import yaml
             from scripts.change_queue import JenkinsTestedChangeList
+            from scripts.mirror_client import (
+                mirrors_from_environ, ovirt_tested_as_mirrors
+            )
 
             JenkinsTestedChangeList.setup_logging()
             cl = JenkinsTestedChangeList.load_from_artifact()
@@ -95,11 +101,17 @@ def load_change_data() {
             print(cl.get_test_summary())
             with open('summary.txt', 'w') as f:
                 f.write(cl.get_test_build_title())
+
+            mirrors = mirrors_from_environ('CI_MIRRORS_URL')
+            mirrors.update(ovirt_tested_as_mirrors('${ovirt_release}'))
+            with open('${mirrors_file_path}', 'w') as mf:
+                yaml.safe_dump(mirrors, mf, default_flow_style=False)
         """.stripIndent()
     }
     return [
         builds: readJSON(file: 'builds_list.json'),
         summary: readFile('summary.txt'),
+        mirrors_file: mirrors_file_name,
     ]
 }
 
@@ -120,9 +132,14 @@ def wait_for_artifacts(builds) {
 def prepare_test_data(change_data) {
     dir('exported-artifacts') {
         def extra_sources = make_extra_sources(change_data.builds)
-        print "extra_sources\n-------------\n${extra_sources}"
         writeFile(file: 'extra_sources', text: extra_sources)
+        def mirrors = readFile(change_data.mirrors_file)
+
+        print "extra_sources\n-------------\n${extra_sources}"
+        print "mirrors\n-------\n${mirrors}"
+
         stash includes: 'extra_sources', name: 'extra_sources'
+        stash includes: change_data.mirrors_file, name: 'mirrors'
     }
 }
 
@@ -305,12 +322,17 @@ def run_ost_on_node(ovirt_release, suit_type, distro, stash_name) {
     run_jjb_script('global_setup.sh')
     run_jjb_script('mock_setup.sh')
     try {
-        def reposync_config = "$suit_type-suite-$ovirt_release/*.repo"
-        inject_mirrors('ovirt-system-tests', reposync_config)
-        dir('ovirt-system-tests') {
+        def suit_path = "ovirt-system-tests/$suit_type-suite-$ovirt_release"
+        def reposync_config = "*.repo"
+        unstash 'mirrors'
+        def mirrors = "${pwd()}/mirrors.yaml"
+        inject_mirrors(suit_path, reposync_config, mirrors)
+        dir(suit_path) {
             stash includes: reposync_config, name: "$stash_name-injected"
+        }
+        dir('ovirt-system-tests') {
             unstash 'extra_sources'
-            mock_runner("${suit_type}_suite_${ovirt_release}.sh", distro)
+            mock_runner("${suit_type}_suite_${ovirt_release}.sh", distro, mirrors)
         }
     } finally {
         dir('ovirt-system-tests/exported-artifacts') {
@@ -321,20 +343,23 @@ def run_ost_on_node(ovirt_release, suit_type, distro, stash_name) {
     }
 }
 
-def inject_mirrors(project, file_pattern) {
+def inject_mirrors(path, file_pattern, mirrors=null) {
+    if(mirrors == null) {
+        mirrors = env.CI_MIRRORS_URL
+    }
     withEnv(["PYTHONPATH=${pwd()}/jenkins"]) {
-        dir(project) {
+        dir(path) {
             sh """\
                 #!/usr/bin/env python
                 # Try to inject CI mirrors
                 from scripts.mirror_client import (
                     inject_yum_mirrors_file_by_pattern,
-                    mirrors_from_environ, setupLogging
+                    mirrors_from_uri, setupLogging
                 )
 
                 setupLogging()
                 inject_yum_mirrors_file_by_pattern(
-                    mirrors_from_environ('CI_MIRRORS_URL'),
+                    mirrors_from_uri('$mirrors'),
                     '$file_pattern'
                 )
             """.stripIndent()
@@ -342,15 +367,20 @@ def inject_mirrors(project, file_pattern) {
     }
 }
 
-def mock_runner(script, distro) {
+def mock_runner(script, distro, mirrors=null) {
+    if(mirrors == null) {
+        mirrors = env.CI_MIRRORS_URL
+    }
+    mirrors_arg=''
+    if(mirrors != null) {
+        mirrors_arg = "--try-mirrors '$mirrors'"
+    }
     sh """
-        try_mirrors=(\${CI_MIRRORS_URL:+--try-mirrors "\$CI_MIRRORS_URL"})
-
         ../jenkins/mock_configs/mock_runner.sh \\
             --execute-script "automation/$script" \\
             --mock-confs-dir ../jenkins/mock_configs \\
             --try-proxy \\
-            "\${try_mirrors[@]}" \
+            $mirrors_arg \
             "${distro}.*x86_64"
     """
 }

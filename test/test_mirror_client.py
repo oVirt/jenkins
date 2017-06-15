@@ -19,7 +19,8 @@ except ImportError:
 
 from scripts.mirror_client import (
     inject_yum_mirrors, inject_yum_mirrors_str, mirrors_from_http,
-    mirrors_from_file, mirrors_from_environ,
+    mirrors_from_file, mirrors_from_uri, mirrors_from_environ,
+    ovirt_tested_as_mirrors
 )
 
 
@@ -244,7 +245,7 @@ def test_mirrors_from_bad_file(tmpdir):
         mirrors_from_file(str(bad_file))
 
 
-def test_mirrors_from_environ_http(monkeypatch):
+def test_mirrors_from_uri_http(monkeypatch):
     mirrors_from_http = MagicMock(side_effect=[sentinel.http_mirrors])
     mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
@@ -252,8 +253,7 @@ def test_mirrors_from_environ_http(monkeypatch):
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
                         mirrors_from_file)
     http_url = 'http://mirrors.example.com'
-    monkeypatch.setenv('CI_MIRRORS_URL', http_url)
-    out = mirrors_from_environ()
+    out = mirrors_from_uri(http_url)
     assert out == sentinel.http_mirrors
     assert mirrors_from_http.called
     assert mirrors_from_http.call_args == \
@@ -269,16 +269,41 @@ def test_mirrors_from_environ_http(monkeypatch):
         ('path/to/mirrors.yaml', 'path/to/mirrors.yaml'),
     ]
 )
-def test_mirrors_from_environ_file(monkeypatch, in_path, passed_path):
+def test_mirrors_from_uri_file(monkeypatch, in_path, passed_path):
     mirrors_from_http = MagicMock(side_effect=[sentinel.http_mirrors])
     mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
                         mirrors_from_http)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
                         mirrors_from_file)
-    monkeypatch.setenv('CI_MIRRORS_URL', in_path)
-    out = mirrors_from_environ()
+    out = mirrors_from_uri(in_path)
     assert out == sentinel.file_mirrors
     assert mirrors_from_file.called
     assert mirrors_from_file.call_args == call(passed_path)
     assert not mirrors_from_http.called
+
+
+def test_mirrors_from_environ(monkeypatch):
+    mirrors_from_uri = MagicMock(side_effect=[sentinel.some_mirrors])
+    monkeypatch.setattr("scripts.mirror_client.mirrors_from_uri",
+                        mirrors_from_uri)
+    monkeypatch.setenv('CI_MIRRORS_URL', 'some_mirrors_uri')
+    out = mirrors_from_environ()
+    assert out == sentinel.some_mirrors
+    assert mirrors_from_uri.called
+    assert mirrors_from_uri.call_args == call('some_mirrors_uri')
+
+
+def test_ovirt_tested_as_mirrors():
+    expected = {
+        'ovirt-master-el7':
+            'http://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/',
+        'ovirt-master-fc24':
+            'http://resources.ovirt.org/repos/ovirt/tested/master/rpm/fc24/',
+        'ovirt-master-fc25':
+            'http://resources.ovirt.org/repos/ovirt/tested/master/rpm/fc25/',
+        'ovirt-master-fc26':
+            'http://resources.ovirt.org/repos/ovirt/tested/master/rpm/fc26/',
+    }
+    out = ovirt_tested_as_mirrors('master')
+    assert expected == out

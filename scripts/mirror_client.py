@@ -107,7 +107,7 @@ def mirrors_from_http(
                              proxies (defaults to False)
 
     :rtype: dict
-    :returns: Loaded mirros data or an empty dict if could not be loaded
+    :returns: Loaded mirrors data or an empty dict if could not be loaded
     """
     if allow_proxy:
         proxies = dict()
@@ -153,6 +153,25 @@ def mirrors_from_file(file_name):
     return data
 
 
+def mirrors_from_uri(uri, json_varname='latest_ci_repos', allow_proxy=False):
+    """Load mirrors from URI
+
+    :param str uri: The URI to mirrors JSON file
+    :param str json_varname: The variable in the file pointing to the mirror
+                             dictionary
+    :param bool allow_proxy: Wether to allow accessing the mirrors via HTTP
+                             proxies (defaults to False)
+
+    :rtype: dict
+    :returns: Loaded mirrors data or an empty dict if could not be loaded
+    """
+    parsed = urlparse(uri)
+    if parsed.scheme == 'http' or parsed.scheme == 'https':
+        return mirrors_from_http(parsed.geturl(), json_varname, allow_proxy)
+    if parsed.scheme == '' or parsed.scheme == 'file':
+        return mirrors_from_file(parsed.path)
+
+
 def mirrors_from_environ(
     env_varname='CI_MIRRORS_URL',
     json_varname='latest_ci_repos',
@@ -168,16 +187,12 @@ def mirrors_from_environ(
                              proxies (defaults to False)
 
     :rtype: dict
-    :returns: Loaded mirros data or an empty dict if could not be loaded or the
-              environment variable was not defined
+    :returns: Loaded mirrors data or an empty dict if could not be loaded or
+              the environment variable was not defined
     """
     if env_varname not in environ:
         return dict()
-    parsed = urlparse(environ[env_varname])
-    if parsed.scheme == 'http' or parsed.scheme == 'https':
-        return mirrors_from_http(parsed.geturl(), json_varname, allow_proxy)
-    if parsed.scheme == '' or parsed.scheme == 'file':
-        return mirrors_from_file(parsed.path)
+    return mirrors_from_uri(environ[env_varname])
 
 
 def setupLogging(level=logging.INFO):
@@ -189,3 +204,35 @@ def setupLogging(level=logging.INFO):
     """
     logging.basicConfig()
     logging.getLogger().level = logging.INFO
+
+
+def ovirt_tested_as_mirrors(
+    ovirt_release,
+    distributions=('el7', 'fc24', 'fc25', 'fc26'),
+    repos_base='http://resources.ovirt.org/repos/ovirt/tested',
+):
+    """Generate a mirrors dict that points to the oVirt tested repos
+
+    :param str ovirt_release:      The oVirt release which tested repos we want
+    :param Iterable distributions: (optional) the list of distributions oVirt
+                                   is released for
+    :param str repos_base:         (optional) the base URL for the 'tested'
+                                   repos
+
+    The list passed to 'distributions' does not have to be accurate. The
+    resulting dict is used in mirror injection (one of the inject_* functions
+    above) so for a repo to be used, someone needs to ask for it by including a
+    repo with the correct repo id in a yum configuration file. Therefore it is
+    quite safe to include non-existent distros here, and it is also safe to
+    omit some exiting distros as long as they are not asked for.
+
+    :rtype: dict
+    :returns: A mirrors dict that will cause the URLs for tested repos to be
+              injected for repos called 'ovirt-<version>-<distro>'
+    """
+    return dict(
+        (
+            'ovirt-{0}-{1}'.format(ovirt_release, distribution),
+            '{0}/{1}/rpm/{2}/'.format(repos_base, ovirt_release, distribution)
+        ) for distribution in distributions
+    )
