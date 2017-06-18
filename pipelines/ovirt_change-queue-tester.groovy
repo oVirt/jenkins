@@ -272,7 +272,9 @@ def run_ost_tests(ovirt_release) {
 }
 
 def get_available_ost_suit_types(ovirt_release) {
-    def suit_types_to_use = ["basic"]
+    def suit_types_to_use = [
+        'basic', 'upgrade-from-release', 'upgrade-from-prevrelease'
+    ]
     def available_suits = []
     checkout_ost_repo()
     dir('ovirt-system-tests') {
