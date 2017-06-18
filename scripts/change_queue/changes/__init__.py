@@ -287,7 +287,6 @@ class GerritMergedChange(ChangeWithBuilds):
             self.gerrit_patchset.server.host,
             self.gerrit_patchset.server.port,
             self.gerrit_patchset.change.number,
-            self.gerrit_patchset.patchset_number,
         )
 
     @property

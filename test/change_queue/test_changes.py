@@ -119,7 +119,7 @@ class TestGerritMergedChange(object):
         return GerritMergedChange(a_gerrit_patchset)
 
     def test_id(self, a_gerrit_merged_change):
-        assert a_gerrit_merged_change.id == ('some.gerrit', 29418, 1234567, 8)
+        assert a_gerrit_merged_change.id == ('some.gerrit', 29418, 1234567)
 
     def test_presentable_id(self, a_gerrit_merged_change):
         assert a_gerrit_merged_change.presentable_id == \
