@@ -1,48 +1,9 @@
-- job:
+- project:
     name: jenkins_master_deploy-configs_merged
-    node: master
-    parameters:
-      - bool:
-          name: ARCHIVE_JOBS
-          default: true
-          description: "Archive jobs removed from yaml"
-      - bool:
-          name: FLUSH_CACHE
-          default: false
-          description: |
-            If set, it will update all the jobs instead of only the changed
-            ones
-      - string:
-          name: JOBS_FILTERS
-          default: ''
-          description: |
-            Comma separated list of globs to filter the jobs to deploy by,
-            ex: 'ovirt_master_system*,vdsm*,jenkins_master_deploy'
-      - gerrit-params:
+    project: jenkins
+    version:
+      - master:
           branch: master
-    triggers:
-      - gerrit:
-          trigger-on:
-              - change-merged-event
-          successful-message: 'Configuration deployed'
-          projects:
-              - project-compare-type: 'PLAIN'
-                project-pattern: 'jenkins'
-                branches:
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: 'master'
-                file-paths:
-                    - compare-type: 'REG_EXP'
-                      pattern: 'jobs/confs/.*'
-    scm:
-      - jenkins-gerrit:
-          git-server: 'gerrit.ovirt.org'
-    builders:
-      - shell: !include-raw: shell-scripts/jenkins_deploy_yamls.sh
-      - shell: !include-raw: shell-scripts/jenkins_cleanup_yaml.sh
-      - system-groovy:
-          command: !include-raw: groovy-scripts/archive_jobs.groovy
-    publishers:
-      - groovy-postbuild:
-          script: !include-raw: groovy-scripts/archive_jobs.postbuild.groovy
-
+    git-server: 'gerrit.ovirt.org'
+    jobs:
+        - '{project}_{version}_deploy-configs_merged'
