@@ -10,6 +10,7 @@
       - 'epel-el6'
       - 'glusterfs-3.7-el7'
       - 'glusterfs-3.8-el7'
+      - 'glusterfs-3.10-el7'
       - 'centos-ovirt-4.0-el7'
       - 'centos-opstools-testing-el7'
       - 'centos-kvm-common-el7'
