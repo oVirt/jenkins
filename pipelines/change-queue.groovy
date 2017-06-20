@@ -61,10 +61,12 @@ def prepare_python_env() {
     sh """\
         #!/bin/bash -xe
         if [[ -e '/usr/bin/dnf' ]]; then
-            sudo dnf install -y python-jinja2 python-paramiko
+            sudo dnf install -y python-jinja2 python-paramiko postfix
         else
-            sudo yum install -y python-jinja2 python-paramiko
+            sudo yum install -y python-jinja2 python-paramiko postfix
         fi
+        sudo systemctl enable postfix
+        sudo systemctl start postfix
     """.stripIndent()
 }
 

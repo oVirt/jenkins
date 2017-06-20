@@ -260,7 +260,7 @@ class ChangeWithBuildsWrapper(ChangeWithBuilds, object_proxy):
     """Wrapper class to make changes appear like they have builds"""
 
 
-class GerritMergedChange(ChangeWithBuilds):
+class GerritMergedChange(ChangeWithBuilds, EmailNotifyingChange):
     """A change class for changes that get created as a result of merging
     patches to Gerrit repos
 
@@ -270,6 +270,12 @@ class GerritMergedChange(ChangeWithBuilds):
     """
     def __init__(self, gerrit_patchset):
         self._gerrit_patchset = gerrit_patchset
+
+    # We want to email infra just for failed or rejected changes, not for
+    # everything
+    default_recipients = ()
+    default_rejected_recipients = ('infra@ovirt.org',)
+    default_failed_recipients = ('infra@ovirt.org',)
 
     @property
     def gerrit_patchset(self):

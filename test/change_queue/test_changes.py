@@ -131,3 +131,10 @@ class TestGerritMergedChange(object):
     def test_stream_id(self, a_gerrit_merged_change):
         assert a_gerrit_merged_change.stream_id == \
             ('some.gerrit', 29418, 'some_project', 'some_branch')
+
+    def test_mail_recipents(self, a_gerrit_merged_change):
+        infra = ('infra@ovirt.org',)
+        assert not a_gerrit_merged_change.added_recipients
+        assert a_gerrit_merged_change.rejected_recipients == infra
+        assert not a_gerrit_merged_change.successful_recipients
+        assert a_gerrit_merged_change.failed_recipients == infra

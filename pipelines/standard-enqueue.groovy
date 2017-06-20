@@ -37,7 +37,7 @@ def main() {
             enqueue_change_to(queues_and_builds)
         }
     } catch(Exception e) {
-        // email_notify('FAILURE')
+        email_notify('FAILURE')
         throw(e)
     }
 }
