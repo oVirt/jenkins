@@ -38,6 +38,7 @@
       - jenkins-gerrit:
           git-server: '{git-server}'
     builders:
+      - upstream-source-collector
       - shell: !include-raw-escape: shell-scripts/jenkins_deploy_yamls.sh
       - shell: !include-raw-escape: shell-scripts/jenkins_cleanup_yaml.sh
       - system-groovy:
