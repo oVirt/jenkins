@@ -18,5 +18,5 @@
     concurrent: false
     properties:
         - build-discarder:
-            days-to-keep: 30
+            days-to-keep: 14
     dsl: !include-raw groovy-scripts/test-ovirt-repo.groovy
