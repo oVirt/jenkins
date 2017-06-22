@@ -1,6 +1,6 @@
 {%- if change.id == cause.id -%}
 
-Subject: Change {{ change.presentable_id }} failed system tests
+Subject: [CQ]: {{ change.presentable_id }} failed "{{ qname }}" system tests
 
 {% filter wordwrap -%}
 Change {{ change.presentable_id }} is probably the reason behind recent system
@@ -22,24 +22,29 @@ For failed test results see:
 
 {%- else -%}
 
-Subject: Change {{ change.presentable_id }} depends on a failed change
+Subject: [CQ]: {{ change.presentable_id }} failed "{{ qname }}" system tests, but isn't the failure root cause
 
 {% filter wordwrap -%}
-Change {{ cause.presentable_id }} that this change depends on or
-contains, was detected to cause testing failures by the "{{ qname }}"
-change queue.
+A system test invoked by the "{{ qname }}" change queue including change
+{{ change.presentable_id }} failed. However, this change seems not to be the
+root cause for this failure. Change {{ cause.presentable_id }} that this change
+depends on or is based on, was detected as the cause of the testing failures.
 {%- endfilter %}
 
 {% filter wordwrap -%}
 This change had been removed from the testing queue.
-Artifacts built from this change will not be released until the issue is fixed.
+Artifacts built from this change will not be released until either change
+{{ cause.presentable_id }} is fixed and this change is updated to refer to or
+rebased on the fixed version, or this change is modified to no longer depend on
+it.
 {%- endfilter %}
 {% if change.url is not none %}
 For further details about the change see:
 {{ change.url }}
 {% endif -%}
-{% if change.id != cause.id and cause.url is not none %}
-For further details about the change that caused the testing failures see:
+{% if cause.url is not none %}
+For further details about the change that seems to be the root cause behind the
+testing failures see:
 {{ cause.url }}
 {% endif -%}
 {% if test_url is not none %}
