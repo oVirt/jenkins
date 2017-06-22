@@ -56,10 +56,9 @@
     name: 'build-artifacts_publisher-when_timed'
     publishers:
       - trigger-parameterized-builds:
-        - project: 'deploy-to-{reponame}_{repotype}_{version}'
+        - project: 'deploy-to_ovirt-{version}_tested'
           predefined-parameters: |
-            BUILD_ID={project}_{distro}_$BUILD_NUMBER
-            BUILD_ARTIFACTS_JOBS=$BUILD_URL
+            REPOMAN_SOURCES=$BUILD_URL
           condition: SUCCESS
       - email-ext:
           recipients: '{email-to}'
