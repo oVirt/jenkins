@@ -39,3 +39,36 @@
             will need to create some 'build-artifacts' jobs if you want to
             participate in the 'experimental' flow.
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
+
+- job-template: &deploy-job-template
+    name: 'deploy-to_ovirt-{version}_tested'
+    properties:
+      - throttle:
+          max-per-node: 1
+          max-total: 1
+          option: project
+      - build-discarder:
+          days-to-keep: 14
+          artifact-num-to-keep: 2
+    parameters:
+      - text:
+          name: REPOMAN_SOURCES
+          default: ''
+          description: |
+            List of newline-separated repoman sources to get packages to deploy
+            from
+    builders:
+      - shell: |
+          [[ "$REPOMAN_SOURCES" == "" ]] && exit 1
+          (
+              echo "repo-extra-dir:{version}"
+              echo "$REPOMAN_SOURCES"
+          ) | ssh \
+              -o StrictHostKeyChecking=no \
+              deploy-ovirt-experimental@resources.ovirt.org
+    wrappers:
+      - ssh-agent-credentials:
+          users:
+            - deploy-to-tested
+    publishers:
+      - email-infra
