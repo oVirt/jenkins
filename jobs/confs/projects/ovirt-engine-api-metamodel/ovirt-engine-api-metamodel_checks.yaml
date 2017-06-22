@@ -6,9 +6,9 @@
       - master:
           branch: master
       - 1.1:
-          branch: master
-      - 1.0:
           branch: metamodel_1.1
+      - 1.0:
+          branch: metamodel_1.0
     stage: check-patch
     trigger: 'on-change'
     distro:
