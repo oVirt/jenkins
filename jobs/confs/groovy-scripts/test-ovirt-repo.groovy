@@ -259,6 +259,20 @@ def ack_test_repo(deploy_server_url, version, credentials) {{
             }}
         }}
     }}
+    deploy_to_tested(version)
+}}
+
+
+def deploy_to_tested(version) {{
+    def experimental_path='/srv/resources/repos/ovirt/experimental'
+    build(
+        job: "deploy-to_ovirt-${{version}}_tested",
+        parameters: [text(
+            name: 'REPOMAN_SOURCES',
+            value: "dir:$experimental_path/$version/latest.tested"
+        )],
+        wait: true,
+    )
 }}
 
 
