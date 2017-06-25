@@ -388,12 +388,14 @@ init_chroot() {
     echo "========== Initializing chroot"
     cat <<EOC
     $MOCK \\
+        --old-chroot \\
         --configdir="$conf_dir" \\
         --root="$chroot" \\
         --resultdir="$LOGS_DIR/${chroot}.init" \\
         --init
 EOC
     $MOCK \
+        --old-chroot \
         --configdir="$conf_dir" \
         --root="$chroot" \
         --resultdir="$LOGS_DIR/${chroot}.init" \
@@ -432,6 +434,7 @@ populate_mock() {
         fi
     done
     $MOCK \
+        --old-chroot \
         --configdir="$conf_dir" \
         --root="$chroot" \
         --resultdir="$LOGS_DIR/${chroot}.populate_mock" \
@@ -466,12 +469,14 @@ scrub_chroot() {
     echo "========== Scrubbing chroot"
     cat <<EOC
     $MOCK \\
+        --old-chroot \\
         --configdir="$confdir" \\
         --root="$chroot" \\
         --resultdir="$LOGS_DIR/${chroot}.scrub" \\
         --scrub=chroot
 EOC
     $MOCK \
+        --old-chroot \
         --configdir="$confdir" \
         --root="$chroot" \
         --resultdir="$LOGS_DIR/${chroot}.scrub" \
@@ -558,12 +563,14 @@ run_shell() {
     echo "INFO The working directory is mounted at \$HOME, you can just run 'cd' to get there"
     cat <<EOC
     $MOCK \\
+        --old-chroot \\
         --configdir="$mock_dir" \\
         --root="$mock_chroot" \\
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \\
         --shell
 EOC
     $MOCK \
+        --old-chroot \
         --configdir="$mock_dir" \
         --root="$mock_chroot" \
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \
@@ -604,6 +611,7 @@ run_script() {
     || return 1
     cat <<EOC
     $MOCK \\
+        --old-chroot \\
         --root="${mock_chroot}" \\
         --configdir="$mock_dir" \\
         --no-clean \\
@@ -650,6 +658,7 @@ run_script() {
 EOS
 EOC
     $MOCK \
+        --old-chroot \
         --root="${mock_chroot}" \
         --configdir="$mock_dir" \
         --no-clean \
