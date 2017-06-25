@@ -101,6 +101,9 @@
       - copy-create-job-artifact-vdsm-4.1-platforms:
           project-prefix: vdsm_4.1_build-artifacts-
           project-suffix: ""
+      - copy-create-job-artifact-vdsm-4.1-ppc64le-platforms:
+          project-prefix: vdsm_4.1_build-artifacts-
+          project-suffix: ""
 
       - copy-create-job-artifact-hosted-engine-4.1-platforms:
           project-prefix: ovirt-hosted-engine-ha_4.1_build-artifacts-
