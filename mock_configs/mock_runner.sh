@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-shopt -s nullglob
+shopt -s extglob nullglob
 
 SCRIPTS=()
 RUN_SHELL="false"
@@ -240,7 +240,10 @@ gen_mock_config() {
         proxy \
         repos_md5 \
         last_gen_repo_name \
-        chroot_setup_cmd
+        chroot_setup_cmd \
+        ci_distro \
+        ci_stage \
+        ci_reposfile
 
     base_conf="$(get_base_conf "$MOCK_CONF_DIR" "$chroot")"
     tmp_conf="$(get_temp_conf "$chroot" "$dist_label")"
@@ -354,6 +357,7 @@ config_opts['chroot_setup_cmd'] += ' ${packages[@]}'
 EOC
     fi
     [[ "$TRY_MIRRORS" ]] && gen_mirrors_conf "$TRY_MIRRORS" >> "$tmp_conf"
+    gen_ci_env_info_conf "$script" "$dist_label" >> "$tmp_conf"
     touch --date "yesterday" "$tmp_conf"
     echo "$tmp_conf"
     return 0
@@ -376,6 +380,21 @@ gen_mirrors_conf() {
     echo "    )"
     echo "finally:"
     echo "    sys.path.pop()"
+}
+
+
+gen_ci_env_info_conf() {
+    local script_path="${1:?}"
+    local ci_distro="${2:?}"
+    local script_name="${script_path##*/}"
+    local ci_stage="${script_name%%.*}"
+    local ci_reposfile
+
+    ci_reposfile="$(resolve_multiple_files "$script" "yumrepos" "$dist_label")"
+
+    echo "config_opts['environment']['STD_CI_DISTRO'] = \"$ci_distro\""
+    echo "config_opts['environment']['STD_CI_STAGE'] = \"$ci_stage\""
+    echo "config_opts['environment']['STD_CI_YUMREPOS']=\"$ci_reposfile\""
 }
 
 
@@ -486,6 +505,22 @@ EOC
     echo "Scrub chroot took $((end - start)) seconds"
     echo "============================"
     return $res
+}
+
+
+resolve_multiple_files() {
+    local path_to_script="${1?}"
+    local suffix="${2?}"
+    local distro="${3?}"
+    local script_name="${path_to_script%%.*}"
+    local stage="${script_name%.sh}"
+    local matches
+
+    matches=($(
+        printf "%s\n" "${script_name}"?(.*)".${suffix}.${distro}" | sort -r
+        printf "%s\n" "${script_name}"?(.*)".${suffix}" | sort -r
+    ))
+    echo "${matches[0]}"
 }
 
 
