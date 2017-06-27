@@ -226,12 +226,11 @@ def generate_gerrit_message(message, checksum, work_folder_cmd):
                                    md5=checksum)
 
 
-def push_changes(push_remote, host_key, work_folder_cmd):
+def push_changes(push_remote, work_folder_cmd):
     """
     Push changes to git remote repository
 
     :param string push_remote:     url to remote repo
-    :param string host_key:        ssh host_key
     :param string work_folder_cmd: git-dir parameter to git commands
     """
     gerrit_branch = os.environ['GERRIT_BRANCH']
@@ -240,7 +239,6 @@ def push_changes(push_remote, host_key, work_folder_cmd):
         return
     dest_to_push_to = \
         'HEAD:refs/for/{branch}'.format(branch=gerrit_branch.split('/')[-1])
-    add_private_key_to_known_hosts(host_key)
     git(work_folder_cmd, 'push', push_remote, dest_to_push_to,
         append_stderr=True)
 
@@ -320,7 +318,9 @@ def check_if_branch_exists(branch_to_check, work_folder_cmd):
 
 def update_yaml_and_push(yaml_paths, sources_doc, push_details, git_flags):
     """
-    dump the data into the yaml, commit and push
+    dump the data into the yaml, make sure know_hosts file
+    is updated properly, check if this commit hadn't already
+    been pushed, commit and push
 
     :param dictionary yaml_paths:  full and relative paths to sources yaml
     :param dictionary sources_doc: dictionary of sources_upstream
@@ -332,10 +332,10 @@ def update_yaml_and_push(yaml_paths, sources_doc, push_details, git_flags):
 
     checksum = hashlib.md5(yaml.dump(sources_doc,
                                      default_flow_style=False)).hexdigest()
+    add_private_key_to_known_hosts(push_details[1])
     if not check_if_similar_patch_pushed(push_details[0], checksum):
         commit_changes(yaml_paths['relative'], git_flags, checksum)
-        push_changes(push_details[0], push_details[1],
-                     git_flags['work_folder_cmd'])
+        push_changes(push_details[0], git_flags['work_folder_cmd'])
 
 
 def git(*args, **kwargs):
