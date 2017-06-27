@@ -210,8 +210,8 @@
       - inject: *standard-template-properties-inject
       - throttle: *standard-template-properties-throttle
       - build-discarder:
-          num-to-keep: 2
-          artifact-num-to-keep: 2
+          num-to-keep: 14
+          artifact-num-to-keep: 4
 
 # the following templates are for the new pipeline jobs
 - job-template: &standard-pipeline
