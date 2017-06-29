@@ -1,0 +1,7 @@
+- scm:
+    name: infra-ansible-gerrit
+    scm:
+      - gerrit:
+          project: infra-ansible
+          git-server: '{git-server}'
+
