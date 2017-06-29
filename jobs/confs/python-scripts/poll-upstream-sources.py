@@ -8,19 +8,23 @@ branch
 """
 
 import os
+import re
 import yaml
 import json
 import time
 import socket
 import logging
 import hashlib
+import collections
 from subprocess import check_output, STDOUT
 from os.path import expanduser
 from stat import S_IRWXU, S_IRGRP, S_IXGRP, S_IROTH, S_IXOTH
-from urlparse import urlparse
+from six import iteritems
+from exceptions import ValueError, StopIteration, TypeError
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger('poll-upstream-sources')
+PushDetails = collections.namedtuple('Push_details', 'push_url host_key')
 
 
 def main():
@@ -51,8 +55,6 @@ def main():
 
     push_details = get_push_details(push_doc, dst_path,
                                     git_flags['work_folder_cmd'])
-    if not push_details[0]:
-        return
 
     has_changed = update_git_sha_in_yaml(sources_doc.get('git', []))
 
@@ -243,37 +245,90 @@ def push_changes(push_remote, work_folder_cmd):
         append_stderr=True)
 
 
-def get_push_details(push_doc, dst_path, work_folder_cmd):
+def get_push_details(clone_to_push_map, dst_path,
+                     work_folder_cmd):
     """
     return the push remote url so git push will be possible
 
-    :param push_doc:        dictionary for mapping git clone
-    urls to git push urls
-    :param string dst_path: destination folder path
+    :param clone_to_push_map:      list of mapping git clone
+    urls to git push urls and ssh host key
+    :param string dst_path:        destination folder path
     :param string work_folder_cmd: git-dir parameter to git commands
 
-    :rtype: tuple
+    :rtype: PushDetails class
     :returns: push url and its host key
 
+    """
+    remote_url = get_remote_url_from_ws(work_folder_cmd)
+
+    if not isinstance(clone_to_push_map, collections.Iterable):
+        raise TypeError('push map file must be a list or is not iterable'
+                        '\nMeaning, it should consist of a list of'
+                        ' dictionaries that contains key of git clone url and'
+                        ' a dictionary value of one or two keys:\n1) push_url'
+                        ' - a git push url that is different than the clone'
+                        ' url\n2) host_key - a host verification key to avoid'
+                        ' ssh yes/no question.')
+
+    for clone_to_push_entry in clone_to_push_map:
+        if len(clone_to_push_entry) > 1:
+            raise ValueError('Each dictionary in the list should have only one'
+                             ' key. This key should be a regex describing the'
+                             ' clone url and what do we want out of it to be'
+                             ' added to the push url')
+
+        push_url_matcher, push_details_struct = \
+            next(iteritems(clone_to_push_entry))
+
+        match_obj = re.search(push_url_matcher, remote_url)
+        if not match_obj:
+            continue
+
+        push_details = parse_push_details_struct(push_details_struct)
+
+        return PushDetails(match_obj.expand(push_details.push_url),
+                           push_details.host_key)
+
+    # If there was no match between remote and push,exit
+    raise StopIteration("A match hadn't been found in the clone to push map"
+                        " map file.")
+
+
+def get_remote_url_from_ws(work_folder_cmd):
+    """
+    Get remote url using git remote command
+
+    :param string work_folder_cmd: git-dir parameter to git commands
+
+    :rtype: string
+    :returns: clone url
     """
     remotes = git(work_folder_cmd, 'remote', '-v', append_stderr=False)
     remote = [line.split() for line in remotes.splitlines()
               if line.split()[0] == 'origin' and line.split()[-1] == '(push)']
     if not remote:
-        return '', ''
+        raise ValueError('No appropriate remote url in work folder')
+    else:
+        return remote[0][1]
 
-    project_suffix = urlparse(remote[0][1]).path
-    base_url = remote[0][1].replace(project_suffix, '')
-    push_details = push_doc[base_url]
-    if 'host_key' not in push_details:
-        return '', ''
-    if 'push_url' not in push_details or not push_details['push_url']:
-        push_details['push_url'] = base_url
-    git_push_url = \
-        "{push_url}{project}".format(push_url=push_details['push_url'],
-                                     project=project_suffix)
 
-    return git_push_url, push_details['host_key']
+def parse_push_details_struct(push_details_struct):
+    """
+    validate and parse push details struct
+
+    :param dict push_details_struct: push url and possibly host key
+
+    :rtype: PushDetails class
+    :returns: push url matcher and host key
+    """
+    if 'push_url' not in push_details_struct:
+        raise ValueError('Push details struct, could not miss, push url.'
+                         ' If this is the case, it should be removed from'
+                         ' the clone to push map file')
+
+    host_key = push_details_struct.get('host_key', '')
+
+    return PushDetails(push_details_struct['push_url'], host_key)
 
 
 def add_private_key_to_known_hosts(key):
@@ -324,7 +379,7 @@ def update_yaml_and_push(yaml_paths, sources_doc, push_details, git_flags):
 
     :param dictionary yaml_paths:  full and relative paths to sources yaml
     :param dictionary sources_doc: dictionary of sources_upstream
-    :param string push_details:    url to remote repo and ssh host_key
+    :param namedtuple push_details:    url to remote repo and ssh host_key
     :param dictionary git_flags:   special commandline arguments for git
     """
     with open(yaml_paths['full'], 'w') as stream:
@@ -332,10 +387,10 @@ def update_yaml_and_push(yaml_paths, sources_doc, push_details, git_flags):
 
     checksum = hashlib.md5(yaml.dump(sources_doc,
                                      default_flow_style=False)).hexdigest()
-    add_private_key_to_known_hosts(push_details[1])
-    if not check_if_similar_patch_pushed(push_details[0], checksum):
+    add_private_key_to_known_hosts(push_details.host_key)
+    if not check_if_similar_patch_pushed(push_details.push_url, checksum):
         commit_changes(yaml_paths['relative'], git_flags, checksum)
-        push_changes(push_details[0], git_flags['work_folder_cmd'])
+        push_changes(push_details.push_url, git_flags['work_folder_cmd'])
 
 
 def git(*args, **kwargs):
