@@ -27,7 +27,7 @@
           successful-message: 'Configuration deployed'
           projects:
               - project-compare-type: 'PLAIN'
-                project-pattern: 'jenkins'
+                project-pattern: '{project}'
                 branches:
                     - branch-compare-type: 'PLAIN'
                       branch-pattern: 'master'
