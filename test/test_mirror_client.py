@@ -128,6 +128,7 @@ def expected_repos_proxied_cfg():
 @pytest.yield_fixture
 def mirror_server(mirrors_dict):
     mirror_file_path = '/mirrors.json'
+    mirror_corrupt_file_path = '/corrupt_mirrors.json'
     mirror_json_varname = 'ci_repos'
     mirror_data = {mirror_json_varname: mirrors_dict}
     mirror_json = json.dumps(mirror_data).encode('utf8')
@@ -139,6 +140,11 @@ def mirror_server(mirrors_dict):
                 self.send_header("Content-type", 'application/json')
                 self.end_headers()
                 self.wfile.write(mirror_json)
+            elif self.path == mirror_corrupt_file_path:
+                self.send_response(200)
+                self.send_header("Content-type", 'application/json')
+                self.end_headers()
+                self.wfile.write('{"this": "is", "bad": "json"')
             else:
                 self.send_error(404)
 
@@ -164,6 +170,7 @@ def mirror_server(mirrors_dict):
                     'http://{0}:8766'.format(server_address[0]),
                     mirror_file_path
                 ),
+                corrupt_url=urljoin(server_url, mirror_corrupt_file_path),
             )
         finally:
             environ.update(old_env)
@@ -209,6 +216,8 @@ def test_mirror_server_fixture(mirror_server, mirrors_dict):
     assert resp.status_code != 200
     with pytest.raises(requests.exceptions.ConnectionError):
         requests.get(mirror_server['bad_port_url'])
+    resp = requests.get(mirror_server['corrupt_url'])
+    assert resp.status_code == 200
 
 
 def test_mirrors_from_http(mirror_server, mirrors_dict):
@@ -220,6 +229,8 @@ def test_mirrors_from_http(mirror_server, mirrors_dict):
     assert result == {}
     result = mirrors_from_http(mirror_server['bad_port_url'])
     assert result == {}
+    with pytest.raises(ValueError):
+        mirrors_from_http(mirror_server['corrupt_url'])
 
 
 def test_mirrors_from_file(mirrors_dict, tmpdir):

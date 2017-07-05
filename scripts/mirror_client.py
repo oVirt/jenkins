@@ -11,9 +11,11 @@ import glob
 import logging
 import yaml
 from collections import Mapping
+from time import sleep
 
 HTTP_TIMEOUT = 30
 HTTP_RETRIES = 3
+HTTP_RETRY_DELAY_SEC = 0.2
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +116,7 @@ def mirrors_from_http(
     else:
         proxies = dict(http=None, https=None)
     try:
+        loop_exception = None
         for attempt in range(0, HTTP_RETRIES):
             try:
                 resp = requests.get(url, proxies=proxies, timeout=HTTP_TIMEOUT)
@@ -121,13 +124,15 @@ def mirrors_from_http(
                     return resp.json().get(json_varname, dict())
                 else:
                     return dict()
-            except ValueError:
+            except ValueError as e:
                 # When JSON parsing fails we get a ValueError
-                pass
+                loop_exception = e
             logger.warn('Encountered error getting data from mirrors server' +
                         ' in attempt {0}/{1}'.format(attempt, HTTP_RETRIES))
+            # Sleep a short while to let server sort its issues
+            sleep(HTTP_RETRY_DELAY_SEC)
         else:
-            raise
+            raise loop_exception
     except ConnectionError:
         logger.warn('Failed to connect to mirrors server')
         return dict()
