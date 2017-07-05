@@ -718,4 +718,10 @@ class JenkinsTestedChangeList(JenkinsChangeQueueObject, namedtuple(
                 DisplayableChangeWrapper(self.change_list[0]).presentable_id
             )
         else:
-            return 'Testing {0} changes'.format(len(self))
+            return 'Testing {0} changes:\n{1}'.format(
+                len(self),
+                ''.join(
+                    '- {0} - {1}\n'.format(chg.presentable_id, chg.url)
+                    for chg in map(DisplayableChangeWrapper, self.change_list)
+                )
+            )

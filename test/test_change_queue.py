@@ -8,6 +8,7 @@ from math import log, ceil
 from copy import copy
 from six.moves import range
 from collections import namedtuple
+from textwrap import dedent
 import re
 try:
     from unittest.mock import MagicMock, call, sentinel
@@ -572,7 +573,9 @@ class TestJenkinsChangeQueue(object):
 class TestJenkinsTestedChangeList(object):
     @staticmethod
     def str_to_strmchg(s):
-        return TestChangeQueueWithStreams.str_to_chg(s)
+        change = TestChangeQueueWithStreams.str_to_chg(s)
+        change.url = 'http://foo/bar/{0}'.format(change.id)
+        return change
 
     def test_visible_changes(self):
         changes = list(map(self.str_to_strmchg, ['1sA', 2, '3sB', '4sA']))
@@ -599,4 +602,11 @@ class TestJenkinsTestedChangeList(object):
         jtcl = JenkinsTestedChangeList('k1', [change])
         assert jtcl.get_test_summary() == 'Testing a single change: 1'
         jtcl = JenkinsTestedChangeList('k1', changes)
-        assert jtcl.get_test_summary() == 'Testing 3 changes'
+        assert jtcl.get_test_summary() == dedent(
+            '''
+            Testing 3 changes:
+            - 1 - http://foo/bar/1
+            - 2 - http://foo/bar/2
+            - 3 - http://foo/bar/3
+            '''
+        ).lstrip()
