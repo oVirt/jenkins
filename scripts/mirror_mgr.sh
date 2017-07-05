@@ -35,6 +35,9 @@ LOCK_BASE="$HOME"
 
 OLD_MD_TO_KEEP=100
 
+HTTP_SELINUX_TYPE="httpd_sys_content_t"
+HTTP_FILE_MODE=644
+
 main() {
     # Launch the command function according to the command given on the
     # command line
@@ -133,13 +136,34 @@ cmd_write_latest_lists() {
 
     local list_file_path="$MIRRORS_MP_BASE/$repo_type/all_latest"
     local lock_name="latest_lists_$repo_type"
+    local fifo format_fifos=() format_pids=()
+    local list_pid
 
     wait_for_lock "$lock_name"
-    echo "Writing lates index files for $repo_type repos"
-    list_latest "$repo_type" | tee > /dev/null \
-        >(latest_format_yaml "$varname" > "${list_file_path}.yaml") \
-        >(latest_format_json "$varname" > "${list_file_path}.json") \
-        >(latest_format_python "$varname" > "${list_file_path}.py")
+    echo "Writing latest index files for $repo_type repos"
+    # Start formatter processes in the background with named fifos for input
+    for format in yaml json py; do
+        fifo="$(mktemp -u)"; mkfifo "$fifo"
+        format_fifos+=("$fifo")
+        latest_format_$format "$varname" < "$fifo" | \
+            atomic_write "${list_file_path}.${format}" \
+                "$HTTP_FILE_MODE" "$HTTP_SELINUX_TYPE" &
+        format_pids+=($!)
+    done
+    # write latest repos to all named fifos in parallel. Start it in the BG so
+    # we can use the loop below to check return value
+    list_latest "$repo_type" | tee "${format_fifos[@]}" > /dev/null &
+    list_pid=$!
+    # Wait for all background processes, return failure if anyone fails
+    for pid in $list_pid ${format_pids[@]}; do
+        wait $pid && continue
+        # Lines below only run if a process fails:
+        wait
+        rm -f "${format_fifos[@]}"
+        release_lock "$lock_name"
+        return 1
+    done
+    rm -f "${format_fifos[@]}"
     release_lock "$lock_name"
 }
 
@@ -274,7 +298,7 @@ latest_format_json() {
     echo "} }"
 }
 
-latest_format_python() {
+latest_format_py() {
     local varname="${1:-latest_ci_repos}"
     local indention="${2:-}"
     echo "${indention}${varname} = {"
@@ -296,6 +320,19 @@ repo_url() {
     local snapshot="${3:-base}"
 
     echo "$MIRRORS_HTTP_BASE/$repo_type/$repo_name/$snapshot"
+}
+
+atomic_write() {
+    local final_file="${1:?}"
+    local mode="${2:?}"
+    local selinux_type="${3:?}"
+    local tmp_file
+
+    tmp_file="$(mktemp)" && \
+        chcon -t "$selinux_type" "$tmp_file" && \
+        chmod "$mode" "$tmp_file" && \
+        cat > "$tmp_file" && \
+        mv -f "$tmp_file" "$final_file"
 }
 
 wait_for_lock() {
