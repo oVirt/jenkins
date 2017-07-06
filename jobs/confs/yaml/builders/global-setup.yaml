@@ -1,0 +1,4 @@
+- builder:
+    name: global-setup
+    builders:
+      - shell: !include-raw: shell-scripts/global_setup.sh

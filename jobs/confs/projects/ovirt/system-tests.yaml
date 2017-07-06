@@ -120,7 +120,6 @@
           branch: master
           git-server: 'gerrit.ovirt.org'
     builders:
-      - cleanup-slave
       - system-tests:
           version: ${ENGINE_VERSION}
           suite_type : ${SUITE_TYPE}

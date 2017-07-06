@@ -14,7 +14,6 @@
           branch: 'master'
           git-server: '{git-server}'
     builders:
-      - cleanup-slave
       - system-tests:
           version: '{version}'
           suite_type : basic
@@ -30,8 +29,7 @@
     <<: *basic_system_tests
     name: '{project}_{version}_he-system-tests'
     builders:
-      - cleanup-slave
-      - 'system-tests':
+      - system-tests:
           version: '{version}'
           suite_type : he-basic
           chroot_distro: '{chroot_distro}'
@@ -46,8 +44,7 @@
     <<: *basic_system_tests
     name: '{project}_{version}-ansible-system-tests'
     builders:
-      - cleanup-slave
-      - 'system-tests':
+      - system-tests:
           version: '{version}'
           suite_type : ansible
           chroot_distro: '{chroot_distro}'
@@ -62,8 +59,7 @@
     <<: *basic_system_tests
     name: '{project}_{version}_hc-system-tests'
     builders:
-      - cleanup-slave
-      - 'system-tests':
+      - system-tests:
           version: '{version}'
           suite_type : hc-basic
           chroot_distro: '{chroot_distro}'
@@ -82,7 +78,7 @@
     builders:
       - shell: "rm -rf $WORKSPACE/ovirt-system-tests/images || true"
       - cleanup-slave
-      - 'system-tests':
+      - system-tests:
           version: '{version}'
           suite_type : image-ng
           chroot_distro: '{chroot_distro}'
