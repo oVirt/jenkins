@@ -22,7 +22,6 @@ umount_everyhting_inside() {
     return $res
 }
 
-
 safe_remove() {
     local dir="${1?}"
     [[ -e "$dir" ]] || return 0
@@ -36,7 +35,6 @@ safe_remove() {
     return 0
 }
 
-
 cleanup_home() {
     local dir
     for dir in /home/*; do
@@ -46,7 +44,6 @@ cleanup_home() {
         fi
     done
 }
-
 
 cleanup_var() {
     local res=0
@@ -63,7 +60,6 @@ cleanup_var() {
     echo "done"
     return $res
 }
-
 
 cleanup_postgres() {
     local db dbs
@@ -87,7 +83,6 @@ cleanup_postgres() {
     echo "done"
     return 0
 }
-
 
 cleanup_logs() {
     echo "Emptying some common logs"
@@ -130,7 +125,6 @@ cleanup_journal() {
     sudo service systemd-journald restart
 }
 
-
 cleanup_workspaces() {
     local cur_workspace="${1?}"
     local res=0
@@ -150,7 +144,6 @@ cleanup_workspaces() {
     done
     return $res
 }
-
 
 cleanup_lago_network_interfaces() {
     local links \
@@ -186,7 +179,6 @@ cleanup_lago_network_interfaces() {
     return 0
 }
 
-
 cleanup_lago_vms() {
     local vm \
         vms
@@ -211,7 +203,6 @@ cleanup_lago_vms() {
     return 0
 }
 
-
 cleanup_lago_virtual_network_interfaces() {
     local links \
         link
@@ -234,7 +225,6 @@ cleanup_lago_virtual_network_interfaces() {
     fi
     return 0
 }
-
 
 cleanup_loop_devices() {
     echo "Making sure there are no device mappings..."
@@ -263,31 +253,73 @@ cleanup_libvirt() {
     for UUID in $(sudo virsh list --all --uuid); do
         sudo -E virsh destroy $UUID || :
         sleep 2
-        sudo -E virsh undefine --remove-all-storage --storage vda --snapshots-metadata $UUID || :
+        sudo -E virsh undefine --remove-all-storage --snapshots-metadata $UUID || :
     done
+}
+
+cleanup_docker () {
+    # for now, we want to keep only centos and fedora official images
+    local -r DOCKER_REPOS_WHITELIST="centos|fedora|"
+    local fail=false
+
+    if ! [[ -x /bin/docker ]]; then
+        echo "CLEANUP: Skipping Docker cleanup because Docker not installed"
+        return 0
+    fi
+
+    echo "CLEANUP: Stop all running containers and remove unwanted images"
+    sudo docker ps -q -a | xargs -r sudo docker rm -f
+    [[ $? -ne 0 ]] && fail=true
+    sudo docker images --format "{{.Repository}},{{.ID}}" | \
+        sed -nr \
+            -e "/^docker.io\/($DOCKER_REPOS_WHITELIST)(\/?[^\/]+)?,/d" \
+            -e "s/^.*,(.*)/\1/p" | \
+        xargs -r sudo docker rmi -f
+    [[ $? -ne 0 ]] && fail=true
+
+    sudo systemctl restart docker
+    [[ $? -ne 0 ]] && fail=true
+
+    if ! $fail; then
+        return 0
+    fi
+    # if we've got here, something went wrong
+    echo "ERROR: Failed to clean docker images"
+    return 1
 }
 
 main() {
     local workspace="${1?}"
-    echo "###################################################################"
-    echo "#    Cleaning up slave                                            #"
-    echo "###################################################################"
+    local failed=false
+
+    echo "###############################################################"
+    echo "#    Cleaning up slave                                        #"
+    echo "###############################################################"
     sudo df -h || :
     echo "---------------------------------------------------------------"
-    cleanup_postgres || :
-    cleanup_journal || :
-    cleanup_var || :
-    cleanup_logs || :
-    cleanup_workspaces "$workspace" || :
-    cleanup_home || :
-    cleanup_loop_devices || :
-    cleanup_lago || :
-    cleanup_libvirt || :
+    cleanup_postgres || failed=true
+    cleanup_journal || failed=true
+    cleanup_var || failed=true
+    cleanup_logs || failed=true
+    cleanup_workspaces "$workspace" || failed=true
+    cleanup_home || failed=true
+    cleanup_loop_devices || failed=true
+    cleanup_lago || failed=true
+    cleanup_libvirt || failed=true
+    cleanup_docker || failed=true
     echo "---------------------------------------------------------------"
     sudo df -h || :
-    echo "###################################################################"
-    echo "#    Slave cleanup done                                           #"
-    echo "###################################################################"
+    if $failed; then
+        echo "###############################################################"
+        echo "#    Slave cleanup done: Some steps FAILED!                   #"
+        echo "###############################################################"
+        return 1
+    else
+        echo "###############################################################"
+        echo "#    Slave cleanup done: SUCCESS                              #"
+        echo "###############################################################"
+        return 0
+    fi
 }
 
 

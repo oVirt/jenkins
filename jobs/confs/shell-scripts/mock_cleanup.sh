@@ -17,33 +17,6 @@ UMOUNT_RETRIES="${UMOUNT_RETRIES:-3}"
 UMOUNT_RETRY_DELAY="${UMOUNT_RETRY_DELAY:-1s}"
 
 
-docker_cleanup () {
-    # for now, we want to keep only centos and fedora official images
-    local -r DOCKER_REPOS_WHITELIST="centos|fedora|"
-    local fail=false
-
-    echo "CLEANUP: Stop all running containers and remove unwanted images"
-    sudo docker ps -q -a | xargs -r sudo docker rm -f
-    [[ $? -ne 0 ]] && fail=true
-    sudo docker images --format "{{.Repository}},{{.ID}}" | \
-        sed -nr \
-            -e "/^docker.io\/($DOCKER_REPOS_WHITELIST)(\/?[^\/]+)?,/d" \
-            -e "s/^.*,(.*)/\1/p" | \
-        xargs -r sudo docker rmi -f
-    [[ $? -ne 0 ]] && fail=true
-
-    sudo systemctl restart docker
-    [[ $? -ne 0 ]] && fail=true
-
-    if ! $fail; then
-        return 0
-    fi
-    # if we've got here, something went wrong
-    echo "ERROR: Failed to clean docker images"
-    return 1
-}
-
-
 safe_umount() {
     local mount="${1:?}"
     local attempt
@@ -130,18 +103,6 @@ find /var/cache/mock/ -mindepth 1 -maxdepth 1 -type d -mtime +2 -print0 | \
     xargs -0 -tr sudo rm -rf
 # We make no effort to leave around caches that may still be in use because
 # packages installed in them may go out of date, so may as well recreate them
-
-# Drop all left over libvirt domains
-for UUID in $(virsh list --all --uuid); do
-  virsh destroy $UUID || :
-  sleep 2
-  virsh undefine --remove-all-storage --snapshots-metadata $UUID || :
-done
-
-if [[ -x /bin/docker ]]; then
-    #Cleanup docker leftovers.
-    docker_cleanup || failed=true
-fi
 
 if $failed; then
     echo "Cleanup script failed, propegating failure to job"
