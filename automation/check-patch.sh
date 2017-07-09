@@ -11,7 +11,9 @@ main() {
     local changed_files
     changed_files="$(git show --pretty="format:" --name-only)"
 
-    if grep -q 'data/Dockerfiles' <<< "$changed_files"; then
+    # These are the files which are involved with the containers flow
+    local containers_flow="Dockerfiles|collect_artifacts.sh|standard-stage.yaml|cleanup_slave.sh"
+    if grep -qE "(${containers_flow})" <<< "$changed_files"; then
         # docker is not supported in official el6
         if ! grep -qE '^(Red Hat|CentOS) release 6\.' /etc/system-release; \
             then test_docker_container
@@ -109,9 +111,11 @@ test_rpmbuild() {
 }
 
 test_docker_container() {
-    #Build a dummy container and run it
-    docker build -t check_patch_container data/Dockerfiles/
-    docker run check_patch_container
+    # Build a dummy container and run it
+    # we also tag it with exported-artifacts to test the export
+    local export_tag="exported-artifacts"
+    docker build -t check_patch_container:$export_tag data/Dockerfiles/
+    docker run check_patch_container:$export_tag
 }
 
 main "$@"
