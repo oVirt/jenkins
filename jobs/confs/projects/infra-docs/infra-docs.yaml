@@ -9,7 +9,7 @@
     stage:
       - check-patch
       - check-merged
-    distro: fc23
+    distro: el7
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
