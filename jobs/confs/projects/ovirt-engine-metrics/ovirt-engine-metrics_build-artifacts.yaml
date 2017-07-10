@@ -6,7 +6,7 @@
       - master:
           branch: master
       - 4.1:
-          branch: master
+          branch: ovirt-engine-metrics-4.1
     stage: build-artifacts
     distro:
         - el7
@@ -31,7 +31,7 @@
       - master:
           branch: master
       - 4.1:
-          branch: master
+          branch: ovirt-engine-metrics-4.1
     stage: check-patch
     distro:
       - el7
