@@ -1,0 +1,34 @@
+- ovirt_ansible_common:
+    name: ovirt_ansible_common
+    ovirt-ansible-common--key: &ovirt-ansible-common
+      project: ovirt-ansible
+      version:
+        - master:
+            branch: master
+      distro:
+        - fc24
+        - fc25
+        - fc26
+        - el7
+      trigger: 'on-change'
+      arch: x86_64
+      with-deploy: always
+      org: oVirt
+      github-auth-id: ovirt-infra
+
+- project:
+    <<: *ovirt-ansible-common
+    name: ovirt-ansible_check-patch_standard
+    stage: 'check-patch'
+    node-filter: '{distro}'
+    jobs:
+      - '{project}_{version}_github_check-patch-{distro}-{arch}'
+
+- project:
+    <<: *ovirt-ansible-common
+    name: ovirt-ansible_checks_standard
+    stage:
+      - build-artifacts
+      - check-merged
+    jobs:
+      - '{project}_{version}_github_{stage}-{distro}-{arch}'
