@@ -37,8 +37,7 @@ extra_packages() {
 docker_setup () {
     #Install docker engine and start the service
     sudo yum -y install docker
-    sudo systemctl restart docker
-    if [[ $? -ne 0 ]]; then
+    if ! sudo systemctl start docker; then
         echo "[DOCKER SETUP] Failed to start docker.service"
         return 1
     fi
