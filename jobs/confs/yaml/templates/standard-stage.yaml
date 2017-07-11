@@ -349,8 +349,6 @@
     <<: *standard-template
     <<: *github-common
     name: '{project}_{version}_github_{stage}-{distro}-{arch}'
-    reponame: '{reponame}'
-    repotype: '{repotype}'
     triggers:
       - 'github-build-check':
           project: '{project}'
@@ -361,17 +359,10 @@
           distro: '{distro}'
           arch: '{arch}'
     publishers:
-      - standard-publisher:
+      - '{stage}_publisher':
           project: '{project}'
-      - conditional-publisher:
-          - condition-kind: '{with-deploy}'
-            action:
-              - trigger-parameterized-builds:
-                  - project: 'deploy-to-{deploy-to}_{repotype}_{version}'
-                    predefined-parameters: |
-                      BUILD_ID={project}_{distro}_$BUILD_NUMBER
-                      BUILD_ARTIFACTS_JOBS=$BUILD_URL
-                    condition: SUCCESS
+          version: '{version}'
+          with-deploy: '{with-deploy}'
 
 - job-template:
     <<: *standard-template

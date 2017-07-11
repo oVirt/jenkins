@@ -65,6 +65,32 @@
                             total-all: 0
 
 - publisher:
+    name: 'check-patch_publisher'
+    publishers:
+      - standard-publisher:
+          project: '{project}'
+
+- publisher:
+    name: 'check-merged_publisher'
+    publishers:
+      - standard-publisher:
+          project: '{project}'
+
+- publisher:
+    name: 'build-artifacts_publisher'
+    publishers:
+      - standard-publisher:
+          project: '{project}'
+      - conditional-publisher:
+          - condition-kind: '{with-deploy}'
+            action:
+              - trigger-parameterized-builds:
+                - project: 'deploy-to_ovirt-{version}_tested'
+                  predefined-parameters: |
+                    REPOMAN_SOURCES=$BUILD_URL
+                  condition: SUCCESS
+
+- publisher:
     name: 'build-artifacts_publisher-when_on-change'
     publishers: {}
 
