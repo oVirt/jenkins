@@ -24,5 +24,31 @@
             failed: true
             unstable: true
             notbuilt: true
-          silent: true
+          silent-start: true
+          failure-message: >
+
+            Failed to submit this change to the change queue(s), the
+            'infra' team was already notified.
+          successful-message: >
+
+            This change was successfully submitted to the change
+            queue(s) for system testing.
+          unstable-message: >
+
+            It seems that this change attempts to target one or more
+            non-existent change queues.
+
+            This could be because support for a version of oVirt that
+            this change targets had ended or because a change queue for
+            it was not yet created.
+
+            Please remove 'build-artifacts' jobs targeting non-existent
+            change queues.
+          notbuilt-message: >
+
+            This change was not submitted to any change queues for
+            system testing. You will need to create some
+            'build-artifacts' jobs if you want changes to be submitted
+            to change queues, take part in the system tests and be
+            deployed to the nightly snapshot repositories.
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
