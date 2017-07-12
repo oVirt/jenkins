@@ -722,28 +722,31 @@ run_scripts() {
         script \
         start \
         end \
-        res
+        res \
+        exec_script
 
     mock_conf="$(get_base_conf "$MOCK_CONF_DIR" "${mock_env#*:}")" \
     || return 1
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
     mock_dir="${mock_conf%/*}"
+    distro_id="${mock_env%%:*}"
     for script in "${scripts[@]}"; do
-        [[ -r "$script" ]] \
+        exec_script="$(resolve_file "$script" "sh" "$distro_id")"
+        [[ -r "$exec_script" ]] \
         || {
-            echo "ERROR: Script $script does not exist or is not readable."
+            echo "ERROR: Script $exec_script does not exist or is not readable."
             return 1
         }
         start="$(date +%s)"
         echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        echo "@@ $(date) Running chroot for script: $script"
+        echo "@@ $(date) Running chroot for script: $exec_script"
         echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        run_script "$mock_conf" "$mock_env" "$script"
+        run_script "$mock_conf" "$mock_env" "$exec_script"
         res=$?
         end="$(date +%s)"
         echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        echo "@@ $(date) $script chroot finished"
+        echo "@@ $(date) $exec_script chroot finished"
         echo "@@      took $((end - start)) seconds"
         echo "@@      rc = $res"
         echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
