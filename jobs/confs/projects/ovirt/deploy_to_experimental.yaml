@@ -1,18 +1,4 @@
 - project:
-    name: deploy-to-ovirt_experimental-versioned
-    node: ''
-    project:
-      - ovirt-engine
-    version:
-      - master
-      - 4.1
-      - 4.0
-    reponame: ovirt
-    repotype: experimental
-    jobs:
-      - 'deploy-to-{reponame}_{repotype}_{version}'
-
-- project:
     name: deploy-to-ovirt_experimental
     reponame: ovirt
     repotype: experimental
