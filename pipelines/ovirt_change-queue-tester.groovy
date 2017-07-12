@@ -3,6 +3,7 @@
 def loader_main(loader) {
     def ovirt_release = get_queue_ovirt_release()
     def has_changes
+    def change_data
     // Copy methods from loader to this script
     metaClass.checkout_repo = loader.&checkout_repo
     metaClass.checkout_jenkins_repo = loader.&checkout_jenkins_repo
@@ -17,7 +18,6 @@ def loader_main(loader) {
     }
     try {
         try {
-            def change_data
             stage('loading changes data') {
                 prepare_python_env()
                 change_data = load_change_data(ovirt_release)
@@ -53,7 +53,7 @@ def loader_main(loader) {
         ])
     }
     stage('publishing successful artifacts') {
-        //TODO
+        deploy_to_tested(ovirt_release, change_data)
     }
 }
 
@@ -385,6 +385,18 @@ def mock_runner(script, distro, mirrors=null) {
             $mirrors_arg \
             "${distro}.*x86_64"
     """
+}
+
+def deploy_to_tested(version, change_data) {
+    def extra_sources = make_extra_sources(change_data.builds)
+    build(
+        job: "deploy-to_ovirt-${version}_tested",
+        parameters: [text(
+            name: 'REPOMAN_SOURCES',
+            value: extra_sources,
+        )],
+        wait: true,
+    )
 }
 
 
