@@ -1,6 +1,0 @@
-- project:
-    name: deploy-to-ovirt_experimental
-    reponame: ovirt
-    repotype: experimental
-    jobs:
-      - 'deploy-to-{reponame}_{repotype}'

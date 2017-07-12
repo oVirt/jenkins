@@ -1,16 +1,3 @@
-- project:
-    name: "test_ovirt_experimental_repo"
-    version:
-        - 4.1:
-            chroot_distro: el7
-        - master:
-            chroot_distro: el7
-
-    reponame: ovirt
-    repotype: experimental
-    jobs:
-      - 'test-repo_{reponame}_{repotype}_{version}'
-
 - job-template:
     name: 'test-repo_{reponame}_{repotype}_{version}'
     chroot_distro: '{chroot_distro}'
