@@ -3,6 +3,7 @@ echo "shell-scripts/cleanup_slave.sh"
 
 WORKSPACE="${WORKSPACE?}"
 export PATH=$PATH:/usr/sbin
+DOCKER_REPOS_WHITELIST="centos|fedora|"
 
 umount_everyhting_inside() {
     local mydir="${1?}"
@@ -258,8 +259,6 @@ cleanup_libvirt() {
 }
 
 cleanup_docker () {
-    # for now, we want to keep only centos and fedora official images
-    local -r DOCKER_REPOS_WHITELIST="centos|fedora|"
     local fail=false
 
     if ! [[ -x /bin/docker ]]; then
@@ -270,9 +269,11 @@ cleanup_docker () {
     echo "CLEANUP: Stop all running containers and remove unwanted images"
     sudo docker ps -q -a | xargs -r sudo docker rm -f
     [[ $? -ne 0 ]] && fail=true
-    sudo docker images --format "{{.Repository}}:{{.Tag}}" | \
-        grep -Ev "^docker\.io/(${DOCKER_REPOS_WHITELIST})[:/].*" | \
-        xargs -r sudo docker rmi -f
+    sudo docker images --format "{{.ID}}" | grep -vFxf <( \
+        sudo docker images --format {{.Repository}}:{{.ID}} | \
+        grep -E "^docker\.io/(${DOCKER_REPOS_WHITELIST})[:/].*" | \
+        cut -d: -f2
+    ) | xargs -r sudo docker rmi -f
     [[ $? -ne 0 ]] && fail=true
 
     if ! $fail; then
