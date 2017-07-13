@@ -1,5 +1,5 @@
 - job-template: &basic_system_tests
-    name: '{project}_{version}_system-tests_{flavor}'
+    name: 'system-tests_{suite_type}-suite-{version}'
     node: '{node-filter}'
     parameters:
       - gerrit-params:
@@ -16,59 +16,18 @@
     builders:
       - system-tests:
           version: '{version}'
-          suite_type : basic
+          suite_type : '{suite_type}'
           chroot_distro: '{chroot_distro}'
     publishers:
       - system-tests:
           version: '{version}'
-          suite_type : basic
+          suite_type : '{suite_type}'
           chroot_distro: '{chroot_distro}'
           email-to: '{email-to}'
 
 - job-template:
     <<: *basic_system_tests
-    name: '{project}_{version}_he-system-tests'
-    builders:
-      - system-tests:
-          version: '{version}'
-          suite_type : he-basic
-          chroot_distro: '{chroot_distro}'
-    publishers:
-      - system-tests:
-          version: '{version}'
-          suite_type : he-basic
-          chroot_distro: '{chroot_distro}'
-          email-to: '{email-to}'
-
-- job-template:
-    <<: *basic_system_tests
-    name: '{project}_{version}-ansible-system-tests'
-    builders:
-      - system-tests:
-          version: '{version}'
-          suite_type : ansible
-          chroot_distro: '{chroot_distro}'
-    publishers:
-      - system-tests:
-          version: '{version}'
-          suite_type : ansible
-          chroot_distro: '{chroot_distro}'
-          email-to: '{email-to}'
-
-- job-template:
-    <<: *basic_system_tests
-    name: '{project}_{version}_hc-system-tests'
-    builders:
-      - system-tests:
-          version: '{version}'
-          suite_type : hc-basic
-          chroot_distro: '{chroot_distro}'
-    publishers:
-      - system-tests:
-          version: '{version}'
-          suite_type : hc-basic
-          chroot_distro: '{chroot_distro}'
-          email-to: '{email-to}'
+    name: '{project}_{version}_system-tests_{flavor}'
 
 - job-template:
     <<: *basic_system_tests
@@ -80,11 +39,5 @@
       - cleanup-slave
       - system-tests:
           version: '{version}'
-          suite_type : image-ng
+          suite_type: '{suite_type}'
           chroot_distro: '{chroot_distro}'
-    publishers:
-      - system-tests:
-          version: '{version}'
-          suite_type : image-ng
-          chroot_distro: '{chroot_distro}'
-          email-to: '{email-to}'
