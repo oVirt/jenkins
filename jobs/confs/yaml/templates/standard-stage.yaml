@@ -313,6 +313,7 @@
     name: github-common
     with-deploy: always
     properties:
+      - inject: *standard-template-properties-inject
       - github:
           url: 'https://github.com/{org}/{project}'
       - build-discarder:
