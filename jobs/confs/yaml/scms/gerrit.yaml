@@ -11,8 +11,16 @@
 - scm:
     name: gerrit
     scm:
+      - gerrit-with-proto:
+          project: '{project}'
+          git-server: '{git-server}'
+          git-proto: git
+
+- scm:
+    name: gerrit-with-proto
+    scm:
       - git:
-          url: 'git://{git-server}/{project}.git'
+          url: '{git-proto}://{git-server}/{project}.git'
           branches:
             - $GERRIT_BRANCH
           basedir: '{project}'
