@@ -1,0 +1,22 @@
+- project: &project-base
+    name: stage-stdci1
+    project: stage-stdci1
+    stage:
+      - check-patch
+      - check-merged
+    trigger: 'on-change'
+    version:
+      - dummy-1:
+          branch: master
+    distro:
+      - el7
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    name: stage-stdci-build
+    <<: *project-base
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+      - '{project}_{version}_{stage}-on-demand-{distro}-{arch}'

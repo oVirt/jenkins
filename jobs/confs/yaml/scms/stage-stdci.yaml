@@ -1,0 +1,7 @@
+- scm:
+    name: stage-stdci1-gerrit
+    scm:
+      - gerrit-with-proto:
+          project: stage-stdci1
+          git-server: 'gerrit-staging.phx.ovirt.org'
+          git-proto: https
