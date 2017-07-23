@@ -1,52 +1,40 @@
-- trigger:
-    name: github-pull-check-patch
+- github-pull-trigger-base:
+    name: github-pull-trigger-base
     triggers:
-      - github-pull-request:
+      - github-pull-request: &github-pull-trigger-base
           org-list:
             - '{org}'
-          trigger-phrase: '^(ci test please|ci :(\+1|thumbsup):).*'
+          only-trigger-phrase: true
           github-hooks: true
           permit-all: false
           auto-close-on-fail: false
           allow-whitelist-orgs-as-admins: true
-
           white-list-target-branches:
             - '{branch}'
           auth-id: '{github-auth-id}'
           status-context: '{distro}-{arch}'
+
+- trigger:
+    name: github-pull-check-patch
+    triggers:
+      - github-pull-request:
+          <<: *github-pull-trigger-base
+          trigger-phrase: '^(ci test please|ci :(\+1|thumbsup):).*'
+          only-trigger-phrase: false
 
 - trigger:
     name: github-build-check
     triggers:
       - github-pull-request:
-          org-list:
-            - '{org}'
+          <<: *github-pull-trigger-base
           trigger-phrase: '^(ci build please|ci :(\+1|thumbsup):).*'
-          only-trigger-phrase: true
-          github-hooks: true
-          permit-all: false
-          auto-close-on-fail: false
-          allow-whitelist-orgs-as-admins: true
-          white-list-target-branches:
-            - '{branch}'
-          auth-id: '{github-auth-id}'
-          status-context: '{distro}-{arch}'
 
 - trigger:
     name: github-pull-check-merged
     triggers:
       - github-pull-request:
-          org-list:
-            - '{org}'
+          <<: *github-pull-trigger-base
           trigger-phrase: '^(ci merge please|ci :shipit:).*'
-          only-trigger-phrase: true
-          github-hooks: true
-          permit-all: false
-          auto-close-on-fail: false
-          allow-whitelist-orgs-as-admins: true
-          white-list-target-branches:
-            - '{branch}'
-          auth-id: '{github-auth-id}'
           status-context: 'merge-pipeline'
 
 - trigger:

@@ -1,10 +1,8 @@
-- trigger:
-    name: build-artifacts_trigger_on-change
+- gerrit-trigger-base:
+    name: gerrit-trigger-base
     triggers:
-      - gerrit:
+      - gerrit: &gerrit-trigger-base
           server-name: '{gerrit-server}'
-          trigger-on:
-              - change-merged-event
           escape-quotes: true
           projects:
               - project-compare-type: 'PLAIN'
@@ -17,6 +15,14 @@
             running gerrit triggered jobs has been set in place, if
             you feel like you should be in it, please contact infra at
             ovirt dot org.
+
+- trigger:
+    name: build-artifacts_trigger_on-change
+    triggers:
+      - gerrit:
+          <<: *gerrit-trigger-base
+          trigger-on:
+              - change-merged-event
 
 - trigger:
     name: build-artifacts_trigger_on-custom-repo-change
@@ -35,24 +41,12 @@
     name: check-patch_trigger_on-change
     triggers:
       - gerrit:
-          server-name: '{gerrit-server}'
+          <<: *gerrit-trigger-base
           trigger-on:
               - draft-published-event
               - patchset-created-event:
                   exclude-drafts: true
                   exclude-no-code-change: true
-          escape-quotes: true
-          projects:
-              - project-compare-type: 'PLAIN'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'PLAIN'
-                    branch-pattern: '{branch}'
-          notbuilt-message: |
-            To avoid overloading the infrastructure, a whitelist for
-            running gerrit triggered jobs has been set in place, if
-            you feel like you should be in it, please contact infra at
-            ovirt dot org.
 
 - trigger:
     name: check-patch_trigger_on-custom-repo-change
@@ -66,22 +60,10 @@
     name: build-artifacts-on-demand_trigger_on-comment-added
     triggers:
       - gerrit:
-          server-name: '{gerrit-server}'
+          <<: *gerrit-trigger-base
           trigger-on:
               - comment-added-contains-event:
                   comment-contains-value: 'ci please build'
-          escape-quotes: true
-          projects:
-              - project-compare-type: 'PLAIN'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'PLAIN'
-                    branch-pattern: '{branch}'
-          notbuilt-message: |
-            To avoid overloading the infrastructure, a whitelist for
-            running gerrit triggered jobs has been set in place, if
-            you feel like you should be in it, please contact infra at
-            ovirt dot org.
 
 - trigger:
     name: build-artifacts-on-demand_trigger_on-custom-repo-comment-added
@@ -95,21 +77,9 @@
     name: check-merged_trigger_on-change
     triggers:
       - gerrit:
-          server-name: '{gerrit-server}'
+          <<: *gerrit-trigger-base
           trigger-on:
               - change-merged-event
-          escape-quotes: true
-          projects:
-              - project-compare-type: 'PLAIN'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'PLAIN'
-                    branch-pattern: '{branch}'
-          notbuilt-message: |
-            To avoid overloading the infrastructure, a whitelist for
-            running gerrit triggered jobs has been set in place, if
-            you feel like you should be in it, please contact infra at
-            ovirt dot org.
 
 - trigger:
     name: check-merged_trigger_on-custom-repo-change
@@ -121,16 +91,6 @@
 
 - trigger:
     name: build-artifacts_trigger_timed
-    triggers:
-      - timed: '{trigger-times}'
-
-- trigger:
-    name: check-patch_trigger_timed
-    triggers:
-      - timed: '{trigger-times}'
-
-- trigger:
-    name: check-merged_trigger_timed
     triggers:
       - timed: '{trigger-times}'
 
