@@ -1,0 +1,32 @@
+- stage-gh-stdci-common:
+    name: ovirt_ansible_common
+    stage-gh-stdci-common--key: &stage-gh-stdci-common
+      project:
+        - stage-gh-stdci1
+      version:
+        - master:
+            branch: master
+      distro:
+        - el7
+      trigger: 'on-change'
+      arch: x86_64
+      with-deploy: never
+      org: oVirt
+      github-auth-id: ovirt-infra
+
+- project:
+    <<: *stage-gh-stdci-common
+    name: stage-gh-stdci_check-patch_standard
+    stage: 'check-patch'
+    node-filter: '{distro}'
+    jobs:
+      - '{project}_{version}_github_check-patch-{distro}-{arch}'
+
+- project:
+    <<: *stage-gh-stdci-common
+    name: stage-gh-stdci_checks_standard
+    stage:
+      - build-artifacts
+      - check-merged
+    jobs:
+      - '{project}_{version}_github_{stage}-{distro}-{arch}'
