@@ -23,6 +23,7 @@ INTERMEDIATE_CONTAINER_IMAGES_REPO="${INTERMEDIATE_CONTAINER_IMAGES_REPO:?}"
 ATTEMPTS_TO_PUSH_IMAGE=3
 DELAY_BETWEEN_ATTEMPTS=1
 PUSHED_IMAGES_FILE="$EXPORTED_ARTIFACTS/pushed_container_images.lst"
+PUSHED_IMAGE_HTML_FILE="$EXPORTED_ARTIFACTS/pushed_containers_details.html"
 
 
 main(){
@@ -54,6 +55,52 @@ push_image(){
         echo "Attempts left: $attempts"
         sleep $DELAY_BETWEEN_ATTEMPTS
     }
+
+    return 1
+}
+
+gen_html_details_file(){
+    local image_id="${1:?}"
+    local image_tag="${2:?}"
+    local dest_repo="${3:?}"
+    local img_details="${4:?}"
+
+    echo "
+        <table style=\"width: 840px;\">
+        <tbody>
+            <tr style=\"height: 23px;\">
+            <td style=\"width: 136px; height: 23px;\">
+              <b>Image ID:</b></td>
+              <td style=\"width: 703px; height: 23px;\">
+                <pre>${image_id}</pre>
+              </td></tr>
+            <tr style=\"height: 23px;\">
+            <td style=\"width: 136px; height: 23px;\">
+              <b>Image TAG:</b></td>
+              <td style=\"width: 703px; height: 23px;\">
+                <pre>${image_tag}</pre>
+              </td></tr>
+            <tr style=\"height: 23px;\">
+              <td style=\"width: 136px; height: 23px;\">
+              <b>Repository:</b></td>
+              <td style=\"width: 703px; height: 23px;\">
+                <pre>${dest_repo}</pre>
+              </td></tr>
+            <tr style=\"height: 23px;\">
+              <td style=\"width: 136px; height: 23px;\">
+              <b>Run command:</b></td>
+              <td style=\"width: 703px; height: 23px;\">
+                <pre>docker run ${img_details}</pre>
+              </td></tr>
+            <tr style=\"height: 3.5px;\">
+              <td style=\"width: 136px; height: 3.5px;\">
+              <b>Pull command:</b></td>
+              <td style=\"width: 703px; height: 3.5px;\">
+                <pre>docker pull ${img_details}</pre>
+              </td></tr>
+        </tbody>
+        </table>
+    "
 }
 
 export_docker_images(){
@@ -71,7 +118,7 @@ export_docker_images(){
         sudo docker images --format="{{.Repository}}:{{.Tag}}" | \
             grep -oP ".+?(?=:$CONTAINER_IMAGES_EXPORT_TAG)"
     ) ||:
-    [[ -z "$docker_images_to_tag" ]] && return
+    [[ -z "$docker_images_to_tag" ]] && return 0
 
     sudo docker login \
         -u="$CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME" \
@@ -82,8 +129,13 @@ export_docker_images(){
         tagged_image_str="${containers_repo}${image}:${build_url_sha1}"
         sudo docker tag "$image:$CONTAINER_IMAGES_EXPORT_TAG" \
             "$tagged_image_str"
-        push_image "$tagged_image_str"
+        push_image "$tagged_image_str" || return 1
+        gen_html_details_file "$image" \
+            "$build_url_sha1" \
+            "$containers_repo" \
+            "$tagged_image_str" >> "$PUSHED_IMAGE_HTML_FILE"
     done
+    return 0
 }
 
 

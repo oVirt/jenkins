@@ -24,21 +24,11 @@
                 false,
               )
             }}
-            def container_details = manager.build.getWorkspace().child("exported-artifacts/pushed_container_images.lst")
+            def container_details = manager.build.getWorkspace().child("exported-artifacts/pushed_containers_details.html")
             if (container_details.exists()) {{
-                String img_details = container_details.readToString()
-                def regex_matcher = img_details =~ /(.+\/.+):(.+)/
-                String repo = regex_matcher[0][1]
-                String image_id = regex_matcher[0][2]
-                String msg = "<pre><span style='background-color: #F2F2F2; color: #424242;'>" +
-                    "<b>Exported docker image details</b><br>" +
-                    "Image ID:   $image_id<br>" +
-                    "Repository: $repo<br>" +
-                    "Docker PULL: docker pull $img_details" +
-                    "Docker RUN:  docker run $img_details" +
-                    "</pre>"
-                container_summary = manager.createSummary("package.png")
-                container_summary.appendText(msg, false)
+              String details_html = container_details.readToString()
+              container_summary = manager.createSummary("package.png")
+              container_summary.appendText(details_html,false)
             }}
           on-failure: 'nothing'
       - raw: # the current stable version of jjb (1.6) does not support
