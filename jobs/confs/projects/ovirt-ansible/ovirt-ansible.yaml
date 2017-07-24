@@ -5,6 +5,8 @@
       version:
         - master:
             branch: master
+        - 4.1:
+            branch: ovirt-ansible-1.0
       distro:
         - fc24
         - fc25
