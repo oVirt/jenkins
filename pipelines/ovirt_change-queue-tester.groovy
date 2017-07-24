@@ -343,6 +343,7 @@ def run_ost_on_node(ovirt_release, suit_type, distro, stash_name) {
         }
         run_jjb_script('mock_cleanup.sh')
     }
+    run_jjb_script('global_setup_apply.sh')
 }
 
 def inject_mirrors(path, file_pattern, mirrors=null) {

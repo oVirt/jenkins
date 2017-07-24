@@ -284,6 +284,23 @@ cleanup_docker () {
     return 1
 }
 
+rollback_os_repos() {
+    local failed=false
+    local yum_conf
+
+    for yum_conf in /etc{{/yum,}/yum.conf,/dnf/dnf.conf}; do
+        [[ -f "$yum_conf" ]] || continue
+        [[ -f "${yum_conf}.rbk" ]] || continue
+        echo "Rolling back uncommitted OS repo update: $yum_conf"
+        sudo mv --force "${yum_conf}.rbk" "$yum_conf" || failed=true
+    done
+    if $failed; then
+        return 1
+    else
+        return 0
+    fi
+}
+
 main() {
     local workspace="${1?}"
     local failed=false
@@ -293,6 +310,7 @@ main() {
     echo "###############################################################"
     sudo df -h || :
     echo "---------------------------------------------------------------"
+    rollback_os_repos || failed=true
     cleanup_postgres || failed=true
     cleanup_journal || failed=true
     cleanup_var || failed=true

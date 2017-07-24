@@ -12,6 +12,12 @@
                 operator: AND
             escalate-status: true
             script: !include-raw-escape: shell-scripts/mock_cleanup.sh
+          - matches:
+              - log-text: '.*'
+                operator: AND
+            escalate-status: true
+            run-if-job-successful: true
+            script: !include-raw-escape: shell-scripts/global_setup_apply.sh
       - exported-artifacts
       - groovy-postbuild:
           script: |

@@ -8,6 +8,7 @@ shopt -s nullglob
 main() {
     local failed=false
 
+    setup_os_repos
     mk_wokspace_tmp
     extra_packages || failed=true
     docker_setup || failed=true
@@ -18,6 +19,37 @@ main() {
         return 1
     fi
     return 0
+}
+
+setup_os_repos() {
+    local os
+    local conf_file
+
+    if [[ ! -e /etc/os-release ]]; then
+        echo "Cannot find '/etc/os-release'"
+        echo "Skipping slave OS repo configuration".
+        return
+    fi
+    source /etc/os-release
+    os="${ID:?}${VERSION_ID:?}"
+    echo "Detected slave OS: $os"
+    conf_file="$WORKSPACE/jenkins/data/slave-repos/${os}.conf"
+    if [[ ! -e "$conf_file" ]]; then
+        echo "Configuration file: '$conf_file' not found."
+        echo "Skipping slave OS repo configuration".
+        return
+    fi
+    echo "Configuring slave repos with: '$conf_file'"
+    for yum_conf in /etc{{/yum,}/yum.conf,/dnf/dnf.conf}; do
+        [[ -f "$yum_conf" ]] || continue
+        if cmp --quiet "$yum.conf" "$conf_file"; then
+            echo "'$yum_conf' does not need to be updated"
+            continue
+        fi
+        echo "Placing repo configuration in: '$yum_conf'"
+        sudo cp --backup --suffix=.rbk "$conf_file" "$yum_conf"
+        sudo restorecon "$yum_conf"
+    done
 }
 
 mk_wokspace_tmp() {
