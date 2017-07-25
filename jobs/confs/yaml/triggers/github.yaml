@@ -11,7 +11,7 @@
           allow-whitelist-orgs-as-admins: true
 
           white-list-target-branches:
-            - master
+            - '{branch}'
           auth-id: '{github-auth-id}'
           status-context: '{distro}-{arch}'
 
@@ -28,7 +28,7 @@
           auto-close-on-fail: false
           allow-whitelist-orgs-as-admins: true
           white-list-target-branches:
-            - master
+            - '{branch}'
           auth-id: '{github-auth-id}'
           status-context: '{distro}-{arch}'
 
@@ -45,7 +45,7 @@
           auto-close-on-fail: false
           allow-whitelist-orgs-as-admins: true
           white-list-target-branches:
-            - master
+            - '{branch}'
           auth-id: '{github-auth-id}'
           status-context: 'merge-pipeline'
 
