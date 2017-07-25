@@ -29,8 +29,6 @@
 - project:
     <<: *ovirt-ansible-common
     name: ovirt-ansible_checks_standard
-    stage:
-      - build-artifacts
-      - check-merged
+    stage: 'build-artifacts'
     jobs:
       - '{project}_{version}_github_{stage}-{distro}-{arch}'
