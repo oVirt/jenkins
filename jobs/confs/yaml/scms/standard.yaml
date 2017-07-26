@@ -1,0 +1,7 @@
+- scm:
+    name: gerrit_scm
+    scm:
+      - gerrit-with-proto:
+          project: '{project}'
+          git-server: '{git-server}'
+          git-proto: '{git-proto}'

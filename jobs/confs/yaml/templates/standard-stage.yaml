@@ -17,7 +17,7 @@
           days-to-keep: 14
           artifact-num-to-keep: 60
     scm:
-      - gerrit-with-proto:
+      - '{scmtype}_scm':
           project: '{project}'
           git-server: '{git-server}'
           git-proto: '{git-proto}'
@@ -28,7 +28,7 @@
       - jenkins-whitelist:
           git-server: '{git-server}'
     triggers:
-      - '{stage}_trigger_{trigger}':
+      - '{stage}_{scmtype}_trigger_{trigger}':
           project: '{project}'
           trigger-repo: '{trigger-repo}'
           branch: '{branch}'
@@ -119,7 +119,7 @@
       <<: *standard-template
       name: '{project}_{version}_{stage}-on-demand-{distro}-{arch}'
       triggers:
-        - '{stage}-on-demand_trigger_on-comment-added':
+        - '{stage}-on-demand_{scmtype}_trigger_on-comment-added':
             project: '{project}'
             branch: '{branch}'
             trigger-times: '{trigger-times}'
@@ -138,7 +138,7 @@
       <<: *standard-template
       name: 'python-ovirt-engine-sdk4_{version}_{stage}-on-demand-{distro}-{arch}'
       triggers:
-        - '{stage}-on-demand_trigger_on-comment-added':
+        - '{stage}-on-demand_{scmtype}_trigger_on-comment-added':
             project: '{project}'
             branch: '{branch}'
             trigger-times: '{trigger-times}'

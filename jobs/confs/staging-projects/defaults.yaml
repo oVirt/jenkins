@@ -11,6 +11,7 @@
     project-type: freestyle
     concurrent: false
     # to enable the throttle plugin, you also need to set concurrent: true
+    scmtype: gerrit
     git-server: 'gerrit-staging.phx.ovirt.org'
     git-proto: https
     gerrit-server: 'gerrit-staging.phx.ovirt.org'

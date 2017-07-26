@@ -17,7 +17,7 @@
             ovirt dot org.
 
 - trigger:
-    name: build-artifacts_trigger_on-change
+    name: build-artifacts_gerrit_trigger_on-change
     triggers:
       - gerrit:
           <<: *gerrit-trigger-base
@@ -25,7 +25,7 @@
               - change-merged-event
 
 - trigger:
-    name: build-artifacts_trigger_on-custom-repo-change
+    name: build-artifacts_gerrit_trigger_on-custom-repo-change
     triggers:
       - build-artifacts_trigger_on-change:
           gerrit-server: '{gerrit-server}'
@@ -33,12 +33,12 @@
           branch: '{branch}'
 
 - trigger:
-    name: build-artifacts_trigger_timed
+    name: build-artifacts_gerrit_trigger_timed
     triggers:
       - timed: '{trigger-times}'
 
 - trigger:
-    name: build-artifacts-on-demand_trigger_on-comment-added
+    name: build-artifacts-on-demand_gerrit_trigger_on-comment-added
     triggers:
       - gerrit:
           <<: *gerrit-trigger-base
@@ -47,7 +47,7 @@
                   comment-contains-value: 'ci please build'
 
 - trigger:
-    name: build-artifacts-on-demand_trigger_on-custom-repo-comment-added
+    name: build-artifacts-on-demand_gerrit_trigger_on-custom-repo-comment-added
     triggers:
       - build-artifacts-on-demand_trigger_on-comment-added:
           gerrit-server: '{gerrit-server}'
@@ -55,7 +55,7 @@
           branch: '{branch}'
 
 - trigger:
-    name: check-patch_trigger_on-change
+    name: check-patch_gerrit_trigger_on-change
     triggers:
       - gerrit:
           <<: *gerrit-trigger-base
@@ -66,7 +66,7 @@
                   exclude-no-code-change: true
 
 - trigger:
-    name: check-patch_trigger_on-custom-repo-change
+    name: check-patch_gerrit_trigger_on-custom-repo-change
     triggers:
       - check-patch_trigger_on-change:
           gerrit-server: '{gerrit-server}'
@@ -74,7 +74,7 @@
           branch: '{branch}'
 
 - trigger:
-    name: check-merged_trigger_on-change
+    name: check-merged_gerrit_trigger_on-change
     triggers:
       - gerrit:
           <<: *gerrit-trigger-base
@@ -82,7 +82,7 @@
               - change-merged-event
 
 - trigger:
-    name: check-merged_trigger_on-custom-repo-change
+    name: check-merged_gerrit_trigger_on-custom-repo-change
     triggers:
       - check-merged_trigger_on-change:
           gerrit-server: '{gerrit-server}'
@@ -90,7 +90,7 @@
           branch: '{branch}'
 
 - trigger:
-    name: poll-upstream-sources_trigger_timed
+    name: poll-upstream-sources_gerrit_trigger_timed
     triggers:
         - poll-upstream-sources_stage
 
