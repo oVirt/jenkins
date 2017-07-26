@@ -41,7 +41,7 @@
 - project:
     <<: *system-tests-common
     name: ovirt-system-he-tests
-    suite_type: he
+    suite_type: he-basic
     version:
       - 4.1:
           chroot_distro: el7
@@ -138,7 +138,7 @@
 - project:
     <<: *system-tests-common
     name: ovirt-system-hc-tests
-    suite_type: hc
+    suite_type: hc-basic
     version:
       - master:
           chroot_distro: el7
