@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-image-uploader-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-image-uploader
-          git-server: '{git-server}'

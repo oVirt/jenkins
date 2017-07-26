@@ -1,6 +1,0 @@
-- scm:
-    name: pthreading-gerrit
-    scm:
-      - gerrit:
-          project: pthreading
-          git-server: '{git-server}'

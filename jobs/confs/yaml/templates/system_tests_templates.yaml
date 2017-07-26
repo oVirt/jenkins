@@ -7,9 +7,10 @@
     triggers:
       - timed: 'H 2 * * *'
     scm:
-      - 'ovirt-system-tests-gerrit':
-          branch: 'master'
+      - gerrit-with-proto:
+          project: 'ovirt-system-tests'
           git-server: '{git-server}'
+          git-proto: '{git-proto}'
       - 'jenkins':
           branch: 'master'
           git-server: '{git-server}'

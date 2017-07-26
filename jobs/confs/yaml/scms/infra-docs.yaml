@@ -1,6 +1,0 @@
-- scm:
-    name: infra-docs-gerrit
-    scm:
-      - gerrit:
-          project: infra-docs
-          git-server: '{git-server}'

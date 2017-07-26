@@ -1,9 +1,0 @@
-##############################################################################
-###   SCM Definitions
-##############################################################################
-- scm:
-    name: ovirt-provider-ovn-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-provider-ovn
-          git-server: '{git-server}'

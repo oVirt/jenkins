@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-engine-extension-aaa-jdbc-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-engine-extension-aaa-jdbc
-          git-server: '{git-server}'

@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-vdsmfake-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-vdsmfake
-          git-server: '{git-server}'

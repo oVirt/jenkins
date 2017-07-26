@@ -1,15 +1,8 @@
 - scm:
-    name: jenkins-gerrit
-    scm:
-      - gerrit:
-          project: jenkins
-          git-server: '{git-server}'
-
-- scm:
     name: jenkins
     scm:
         - git:
-            url: 'http://{git-server}/jenkins.git'
+            url: 'http://gerrit.ovirt.org/jenkins.git'
             branches:
                 - '{branch}'
             basedir: jenkins
@@ -29,7 +22,7 @@
     name: jenkins-whitelist
     scm:
         - git:
-            url: 'http://{git-server}/jenkins-whitelist.git'
+            url: 'http://gerrit.ovirt.org/jenkins-whitelist.git'
             branches:
                 - 'master'
             basedir: jenkins-whitelist

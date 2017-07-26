@@ -1,6 +1,0 @@
-- scm:
-    name: repoman-gerrit
-    scm:
-      - gerrit:
-          project: repoman
-          git-server: '{git-server}'

@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-engine-api-model-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-engine-api-model
-          git-server: '{git-server}'

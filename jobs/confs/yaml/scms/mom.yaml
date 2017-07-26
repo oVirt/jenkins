@@ -1,6 +1,0 @@
-- scm:
-    name: mom-gerrit
-    scm:
-      - gerrit:
-          project: mom
-          git-server: '{git-server}'

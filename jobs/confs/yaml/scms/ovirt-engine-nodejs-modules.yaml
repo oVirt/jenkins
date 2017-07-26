@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-engine-nodejs-modules-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-engine-nodejs-modules
-          git-server: '{git-server}'

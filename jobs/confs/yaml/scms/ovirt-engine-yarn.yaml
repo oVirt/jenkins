@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-engine-yarn-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-engine-yarn
-          git-server: '{git-server}'

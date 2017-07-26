@@ -17,8 +17,10 @@
           days-to-keep: 14
           artifact-num-to-keep: 60
     scm:
-      - '{project}-gerrit':
+      - gerrit-with-proto:
+          project: '{project}'
           git-server: '{git-server}'
+          git-proto: '{git-proto}'
       # Non-gerrit scm, me have to specify the branch
       - jenkins:
           branch: master
@@ -52,15 +54,6 @@
 - job-template: &standard-template
       <<: *standard-template-basic
       name: '{project}_{version}_{stage}-{distro}-{arch}'
-      scm:
-        - '{project}-gerrit':
-            git-server: '{git-server}'
-        # Non-gerrit scm, we have to specify the branch
-        - jenkins:
-            branch: master
-            git-server: '{git-server}'
-        - jenkins-whitelist:
-            git-server: '{git-server}'
       builders:
         - '{stage}_builder':
             project: '{project}'
@@ -194,8 +187,10 @@
     <<: *standard-template
     name: 'jenkins_{version}_{stage}-{distro}-{arch}'
     scm:
-      - '{project}-gerrit':
+      - gerrit-with-proto:
+          project: '{project}'
           git-server: '{git-server}'
+          git-proto: '{git-proto}'
       - jenkins-whitelist:
           git-server: '{git-server}'
 

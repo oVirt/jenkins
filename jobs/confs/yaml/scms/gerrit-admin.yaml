@@ -1,6 +1,0 @@
-- scm:
-    name: gerrit-admin-gerrit
-    scm:
-      - gerrit:
-          project: gerrit-admin
-          git-server: '{git-server}'

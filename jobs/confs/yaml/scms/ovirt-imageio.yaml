@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-imageio-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-imageio
-          git-server: '{git-server}'

@@ -117,9 +117,10 @@
                         </h3>'
 
     scm:
-      - 'ovirt-system-tests-gerrit':
-          branch: master
+      - gerrit-with-proto:
+          project: 'ovirt-system-tests'
           git-server: 'gerrit.ovirt.org'
+          git-proto: 'git'
       - 'jenkins':
           branch: master
           git-server: 'gerrit.ovirt.org'

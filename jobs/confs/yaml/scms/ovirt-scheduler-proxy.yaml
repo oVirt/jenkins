@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-scheduler-proxy-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-scheduler-proxy
-          git-server: '{git-server}'

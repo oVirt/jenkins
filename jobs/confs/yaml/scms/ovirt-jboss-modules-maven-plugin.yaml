@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-jboss-modules-maven-plugin-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-jboss-modules-maven-plugin
-          git-server: '{git-server}'

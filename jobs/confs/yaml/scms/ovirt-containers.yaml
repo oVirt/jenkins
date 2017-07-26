@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-containers-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-containers
-          git-server: '{git-server}'

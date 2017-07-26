@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-hosted-engine-setup-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-hosted-engine-setup
-          git-server: '{git-server}'

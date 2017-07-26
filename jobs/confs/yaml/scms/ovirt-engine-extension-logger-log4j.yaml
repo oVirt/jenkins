@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-engine-extension-logger-log4j-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-engine-extension-logger-log4j
-          git-server: '{git-server}'

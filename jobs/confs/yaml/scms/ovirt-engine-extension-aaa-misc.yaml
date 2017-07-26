@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-engine-extension-aaa-misc-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-engine-extension-aaa-misc
-          git-server: '{git-server}'

@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-js-dependencies-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-js-dependencies
-          git-server: '{git-server}'

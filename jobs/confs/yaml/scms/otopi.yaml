@@ -1,6 +1,0 @@
-- scm:
-    name: otopi-gerrit
-    scm:
-      - gerrit:
-          project: otopi
-          git-server: '{git-server}'

@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-setup-lib-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-setup-lib
-          git-server: '{git-server}'

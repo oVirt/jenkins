@@ -1,6 +1,0 @@
-- scm:
-    name: vdsm-jsonrpc-java-gerrit
-    scm:
-      - gerrit:
-          project: vdsm-jsonrpc-java
-          git-server: '{git-server}'
