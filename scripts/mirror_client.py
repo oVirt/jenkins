@@ -12,12 +12,39 @@ import logging
 import yaml
 from collections import Mapping
 from time import sleep
+import argparse
 
 HTTP_TIMEOUT = 30
 HTTP_RETRIES = 3
 HTTP_RETRY_DELAY_SEC = 0.2
 
 logger = logging.getLogger(__name__)
+
+
+def main():
+    (mirrors_uri, configs, allow_proxy) = parse_args()
+    mirrors_data = mirrors_from_uri(mirrors_uri)
+    for conf in configs:
+        inject_yum_mirrors_file(mirrors_data, conf, allow_proxy)
+
+
+def parse_args():
+    """Parse positional arguments and return their values"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "mirrors",
+        help="Path or URL to a mirrors file."
+    )
+    parser.add_argument(
+        "configs", nargs='+',
+        help="A list of yum configs to modify."
+    )
+    parser.add_argument(
+        "-p", "--proxy", action='store_true', default=False,
+        help="If not specified, proxy will be set to _none_."
+    )
+    args = parser.parse_args()
+    return args.mirrors, args.configs, args.proxy
 
 
 def inject_yum_mirrors(mirrors, yum_cfg, out_cfg, allow_proxy=False):
@@ -241,3 +268,7 @@ def ovirt_tested_as_mirrors(
             '{0}/{1}/rpm/{2}/'.format(repos_base, ovirt_release, distribution)
         ) for distribution in distributions
     )
+
+
+if __name__ == "__main__":
+    main()
