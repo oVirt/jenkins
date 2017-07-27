@@ -1,0 +1,23 @@
+- trigger:
+    name: deploy_jenkins_configs_on-change
+    triggers:
+      - gerrit:
+          trigger-on:
+              - change-merged-event
+          successful-message: 'Configuration deployed'
+          projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'master'
+                file-paths:
+                    - compare-type: 'REG_EXP'
+                      pattern: 'jobs/confs/.*'
+
+- trigger:
+    name: deploy_jenkins_configs_on-custom-repo-change
+    triggers:
+      - deploy_jenkins_configs_on-change:
+          project: '{trigger-repo}'
+          branch: '{branch}'

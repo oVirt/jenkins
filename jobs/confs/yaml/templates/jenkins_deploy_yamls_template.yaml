@@ -21,19 +21,10 @@
       - gerrit-params:
           branch: '{branch}'
     triggers:
-      - gerrit:
-          trigger-on:
-              - change-merged-event
-          successful-message: 'Configuration deployed'
-          projects:
-              - project-compare-type: 'PLAIN'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: 'master'
-                file-paths:
-                    - compare-type: 'REG_EXP'
-                      pattern: 'jobs/confs/.*'
+      - 'deploy_jenkins_configs_{trigger}':
+          project: '{project}'
+          branch: '{branch}'
+          trigger-repo: '{trigger-repo}'
     scm:
       - jenkins-gerrit:
           git-server: '{git-server}'

@@ -1,6 +1,7 @@
 - project:
     name: jenkins_master_deploy-configs_merged
     project: jenkins
+    trigger: on-change
     version:
       - master:
           branch: master
