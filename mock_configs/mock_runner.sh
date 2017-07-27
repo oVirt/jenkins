@@ -388,13 +388,15 @@ gen_ci_env_info_conf() {
     local ci_distro="${2:?}"
     local script_name="${path_to_script##*/}"
     local ci_stage="${script_name%%.*}"
-    local ci_reposfile
+    local ci_reposfiles
 
-    ci_reposfile="$(resolve_multiple_files "$path_to_script" "yumrepos" "$dist_label")"
+    ci_reposfiles=($(resolve_multiple_files "$path_to_script" "yumrepos" "$dist_label"))
 
     echo "config_opts['environment']['STD_CI_DISTRO'] = \"$ci_distro\""
     echo "config_opts['environment']['STD_CI_STAGE'] = \"$ci_stage\""
-    echo "config_opts['environment']['STD_CI_YUMREPOS']=\"$ci_reposfile\""
+    # Since 'resolve_multiple_files' returns an array of matches, we need only
+    # the first match.
+    echo "config_opts['environment']['STD_CI_YUMREPOS']=\"${ci_reposfiles[0]}\""
 }
 
 
@@ -508,6 +510,37 @@ EOC
 }
 
 
+inject_ci_mirrors() {
+    local path_to_script="${1?}"
+    local mock_cfg_path="${2?}"
+    local target_file_suffix="${3:-yumrepos}"
+    local target_yum_cfgs \
+        mock_cfg \
+        mock_logs_dir \
+        scripts_path \
+        distro
+
+    scripts_path="$(dirname "$(which "$0")")/../scripts"
+    mock_cfg="${mock_cfg_path##*/}"
+    mock_logs_dir="${mock_cfg%.*}"
+    distro="${mock_logs_dir##*.}"
+
+    target_yum_cfgs=($(
+        resolve_multiple_files \
+            "$path_to_script" \
+            "$target_file_suffix" \
+            "$distro"
+    ))
+    [[ ${#target_yum_cfgs[@]} -eq 0 ]] && return 0
+    "${scripts_path}"/mirror_client.py "$TRY_MIRRORS" "${target_yum_cfgs[@]}"
+
+    makedir "$LOGS_DIR/${mock_logs_dir}.yumrepos"
+    for file in "${target_yum_cfgs[@]}"; do
+        cp "$file" "$LOGS_DIR/${mock_logs_dir}.yumrepos/${file##*/}"
+    done
+}
+
+
 resolve_multiple_files() {
     local path_to_script="${1?}"
     local suffix="${2?}"
@@ -520,7 +553,7 @@ resolve_multiple_files() {
             sort -r
         printf "%s\n" "${path_to_script_no_ext}"?(.*)".${suffix}" | sort -r
     ))
-    echo "${matches[0]}"
+    echo "${matches[@]}"
 }
 
 
@@ -588,6 +621,9 @@ run_shell() {
     mock_conf="$(get_temp_conf "$base_chroot" "$distro_id")" \
     || return 1
 
+    [[ -n "$TRY_MIRRORS" ]] && [[ -n "$script" ]] && \
+        inject_ci_mirrors "$script" "$mock_conf"
+
     mock_dir="${mock_conf%/*}"
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
@@ -637,6 +673,7 @@ run_script() {
     mock_conf="$(get_temp_conf "$base_chroot" "$distro_id")" \
     || return 1
 
+    [[ -n "$TRY_MIRRORS" ]] && inject_ci_mirrors "$script" "$mock_conf"
     mock_dir="${mock_conf%/*}"
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
