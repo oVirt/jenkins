@@ -13,3 +13,6 @@
         key: 'password'
 - name: 'test_secret_specified'
   value: 'OVIRT_CI'
+- name: 'JJB_PROJECTS_FOLDER'
+  valueFrom:
+    runtimeEnv: 'JJB_PROJECTS_FOLDER'

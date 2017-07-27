@@ -1,0 +1,16 @@
+- project: &basic-params
+    name: jenkins_checks
+    project: jenkins
+    git-server: 'gerrit.ovirt.org'
+    gerrit-server: 'gerrit.ovirt.org'
+    stage: check-patch
+    trigger: 'on-change'
+    version:
+      - master:
+          branch: master
+    distro:
+      - el7:
+          node-filter: el7
+    arch: x86_64
+    jobs:
+        - 'jenkins_{version}_{stage}-{distro}-{arch}'

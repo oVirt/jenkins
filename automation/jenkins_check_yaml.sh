@@ -1,9 +1,7 @@
 #!/bin/bash -xe
 echo "shell-scripts/jenkins_check_yaml.sh"
 
-source automation/parameters.sh
-
-JJB_PROJECTS_DIR="${JJB_PROJECTS_DIR:?This environment variable has to be defined }"
+JJB_PROJECTS_FOLDER="${JJB_PROJECTS_FOLDER:?must be defined in Jenkins instance}"
 
 US_SRC_COLLECTOR="python-scripts/upstream-source-collector.py"
 
@@ -18,7 +16,7 @@ generate_jobs_xml() {
             test \
                 --recursive \
                 -o "$xmls_output_dir" \
-                "yaml:$JJB_PROJECTS_DIR"
+                "yaml:$JJB_PROJECTS_FOLDER"
     )
 }
 
