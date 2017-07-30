@@ -15,6 +15,7 @@
     git-server: 'gerrit.ovirt.org'
     git-proto: 'git'
     gerrit-server: 'gerrit.ovirt.org'
+    gerrit-subpath: ''
     email-to: 'infra@ovirt.org'
     git-config-name: 'jenkins CI'
     git-config-email: 'jenkins@ovirt.org'

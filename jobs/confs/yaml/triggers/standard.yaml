@@ -6,7 +6,7 @@
           escape-quotes: true
           projects:
               - project-compare-type: 'PLAIN'
-                project-pattern: '{project}'
+                project-pattern: '{gerrit-subpath}{project}'
                 branches:
                   - branch-compare-type: 'PLAIN'
                     branch-pattern: '{branch}'
@@ -21,6 +21,7 @@
     triggers:
       - gerrit:
           <<: *gerrit-trigger-base
+          gerrit-subpath: '{gerrit-subpath}'
           trigger-on:
               - change-merged-event
 
@@ -42,6 +43,7 @@
     triggers:
       - gerrit:
           <<: *gerrit-trigger-base
+          gerrit-subpath: '{gerrit-subpath}'
           trigger-on:
               - comment-added-contains-event:
                   comment-contains-value: 'ci please build'
@@ -59,6 +61,7 @@
     triggers:
       - gerrit:
           <<: *gerrit-trigger-base
+          gerrit-subpath: '{gerrit-subpath}'
           trigger-on:
               - draft-published-event
               - patchset-created-event:
@@ -78,6 +81,7 @@
     triggers:
       - gerrit:
           <<: *gerrit-trigger-base
+          gerrit-subpath: '{gerrit-subpath}'
           trigger-on:
               - change-merged-event
 

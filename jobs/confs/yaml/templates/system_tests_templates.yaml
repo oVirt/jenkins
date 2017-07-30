@@ -11,6 +11,7 @@
           project: '{project}'
           git-server: '{git-server}'
           git-proto: '{git-proto}'
+          gerrit-subpath: '{gerrit-subpath}'
       - 'jenkins':
           branch: 'master'
           git-server: '{git-server}'

@@ -22,7 +22,7 @@
     name: gerrit-with-proto
     scm:
       - git:
-          url: '{git-proto}://{git-server}/{project}.git'
+          url: '{git-proto}://{git-server}/{gerrit-subpath}{project}.git'
           branches:
             - $GERRIT_BRANCH
           basedir: '{project}'

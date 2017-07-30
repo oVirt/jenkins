@@ -23,6 +23,7 @@
           git-proto: '{git-proto}'
           git-config-name: '{git-config-name}'
           git-config-email: '{git-config-email}'
+          gerrit-subpath: '{gerrit-subpath}'
       # Non-gerrit scm, me have to specify the branch
       - jenkins:
           branch: master
@@ -33,6 +34,7 @@
       - '{stage}_{scmtype}_trigger_{trigger}':
           project: '{project}'
           trigger-repo: '{trigger-repo}'
+          gerrit-subpath: '{gerrit-subpath}'
           branch: '{branch}'
           trigger-times: '{trigger-times}'
           gerrit-server: '{gerrit-server}'
@@ -124,6 +126,7 @@
         - '{stage}-on-demand_{scmtype}_trigger_on-comment-added':
             project: '{project}'
             branch: '{branch}'
+            gerrit-subpath: '{gerrit-subpath}'
             trigger-times: '{trigger-times}'
             gerrit-server: '{gerrit-server}'
       properties:
@@ -143,6 +146,7 @@
         - '{stage}-on-demand_{scmtype}_trigger_on-comment-added':
             project: '{project}'
             branch: '{branch}'
+            gerrit-subpath: '{gerrit-subpath}'
             trigger-times: '{trigger-times}'
             gerrit-server: '{gerrit-server}'
       properties:
@@ -193,6 +197,7 @@
           project: '{project}'
           git-server: '{git-server}'
           git-proto: '{git-proto}'
+          gerrit-subpath: '{gerrit-subpath}'
       - jenkins-whitelist:
           git-server: '{git-server}'
     triggers:
