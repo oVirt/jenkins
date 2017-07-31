@@ -243,7 +243,9 @@ gen_mock_config() {
         chroot_setup_cmd \
         ci_distro \
         ci_stage \
-        ci_reposfile
+        ci_reposfile \
+        upstream_src_folder \
+        upstream_dst_folder
 
     base_conf="$(get_base_conf "$MOCK_CONF_DIR" "$chroot")"
     tmp_conf="$(get_temp_conf "$chroot" "$dist_label")"
@@ -289,6 +291,11 @@ config_opts["plugin_conf"]["bind_mount_opts"]["dirs"]=[
     # Mount the local dir to $MOUNT_POINT
     [os.path.realpath(os.curdir), u'$MOUNT_POINT'],
 EOH
+        upstream_src_folder="${PWD%/}._upstream"
+        upstream_dst_folder="${MOUNT_POINT%/}._upstream"
+        if [[ -d ${upstream_src_folder} ]]; then
+            echo "['$upstream_src_folder', '$upstream_dst_folder']," >> "$tmp_conf"
+        fi
 
         for mount_opt in $(get_data_from_file "$script" mounts "$dist_label"); do
             [[ "$mount_opt" == "" ]] && continue
