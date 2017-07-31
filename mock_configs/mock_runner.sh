@@ -384,13 +384,13 @@ gen_mirrors_conf() {
 
 
 gen_ci_env_info_conf() {
-    local script_path="${1:?}"
+    local path_to_script="${1:?}"
     local ci_distro="${2:?}"
-    local script_name="${script_path##*/}"
+    local script_name="${path_to_script##*/}"
     local ci_stage="${script_name%%.*}"
     local ci_reposfile
 
-    ci_reposfile="$(resolve_multiple_files "$script" "yumrepos" "$dist_label")"
+    ci_reposfile="$(resolve_multiple_files "$path_to_script" "yumrepos" "$dist_label")"
 
     echo "config_opts['environment']['STD_CI_DISTRO'] = \"$ci_distro\""
     echo "config_opts['environment']['STD_CI_STAGE'] = \"$ci_stage\""
@@ -512,13 +512,13 @@ resolve_multiple_files() {
     local path_to_script="${1?}"
     local suffix="${2?}"
     local distro="${3?}"
-    local script_name="${path_to_script%%.*}"
-    local stage="${script_name%.sh}"
+    local path_to_script_no_ext="${path_to_script%%.*}"
     local matches
 
     matches=($(
-        printf "%s\n" "${script_name}"?(.*)".${suffix}.${distro}" | sort -r
-        printf "%s\n" "${script_name}"?(.*)".${suffix}" | sort -r
+        printf "%s\n" "${path_to_script_no_ext}"?(.*)".${suffix}.${distro}" | \
+            sort -r
+        printf "%s\n" "${path_to_script_no_ext}"?(.*)".${suffix}" | sort -r
     ))
     echo "${matches[0]}"
 }
