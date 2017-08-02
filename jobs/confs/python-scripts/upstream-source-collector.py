@@ -13,8 +13,8 @@ import os
 import logging
 import contextlib
 import glob
+import argparse
 from subprocess import check_output, STDOUT
-from six.moves import map
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger('upstream-source-collector')
@@ -22,18 +22,48 @@ LOGGER = logging.getLogger('upstream-source-collector')
 
 def main():
     """
+    Get command line args and call function to
+    start us sources collection
+    """
+    args = get_args()
+
+    find_git_ws_under_cur_folder(args.us_dir)
+
+
+def get_args():
+    """
+    parse command line args
+
+    :rtype: dictionary
+    :returns: command line arguments
+    """
+    parser = argparse.ArgumentParser(description='Reads user args.')
+    parser.add_argument('--usdir', dest='us_dir', required=False,
+                        default='.',
+                        help='Path to U/S sources cache folders')
+
+    return parser.parse_args()
+
+
+def find_git_ws_under_cur_folder(us_dir):
+    """
+    Find all git workspaces
+
+    :param string: path to us sources folders
+
     Find all projects' workspaces under Jenkins job's workspace
     and rebase thier upstream sources on top of them
     """
     for rel_path in glob.glob('**/.git'):
-        parse_yaml_clone_and_override(rel_path)
+        parse_yaml_clone_and_override(rel_path, us_dir)
 
 
-def parse_yaml_clone_and_override(rel_path_to_git):
+def parse_yaml_clone_and_override(rel_path_to_git, us_dir):
     """
     Processing the upstream_sources.yaml
 
     :param string rel_path_to_git: relative path to git folder
+    :param string:                 path to us sources folders
 
     Get yaml object and work on its git section
     """
@@ -46,16 +76,18 @@ def parse_yaml_clone_and_override(rel_path_to_git):
     if not sources_doc:
         return
 
-    upstream_source_collector(sources_doc.get('git', []), dst_path, folder)
+    upstream_source_collector(sources_doc.get('git', []), dst_path, folder,
+                              us_dir)
 
 
-def upstream_source_collector(git_section, dst_path, folder):
+def upstream_source_collector(git_section, dst_path, folder, us_dir):
     """
     Processing the git section in the upstream_sources.yaml
 
     :param list git_section: list of us git repos
     :param string dst_path:  path to project
     :param string folder:    project's folder
+    :param string:           path to us sources folders
 
     Go over all repos in git section and
     copy them on top of he current project. In the
@@ -65,7 +97,7 @@ def upstream_source_collector(git_section, dst_path, folder):
     for index, repo in enumerate(git_section):
         us_root_dir = "{folder}._upstream".format(folder=folder)
         git_dir = 'git.{index:0>4}'.format(index=index)
-        work_folder = os.path.join(us_root_dir, git_dir)
+        work_folder = os.path.join(us_dir, us_root_dir, git_dir)
         work_folder_cmd = \
             '--git-dir={work_folder}/.git'.format(work_folder=work_folder)
         clone_repo(repo['url'], repo['commit'], work_folder, work_folder_cmd)
