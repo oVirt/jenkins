@@ -43,7 +43,6 @@ is_jjb_test_arch() {
 
 test_job_configs() {
     sh -xe automation/jenkins_check_yaml.sh
-    python automation/check_publishers_not_deleted.py
 }
 
 test_standard_ci_repos() {

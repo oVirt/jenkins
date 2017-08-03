@@ -5,7 +5,7 @@ import os
 import sys
 from glob import glob
 
-os.chdir("new_xmls")
+os.chdir(sys.argv[1])
 
 publish_jobs = glob("*publish-rpms_nightly")
 
