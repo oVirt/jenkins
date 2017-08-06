@@ -1,0 +1,12 @@
+- trigger:
+    name: check-patch_gerrit_jenkins-trigger_on-change
+    triggers:
+      - check-patch_gerrit_trigger_on-change:
+          gerrit-server: '{gerrit-server}'
+          project: '{project}'
+          branch: '{branch}'
+
+- trigger:
+    name: poll-upstream-sources_gerrit_jenkins-trigger_on-change
+    triggers:
+      - poll-upstream-sources_stage

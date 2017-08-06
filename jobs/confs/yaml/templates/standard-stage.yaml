@@ -187,12 +187,19 @@
     <<: *standard-template
     name: 'jenkins_{version}_{stage}-{distro}-{arch}'
     scm:
-      - gerrit-with-proto:
+      - jenkins-gerrit:
           project: '{project}'
           git-server: '{git-server}'
           git-proto: '{git-proto}'
       - jenkins-whitelist:
           git-server: '{git-server}'
+    triggers:
+      - '{stage}_{scmtype}_jenkins-trigger_{trigger}':
+          project: '{project}'
+          trigger-repo: '{trigger-repo}'
+          branch: '{branch}'
+          trigger-times: '{trigger-times}'
+          gerrit-server: '{gerrit-server}'
 
 - job-template:
     <<: *standard-template-deploy
