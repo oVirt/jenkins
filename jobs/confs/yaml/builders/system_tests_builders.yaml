@@ -53,7 +53,7 @@
           # make sure there's no prefix or lago will fail
           rm -rf "ovirt-system-tests/deployment-{suite_type}_suite_{version}"
       - mock_runner:
-          project: 'ovirt-system-tests'
+          project: '{project}'
           distro: '{chroot_distro}'
           arch: 'x86_64'
           action: '--execute-script "automation/{suite_type}_suite_{version}.sh"'

@@ -34,6 +34,7 @@
           version: '{version}'
           suite_type : '{suite_type}'
           chroot_distro: '{chroot_distro}'
+          project: '{project}'
       - email-ext:
           recipients: '{email-to}'
           failure: true
@@ -47,6 +48,7 @@
           version: '{version}'
           suite_type : '{suite_type}'
           chroot_distro: '{chroot_distro}'
+          project: '{project}'
       - email-ext:
           always: true
           send-to:

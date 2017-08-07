@@ -1,5 +1,5 @@
 - job-template: &basic_system_tests
-    name: 'system-tests_{suite_type}-suite-{version}'
+    name: '{project}_{suite_type}-suite-{version}'
     node: '{node-filter}'
     parameters:
       - gerrit-params:
@@ -8,7 +8,7 @@
       - timed: 'H 2 * * *'
     scm:
       - gerrit-with-proto:
-          project: 'ovirt-system-tests'
+          project: '{project}'
           git-server: '{git-server}'
           git-proto: '{git-proto}'
       - 'jenkins':
@@ -19,16 +19,14 @@
           version: '{version}'
           suite_type : '{suite_type}'
           chroot_distro: '{chroot_distro}'
+          project: '{project}'
     publishers:
       - system-tests:
           version: '{version}'
           suite_type : '{suite_type}'
           chroot_distro: '{chroot_distro}'
           email-to: '{email-to}'
-
-- job-template:
-    <<: *basic_system_tests
-    name: '{project}_{version}_system-tests_{flavor}'
+          project: '{project}'
 
 - job-template:
     <<: *basic_system_tests
@@ -42,3 +40,4 @@
           version: '{version}'
           suite_type: '{suite_type}'
           chroot_distro: '{chroot_distro}'
+          project: '{project}'

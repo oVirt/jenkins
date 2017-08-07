@@ -11,23 +11,13 @@
             chroot_distro: el7
       email-to: infra@ovirt.org
 
-- project:
-    <<: *system-tests-common
-    name: ovirt-system-tests-nightly
-    suite_type: basic
-    version:
-      - 4.1:
-          chroot_distro: el7
-          flavor: pre
-    jobs:
-      - '{project}_{version}_system-tests_{flavor}'
-
 # type can be both image and image_ng
 # they differ in the testing used
 - project:
     <<: *system-tests-common
     name: ovirt-system-image-tests
     suite_type: image-ng
+    project: 'ovirt-system-tests'
     version:
       - 4.1:
           chroot_distro: fc24
@@ -42,6 +32,7 @@
     <<: *system-tests-common
     name: ovirt-system-he-tests
     suite_type: he-basic
+    project: 'ovirt-system-tests'
     version:
       - 4.1:
           chroot_distro: el7
@@ -49,19 +40,20 @@
           chroot_distro: el7
     email-to: 'sbonazzo@redhat.com, infra@ovirt.org, lveyde@redhat.com'
     jobs:
-      - 'system-tests_{suite_type}-suite-{version}'
+      - '{project}_{suite_type}-suite-{version}'
 
 # oVirt Ansible suite
 - project:
     <<: *system-tests-common
     name: ovirt-ansible-tests
     suite_type: ansible
+    project: 'ovirt-system-tests'
     version:
       - master:
           chroot_distro: el7
     email-to: mperina@redhat.com,omachace@redhat.com
     jobs:
-      - 'system-tests_{suite_type}-suite-{version}'
+      - '{project}_{suite_type}-suite-{version}'
 
 - job:
     name: 'ovirt-system-tests_manual'
@@ -141,6 +133,7 @@
     <<: *system-tests-common
     name: ovirt-system-hc-tests
     suite_type: hc-basic
+    project: 'ovirt-system-tests'
     version:
       - master:
           chroot_distro: el7
@@ -148,4 +141,4 @@
           chroot_distro: el7
     email-to: 'infra@ovirt.org, sabose@redhat.com'
     jobs:
-        - 'system-tests_{suite_type}-suite-{version}'
+        - '{project}_{suite_type}-suite-{version}'
