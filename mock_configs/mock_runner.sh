@@ -73,6 +73,10 @@ help() {
             Add the given package to the mock env when installing, can be
             specified more than once
 
+        --secrets-file
+            Path to secrets file
+            (default is \${xdg_home}/ci_secrets_file.yaml)
+
     Parameters:
         mock_env
             Name of the mock chroot to use, if none passed all of the defaults
@@ -245,7 +249,8 @@ gen_mock_config() {
         ci_stage \
         ci_reposfile \
         upstream_src_folder \
-        upstream_dst_folder
+        upstream_dst_folder \
+        env_req
 
     base_conf="$(get_base_conf "$MOCK_CONF_DIR" "$chroot")"
     tmp_conf="$(get_temp_conf "$chroot" "$dist_label")"
@@ -365,6 +370,9 @@ EOC
     fi
     [[ "$TRY_MIRRORS" ]] && gen_mirrors_conf "$TRY_MIRRORS" >> "$tmp_conf"
     gen_ci_env_info_conf "$script" "$dist_label" >> "$tmp_conf"
+    env_req=($(resolve_file "$script" "environment.yaml" "$dist_label"))
+    [[ -e "$env_req" ]] && \
+        gen_environ_conf "$env_req" >> "$tmp_conf"
     touch --date "yesterday" "$tmp_conf"
     echo "$tmp_conf"
     return 0
@@ -387,6 +395,34 @@ gen_mirrors_conf() {
     echo "    )"
     echo "finally:"
     echo "    sys.path.pop()"
+}
+
+
+gen_environ_conf() {
+    local user_requests="${1:?}"
+    local scripts_path
+    base_dir="$(dirname "$(which "$0")")/.."
+
+    echo "import sys"
+    echo "from yaml import safe_load"
+    echo "sys.path.append('$base_dir')"
+    echo "try:"
+    echo "    from scripts.secrets_resolvers import ("
+    echo "        load_secret_data"
+    echo "    )"
+    echo "    from scripts.ci_env_client import ("
+    echo "        load_providers, gen_env_vars_from_requests"
+    echo "    )"
+    echo "    secrets = load_secret_data(${SECRETS_FILE:'$SECRETS_FILE'})"
+    echo "    providers = load_providers(secrets)"
+    echo "    with open('${user_requests}', 'r') as rf:"
+    echo "        requests = safe_load(rf)"
+    echo "    config_opts['environment'].update("
+    echo "        gen_env_vars_from_requests(requests, providers)"
+    echo "    )"
+    echo "finally:"
+    echo "    sys.path.pop()"
+
 }
 
 
@@ -891,6 +927,8 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
     long_opts+=",add-package:"
     short_opts+=",a:"
 
+    long_opts+=",secrets-file:"
+
     # Parse options
     args="$( \
         getopt \
@@ -954,6 +992,10 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
             ;;
             -a|--add-package)
                 PACKAGES+=("$2")
+                shift 2
+            ;;
+            --secrets-file)
+                SECRETS_FILE="$2"
                 shift 2
             ;;
             --)
