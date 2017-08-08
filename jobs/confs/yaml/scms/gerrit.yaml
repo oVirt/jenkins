@@ -15,6 +15,8 @@
           project: '{project}'
           git-server: '{git-server}'
           git-proto: git
+          git-config-name: '{git-config-name}'
+          git-config-email: '{git-config-email}'
 
 - scm:
     name: gerrit-with-proto
@@ -29,6 +31,8 @@
           refspec: $GERRIT_REFSPEC
           choosing-strategy: gerrit
           use-author: true
+          git-config-name: '{git-config-name}'
+          git-config-email: '{git-config-email}'
           skip-tag: true
           prune: true
           wipe-workspace: false

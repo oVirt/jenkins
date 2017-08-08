@@ -16,6 +16,8 @@
     git-proto: 'git'
     gerrit-server: 'gerrit.ovirt.org'
     email-to: 'infra@ovirt.org'
+    git-config-name: 'jenkins CI'
+    git-config-email: 'jenkins@ovirt.org'
     arch: x86_64
     distro: el7
     properties:
