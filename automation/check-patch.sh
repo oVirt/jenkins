@@ -36,6 +36,7 @@ main() {
     if grep -q 'data/dummy.spec' <<< "$changed_files"; then
         test_rpmbuild "$@"
     fi
+    test_secrets_and_credentials
 }
 
 is_jjb_test_arch() {
@@ -116,6 +117,16 @@ test_docker_container() {
     local export_tag="exported-artifacts"
     docker build -t check_patch_container:$export_tag data/Dockerfiles/
     docker run check_patch_container:$export_tag
+}
+
+test_secrets_and_credentials() {
+    # Check if secrets were injected and parsed correctly from secrets file
+    # In our secrets file we hold a dummy secret named jenkins-check-patch
+    # with username and password dummy keys (JenkinsUsername & JenkinsPassword)
+    [[ "${test_secret_username}" = "JenkinsUsername" ]] || return 1
+    [[ "${test_secret_password}" = "JenkinsPassword" ]] || return 1
+    [[ "${test_secret_specified}" = "OVIRT_CI" ]] || return 1
+    return 0
 }
 
 main "$@"

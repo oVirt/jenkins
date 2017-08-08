@@ -10,6 +10,7 @@
           "$WORKSPACE"/jenkins/mock_configs/mock_runner.sh \
               {action} \
               --mock-confs-dir "$WORKSPACE"/jenkins/mock_configs \
+              --secrets-file "$WORKSPACE"/std_ci_secrets.yaml \
               --try-proxy \
               "${{try_mirrors[@]}}" \
               "{distro}.*{arch}"

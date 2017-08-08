@@ -10,6 +10,7 @@
           properties-content: |
             PROJECT: {project}
             GERRIT_TRIGGER_CI_VOTE_LABEL:
+            STD_VERSION: {branch}
       - throttle: &standard-template-properties-throttle
           max-per-node: 1
           max-total: 30
@@ -54,6 +55,9 @@
                 credential-id: 'ci-containers_intermediate-repository'
                 username: 'CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME'
                 password: 'CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD'
+            - file:
+                credential-id: 'ci_secrets_file'
+                variable: 'CI_SECRETS_FILE'
 
 
 - job-template: &standard-template

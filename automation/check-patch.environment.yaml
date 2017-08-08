@@ -1,3 +1,15 @@
 - name: 'test_env_injected'
   valueFrom:
     runtimeEnv: 'PWD'
+- name: 'test_secret_username'
+  valueFrom:
+    secretKeyRef:
+        name: 'jenkins-check-patch'
+        key: 'username'
+- name: 'test_secret_password'
+  valueFrom:
+    secretKeyRef:
+        name: 'jenkins-check-patch'
+        key: 'password'
+- name: 'test_secret_specified'
+  value: 'OVIRT_CI'
