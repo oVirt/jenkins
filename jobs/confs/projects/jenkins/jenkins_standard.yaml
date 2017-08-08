@@ -21,16 +21,3 @@
     arch: x86_64
     jobs:
         - 'jenkins_{version}_{stage}-{distro}-{arch}'
-
-- project:
-    name: jenkins_poll_upstream_sources
-    project: jenkins
-    stage: poll-upstream-sources
-    trigger: 'timed'
-    version:
-      - master:
-          branch: master
-    distro: el7
-    arch: x86_64
-    jobs:
-        - 'jenkins_{version}_{stage}-{distro}-{arch}'

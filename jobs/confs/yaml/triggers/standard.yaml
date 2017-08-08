@@ -90,7 +90,7 @@
           branch: '{branch}'
 
 - trigger:
-    name: poll-upstream-sources_gerrit_trigger_timed
+    name: poll-upstream-sources_gerrit_trigger_on-change
     triggers:
         - poll-upstream-sources_stage
 
