@@ -85,6 +85,7 @@
             - he-basic
             - hc-basic
             - image-ng
+            - ansible
       - text:
          name: CUSTOM_REPOS
          default: ''
