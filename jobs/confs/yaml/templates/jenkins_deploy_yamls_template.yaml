@@ -26,10 +26,11 @@
           branch: '{branch}'
           trigger-repo: '{trigger-repo}'
     scm:
-      - gerrit-with-proto:
+      - jenkins-gerrit:
           project: '{project}'
           git-server: '{git-server}'
           git-proto: '{git-proto}'
+          gerrit-subpath: '{gerrit-subpath}'
     builders:
       - upstream-source-collector
       - shell: !include-raw-escape: shell-scripts/jenkins_deploy_yamls.sh
