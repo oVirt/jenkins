@@ -108,7 +108,6 @@
           description: '<h3>If all the tests end with success, create images of the vms.<br>
                         The archive with the images can be found in exported-artifacts.
                         </h3>'
-
     scm:
       - gerrit-with-proto:
           project: 'ovirt-system-tests'
@@ -122,11 +121,13 @@
           version: ${ENGINE_VERSION}
           suite_type : ${SUITE_TYPE}
           chroot_distro: el7
+          project: 'ovirt-system-tests'
     publishers:
       - system-tests:
           version: ${ENGINE_VERSION}
           suite_type : ${SUITE_TYPE}
           chroot_distro: el7
+          project: 'ovirt-system-tests'
 
 # Storage Hyper Converged system tests
 - project:
