@@ -227,18 +227,69 @@ cleanup_lago_virtual_network_interfaces() {
     return 0
 }
 
+is_docker_using_devicemapper() {
+    # Check if docker is using devicemapper as it's storage driver
+    if grep -q "devicemapper" <<< $(sudo docker info 2>/dev/null); then
+        return 0
+    fi
+    return 1
+}
+
 cleanup_loop_devices() {
+    # If docker is using devicemapper then we remove all dm pools
+    # except for the pool(s) used by docker
+    local failed=false
+
     echo "Making sure there are no device mappings..."
-    sudo dmsetup remove_all || :
+    if test_and_start_docker && is_docker_using_devicemapper; then
+        clean_device_mappings_except_docker
+    else
+        echo "Removing all mappings..."
+        sudo dmsetup remove_all || :
+    fi
     echo "Removing the used loop devices..."
     sudo losetup -D || :
-    if [[ "$(sudo losetup)" != "" ]]; then
-        echo "Failed to free all the loop devices:"
+    if [[ "$failed" == "true" ]]; then
+        echo "Failed to free some loop devices:"
         sudo losetup
         echo "--- device mappings"
         sudo dmsetup info
         return 1
     fi
+    return 0
+}
+
+test_and_start_docker() {
+    # Check if docker binary exists on the host and make sure it runs
+    if [[ -x "/bin/docker" ]]; then
+        sudo systemctl start docker && return 0
+    fi
+    return 1
+}
+
+get_docker_dm_storage_pool() {
+    # Get the devicemapper pool docker 'thinks' it was assigned with
+    grep -oE "docker-.+-pool" <<< $(sudo docker info 2>/dev/null)
+}
+
+clean_device_mappings_except_docker() {
+    local all_dm_pools_no_docker
+
+    if ! grep -q "$(get_docker_dm_storage_pool)" <<< $(sudo dmsetup ls); then
+        # Docker thinks it's been assigned with a different device
+        # than what devicemapper actually did
+        echo "Found error in Docker sotrage configuration. Restarting Docker"
+        sudo systemctl stop docker
+        sudo rm -rf /var/lib/docker/
+        sudo systemctl start docker
+    fi
+    all_dm_pools_no_docker=(
+        $(sudo dmsetup ls | \
+          grep -v "$(get_docker_dm_storage_pool)" | \
+          cut -d$'\t' -f1)
+    )
+    [[ ${#all_dm_pools_no_docker[@]} -ne 0 ]] && \
+        sudo dmsetup remove "${all_dm_pools_no_docker[@]}" || :
     return 0
 }
 
@@ -266,6 +317,7 @@ cleanup_docker () {
         return 0
     fi
 
+    sudo systemctl start docker || return 1
     echo "CLEANUP: Stop all running containers and remove unwanted images"
     sudo docker ps -q -a | xargs -r sudo docker rm -f
     [[ $? -ne 0 ]] && fail=true
