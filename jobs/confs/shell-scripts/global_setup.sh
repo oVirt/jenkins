@@ -42,7 +42,7 @@ setup_os_repos() {
     echo "Configuring slave repos with: '$conf_file'"
     for yum_conf in /etc{{/yum,}/yum.conf,/dnf/dnf.conf}; do
         [[ -f "$yum_conf" ]] || continue
-        if cmp --quiet "$yum.conf" "$conf_file"; then
+        if cmp --quiet "$yum_conf" "$conf_file"; then
             echo "'$yum_conf' does not need to be updated"
             continue
         fi
