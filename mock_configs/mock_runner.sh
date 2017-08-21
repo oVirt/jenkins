@@ -13,6 +13,12 @@ TRY_PROXY="false"
 TRY_MIRRORS=""
 PACKAGES=()
 
+# Generate temp dir to be used by any method in mock_runner
+# This dir is removed recursively in `finalize`
+readonly MR_TEMP_DIR=$(mktemp --tmpdir -d "tmp.mock_runner.XXX")
+readonly LOGS_DIR="$(mktemp -d -p "." -t mock_logs.XXXXXXXX)"
+trap finalize EXIT
+
 
 help() {
     cat <<EOH
@@ -401,29 +407,32 @@ gen_mirrors_conf() {
 gen_environ_conf() {
     local user_requests="${1:?}"
     local user_requests_path="$(realpath "$user_requests")"
-    local scripts_path
-    base_dir="$(dirname "$(which "$0")")/.."
+    local base_dir="$(dirname "$(which "$0")")/.."
+    local scripts_path="${base_dir}/scripts"
+    local gdbm_db=$(mktemp --tmpdir="$MR_TEMP_DIR" "gdbm_db.XXX")
 
-    echo "import sys"
-    echo "from yaml import safe_load"
-    echo "sys.path.append('$base_dir')"
-    echo "try:"
-    echo "    from scripts.secrets_resolvers import ("
-    echo "        load_secret_data"
-    echo "    )"
-    echo "    from scripts.ci_env_client import ("
-    echo "        load_providers, gen_env_vars_from_requests"
-    echo "    )"
-    echo "    secrets = load_secret_data(${SECRETS_FILE:+'$SECRETS_FILE'})"
-    echo "    providers = load_providers(secrets)"
-    echo "    with open('${user_requests_path}', 'r') as rf:"
-    echo "        requests = safe_load(rf)"
-    echo "    config_opts['environment'].update("
-    echo "        gen_env_vars_from_requests(requests, providers)"
-    echo "    )"
-    echo "finally:"
-    echo "    sys.path.pop()"
+    # Generate GDBM database from `$env`
+    python "${scripts_path}/gdbm_db_resolvers.py" "${gdbm_db}"
 
+    echo "from os.path import isfile"
+    echo "if isfile('$gdbm_db'):"
+    echo "    import sys"
+    echo "    from yaml import safe_load"
+    echo "    sys.path.append('$base_dir')"
+    echo "    try:"
+    echo "        from scripts.ci_env_client import ("
+    echo "            load_providers, gen_env_vars_from_requests"
+    echo "        )"
+    echo "        providers = load_providers("
+    echo "            '$gdbm_db', ${SECRETS_FILE:+'$SECRETS_FILE'}"
+    echo "        )"
+    echo "        with open('${user_requests_path}', 'r') as rf:"
+    echo "            requests = safe_load(rf)"
+    echo "        config_opts['environment'].update("
+    echo "            gen_env_vars_from_requests(requests, providers)"
+    echo "        )"
+    echo "    finally:"
+    echo "        sys.path.pop()"
 }
 
 
@@ -884,6 +893,7 @@ finalize() {
     echo "Collecting mock logs"
     mv -v "$LOGS_DIR"/* "$FINAL_LOGS_DIR"
     rmdir "$LOGS_DIR"
+    rm -rf "$MR_TEMP_DIR"
     echo "##########################################################"
 }
 
@@ -1015,8 +1025,6 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
         }
     fi
 
-    LOGS_DIR="$(mktemp -d -p "." -t mock_logs.XXXXXXXX)"
-    trap finalize EXIT
 
     if [[ "$RUN_SHELL" == "true" ]]; then
         run_shell \

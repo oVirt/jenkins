@@ -1,0 +1,3 @@
+- name: 'test_env_injected'
+  valueFrom:
+    runtimeEnv: 'PWD'
