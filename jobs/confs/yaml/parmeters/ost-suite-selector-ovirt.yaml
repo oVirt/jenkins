@@ -1,0 +1,13 @@
+- parameter:
+    name: ost-suite-selector-ovirt
+    parameters:
+      - choice:
+          name: SUITE_TYPE
+          choices:
+            - basic
+            - upgrade-from-release
+            - upgrade-from-prevrelease
+            - he-basic
+            - hc-basic
+            - image-ng
+            - ansible

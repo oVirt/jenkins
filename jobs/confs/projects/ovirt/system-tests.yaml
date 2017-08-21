@@ -55,79 +55,12 @@
     jobs:
       - '{project}_{suite_type}-suite-{version}'
 
-- job:
-    name: 'ovirt-system-tests_manual'
-    concurrent: true
-    properties:
-        - throttle:
-            enabled: true
-            option: project
-            max-total: 3
-    node: integ-tests
-    parameters:
-      - gerrit-params:
-          branch: master
-      - upgrades-table
-      - choice:
-          name: SUITE_TYPE
-          choices:
-            - basic
-            - upgrade-from-release
-            - upgrade-from-prevrelease
-            - he-basic
-            - hc-basic
-            - image-ng
-            - ansible
-      - text:
-         name: CUSTOM_REPOS
-         default: ''
-         description: '<b>You can add multiple Jenkins build urls/Yum repos, one per line.</b><br>
-                        <u>Supported formats are:</u><br>
-                        * Jenkins Build url:<br>
-                            e.g., http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild/<br>
-                        * Yum repo: "rec:yum_repo_url"<br>
-                            e.g., <b>rec</b>:http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild/artifact/<br>'
-      - choice:
-          name: FALLBACK_REPO
-          choices:
-            - latest_release
-            - latest_tested
-          description: '<h3>Choose from which repo to take the rpms.
-                        latest_tested repo contains the latest rpms which passed CI verification.<br>
-                        latest_release points to the latest stable oVirt release; e.g., oVirt-4.0 repo<br>
-                        </h3>'
-      - string:
-          name: LAGO_CUSTOM_REPO
-          default: ''
-          description: '<b>Leave empty</b>, unless you want to use a custom repository to install lago from.'
-      - choice:
-          name: CREATE_IMAGES
-          choices:
-            - 'no'
-            - 'yes'
-          description: '<h3>If all the tests end with success, create images of the vms.<br>
-                        The archive with the images can be found in exported-artifacts.
-                        </h3>'
-    scm:
-      - gerrit-with-proto:
-          project: 'ovirt-system-tests'
-          git-server: 'gerrit.ovirt.org'
-          git-proto: 'git'
-      - 'jenkins':
-          branch: master
-          git-server: 'gerrit.ovirt.org'
-    builders:
-      - system-tests:
-          version: ${ENGINE_VERSION}
-          suite_type : ${SUITE_TYPE}
-          chroot_distro: el7
-          project: 'ovirt-system-tests'
-    publishers:
-      - system-tests:
-          version: ${ENGINE_VERSION}
-          suite_type : ${SUITE_TYPE}
-          chroot_distro: el7
-          project: 'ovirt-system-tests'
+- project:
+    name: ovirt-system-tests_manual
+    project: 'ovirt-system-tests'
+    ost-flavour: 'ovirt'
+    jobs:
+      - '{project}_manual'
 
 # Storage Hyper Converged system tests
 - project:

@@ -42,3 +42,40 @@
           suite_type: '{suite_type}'
           chroot_distro: '{chroot_distro}'
           project: '{project}'
+
+- job-template:
+    name: '{project}_manual'
+    project: '{project}'
+    concurrent: true
+    properties:
+        - throttle:
+            enabled: true
+            option: project
+            max-total: 3
+    node: integ-tests
+    scm:
+      - gerrit-with-proto:
+          project: '{project}'
+          git-server: 'gerrit.ovirt.org'
+          git-proto: 'git'
+      - 'jenkins':
+          branch: master
+          git-server: 'gerrit.ovirt.org'
+    parameters:
+      - gerrit-params:
+          branch: master
+      - 'ost-version-selector-{ost-flavour}'
+      - 'ost-suite-selector-{ost-flavour}'
+      - 'ost-input-customizations'
+    builders:
+      - system-tests:
+          version: ${{ENGINE_VERSION}}
+          suite_type : ${{SUITE_TYPE}}
+          chroot_distro: el7
+          project: 'ovirt-system-tests'
+    publishers:
+      - system-tests:
+          version: ${{ENGINE_VERSION}}
+          suite_type : ${{SUITE_TYPE}}
+          chroot_distro: el7
+          project: 'ovirt-system-tests'

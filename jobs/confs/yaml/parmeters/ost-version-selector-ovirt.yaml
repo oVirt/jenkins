@@ -1,5 +1,5 @@
 - parameter:
-    name: upgrades-table
+    name: ost-version-selector-ovirt
     parameters:
     - choice:
         name: ENGINE_VERSION
