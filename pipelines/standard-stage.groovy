@@ -1,13 +1,13 @@
 // standard-stage.groovy - Pipeling-based STD-CI implementation
 //
+String std_ci_stage
+Project project
+def jobs
+
 def loader_main(loader) {
-    String std_ci_stage
-    Project project
-    def jobs
     // Copy methods from loader to this script
     metaClass.checkout_repo = loader.&checkout_repo
     metaClass.checkout_jenkins_repo = loader.&checkout_jenkins_repo
-
 
     stage('Detecting STD-CI jobs') {
         std_ci_stage = get_stage_name()
@@ -25,16 +25,23 @@ def loader_main(loader) {
             print(job_list)
         }
     }
+}
+
+def main() {
     try {
         stage('Invoking jobs') {
             run_std_ci_jobs(project, jobs)
         }
     } finally {
         stage('Collecting results') {
-            archiveArtifacts allowEmptyArchive: true, \
-                artifacts: 'exported-artifacts/**'
-            junit keepLongStdio: true, allowEmptyResults: true, \
-                testResults: 'exported-artifacts/**/*xml'
+            node() {
+                dir("exported-artifacts") { deleteDir() }
+                collect_jobs_artifacts(jobs)
+                archiveArtifacts allowEmptyArchive: true, \
+                    artifacts: 'exported-artifacts/**'
+                junit keepLongStdio: true, allowEmptyResults: true, \
+                    testResults: 'exported-artifacts/**/*xml'
+            }
         }
     }
 }
@@ -248,26 +255,20 @@ def run_std_ci_jobs(project, jobs) {
 
 def mk_std_ci_runner(project, job) {
     return {
-        def job_dir = "${job.stage}.${job.distro}.${job.arch}"
-        // stash an empty file so we don`t get errors if no artifacts get stashed
-        touch file: '__no_artifacts_stashed__'
-        stash includes: '__no_artifacts_stashed__', name: job_dir
-        try {
-            String node_label = get_std_ci_node_label(job)
-            if(node_label.empty) {
-                print "This script has no special node requirements"
-            } else {
-                print "This script required nodes with label: $node_label"
-            }
-            node(node_label) {
-                run_std_ci_on_node(project, job, job_dir)
-            }
-        } finally {
-            dir("exported-artifacts/$job_dir") {
-                unstash job_dir
-            }
+        String node_label = get_std_ci_node_label(job)
+        if(node_label.empty) {
+            print "This script has no special node requirements"
+        } else {
+            print "This script required nodes with label: $node_label"
+        }
+        node(node_label) {
+            run_std_ci_on_node(project, job, get_job_dir(job))
         }
     }
+}
+
+def get_job_dir(job) {
+    return "${job.stage}.${job.distro}.${job.arch}"
 }
 
 @NonCPS
@@ -297,31 +298,35 @@ def get_std_ci_node_label(job) {
 }
 
 def run_std_ci_on_node(project, job, stash_name) {
-    checkout_jenkins_repo()
-    checkout_project(project)
-    run_jjb_script('cleanup_slave.sh', project.name)
-    run_jjb_script('global_setup.sh', project.name)
     try {
-        run_jjb_script('mock_setup.sh', project.name)
-        // TODO: Load mirros once for whole pipeline
-        // unstash 'mirrors'
-        // def mirrors = "${pwd()}/mirrors.yaml"
-        def mirrors = null
-        dir(project.name) {
-            mock_runner(job.script, job.distro, job.arch, mirrors)
+        dir("exported-artifacts") { deleteDir() }
+        checkout_jenkins_repo()
+        checkout_project(project)
+        run_jjb_script('cleanup_slave.sh', project.name)
+        run_jjb_script('global_setup.sh', project.name)
+        try {
+            run_jjb_script('mock_setup.sh', project.name)
+            // TODO: Load mirros once for whole pipeline
+            // unstash 'mirrors'
+            // def mirrors = "${pwd()}/mirrors.yaml"
+            def mirrors = null
+            dir(project.name) {
+                mock_runner(job.script, job.distro, job.arch, mirrors)
+            }
+        } finally {
+            withCredentials([usernamePassword(
+                credentialsId: 'ci-containers_intermediate-repository',
+                passwordVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD',
+                usernameVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME'
+            )]) {
+                run_jjb_script('collect_artifacts.sh', project.name)
+            }
+            run_jjb_script('mock_cleanup.sh', project.name)
         }
     } finally {
-        withCredentials([usernamePassword(
-            credentialsId: 'ci-containers_intermediate-repository',
-            passwordVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD',
-            usernameVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME'
-        )]) {
-            run_jjb_script('collect_artifacts.sh', project.name)
-        }
         dir("exported-artifacts") {
             stash includes: '**', name: stash_name
         }
-        run_jjb_script('mock_cleanup.sh', project.name)
     }
     run_jjb_script('global_setup_apply.sh', project.name)
 }
@@ -351,6 +356,16 @@ def mock_runner(script, distro, arch, mirrors=null) {
             $mirrors_arg \
             "${distro}.*${arch}"
     """
+}
+
+def collect_jobs_artifacts(jobs) {
+    for (ji = 0; ji < jobs.size; ++ji) {
+        def job = jobs[ji]
+        def job_dir = get_job_dir(job)
+        dir("exported-artifacts/$job_dir") {
+            unstash job_dir
+        }
+    }
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from
