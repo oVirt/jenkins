@@ -1,4 +1,36 @@
 - job-template:
+    name: '{org}_{project}_standard-check-pr'
+    project-type: workflow
+    quiet-period: 0
+    properties:
+      - build-discarder:
+          days-to-keep: 14
+          artifact-num-to-keep: 60
+      - github:
+          url: 'https://github.com/{org}/{project}'
+      - inject:
+          properties-content: |
+            SCM_NOTIFICATION_CREDENTIALS={github-auth-id}
+    triggers:
+      - github-pull-request: &github-pull-trigger-base
+          org-list:
+            - '{org}'
+          trigger-phrase: '^(ci test please).*'
+          only-trigger-phrase: false
+          github-hooks: true
+          permit-all: false
+          auto-close-on-fail: false
+          allow-whitelist-orgs-as-admins: true
+          auth-id: '{github-auth-id}'
+          status-context: standard-ci
+          triggered-status: 'Queued for testing'
+          started-status: 'Running tests'
+          success-status: 'All tests passed'
+          failure-status: 'Some tests failed'
+          error-status: 'System error during testing'
+    dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
+
+- job-template:
     name: standard-manual-runner
     project-type: workflow
     quiet-period: 0

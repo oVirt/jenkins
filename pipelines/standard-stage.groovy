@@ -51,6 +51,14 @@ def get_stage_name() {
     if('STD_CI_STAGE' in params) {
         return params.STD_CI_STAGE
     }
+    if(params.ghprbCommentBody =~ /^ci test please/) {
+        return 'check-patch'
+    }
+    if(params.ghprbCommentBody == 'null' && params.ghprbTriggerAuthorLogin.empty) {
+        // When comment body is 'null' and trigger author is empty it means the
+        // PR was just submitted
+        return 'check-patch'
+    }
     error "Failed to detect stage from trigger event or parameters"
 }
 
@@ -58,11 +66,15 @@ class Project implements Serializable {
     String clone_url
     String name
     String refspec
+    def notify = \
+        { context, status, short_msg=null, long_msg=null, url=null -> }
 }
 
 def get_project() {
     if('STD_CI_CLONE_URL' in params) {
         get_project_from_params()
+    } else if('ghprbGhRepository' in params) {
+        get_project_from_github_pr()
     } else {
         error "Cannot detect project from trigger or paarmeter information!"
     }
@@ -74,6 +86,28 @@ def get_project_from_params() {
         name: params.STD_CI_CLONE_URL.tokenize('/')[-1] - ~/.git$/,
         refspec: params.STD_CI_REFSPEC,
     )
+}
+
+def get_project_from_github_pr() {
+    Project project = new Project(
+        clone_url: "https://github.com/${params.ghprbGhRepository}",
+        name: params.ghprbGhRepository.tokenize('/')[-1],
+        refspec: "refs/pull/${params.ghprbPullId}/merge",
+    )
+    if(env.SCM_NOTIFICATION_CREDENTIALS) {
+        def account = params.ghprbGhRepository.tokenize('/')[-2]
+        def repo = params.ghprbGhRepository.tokenize('/')[-1]
+        def sha = params.ghprbActualCommit
+        project.notify = { context, status, short_msg=null, long_msg=null, url=null ->
+            githubNotify(
+                credentialsId: env.SCM_NOTIFICATION_CREDENTIALS,
+                account: account, repo: repo, sha: sha,
+                context: context,
+                status: status, description: short_msg, targetUrl: url
+            )
+        }
+    }
+    return project
 }
 
 def checkout_project(Project project) {
@@ -255,6 +289,8 @@ def run_std_ci_jobs(project, jobs) {
 
 def mk_std_ci_runner(project, job) {
     return {
+        String ctx = "${job.stage}.${job.distro}.${job.arch}"
+        project.notify(ctx, 'PENDING', 'Allocating runner node')
         String node_label = get_std_ci_node_label(job)
         if(node_label.empty) {
             print "This script has no special node requirements"
@@ -297,38 +333,45 @@ def get_std_ci_node_label(job) {
     return label_conditions.join(' && ')
 }
 
+class TestFailedRef implements Serializable {
+    // Flag used to indicate that the actual test failed and not something else
+    // Its inside a class so we can pass it by reference by passing object
+    // instance around
+    Boolean test_failed = false
+}
+
 def run_std_ci_on_node(project, job, stash_name) {
+    TestFailedRef tfr = new TestFailedRef()
+    Boolean success = false
+    String ctx = "${job.stage}.${job.distro}.${job.arch}"
     try {
-        dir("exported-artifacts") { deleteDir() }
-        checkout_jenkins_repo()
-        checkout_project(project)
-        run_jjb_script('cleanup_slave.sh', project.name)
-        run_jjb_script('global_setup.sh', project.name)
         try {
-            run_jjb_script('mock_setup.sh', project.name)
-            // TODO: Load mirros once for whole pipeline
-            // unstash 'mirrors'
-            // def mirrors = "${pwd()}/mirrors.yaml"
-            def mirrors = null
-            dir(project.name) {
-                mock_runner(job.script, job.distro, job.arch, mirrors)
-            }
+            project.notify(ctx, 'PENDING', 'Setting up test environment')
+            dir("exported-artifacts") { deleteDir() }
+            checkout_jenkins_repo()
+            checkout_project(project)
+            run_jjb_script('cleanup_slave.sh', project.name)
+            run_jjb_script('global_setup.sh', project.name)
+            run_std_ci_in_mock(project, job, tfr)
         } finally {
-            withCredentials([usernamePassword(
-                credentialsId: 'ci-containers_intermediate-repository',
-                passwordVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD',
-                usernameVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME'
-            )]) {
-                run_jjb_script('collect_artifacts.sh', project.name)
+            project.notify(ctx, 'PENDING', 'Collecting results')
+            dir("exported-artifacts") {
+                stash includes: '**', name: stash_name
             }
-            run_jjb_script('mock_cleanup.sh', project.name)
         }
+        // The only way we can get to these lines is if nothing threw any
+        // exceptions so far. This means the job was successful.
+        run_jjb_script('global_setup_apply.sh', project.name)
+        success = true
     } finally {
-        dir("exported-artifacts") {
-            stash includes: '**', name: stash_name
+        if(success) {
+            project.notify(ctx, 'SUCCESS', 'Test is successful')
+        } else if (tfr.test_failed) {
+            project.notify(ctx, 'FAILURE', 'Test script failed')
+        } else {
+            project.notify(ctx, 'ERROR', 'Testing system error')
         }
     }
-    run_jjb_script('global_setup_apply.sh', project.name)
 }
 
 def run_jjb_script(script_name, project_name) {
@@ -337,6 +380,38 @@ def run_jjb_script(script_name, project_name) {
     def script = readFile(script_path)
     withEnv(["WORKSPACE=${pwd()}", "PROJECT=$project_name"]) {
         sh script
+    }
+}
+
+def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
+    String ctx = "${job.stage}.${job.distro}.${job.arch}"
+    try {
+        run_jjb_script('mock_setup.sh', project.name)
+        // TODO: Load mirros once for whole pipeline
+        // unstash 'mirrors'
+        // def mirrors = "${pwd()}/mirrors.yaml"
+        def mirrors = null
+        dir(project.name) {
+            project.notify(ctx, 'PENDING', 'Running test')
+            // Set flag to 'true' to indicate that exception from this point
+            // means the test failed and not the CI system
+            tfr.test_failed = true
+            mock_runner(job.script, job.distro, job.arch, mirrors)
+            // If we got here (no exception thrown so far), the test did not
+            // fail
+            tfr.test_failed = false
+        }
+    } finally {
+        project.notify(ctx, 'PENDING', 'Collecting results')
+        withCredentials([usernamePassword(
+            credentialsId: 'ci-containers_intermediate-repository',
+            passwordVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD',
+            usernameVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME'
+        )]) {
+            run_jjb_script('collect_artifacts.sh', project.name)
+        }
+        project.notify(ctx, 'PENDING', 'Cleaning up')
+        run_jjb_script('mock_cleanup.sh', project.name)
     }
 }
 

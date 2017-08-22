@@ -2,3 +2,13 @@
     name: standard-pipelines
     jobs:
       - standard-manual-runner
+
+- project:
+    name: oVirt-standard-pipelines-github
+    github-auth-id: github-auth-token
+    org: oVirt
+    project:
+      - stage-gh-stdci1
+      - stage-gh-stdci2
+    jobs:
+      - '{org}_{project}_standard-check-pr'
