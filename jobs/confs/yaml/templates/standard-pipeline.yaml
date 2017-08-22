@@ -1,0 +1,21 @@
+- job-template:
+    name: standard-manual-runner
+    project-type: workflow
+    quiet-period: 0
+    properties:
+      - build-discarder:
+          days-to-keep: 14
+          artifact-num-to-keep: 60
+    parameters:
+      - string:
+          name: STD_CI_CLONE_URL
+          description: A Git repo URL to clone the project from
+      - string:
+          name: STD_CI_REFSPEC
+          description: Refspec to the Git commit to run jobs on
+          default: refs/heads/master
+      - string:
+          name: STD_CI_STAGE
+          description: The standard-CI stage to emulate
+          default: check-patch
+    dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy

@@ -38,7 +38,14 @@ def checkout_jenkins_repo() {
     )
 }
 
-def checkout_repo(String repo_name, String refspec='refs/heads/master') {
+def checkout_repo(
+    String repo_name,
+    String refspec='refs/heads/master',
+    String url=null
+) {
+    if(url == null) {
+        url = "https://gerrit.ovirt.org/${repo_name}"
+    }
     dir(repo_name) {
         checkout(
             changelog: false, poll: false, scm: [
@@ -46,7 +53,7 @@ def checkout_repo(String repo_name, String refspec='refs/heads/master') {
                 branches: [[name: 'myhead']],
                 userRemoteConfigs: [[
                     refspec: "+${refspec}:myhead",
-                    url: "https://gerrit.ovirt.org/${repo_name}"
+                    url: url
                 ]]
             ]
         )
@@ -55,7 +62,13 @@ def checkout_repo(String repo_name, String refspec='refs/heads/master') {
 
 def checkout_repo(Map named_args) {
     if('refspec' in named_args) {
-        checkout_repo(named_args.repo_name, named_args.refspec)
+        if('url' in named_args) {
+            checkout_repo(
+                named_args.repo_name, named_args.refspec, named_args.url
+            )
+        } else {
+            checkout_repo(named_args.repo_name, named_args.refspec)
+        }
     } else {
         checkout_repo(named_args.repo_name)
     }
@@ -66,6 +79,8 @@ def get_pipeline_for_job(name) {
     print("Searching pipeline script for '${name}'")
     def job_to_pipelines = [
         /^standard-enqueue$/: '$0.groovy',
+        /^standard-manual-runner$/: 'standard-stage.groovy',
+        /^(.*)_standard-(.*)$/: 'standard-stage.groovy',
         /^numbers_change-queue-tester$/: '$0.groovy',
         /^ovirt-(.*)_change-queue-tester$/: 'ovirt_change-queue-tester.groovy',
         /^(.*)_change-queue$/: 'change-queue.groovy',
