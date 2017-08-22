@@ -4,6 +4,12 @@
     version:
       - master:
           branch: master
+      - ovirt-4.2:
+          branch: ovirt-4.2
+      - ovirt-4.2-pre:
+          branch: ovirt-4.2-pre
+      - ovirt-4.2-snapshot:
+          branch: ovirt-4.2-snapshot
       - ovirt-4.1:
           branch: ovirt-4.1
       - ovirt-4.1-pre:
@@ -29,6 +35,18 @@
     version:
       - master:
           branch: master
+          trigger: 'timed'
+          trigger-times: '@daily'
+      - ovirt-4.2:
+          branch: ovirt-4.2
+          trigger: 'timed'
+          trigger-times: '@weekly'
+      - ovirt-4.2-pre:
+          branch: ovirt-4.2-pre
+          trigger: 'timed'
+          trigger-times: '@weekly'
+      - ovirt-4.2-snapshot:
+          branch: ovirt-4.2-snapshot
           trigger: 'timed'
           trigger-times: '@daily'
       - ovirt-4.1:

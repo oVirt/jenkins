@@ -9,6 +9,9 @@
       - master:
           branch: master
           repoversion: master
+      - 4.2:
+          branch: ovirt-4.2
+          repoversion: 4.2
       - 4.1:
           branch: ovirt-4.1
           repoversion: 4.1
@@ -23,6 +26,8 @@
       - el7
       - fc25
     exclude:
+      - version: 4.2
+        distro: fc25
       - version: 4.1
         distro: fc25
       - version: 4.0
@@ -41,6 +46,8 @@
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: ovirt-4.2
       - 4.1:
           branch: ovirt-4.1
       - 4.0:
@@ -54,6 +61,8 @@
       - el7
       - fc25
     exclude:
+      - version: 4.2
+        distro: fc25
       - version: 4.1
         distro: fc25
       - version: 4.0
