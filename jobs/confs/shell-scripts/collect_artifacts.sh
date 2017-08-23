@@ -120,9 +120,22 @@ export_docker_images(){
     ) ||:
     [[ -z "$docker_images_to_tag" ]] && return 0
 
-    sudo docker login \
-        -u="$CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME" \
-        -p="$CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD"
+    docker_full_version="$(sudo docker --version)"
+    docker_numeric_version="${docker_full_version##*/}"
+    # Email is a must in docker 1.10.x and was deprecated in 1.11.0
+    if [[ "$docker_numeric_version" =~ 1.10.* ]]; then
+        sudo docker login \
+            --username="$CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME" \
+            --password="$CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD" \
+            --email="nosuchmail@noreply.com" \
+            "${INTERMEDIATE_CONTAINER_IMAGES_REPO%%/*}"
+    else
+        sudo docker login \
+            --username="$CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME" \
+            --password="$CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD" \
+            "${INTERMEDIATE_CONTAINER_IMAGES_REPO%%/*}"
+    fi
+
     containers_repo="${INTERMEDIATE_CONTAINER_IMAGES_REPO}"
     # Loop through the images we want to export and push them to registery
     for image in $docker_images_to_tag; do
