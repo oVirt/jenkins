@@ -3,33 +3,35 @@
 //
 def pipeline
 
-node() { wrap([$class: 'TimestamperBuildWrapper']) { ansiColor('xterm') {
-    stage('loading code') {
-        checkout_jenkins_repo()
-        dir('jenkins') {
-            def pipeline_file = get_pipeline_for_job(env.JOB_NAME)
-            if(pipeline_file == null) {
-                error "Could not find a matching pipeline for this job"
-            }
-            echo "Loading pipeline script: '${pipeline_file}'"
-            dir('pipelines') {
-                pipeline = load(pipeline_file)
+timestamps { ansiColor('xterm') {
+    node() {
+        stage('loading code') {
+            checkout_jenkins_repo()
+            dir('jenkins') {
+                def pipeline_file = get_pipeline_for_job(env.JOB_NAME)
+                if(pipeline_file == null) {
+                    error "Could not find a matching pipeline for this job"
+                }
+                echo "Loading pipeline script: '${pipeline_file}'"
+                dir('pipelines') {
+                    pipeline = load(pipeline_file)
+                }
             }
         }
+        echo "Launching pipeline script"
+        if(pipeline.metaClass.respondsTo(pipeline, 'loader_main')) {
+            pipeline.loader_main(this)
+        } else {
+            pipeline.main()
+        }
     }
-    echo "Launching pipeline script"
-    if(pipeline.metaClass.respondsTo(pipeline, 'loader_main')) {
-        pipeline.loader_main(this)
-    } else {
+    if(
+        pipeline.metaClass.respondsTo(pipeline, 'loader_main') &&
+        pipeline.metaClass.respondsTo(pipeline, 'main')
+    ) {
         pipeline.main()
     }
-}}}
-if(
-    pipeline.metaClass.respondsTo(pipeline, 'loader_main') &&
-    pipeline.metaClass.respondsTo(pipeline, 'main')
-) {
-    pipeline.main()
-}
+}}
 
 def checkout_jenkins_repo() {
     checkout_repo(
