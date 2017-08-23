@@ -598,7 +598,7 @@ resolve_mock() {
         return 0
     fi
 
-    mocks=($(cat "$mock_dir"/*.mrmap))
+    mocks=($(cat /dev/null "${mock_dir}"/*.mrmap))
     for full_mock in "${mocks[@]}"; do
         if [[ "$full_mock" =~ $mock ]]; then
             echo "$full_mock"
