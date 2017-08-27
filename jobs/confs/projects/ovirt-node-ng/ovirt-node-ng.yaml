@@ -42,7 +42,7 @@
     distro:
       - el7
     trigger: 'timed'
-    trigger-times: '00 04 * * *'
+    trigger-times: 'H H(5-8) * * *'
     arch:
       - x86_64
     node-filter: el7
