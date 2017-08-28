@@ -52,12 +52,13 @@
             enabled: true
             option: project
             max-total: 3
-    node: integ-tests
+    node: '{node-filter}'
     scm:
       - gerrit-with-proto:
           project: '{project}'
           git-server: '{git-server}'
           git-proto: 'git'
+          gerrit-subpath: '{gerrit-subpath}'
       - 'jenkins':
           branch: master
           git-server: '{git-server}'
