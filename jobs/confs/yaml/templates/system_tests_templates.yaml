@@ -56,11 +56,11 @@
     scm:
       - gerrit-with-proto:
           project: '{project}'
-          git-server: 'gerrit.ovirt.org'
+          git-server: '{git-server}'
           git-proto: 'git'
       - 'jenkins':
           branch: master
-          git-server: 'gerrit.ovirt.org'
+          git-server: '{git-server}'
     parameters:
       - gerrit-params:
           branch: master
@@ -71,11 +71,11 @@
       - system-tests:
           version: ${{ENGINE_VERSION}}
           suite_type : ${{SUITE_TYPE}}
-          chroot_distro: el7
-          project: 'ovirt-system-tests'
+          chroot_distro: '{system-tests-chroot-distro}'
+          project: '{project}'
     publishers:
       - system-tests:
           version: ${{ENGINE_VERSION}}
           suite_type : ${{SUITE_TYPE}}
-          chroot_distro: el7
-          project: 'ovirt-system-tests'
+          chroot_distro: '{system-tests-chroot-distro}'
+          project: '{project}'
