@@ -156,7 +156,8 @@ def branch_of_commit(commit_sha, git_url):
     :rtype: string
     :returns: branch name
     """
-    ls_remote_out = git('ls-remote', git_url, append_stderr=False)
+    ls_remote_out = git('ls-remote', git_url, append_stderr=False,
+                        print_command_output=False)
     branches_list = \
         (l.split() for l in ls_remote_out.splitlines())
 
@@ -189,8 +190,9 @@ def git(*args, **kwargs):
     LOGGER.info("Executing command: "
                 "{command}".format(command=' '.join(git_command)))
     std_out = check_output(git_command, stderr=stderr)
-    for log_line in std_out.splitlines():
-        LOGGER.info(log_line)
+    if kwargs.get('print_command_output', True):
+        for log_line in std_out.splitlines():
+            LOGGER.info(log_line)
 
     return std_out
 
