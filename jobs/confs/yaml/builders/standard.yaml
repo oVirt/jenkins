@@ -54,6 +54,9 @@
           distro: '{distro}'
           arch: '{arch}'
           action: --patch-only
+      - inject:
+          properties-content: |
+            GERRIT_TRIGGER_CI_VOTE_LABEL: --label Continuous-Integration=<CODE_REVIEW>
 
 - builder:
     name: poll-upstream-sources_builder

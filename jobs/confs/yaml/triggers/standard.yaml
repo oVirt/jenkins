@@ -67,6 +67,10 @@
               - patchset-created-event:
                   exclude-drafts: true
                   exclude-no-code-change: true
+          override-votes: true
+          gerrit-build-successful-codereview-value: 1
+          gerrit-build-failed-codereview-value: -1
+          gerrit-build-unstable-codereview-value: -1
 
 - trigger:
     name: check-patch_gerrit_trigger_on-custom-repo-change

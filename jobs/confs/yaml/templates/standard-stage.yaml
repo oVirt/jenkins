@@ -9,6 +9,7 @@
       - inject: &standard-template-properties-inject
           properties-content: |
             PROJECT: {project}
+            GERRIT_TRIGGER_CI_VOTE_LABEL:
       - throttle: &standard-template-properties-throttle
           max-per-node: 1
           max-total: 30
