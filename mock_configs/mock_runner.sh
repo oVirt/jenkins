@@ -400,6 +400,7 @@ gen_mirrors_conf() {
 
 gen_environ_conf() {
     local user_requests="${1:?}"
+    local user_requests_path="$(realpath "$user_requests")"
     local scripts_path
     base_dir="$(dirname "$(which "$0")")/.."
 
@@ -413,9 +414,9 @@ gen_environ_conf() {
     echo "    from scripts.ci_env_client import ("
     echo "        load_providers, gen_env_vars_from_requests"
     echo "    )"
-    echo "    secrets = load_secret_data(${SECRETS_FILE:'$SECRETS_FILE'})"
+    echo "    secrets = load_secret_data(${SECRETS_FILE:+'$SECRETS_FILE'})"
     echo "    providers = load_providers(secrets)"
-    echo "    with open('${user_requests}', 'r') as rf:"
+    echo "    with open('${user_requests_path}', 'r') as rf:"
     echo "        requests = safe_load(rf)"
     echo "    config_opts['environment'].update("
     echo "        gen_env_vars_from_requests(requests, providers)"
