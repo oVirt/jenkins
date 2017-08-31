@@ -122,8 +122,8 @@ def clone_repo(git_url, git_commit, work_folder, work_folder_cmd):
     """
     git('init', work_folder, append_stderr=True)
     branch = branch_of_commit(git_commit, git_url)
-    git(work_folder_cmd, 'fetch', '--tags', '--progress', git_url, branch,
-        append_stderr=True)
+    git(work_folder_cmd, 'fetch', '--tags', git_url, branch,
+        append_stderr=False)
 
 
 @contextlib.contextmanager
