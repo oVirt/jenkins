@@ -54,6 +54,9 @@ def get_stage_name() {
     if(params.ghprbCommentBody =~ /^ci test please/) {
         return 'check-patch'
     }
+    if(params.ghprbCommentBody =~ /^ci build please/) {
+        return 'build-artifacts'
+    }
     if(params.ghprbCommentBody == 'null' && params.ghprbTriggerAuthorLogin.empty) {
         // When comment body is 'null' and trigger author is empty it means the
         // PR was just submitted

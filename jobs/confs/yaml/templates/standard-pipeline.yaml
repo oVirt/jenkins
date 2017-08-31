@@ -15,7 +15,7 @@
       - github-pull-request: &github-pull-trigger-base
           org-list:
             - '{org}'
-          trigger-phrase: '^(ci test please).*'
+          trigger-phrase: '^ci (test|build) please.*'
           only-trigger-phrase: false
           github-hooks: true
           permit-all: false
