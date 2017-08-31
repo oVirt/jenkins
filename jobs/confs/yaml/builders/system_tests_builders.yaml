@@ -6,14 +6,14 @@
       - upstream-source-collector
       - shell: |
           if [[ ${{CREATE_IMAGES}} = "yes" ]]; then
-              touch ovirt-system-tests/CREATE_IMAGES.marker
+              touch ${{PROJECT}}/CREATE_IMAGES.marker
           fi
       - shell: |
           #!/bin/bash -ex
           ## check which version of lago to use, and append to .repos
           if ! [[ -z "${{LAGO_CUSTOM_REPO// }}" ]]; then
               timestamp=$(date +%s)
-              for repo in $(find ovirt-system-tests/automation/ -type f -name '*.repos'); do
+              for repo in $(find ${{PROJECT}}/automation/ -type f -name '*.repos'); do
                   sed -i '/^lago/ d' "$repo"
                   echo "lago_injected-$timestamp,$LAGO_CUSTOM_REPO" >> "$repo"
               done
@@ -21,11 +21,11 @@
       - shell: |
           ## update extra source if we got it as param ###
           if ! [ -z ${{CUSTOM_REPOS+x}} ]; then
-            echo "$CUSTOM_REPOS" > ovirt-system-tests/${{SUITE_TYPE}}-suite-${{ENGINE_VERSION}}/extra_sources
+            echo "$CUSTOM_REPOS" > ${{PROJECT}}/${{SUITE_TYPE}}-suite-${{ENGINE_VERSION}}/extra_sources
           fi
           ## update the fallback source
           if [[ ${{FALLBACK_REPO}} = "latest_tested"  ]]; then
-            echo "rec:http://plain.resources.ovirt.org/repos/ovirt/experimental/{version}/latest.tested/rpm/{chroot_distro}" >> ovirt-system-tests/${{SUITE_TYPE}}-suite-${{ENGINE_VERSION}}/extra_sources
+            echo "rec:http://plain.resources.ovirt.org/repos/ovirt/experimental/{version}/latest.tested/rpm/{chroot_distro}" >> ${{PROJECT}}/${{SUITE_TYPE}}-suite-${{ENGINE_VERSION}}/extra_sources
           fi
       - shell: |
           #!/usr/bin/env python
@@ -38,7 +38,7 @@
           )
 
           setupLogging()
-          suit_dir = "ovirt-system-tests/{suite_type}-suite-{version}"
+          suit_dir = "${{PROJECT}}/{suite_type}-suite-{version}"
           if 'SUITE_TYPE' in environ:
               suit_dir = suit_dir.replace('$SUITE_TYPE', environ['SUITE_TYPE'])
               suit_dir = suit_dir.replace('${{SUITE_TYPE}}', environ['SUITE_TYPE'])
@@ -51,7 +51,7 @@
           )
       - shell: |
           # make sure there's no prefix or lago will fail
-          rm -rf "ovirt-system-tests/deployment-{suite_type}_suite_{version}"
+          rm -rf "${{PROJECT}}/deployment-{suite_type}_suite_{version}"
       - mock_runner:
           project: '{project}'
           distro: '{chroot_distro}'
