@@ -321,7 +321,7 @@ cleanup_docker () {
     echo "CLEANUP: Stop all running containers and remove unwanted images"
     sudo docker ps -q -a | xargs -r sudo docker rm -f
     [[ $? -ne 0 ]] && fail=true
-    sudo docker images --format "{{.ID}}" | grep -vFxf <( \
+    sudo docker images --format "{{.ID}}" | sort -u | grep -vFxf <( \
         sudo docker images --format {{.Repository}}:{{.ID}} | \
         grep -E "^docker\.io/(${DOCKER_REPOS_WHITELIST})[:/].*" | \
         cut -d: -f2
