@@ -18,7 +18,7 @@ def loader_main(loader) {
         if(jobs.empty) {
             return "No STD-CI job definitions found"
         } else {
-            def job_list = "Will run ${jobs.size} job(s):"
+            def job_list = "Will run ${jobs.size()} job(s):"
             job_list += jobs.collect { job ->
                 "\n- ${job.stage}.${job.distro}.${job.arch}"
             }.join()
@@ -122,10 +122,10 @@ def get_std_ci_jobs(project, std_ci_stage) {
     dir(project.name) {
         def jobs = []
         def distros = get_std_ci_distros(std_ci_stage)
-        for(di = 0; di < distros.size; ++di) {
+        for(di = 0; di < distros.size(); ++di) {
             def distro = distros[di]
             def archs = get_std_ci_archs(std_ci_stage, distro)
-            for(ai = 0; ai < archs.size; ++ai) {
+            for(ai = 0; ai < archs.size(); ++ai) {
                 def arch = archs[ai]
                 def runtime_reqs = \
                     get_std_ci_runtime_reqs(std_ci_stage, distro, arch)
@@ -156,7 +156,6 @@ def get_std_ci_archs(String std_ci_stage, String distro) {
     def archs = get_std_ci_list([
         "${std_ci_stage}.${distro}.archs",
         "${std_ci_stage}.archs",
-        "${distro}.archs",
         'archs',
     ])
     return archs.empty ? ['x86_64'] : archs
@@ -169,8 +168,6 @@ def get_std_ci_runtime_reqs(String std_ci_stage, String distro, String arch) {
         "${std_ci_stage}.${distro}.runtime_requirements",
         "${std_ci_stage}.${arch}.runtime_requirements",
         "${std_ci_stage}.runtime_requirements",
-        "${distro}.runtime_requirements",
-        "${arch}.runtime_requirements",
         "runtime_requirements",
     ])
 }
@@ -181,7 +178,7 @@ def get_std_ci_script(String std_ci_stage, String distro, String arch) {
         [std_ci_stage, distro, 'sh'],
         [std_ci_stage, 'sh'],
     ].findResults { get_possible_file_paths(it) }
-    for(pi = 0; pi < possible_paths.size; ++pi) {
+    for(pi = 0; pi < possible_paths.size(); ++pi) {
         def possible_path = possible_paths[pi].join('.')
         if(fileExists(possible_path)) {
             return possible_path
@@ -216,9 +213,9 @@ def get_std_ci_dict(List<String> locations) {
 }
 
 def get_std_ci_object(List<String> locations) {
-    for(li = 0; li < locations.size; ++li) {
+    for(li = 0; li < locations.size(); ++li) {
         def paths = get_paths_for_location(locations[li])
-        for(pi = 0; pi < paths.size; ++ pi) {
+        for(pi = 0; pi < paths.size(); ++ pi) {
             def path = paths[pi]
             if(!fileExists(path.file_path)) {
                 continue
@@ -240,12 +237,13 @@ def get_std_ci_object(List<String> locations) {
 @NonCPS
 def get_paths_for_location(String location, List extentions=['yaml', 'yml']) {
     def parts = location.tokenize('.')
-    (parts.size>1 ? [parts.size, parts.size-1] : [1]).collectMany { path_end ->
-        get_possible_file_paths(parts[0..<path_end], extentions).collect { pt ->
-            return [
-                file_path: pt,
-                yaml_path: parts[path_end..<parts.size],
-            ]
+    if(parts.size() > 1) {
+        return get_possible_file_paths(parts[0..-2], extentions).collect { pt ->
+            return [ file_path: pt, yaml_path: parts[-1..-1], ]
+        }
+    } else {
+        return extentions.collect { extention ->
+            return [ file_path: "automation.$extention", yaml_path: parts, ]
         }
     }
 }
@@ -256,10 +254,10 @@ def get_possible_file_paths(List path_parts, List extentions = ['']) {
         if(extention.empty) {
             [ "automation/${path_parts.join('.')}", ]
         } else {
-            ((path_parts.size-1)..0).collect { ext_pos ->
+            ((path_parts.size()-1)..0).collect { ext_pos ->
                 'automation/' + (
                     path_parts[0..ext_pos] + [extention] +
-                    path_parts[ext_pos+1..<path_parts.size]
+                    path_parts[ext_pos+1..<path_parts.size()]
                 ).join('.')
             }
         }
@@ -437,7 +435,7 @@ def mock_runner(script, distro, arch, mirrors=null) {
 }
 
 def collect_jobs_artifacts(jobs) {
-    for (ji = 0; ji < jobs.size; ++ji) {
+    for (ji = 0; ji < jobs.size(); ++ji) {
         def job = jobs[ji]
         def job_dir = get_job_dir(job)
         dir("exported-artifacts/$job_dir") {
