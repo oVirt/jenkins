@@ -101,13 +101,32 @@ def get_project_from_github_pr() {
         def account = params.ghprbGhRepository.tokenize('/')[-2]
         def repo = params.ghprbGhRepository.tokenize('/')[-1]
         def sha = params.ghprbActualCommit
+        def last_status = null
         project.notify = { context, status, short_msg=null, long_msg=null, url=null ->
-            githubNotify(
-                credentialsId: env.SCM_NOTIFICATION_CREDENTIALS,
-                account: account, repo: repo, sha: sha,
-                context: context,
-                status: status, description: short_msg, targetUrl: url
-            )
+            try {
+                githubNotify(
+                    credentialsId: env.SCM_NOTIFICATION_CREDENTIALS,
+                    account: account, repo: repo, sha: sha,
+                    context: context,
+                    status: status, description: short_msg, targetUrl: url
+                )
+            } catch(Exception e) {
+                // Only retry sending notification if status has changed
+                if(last_status != status) {
+                    retry(5) {
+                        // We might be blocked by GitHub rate limit so wait a while
+                        // before retrying
+                        sleep 1
+                        githubNotify(
+                            credentialsId: env.SCM_NOTIFICATION_CREDENTIALS,
+                            account: account, repo: repo, sha: sha,
+                            context: context,
+                            status: status, description: short_msg, targetUrl: url
+                        )
+                    }
+                }
+            }
+            last_status = status
         }
     }
     return project
