@@ -51,15 +51,13 @@ def get_stage_name() {
     if('STD_CI_STAGE' in params) {
         return params.STD_CI_STAGE
     }
-    if(params.ghprbCommentBody =~ /^ci test please/) {
-        return 'check-patch'
-    }
-    if(params.ghprbCommentBody =~ /^ci build please/) {
-        return 'build-artifacts'
-    }
-    if(params.ghprbCommentBody == 'null' && params.ghprbTriggerAuthorLogin.empty) {
-        // When comment body is 'null' and trigger author is empty it means the
-        // PR was just submitted
+    if(params.ghprbActualCommit) {
+        // We assume ghprbActualCommit will always be set by the ghprb trigger,
+        // so if we get here it means we got triggered by it
+        if(params.ghprbCommentBody =~ /^ci build please/) {
+            return 'build-artifacts'
+        }
+        // We run check-patch by default
         return 'check-patch'
     }
     error "Failed to detect stage from trigger event or parameters"
