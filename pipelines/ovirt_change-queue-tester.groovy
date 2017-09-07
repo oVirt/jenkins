@@ -14,6 +14,7 @@ def loader_main(loader) {
     if(!has_changes) {
         echo "Change queue is empty, exiting"
         currentBuild.displayName = "#${currentBuild.id} [EOQ]"
+        currentBuild.description = 'No changes to test'
         return
     }
     try {
@@ -23,7 +24,8 @@ def loader_main(loader) {
                 change_data = load_change_data(ovirt_release)
                 if(change_data.summary) {
                     currentBuild.displayName = \
-                        "#${currentBuild.id} ${change_data.summary}"
+                        "#${currentBuild.id} ${change_data.title}"
+                    currentBuild.description = change_data.summary
                 }
             }
             stage('waiting for artifact builds') {
@@ -100,6 +102,8 @@ def load_change_data(ovirt_release) {
             cl.visible_builds.as_json_file()
             print(cl.get_test_summary())
             with open('summary.txt', 'w') as f:
+                f.write(next(iter(cl.get_test_summary().splitlines()), ''))
+            with open('title.txt', 'w') as f:
                 f.write(cl.get_test_build_title())
 
             mirrors = mirrors_from_environ('CI_MIRRORS_URL')
@@ -111,6 +115,7 @@ def load_change_data(ovirt_release) {
     return [
         builds: readJSON(file: 'builds_list.json'),
         summary: readFile('summary.txt'),
+        title: readFile('title.txt'),
         mirrors_file: mirrors_file_name,
     ]
 }

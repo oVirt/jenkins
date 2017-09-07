@@ -6,10 +6,12 @@ import groovy.json.JsonOutput
 def main() {
     def siblings
     def queues_and_builds
+    def chnage_desc
 
     try {
         if(params.GERRIT_PROJECT) {
-            currentBuild.displayName += " [${params.GERRIT_PROJECT}]"
+            change_desc = "Gerrit: ${params.GERRIT_CHANGE_NUMBER}"
+            currentBuild.description = "$change_desc [${params.GERRIT_PROJECT}]"
         }
         stage('Sleep for siblings') {
             echo "Sleeping a while to let sibling jobs get invoked"
@@ -21,8 +23,8 @@ def main() {
                 echo "Found sibling builds:\n${buildsToStr(siblings)}"
                 def projects_and_versions =
                     builds_projecs_and_versions(siblings)
-                currentBuild.displayName =
-                    "${currentBuild.id} ${pnv2str(projects_and_versions)}"
+                currentBuild.description = \
+                    "$change_desc - ${pnv2str(projects_and_versions)}"
                 queues_and_builds = builds_per_queue(siblings)
             } else {
                 echo 'Did not find any sibling builds'
@@ -175,6 +177,7 @@ def email_notify(status, recipients='infra@ovirt.org') {
         body: [
             "Build: ${env.BUILD_URL}",
             "Build Name: ${currentBuild.displayName}",
+            "Build Description: ${currentBuild.description}",
             "Build Status: ${status}",
             "Gerrit change: ${params.GERRIT_CHANGE_URL}",
             "- title: ${params.GERRIT_CHANGE_SUBJECT}",

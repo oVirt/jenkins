@@ -11,6 +11,7 @@ def main() {
     stage('running queue logic') {
         run_queue_action_py(upstreamBuild)
         currentBuild.displayName = get_build_display_name()
+        currentBuild.description = get_queue_action_from_log()
         show_queue_status()
     }
     stage('saving artifacts') {
@@ -95,16 +96,21 @@ def run_queue_action_py(upstreamBuild) {
 
 @NonCPS
 def get_build_display_name() {
-    def name_from_log = currentBuild.rawBuild.getLog(50).findResult {
-        def match = (it =~ /Queue action: (.+)/)
-        if(match.asBoolean()) {
-            return match[0][1]
-        }
-    }
+    def name_from_log = get_queue_action_from_log()
     if(name_from_log) {
         return "${currentBuild.id} ${name_from_log}"
     }
     return currentBuild.id
+}
+
+@NonCPS
+def get_queue_action_from_log() {
+    currentBuild.rawBuild.getLog(50).findResult {
+        def match = (it =~ /Queue action: (.+)/)
+        if(match.asBoolean()) {
+            return match[0][1]
+        }
+    } ?: ''
 }
 
 def show_queue_status() {
