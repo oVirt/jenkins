@@ -9,8 +9,7 @@
           name: ACTION_ARG
     properties:
       - build-discarder:
-          num-to-keep: 100
-          artifact-num-to-keep: 100
+          days-to-keep: 14
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
 
 - job-template:
@@ -19,6 +18,5 @@
     quiet-period: 0
     properties:
       - build-discarder:
-          num-to-keep: 100
-          artifact-num-to-keep: 100
+          days-to-keep: 14
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
