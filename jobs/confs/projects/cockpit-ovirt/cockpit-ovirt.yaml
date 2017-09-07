@@ -7,6 +7,8 @@
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: ovirt-4.2
       - 4.1:
           branch: ovirt-4.1
       - 4.0:
@@ -19,6 +21,8 @@
       - fc26
     exclude:
       - version: master
+        distro: fc24
+      - version: 4.2
         distro: fc24
       - version: 4.1
         distro: fc25
@@ -42,6 +46,8 @@
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: ovirt-4.2
       - 4.1:
           branch: ovirt-4.1
       - 4.0:
@@ -56,6 +62,8 @@
       - fc26
     exclude:
       - version: master
+        distro: fc24
+      - version: 4.2
         distro: fc24
       - version: 4.1
         distro: fc25
