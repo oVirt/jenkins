@@ -10,6 +10,7 @@
           repoversion: 3.6
     mock-build-type: all
     distro:
+      - fc25
       - fc24
       - el6:
           extra-repos: |
