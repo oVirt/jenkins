@@ -3,8 +3,6 @@
     project:
       - ovirt-live
     version:
-      - master:
-          branch: master
       - 4.1:
           branch: ovirt-live-4.1
       - 4.0:
@@ -16,18 +14,9 @@
     distro:
         - el7
         - fc24
-        - fc25
     exclude:
-      - version: master
-        distro: fc24
-      - version: 4.1
-        distro: fc25
       - version: 4.0
         distro: fc24
-      - version: 4.0
-        distro: fc25
-      - version: 3.6
-        distro: fc25
       - version: 3.6
         distro: fc24
     arch: x86_64
@@ -39,8 +28,6 @@
     project:
       - ovirt-live
     version:
-      - master:
-          branch: master
       - 3.6:
           branch: ovirt-live-3.6
       - 4.0:
@@ -53,18 +40,9 @@
     distro:
         - el7
         - fc24
-        - fc25
     exclude:
-      - version: master
-        distro: fc24
-      - version: 4.1
-        distro: fc25
       - version: 4.0
         distro: fc24
-      - version: 4.0
-        distro: fc25
-      - version: 3.6
-        distro: fc25
       - version: 3.6
         distro: fc24
     arch: x86_64
