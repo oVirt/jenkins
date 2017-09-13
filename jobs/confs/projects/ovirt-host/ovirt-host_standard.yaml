@@ -5,9 +5,14 @@
     version:
       - master:
           branch: master
+      - 3.6:
+          branch: ovirt-3.6
     distro:
       - el7
       - fc25
+    exclude:
+      - version: 3.6
+        distro: fc25
 
 - project:
     <<: *base-commons
