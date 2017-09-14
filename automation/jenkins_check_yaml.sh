@@ -81,8 +81,8 @@ diff_old_with_new() {
 
 main() {
     local project_folder="$(pwd)"
-    local new_xmls_dir="$(mktemp -d)"
-    local old_xmls_dir="$(mktemp -d)"
+    local new_xmls_dir="$(mktemp -d new_xmls_XXX --tmpdir)"
+    local old_xmls_dir="$(mktemp -d old_xmls_XXX --tmpdir)"
     local confs_dir="jobs/confs"
 
     generate_new_xmls "$new_xmls_dir" "$confs_dir"
