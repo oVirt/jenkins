@@ -9,13 +9,23 @@
       - 4.1:
           branch: ovirt-image-uploader-4.0
           repoversion: 4.1
+      - master:
+          branch: ovirt-image-uploader-4.0
+          repoversion: master
     exclude:
       - version: 4.0
+        distro: fc24
+      - version: 4.0
+        distro: fc25
+      - version: 4.1
+        distro: fc25
+      - version: master
         distro: fc24
     stage:
       - check-patch
       - check-merged
     distro:
+      - fc25
       - fc24
       - el7
     trigger: 'on-change'
