@@ -17,15 +17,24 @@
         - el7
         - fc24
         - fc25
+        - fc26
       exclude:
+        - version: master
+          distro: fc25
         - version: master
           distro: fc24
         - version: 4.1
+          distro: fc26
+        - version: 4.1
           distro: fc25
+        - version: 4.0
+          distro: fc26
         - version: 4.0
           distro: fc25
         - version: 4.0
           distro: fc24
+        - version: 3.6
+          distro: fc26
         - version: 3.6
           distro: fc25
         - version: 3.6
@@ -53,7 +62,7 @@
           repoversion: 3.6
     arch:
       - x86_64:
-          node-filter: fc23 || fc24 || fc25
+          node-filter: fc23 || fc24 || fc25 || fc26
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
       - '{project}_{version}_{stage}-on-demand-{distro}-{arch}'
@@ -106,14 +115,14 @@
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-patch
-    node-filter: fc23 || fc24 || fc25
+    node-filter: fc23 || fc24 || fc25 || fc26
     arch: x86_64
     stage: check-patch
 
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-merged
-    node-filter: fc23 || fc24 || fc25
+    node-filter: fc23 || fc24 || fc25 || fc26
     arch: x86_64
     stage: check-merged
     distro:
