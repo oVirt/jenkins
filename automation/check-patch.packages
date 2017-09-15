@@ -3,7 +3,7 @@ python-requests
 pytest
 python-mock
 python-jinja2
-python-paramiko
+python2-paramiko
 PyYAML
 git
 python2-pyxdg
