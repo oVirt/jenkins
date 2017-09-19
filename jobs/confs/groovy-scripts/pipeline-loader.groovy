@@ -43,16 +43,20 @@ def checkout_jenkins_repo() {
 def checkout_repo(
     String repo_name,
     String refspec='refs/heads/master',
-    String url=null
+    String url=null,
+    String head=null
 ) {
     if(url == null) {
         url = "https://gerrit.ovirt.org/${repo_name}"
+    }
+    if(head == null) {
+        head = 'myhead'
     }
     dir(repo_name) {
         checkout(
             changelog: false, poll: false, scm: [
                 $class: 'GitSCM',
-                branches: [[name: 'myhead']],
+                branches: [[name: head]],
                 userRemoteConfigs: [[
                     refspec: "+${refspec}:myhead",
                     url: url
@@ -64,13 +68,10 @@ def checkout_repo(
 
 def checkout_repo(Map named_args) {
     if('refspec' in named_args) {
-        if('url' in named_args) {
-            checkout_repo(
-                named_args.repo_name, named_args.refspec, named_args.url
-            )
-        } else {
-            checkout_repo(named_args.repo_name, named_args.refspec)
-        }
+        checkout_repo(
+            named_args.repo_name, named_args.refspec,
+            named_args.url, named_args.head
+        )
     } else {
         checkout_repo(named_args.repo_name)
     }

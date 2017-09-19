@@ -2,6 +2,7 @@
     name: standard-pipelines
     jobs:
       - standard-manual-runner
+      - standard-webhook-trigger
 
 - project:
     name: oVirt-standard-pipelines-github
@@ -11,4 +12,4 @@
       - stage-gh-stdci1
       - stage-gh-stdci2
     jobs:
-      - '{org}_{project}_standard-check-pr'
+      - '{org}_{project}_standard-gh-jobs'

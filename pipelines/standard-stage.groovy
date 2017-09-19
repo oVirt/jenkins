@@ -60,13 +60,18 @@ def get_stage_name() {
         // We run check-patch by default
         return 'check-patch'
     }
+    if(params.X_GitHub_Event == 'push') {
+        return 'check-merged'
+    }
     error "Failed to detect stage from trigger event or parameters"
 }
 
 class Project implements Serializable {
     String clone_url
     String name
+    String branch
     String refspec
+    String head
     def notify = \
         { context, status, short_msg=null, long_msg=null, url=null -> }
 }
@@ -76,8 +81,10 @@ def get_project() {
         get_project_from_params()
     } else if('ghprbGhRepository' in params) {
         get_project_from_github_pr()
+    } else if(params.X_GitHub_Event == 'push') {
+        get_project_from_github_push()
     } else {
-        error "Cannot detect project from trigger or paarmeter information!"
+        error "Cannot detect project from trigger or parameter information!"
     }
 }
 
@@ -90,21 +97,44 @@ def get_project_from_params() {
 }
 
 def get_project_from_github_pr() {
+    return get_github_project(
+        params.ghprbGhRepository.tokenize('/')[-2],
+        params.ghprbGhRepository.tokenize('/')[-1],
+        params.ghprbTargetBranch,
+        "refs/pull/${params.ghprbPullId}/merge",
+        params.ghprbActualCommit
+    )
+}
+
+def get_project_from_github_push() {
+    return get_github_project(
+        params.GH_EV_REPO_owner_login,
+        params.GH_EV_REPO_name,
+        params.GH_EV_REF.tokenize('/')[-1],
+        params.GH_EV_REF,
+        params.GHPUSH_SHA,
+        params.GHPUSH_SHA
+    )
+}
+
+def get_github_project(
+    String org, String repo, String branch, String test_ref, String notify_ref,
+    String checkout_head = null
+) {
     Project project = new Project(
-        clone_url: "https://github.com/${params.ghprbGhRepository}",
-        name: params.ghprbGhRepository.tokenize('/')[-1],
-        refspec: "refs/pull/${params.ghprbPullId}/merge",
+        clone_url: "https://github.com/$org/$repo",
+        name: repo,
+        branch: branch,
+        refspec: test_ref,
+        head: checkout_head,
     )
     if(env.SCM_NOTIFICATION_CREDENTIALS) {
-        def account = params.ghprbGhRepository.tokenize('/')[-2]
-        def repo = params.ghprbGhRepository.tokenize('/')[-1]
-        def sha = params.ghprbActualCommit
         def last_status = null
         project.notify = { context, status, short_msg=null, long_msg=null, url=null ->
             try {
                 githubNotify(
                     credentialsId: env.SCM_NOTIFICATION_CREDENTIALS,
-                    account: account, repo: repo, sha: sha,
+                    account: org, repo: repo, sha: notify_ref,
                     context: context,
                     status: status, description: short_msg, targetUrl: url
                 )
@@ -117,7 +147,7 @@ def get_project_from_github_pr() {
                         sleep 1
                         githubNotify(
                             credentialsId: env.SCM_NOTIFICATION_CREDENTIALS,
-                            account: account, repo: repo, sha: sha,
+                            account: org, repo: repo, sha: notify_ref,
                             context: context,
                             status: status, description: short_msg, targetUrl: url
                         )
@@ -131,7 +161,7 @@ def get_project_from_github_pr() {
 }
 
 def checkout_project(Project project) {
-    checkout_repo(project.name, project.refspec, project.clone_url)
+    checkout_repo(project.name, project.refspec, project.clone_url, project.head)
 }
 
 def get_std_ci_jobs(project, std_ci_stage) {

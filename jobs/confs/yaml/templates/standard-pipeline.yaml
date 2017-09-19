@@ -1,7 +1,8 @@
-- job-template:
+- job-template: &standard-pipeline
     name: '{org}_{project}_standard-check-pr'
     project-type: workflow
     quiet-period: 0
+    concurrent: true
     properties:
       - build-discarder:
           days-to-keep: 14
@@ -29,6 +30,84 @@
           failure-status: 'Some tests failed'
           error-status: 'System error during testing'
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
+
+- job-template:
+    <<: *standard-pipeline
+    name: '{org}_{project}_standard-on-ghpush'
+    # Push ordering is important so disable concurrency
+    concurrent: false
+    # Job will be triggered by another job, so no need for its own trigger
+    # configuration
+    triggers: {}
+
+- job-group:
+    name: '{org}_{project}_standard-gh-jobs'
+    jobs:
+      - '{org}_{project}_standard-check-pr'
+      - '{org}_{project}_standard-on-ghpush'
+
+- job-template:
+    name: 'standard-webhook-trigger'
+    project-type: workflow
+    # This may be triggered by push events and needs to preserve order so
+    # disable concurrency
+    concurrent: false
+    quiet-period: 0
+    properties:
+      - build-discarder:
+          days-to-keep: 14
+          artifact-num-to-keep: 60
+    triggers:
+      - raw:
+          xml: |
+            <org.jenkinsci.plugins.gwt.GenericTrigger plugin="generic-webhook-trigger@1.19">
+              <spec></spec>
+              <genericVariables>
+                <org.jenkinsci.plugins.gwt.GenericVariable>
+                  <expressionType>JSONPath</expressionType>
+                  <key>GH_EV_REPO</key>
+                  <value>repository</value>
+                  <regexpFilter></regexpFilter>
+                </org.jenkinsci.plugins.gwt.GenericVariable>
+                <org.jenkinsci.plugins.gwt.GenericVariable>
+                  <expressionType>JSONPath</expressionType>
+                  <key>GH_EV_REF</key>
+                  <value>ref</value>
+                  <regexpFilter></regexpFilter>
+                </org.jenkinsci.plugins.gwt.GenericVariable>
+                <org.jenkinsci.plugins.gwt.GenericVariable>
+                  <expressionType>JSONPath</expressionType>
+                  <key>GHPUSH_SHA</key>
+                  <value>after</value>
+                  <regexpFilter></regexpFilter>
+                </org.jenkinsci.plugins.gwt.GenericVariable>
+                <org.jenkinsci.plugins.gwt.GenericVariable>
+                  <expressionType>JSONPath</expressionType>
+                  <key>GHPUSH_PUSHER</key>
+                  <value>pusher</value>
+                  <regexpFilter></regexpFilter>
+                </org.jenkinsci.plugins.gwt.GenericVariable>
+                <org.jenkinsci.plugins.gwt.GenericVariable>
+                  <expressionType>JSONPath</expressionType>
+                  <key>GH_EV_ISSUE</key>
+                  <value>issue</value>
+                  <regexpFilter></regexpFilter>
+                </org.jenkinsci.plugins.gwt.GenericVariable>
+              </genericVariables>
+              <regexpFilterText></regexpFilterText>
+              <regexpFilterExpression></regexpFilterExpression>
+              <genericHeaderVariables>
+                <org.jenkinsci.plugins.gwt.GenericHeaderVariable>
+                  <key>X-GitHub-Event</key>
+                  <regexpFilter></regexpFilter>
+                </org.jenkinsci.plugins.gwt.GenericHeaderVariable>
+                <org.jenkinsci.plugins.gwt.GenericHeaderVariable>
+                  <key>X-GitHub-Delivery</key>
+                  <regexpFilter></regexpFilter>
+                </org.jenkinsci.plugins.gwt.GenericHeaderVariable>
+              </genericHeaderVariables>
+            </org.jenkinsci.plugins.gwt.GenericTrigger>
+    dsl: !include-raw-escape: groovy-scripts/standard-webhook-trigger.groovy
 
 - job-template:
     name: standard-manual-runner
