@@ -255,6 +255,9 @@ class ChangeWithBuilds(object_witp_opt_attrs):
     def set_builds_from_env(self, env_var='BUILDS_LIST'):
         self.builds = BuildsList.from_env_json(env_var)
 
+    def set_current_build_from_env(self):
+        self.builds = BuildsList.from_currnt_build_env()
+
 
 class ChangeWithBuildsWrapper(ChangeWithBuilds, object_proxy):
     """Wrapper class to make changes appear like they have builds"""
@@ -325,3 +328,49 @@ class GerritMergedChange(ChangeWithBuilds, EmailNotifyingChange):
             self.gerrit_patchset.project.name,
             self.gerrit_patchset.branch.name,
         )
+
+
+class GitMergedChange(ChangeWithBuilds, EmailNotifyingChange):
+    """A change class for changes that get created as a result of merging
+    patches to generic Git repos
+
+    Merged patches are members of a change stream that is identified by the
+    same project name and branch
+    """
+    def __init__(self, project, branch, sha, url=None):
+        self._project, self._branch, self._sha, self._url =\
+            project, branch, sha, url
+
+    # We want to email infra just for failed or rejected changes, not for
+    # everything
+    default_recipients = ()
+    default_rejected_recipients = ('infra@ovirt.org',)
+    default_failed_recipients = ('infra@ovirt.org',)
+
+    @property
+    def project(self):
+        return self._project
+
+    @property
+    def branch(self):
+        return self._branch
+
+    @property
+    def sha(self):
+        return self._sha
+
+    @property
+    def id(self):
+        return (self.project, self.sha)
+
+    @property
+    def presentable_id(self):
+        return '{0:.7} ({1})'.format(self.sha, self.project)
+
+    @property
+    def url(self):
+        return self._url
+
+    @property
+    def stream_id(self):
+        return (self.project, self.branch)

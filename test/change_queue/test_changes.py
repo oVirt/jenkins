@@ -9,7 +9,7 @@ except ImportError:
 
 from scripts.change_queue.changes import DisplayableChange, \
     DisplayableChangeWrapper, ChangeInStream, ChangeInStreamWrapper, \
-    GerritMergedChange
+    GerritMergedChange, GitMergedChange
 
 
 class TestDisplayableChange(object):
@@ -138,3 +138,25 @@ class TestGerritMergedChange(object):
         assert a_gerrit_merged_change.rejected_recipients == infra
         assert not a_gerrit_merged_change.successful_recipients
         assert a_gerrit_merged_change.failed_recipients == infra
+
+
+class TestGitMergedChange(object):
+    @pytest.fixture
+    def a_git_merged_change(self):
+        return GitMergedChange(
+            project='project1',
+            branch='master',
+            sha='1234567890abcdef1234567890abcdef1234567',
+            url='http://example.com/patch/1234567',
+        )
+
+    def test_id(self, a_git_merged_change):
+        assert a_git_merged_change.id == \
+            ('project1', '1234567890abcdef1234567890abcdef1234567')
+
+    def test_presentable_id(self, a_git_merged_change):
+        assert a_git_merged_change.presentable_id == \
+            '1234567 (project1)'
+
+    def test_stream_id(self, a_git_merged_change):
+        assert a_git_merged_change.stream_id == ('project1', 'master')

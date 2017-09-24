@@ -97,6 +97,22 @@ class BuildPtr(object):
         if queue_id is not None:
             self.build_id, self.build_url = None, None
 
+    @classmethod
+    def from_currnt_build_env(cls):
+        """Create pointer to currently running Jenkins build"""
+        try:
+            build_url = environ['BUILD_URL']
+            if build_url.startswith(environ['JENKINS_URL']):
+                build_url = build_url[len(environ['JENKINS_URL']):]
+            return cls(
+                job_name=environ['JOB_BASE_NAME'],
+                job_url=environ['JOB_URL'],
+                build_id=environ['BUILD_ID'],
+                build_url=build_url
+            )
+        except KeyError:
+            raise NotInJenkins
+
     def as_dict(self):
         """Return build information as a dict"""
         return dict(
@@ -145,6 +161,11 @@ class BuildsList(list):
         """Build the list from a JSON string in an env var
         """
         return cls.from_json_str(environ.get(env_var, '[]'))
+
+    @classmethod
+    def from_currnt_build_env(cls):
+        """Create list that contains currently runing build"""
+        return cls([BuildPtr.from_currnt_build_env()])
 
     def __add__(self, other_bl):
         return BuildsList(chain(self, other_bl))

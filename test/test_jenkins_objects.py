@@ -71,6 +71,18 @@ class TestJobRunSpec(object):
 
 
 class TestBuildPtr(object):
+    def test_from_currnt_build_env(self, monkeypatch):
+        monkeypatch.setenv('JENKINS_URL', 'http://jenkins.example.com')
+        monkeypatch.setenv('JOB_BASE_NAME', 'j1')
+        monkeypatch.setenv('JOB_URL', 'http://jenkins.example.com/job/j1')
+        monkeypatch.setenv('BUILD_ID', '7')
+        monkeypatch.setenv('BUILD_URL', 'http://jenkins.example.com/job/j1/7')
+        bp = BuildPtr.from_currnt_build_env()
+        assert bp.job_name == 'j1'
+        assert bp.job_url == 'http://jenkins.example.com/job/j1'
+        assert bp.build_id == '7'
+        assert bp.build_url == '/job/j1/7'
+
     @pytest.mark.parametrize(
         ('init_prms', 'exp'),
         [
@@ -179,6 +191,18 @@ class TestBuildsList(object):
         monkeypatch.delenv('BUILDS_LIST', raising=False)
         bl = BuildsList.from_env_json()
         assert bl == []
+
+    def test_from_currnt_build_env(self, monkeypatch):
+        monkeypatch.setenv('JENKINS_URL', 'http://jenkins.example.com')
+        monkeypatch.setenv('JOB_BASE_NAME', 'j1')
+        monkeypatch.setenv('JOB_URL', 'http://jenkins.example.com/job/j1')
+        monkeypatch.setenv('BUILD_ID', '7')
+        monkeypatch.setenv('BUILD_URL', 'http://jenkins.example.com/job/j1/7')
+        bl = BuildsList.from_currnt_build_env()
+        bp = BuildPtr.from_currnt_build_env()
+        assert len(bl) == 1
+        assert id(bl[0]) != id(bp)
+        assert bl[0] == bp
 
     def test_add(self):
         bl1 = BuildsList.from_dict_list(self.data)
