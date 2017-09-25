@@ -6,7 +6,10 @@ def pipeline
 timestamps { ansiColor('xterm') {
     node() {
         stage('loading code') {
+            dir("exported-artifacts") { deleteDir() }
             checkout_jenkins_repo()
+            run_jjb_script('cleanup_slave.sh')
+            run_jjb_script('global_setup.sh')
             dir('jenkins') {
                 def pipeline_file = get_pipeline_for_job(env.JOB_NAME)
                 if(pipeline_file == null) {
@@ -24,6 +27,7 @@ timestamps { ansiColor('xterm') {
         } else {
             pipeline.main()
         }
+        run_jjb_script('global_setup_apply.sh')
     }
     if(
         pipeline.metaClass.respondsTo(pipeline, 'loader_main') &&
@@ -74,6 +78,15 @@ def checkout_repo(Map named_args) {
         )
     } else {
         checkout_repo(named_args.repo_name)
+    }
+}
+
+def run_jjb_script(script_name) {
+    def script_path = "jenkins/jobs/confs/shell-scripts/$script_name"
+    echo "Running JJB script: ${script_path}"
+    def script = readFile(script_path)
+    withEnv(["WORKSPACE=${pwd()}"]) {
+        sh script
     }
 }
 

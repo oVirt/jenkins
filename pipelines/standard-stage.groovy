@@ -8,6 +8,7 @@ def loader_main(loader) {
     // Copy methods from loader to this script
     metaClass.checkout_repo = loader.&checkout_repo
     metaClass.checkout_jenkins_repo = loader.&checkout_jenkins_repo
+    metaClass.run_jjb_script = loader.&run_jjb_script
 
     stage('Detecting STD-CI jobs') {
         std_ci_stage = get_stage_name()
@@ -398,8 +399,8 @@ def run_std_ci_on_node(project, job, stash_name) {
             dir("exported-artifacts") { deleteDir() }
             checkout_jenkins_repo()
             checkout_project(project)
-            run_jjb_script('cleanup_slave.sh', project.name)
-            run_jjb_script('global_setup.sh', project.name)
+            run_jjb_script('cleanup_slave.sh')
+            run_jjb_script('global_setup.sh')
             run_std_ci_in_mock(project, job, tfr)
         } finally {
             project.notify(ctx, 'PENDING', 'Collecting results')
@@ -409,7 +410,7 @@ def run_std_ci_on_node(project, job, stash_name) {
         }
         // The only way we can get to these lines is if nothing threw any
         // exceptions so far. This means the job was successful.
-        run_jjb_script('global_setup_apply.sh', project.name)
+        run_jjb_script('global_setup_apply.sh')
         success = true
     } finally {
         if(success) {
@@ -422,19 +423,10 @@ def run_std_ci_on_node(project, job, stash_name) {
     }
 }
 
-def run_jjb_script(script_name, project_name) {
-    def script_path = "jenkins/jobs/confs/shell-scripts/$script_name"
-    echo "Running JJB script: ${script_path}"
-    def script = readFile(script_path)
-    withEnv(["WORKSPACE=${pwd()}", "PROJECT=$project_name"]) {
-        sh script
-    }
-}
-
 def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
     String ctx = "${job.stage}.${job.distro}.${job.arch}"
     try {
-        run_jjb_script('mock_setup.sh', project.name)
+        run_jjb_script('mock_setup.sh')
         // TODO: Load mirros once for whole pipeline
         // unstash 'mirrors'
         // def mirrors = "${pwd()}/mirrors.yaml"
@@ -456,10 +448,12 @@ def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
             passwordVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD',
             usernameVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME'
         )]) {
-            run_jjb_script('collect_artifacts.sh', project.name)
+            withEnv(["PROJECT=${project.name}"]) {
+                run_jjb_script('collect_artifacts.sh')
+            }
         }
         project.notify(ctx, 'PENDING', 'Cleaning up')
-        run_jjb_script('mock_cleanup.sh', project.name)
+        run_jjb_script('mock_cleanup.sh')
     }
 }
 
