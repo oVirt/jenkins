@@ -192,7 +192,6 @@ def email_notify(status, recipients='infra@ovirt.org') {
 }
 
 def enqueue_change_to(queues_and_builds) {
-    prepare_python_env()
     def enqueue_steps = [:]
     def queues_and_builds_a = map_to_arr(queues_and_builds)
     for(i = 0; i < queues_and_builds_a.size(); ++i) {
@@ -226,17 +225,6 @@ def get_queue_build_args(queue, builds) {
     def build_args = readJSON(file: json_file)
     build_args['wait'] = true
     return build_args
-}
-
-def prepare_python_env() {
-    sh """\
-        #!/bin/bash -xe
-        if [[ -e '/usr/bin/dnf' ]]; then
-            sudo dnf install -y python-jinja2 python-paramiko
-        else
-            sudo yum install -y python-jinja2 python-paramiko
-        fi
-    """.stripIndent()
 }
 
 @NonCPS

@@ -7,6 +7,7 @@ def loader_main(loader) {
     // Copy methods from loader to this script
     metaClass.checkout_repo = loader.&checkout_repo
     metaClass.checkout_jenkins_repo = loader.&checkout_jenkins_repo
+    metaClass.run_jjb_script = loader.&run_jjb_script
 
     stage('querying changes to test') {
         has_changes = get_test_changes()
@@ -20,7 +21,6 @@ def loader_main(loader) {
     try {
         try {
             stage('loading changes data') {
-                prepare_python_env()
                 change_data = load_change_data(ovirt_release)
                 if(change_data.summary) {
                     currentBuild.displayName = \
@@ -178,17 +178,6 @@ def get_queue_ovirt_release() {
     }
 }
 
-def prepare_python_env() {
-    sh """\
-        #!/bin/bash -xe
-        if [[ -e '/usr/bin/dnf' ]]; then
-            sudo dnf install -y python-jinja2 python-paramiko
-        else
-            sudo yum install -y python-jinja2 python-paramiko
-        fi
-    """.stripIndent()
-}
-
 @NonCPS
 def update_builds_status(builds) {
     builds.each {
@@ -311,15 +300,6 @@ def mk_ost_runner(ovirt_release, suit_type, distro) {
 
 def checkout_ost_repo() {
     checkout_repo('ovirt-system-tests')
-}
-
-def run_jjb_script(script_name) {
-    def script_path = "jenkins/jobs/confs/shell-scripts/$script_name"
-    echo "Running JJB script: ${script_path}"
-    def script = readFile(script_path)
-    withEnv(["WORKSPACE=${pwd()}"]) {
-        sh script
-    }
 }
 
 def run_ost_on_node(ovirt_release, suit_type, distro, stash_name) {

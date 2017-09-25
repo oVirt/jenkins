@@ -58,19 +58,6 @@ def show_upstream_build(upstreamBuild) {
     }
 }
 
-def prepare_python_env() {
-    sh """\
-        #!/bin/bash -xe
-        if [[ -e '/usr/bin/dnf' ]]; then
-            sudo dnf install -y python-jinja2 python-paramiko postfix
-        else
-            sudo yum install -y python-jinja2 python-paramiko postfix
-        fi
-        sudo systemctl enable postfix
-        sudo systemctl start postfix
-    """.stripIndent()
-}
-
 def run_queue_action_py(upstreamBuild) {
     withEnv(['PYTHONPATH=jenkins']) {
         if(upstreamBuild) {
@@ -78,7 +65,6 @@ def run_queue_action_py(upstreamBuild) {
         } else {
             upstreamBuild = 'None'
         }
-        prepare_python_env()
         sh """\
             #!/usr/bin/env python
             import sys

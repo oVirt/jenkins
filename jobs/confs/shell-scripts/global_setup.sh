@@ -13,6 +13,7 @@ main() {
     extra_packages || failed=true
     docker_setup || failed=true
     filter_secret_data || failed=true
+    setup_postfix || failed=true
 
     # If we failed in any step, abort to avoid breaking the host
     if $failed; then
@@ -61,9 +62,11 @@ mk_wokspace_tmp() {
 extra_packages() {
     # Add extra packages we need for mock_runner.sh
     if [[ -e '/usr/bin/dnf' ]]; then
-        sudo dnf -y install python3-PyYAML PyYAML python3-pyxdg pyxdg
+        sudo dnf -y install python3-PyYAML PyYAML python3-pyxdg pyxdg \
+            python-jinja2 python-paramiko
     else
-        sudo yum -y install python34-PyYAML PyYAML pyxdg
+        sudo yum -y install python34-PyYAML PyYAML pyxdg \
+            python-jinja2 python2-paramiko
     fi
 }
 
@@ -92,6 +95,16 @@ filter_secret_data() {
         "$WORKSPACE"/std_ci_secrets.yaml || failed=1
     rm -f "${CI_SECRETS_FILE}" || failed=1
     return $failed
+}
+
+setup_postfix() {
+    if [[ -e '/usr/bin/dnf' ]]; then
+        sudo dnf -y install postfix
+    else
+        sudo yum -y install postfix
+    fi
+    sudo systemctl enable postfix
+    sudo systemctl start postfix
 }
 
 main "@$"
