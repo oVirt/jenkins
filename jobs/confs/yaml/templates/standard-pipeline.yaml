@@ -93,6 +93,12 @@
                   <value>issue</value>
                   <regexpFilter></regexpFilter>
                 </org.jenkinsci.plugins.gwt.GenericVariable>
+                <org.jenkinsci.plugins.gwt.GenericVariable>
+                  <expressionType>JSONPath</expressionType>
+                  <key>GH_EV_HEAD_COMMIT</key>
+                  <value>head_commit</value>
+                  <regexpFilter></regexpFilter>
+                </org.jenkinsci.plugins.gwt.GenericVariable>
               </genericVariables>
               <regexpFilterText></regexpFilterText>
               <regexpFilterExpression></regexpFilterExpression>

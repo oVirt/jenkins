@@ -50,7 +50,9 @@ def get_job_parametes() {
         'GH_EV_REF',
         'GHPUSH_SHA',
         'GHPUSH_PUSHER_name',
-        'GHPUSH_PUSHER_email'
+        'GHPUSH_PUSHER_email',
+        'GH_EV_HEAD_COMMIT_id',
+        'GH_EV_HEAD_COMMIT_url'
     ].collect { string(name: it, value: params."$it") }
 }
 
