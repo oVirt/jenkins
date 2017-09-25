@@ -3,6 +3,7 @@
 String std_ci_stage
 Project project
 def jobs
+def queues
 
 def loader_main(loader) {
     // Copy methods from loader to this script
@@ -15,15 +16,29 @@ def loader_main(loader) {
         project = get_project()
         currentBuild.displayName += " ${project.name} [$std_ci_stage]"
 
-        jobs = get_std_ci_jobs(project, std_ci_stage)
+        checkout_project(project)
+        dir(project.name) {
+            jobs = get_std_ci_jobs(project, std_ci_stage)
+            queues = get_std_ci_queues(project)
+            if(!queues.empty && std_ci_stage != 'build-artifacts') {
+                // If we need to submit the change the queues, make sure we
+                // generate builds
+                jobs += get_std_ci_jobs(project, 'build-artifacts')
+            }
+        }
         if(jobs.empty) {
-            return "No STD-CI job definitions found"
+            echo "No STD-CI job definitions found"
         } else {
             def job_list = "Will run ${jobs.size()} job(s):"
             job_list += jobs.collect { job ->
                 "\n- ${job.stage}.${job.distro}.${job.arch}"
             }.join()
             print(job_list)
+        }
+    }
+    if(!queues.empty) {
+        stage('Queueing change') {
+            enqueue_change(project, queues)
         }
     }
 }
@@ -75,6 +90,7 @@ class Project implements Serializable {
     String head
     def notify = \
         { context, status, short_msg=null, long_msg=null, url=null -> }
+    def get_queue_build_args = null
 }
 
 def get_project() {
@@ -108,7 +124,7 @@ def get_project_from_github_pr() {
 }
 
 def get_project_from_github_push() {
-    return get_github_project(
+    Project project = get_github_project(
         params.GH_EV_REPO_owner_login,
         params.GH_EV_REPO_name,
         params.GH_EV_REF.tokenize('/')[-1],
@@ -116,6 +132,13 @@ def get_project_from_github_push() {
         params.GHPUSH_SHA,
         params.GHPUSH_SHA
     )
+    project.get_queue_build_args = { String queue ->
+        get_generic_queue_build_args(
+            queue, project.name, project.branch, project.head,
+            params.GH_EV_HEAD_COMMIT_url
+        )
+    }
+    return project
 }
 
 def get_github_project(
@@ -161,35 +184,69 @@ def get_github_project(
     return project
 }
 
+def get_generic_queue_build_args(
+    String queue, String project, String branch, String sha, String url=null
+) {
+    def json_file = "${queue}_build_args.json"
+    withEnv(['PYTHONPATH=jenkins']) {
+        sh """\
+            #!/usr/bin/env python
+            from scripts.change_queue import JenkinsChangeQueueClient
+            from scripts.change_queue.changes import GitMergedChange
+
+            jcqc = JenkinsChangeQueueClient('${queue}')
+            change = GitMergedChange(
+                '$project', '$branch', '$sha'${url ? ", '$url'" : ""}
+            )
+            change.set_current_build_from_env()
+            jcqc.add(change).as_pipeline_build_step_json('${json_file}')
+        """.stripIndent()
+    }
+    def build_args = readJSON(file: json_file)
+    return build_args
+}
+
 def checkout_project(Project project) {
     checkout_repo(project.name, project.refspec, project.clone_url, project.head)
 }
 
 def get_std_ci_jobs(project, std_ci_stage) {
-    checkout_project(project)
-    dir(project.name) {
-        def jobs = []
-        def distros = get_std_ci_distros(std_ci_stage)
-        for(di = 0; di < distros.size(); ++di) {
-            def distro = distros[di]
-            def archs = get_std_ci_archs(std_ci_stage, distro)
-            for(ai = 0; ai < archs.size(); ++ai) {
-                def arch = archs[ai]
-                def runtime_reqs = \
-                    get_std_ci_runtime_reqs(std_ci_stage, distro, arch)
-                def script = get_std_ci_script(std_ci_stage, distro, arch)
-                if(script) {
-                    jobs << [
-                        stage: std_ci_stage,
-                        distro: distro,
-                        arch: arch,
-                        runtime_reqs: runtime_reqs,
-                        script: script,
-                    ]
-                }
+    def jobs = []
+    def distros = get_std_ci_distros(std_ci_stage)
+    for(di = 0; di < distros.size(); ++di) {
+        def distro = distros[di]
+        def archs = get_std_ci_archs(std_ci_stage, distro)
+        for(ai = 0; ai < archs.size(); ++ai) {
+            def arch = archs[ai]
+            def runtime_reqs = \
+                get_std_ci_runtime_reqs(std_ci_stage, distro, arch)
+            def script = get_std_ci_script(std_ci_stage, distro, arch)
+            if(script) {
+                jobs << [
+                    stage: std_ci_stage,
+                    distro: distro,
+                    arch: arch,
+                    runtime_reqs: runtime_reqs,
+                    script: script,
+                ]
             }
         }
-        return jobs
+    }
+    return jobs
+}
+
+def get_std_ci_queues(Project project) {
+    if(params.X_GitHub_Event != 'push') {
+        // Only Enqueue on actual push events
+        return []
+    }
+    print "Checking if change should be enqueued"
+    def branch_queue_map = get_std_ci_dict(["release_branches"])
+    def o = branch_queue_map.get(project.branch, [])
+    if (o in Collection) {
+        return o.collect { it as String } as Set
+    } else {
+        return [o as String]
     }
 }
 
@@ -323,6 +380,42 @@ def get_yaml_object(Object yaml, List yaml_path) {
                     it.get(path_part)
                 }
             }
+        }
+    }
+}
+
+def enqueue_change(Project project, List queues) {
+    def branches = [:]
+    for(queue in queues) {
+        branches[queue] = mk_enqueue_change_branch(project, queue)
+    }
+    try {
+        parallel branches
+    } catch(Exception e) {
+        // Make enqueue failures not fail the whole job but still show up in
+        // yellow in Jenkins
+        currentBuild.result = 'UNSTABLE'
+    }
+}
+
+def mk_enqueue_change_branch(Project project, String queue) {
+    return {
+        String ctx = "enqueue to: $queue"
+        def build_args
+        try {
+            project.notify(ctx, 'PENDING', 'Submitting change to queue')
+            build_args = project.get_queue_build_args(queue)
+            build_args['wait'] = true
+        } catch(Exception ea) {
+            project.notify(ctx, 'ERROR', 'System error')
+            throw ea
+        }
+        try {
+            build build_args
+            project.notify(ctx, 'SUCCESS', 'Change submitted')
+        } catch(Exception eb) {
+            project.notify(ctx, 'FAILURE', 'Failed to submit - does queue exist?')
+            throw eb
         }
     }
 }
