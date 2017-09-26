@@ -17,7 +17,7 @@ timestamps { ansiColor('xterm') {
                 }
                 echo "Loading pipeline script: '${pipeline_file}'"
                 dir('pipelines') {
-                    pipeline = load(pipeline_file)
+                    pipeline = load_code(pipeline_file)
                 }
             }
         }
@@ -36,6 +36,14 @@ timestamps { ansiColor('xterm') {
         pipeline.main()
     }
 }}
+
+def load_code(String code_file, def load_as=null) {
+    def code = load(code_file)
+    if(code.metaClass.respondsTo(code, 'on_load')) {
+        code.on_load(load_as ?: this)
+    }
+    return code
+}
 
 def checkout_jenkins_repo() {
     checkout_repo(
@@ -97,9 +105,7 @@ def get_pipeline_for_job(name) {
         /^standard-enqueue$/: '$0.groovy',
         /^standard-manual-runner$/: 'standard-stage.groovy',
         /^(.*)_standard-(.*)$/: 'standard-stage.groovy',
-        /^numbers_change-queue-tester$/: '$0.groovy',
-        /^ovirt-(.*)_change-queue-tester$/: 'ovirt_change-queue-tester.groovy',
-        /^(.*)_change-queue$/: 'change-queue.groovy',
+        /^(.*)_change-queue(-tester)?$/: 'change-queue$2.groovy',
         /^deploy-to-.*$/: 'deployer.groovy',
     ]
     return job_to_pipelines.findResult { key, value ->

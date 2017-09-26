@@ -1,171 +1,39 @@
-// ovirt_change-queue-tester - Test pipeline for oVirt change queues
+// ovirt_change-queue-tester - Change queue tests for oVirt
 //
-def loader_main(loader) {
-    def ovirt_release = get_queue_ovirt_release()
-    def has_changes
-    def change_data
+def ovirt_release
+
+def on_load(loader) {
     // Copy methods from loader to this script
-    metaClass.checkout_repo = loader.&checkout_repo
-    metaClass.checkout_jenkins_repo = loader.&checkout_jenkins_repo
-    metaClass.run_jjb_script = loader.&run_jjb_script
+    metaClass.checkout_repo = { ...args ->
+        loader.metaClass.invokeMethod(loader, 'checkout_repo', args)
+    }
+    metaClass.checkout_jenkins_repo = { ...args ->
+        loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
+    }
+    metaClass.make_extra_sources = { ...args ->
+        loader.metaClass.invokeMethod(loader, 'make_extra_sources', args)
+    }
+    metaClass.run_jjb_script = { ...args ->
+        loader.metaClass.invokeMethod(loader, 'run_jjb_script', args)
+    }
 
-    stage('querying changes to test') {
-        has_changes = get_test_changes()
-    }
-    if(!has_changes) {
-        echo "Change queue is empty, exiting"
-        currentBuild.displayName = "#${currentBuild.id} [EOQ]"
-        currentBuild.description = 'No changes to test'
-        return
-    }
-    try {
-        try {
-            stage('loading changes data') {
-                change_data = load_change_data(ovirt_release)
-                if(change_data.summary) {
-                    currentBuild.displayName = \
-                        "#${currentBuild.id} ${change_data.title}"
-                    currentBuild.description = change_data.summary
-                }
-            }
-            stage('waiting for artifact builds') {
-                wait_for_artifacts(change_data.builds)
-            }
-            stage('preparing test data') {
-                prepare_test_data(change_data)
-            }
-            stage('running tests') {
-                run_tests(ovirt_release)
-            }
-        } catch(Exception e) {
-            stage('reporting results') {
-                report_test_results('failure')
-            }
-            throw(e)
-        }
-        stage('reporting results') {
-            report_test_results('success')
-        }
-    } finally {
-        archiveArtifacts allowEmptyArchive: true, artifacts: 'exported-artifacts/**'
-        step([
-            $class: 'JUnitResultArchiver',
-            testResults: 'exported-artifacts/**/*xml',
-            allowEmptyResults: true
-        ])
-    }
-    stage('publishing successful artifacts') {
-        deploy_to_tested(ovirt_release, change_data)
-    }
+    ovirt_release = get_queue_ovirt_release()
 }
 
-def get_test_changes() {
-    dir('exported-artifacts') { deleteDir() }
-    def queue_job_name = env.JOB_NAME.replaceFirst('-tester$', '')
-    def queue_result = build(
-        job: queue_job_name,
-        parameters: [
-            string(name: 'QUEUE_ACTION', value: 'get_next_test'),
-            string(name: 'ACTION_ARG', value: 'not-needed'),
-        ],
-        wait: true,
-    )
-    step([
-        $class: 'CopyArtifact',
-        filter: 'exported-artifacts/JenkinsTestedChangeList.dat',
-        fingerprintArtifacts: true,
-        projectName: queue_job_name,
-        selector: [
-            $class: 'SpecificBuildSelector',
-            buildNumber: "${queue_result.number}",
-        ],
-        optional: true,
-    ])
-    return fileExists('exported-artifacts/JenkinsTestedChangeList.dat')
+def extra_load_change_data_py(change_list_var, mirrors_var) {
+    return """\
+        from scripts.mirror_client import ovirt_tested_as_mirrors
+
+        ${mirrors_var}.update(ovirt_tested_as_mirrors('${ovirt_release}'))
+    """.stripIndent()
 }
 
-def load_change_data(ovirt_release) {
-    def mirrors_file_name = 'mirrors.yaml'
-    def mirrors_file_path = "exported-artifacts/$mirrors_file_name"
-    withEnv(['PYTHONPATH=jenkins']) {
-        sh """\
-            #!/usr/bin/env python
-            from __future__ import print_function
-            import yaml
-            from scripts.change_queue import JenkinsTestedChangeList
-            from scripts.mirror_client import (
-                mirrors_from_environ, ovirt_tested_as_mirrors
-            )
-
-            JenkinsTestedChangeList.setup_logging()
-            cl = JenkinsTestedChangeList.load_from_artifact()
-            cl.visible_builds.as_json_file()
-            print(cl.get_test_summary())
-            with open('summary.txt', 'w') as f:
-                f.write(next(iter(cl.get_test_summary().splitlines()), ''))
-            with open('title.txt', 'w') as f:
-                f.write(cl.get_test_build_title())
-
-            mirrors = mirrors_from_environ('CI_MIRRORS_URL')
-            mirrors.update(ovirt_tested_as_mirrors('${ovirt_release}'))
-            with open('${mirrors_file_path}', 'w') as mf:
-                yaml.safe_dump(mirrors, mf, default_flow_style=False)
-        """.stripIndent()
-    }
-    return [
-        builds: readJSON(file: 'builds_list.json'),
-        summary: readFile('summary.txt'),
-        title: readFile('title.txt'),
-        mirrors_file: mirrors_file_name,
-    ]
-}
-
-def wait_for_artifacts(builds) {
-    waitUntil {
-        update_builds_status(builds)
-        all_builds_dequeued(builds)
-    }
-    if(any_builds_removed_from_queue(builds)) {
-        error 'Some build jobs were removed from build queue'
-    }
-    waitUntil { all_builds_done(builds) }
-    if(!all_builds_succeeded(builds)) {
-        error 'Some build jobs failed'
-    }
-}
-
-def prepare_test_data(change_data) {
-    dir('exported-artifacts') {
-        def extra_sources = make_extra_sources(change_data.builds)
-        writeFile(file: 'extra_sources', text: extra_sources)
-        def mirrors = readFile(change_data.mirrors_file)
-
-        print "extra_sources\n-------------\n${extra_sources}"
-        print "mirrors\n-------\n${mirrors}"
-
-        stash includes: 'extra_sources', name: 'extra_sources'
-        stash includes: change_data.mirrors_file, name: 'mirrors'
-    }
-}
-
-def run_tests(ovirt_release) {
+def run_tests(change_data) {
     run_ost_tests(ovirt_release)
 }
 
-def report_test_results(result) {
-    withEnv(['PYTHONPATH=jenkins']) {
-        sh """\
-            #!/usr/bin/env python
-            from scripts.change_queue import JenkinsTestedChangeList
-
-            JenkinsTestedChangeList.setup_logging()
-            cl = JenkinsTestedChangeList.load_from_artifact()
-            cl.on_test_${result}().as_pipeline_build_step_json()
-        """.stripIndent()
-    }
-    build_args = readJSON(file: 'build_args.json')
-    build_args['wait'] = true
-    build build_args
+def deploy(change_data) {
+    deploy_to_tested(ovirt_release, change_data)
 }
 
 @NonCPS
@@ -176,81 +44,6 @@ def get_queue_ovirt_release() {
     } else {
         error "Failed to detect oVirt release from job name"
     }
-}
-
-@NonCPS
-def update_builds_status(builds) {
-    builds.each {
-        if(('build_id' in it) || !('queue_id' in it)) {
-            return it
-        }
-        def job = Jenkins.instance.getItem(it.job_name)
-        def build = job.builds.find { bld -> bld.queueId == it['queue_id'] }
-        if(build == null) {
-            if(Jenkins.instance.queue.getItem(it['queue_id']) != null) {
-                return it
-            }
-        } else {
-            it.putAll([
-                build_id: build.id,
-                build_url: build.url
-            ])
-            print "job: ${it.job_name} build: ${it.build_id} " +
-                "(${it.build_url}) moved from queued to running"
-        }
-        it.remove('queue_id')
-        return it
-    }
-}
-
-@NonCPS
-def all_builds_dequeued(builds) {
-    return !builds.any {
-        if('queue_id' in it) {
-            print("${it.job_name} still queued")
-            return true
-        }
-        return false
-    }
-}
-
-@NonCPS
-def any_builds_removed_from_queue(builds) {
-    return builds.any {
-        if((it.queue_id == null) && (it.build_id == null)) {
-            print("${it.job_name} have been manually removed from queue")
-            return true
-        }
-        return false
-    }
-}
-
-@NonCPS
-def all_builds_done(builds) {
-    return !builds.any {
-        if(Jenkins.instance.getItem(it.job_name).getBuild(it.build_id).isBuilding()) {
-            print("${it.job_name} (${it.build_id}) still building")
-            return true
-        }
-        return false
-    }
-}
-
-@NonCPS
-def all_builds_succeeded(builds) {
-    return builds.every {
-        def build = Jenkins.instance.getItem(it.job_name).getBuild(it.build_id)
-        if(build.result.isBetterOrEqualTo(hudson.model.Result.SUCCESS)) {
-            return true
-        }
-        print("${it.job_name} (${it.build_id}) failed building")
-        return false
-    }
-}
-
-@NonCPS
-def make_extra_sources(builds) {
-    return builds.collect { "${env.JENKINS_URL}${it.build_url}" }.join("\n")
 }
 
 def run_ost_tests(ovirt_release) {
@@ -386,6 +179,6 @@ def deploy_to_tested(version, change_data) {
 }
 
 
-// We need to return 'this' so the actual pipeline job can invoke functions from
+// We need to return 'this' so the tester job can invoke functions from
 // this script
 return this
