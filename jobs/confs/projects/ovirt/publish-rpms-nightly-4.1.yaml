@@ -143,8 +143,10 @@
           project-prefix: ovirt-live_4.1_build-artifacts-
           project-suffix: ""
 
-      - copy-create-job-artifact:
-          project: py2exe-py2.7_4.1_create-rpms-fc24-x86_64_merged
+      - copy-create-job-artifact-engine_4.1-platforms:
+          project-prefix: py2exe-py2.7_4.1_build-artifacts-
+          project-suffix: ""
+
       - copy-create-job-artifact:
           project: pywin32-py2.7_4.1_create-rpms-fc24-x86_64_merged
       - copy-create-job-artifact:
