@@ -1,0 +1,30 @@
+- project:
+    name: ovirt-engine-api-explorer_build
+    project: ovirt-engine-api-explorer
+    version:
+      - master:
+          branch: master
+    stage: build-artifacts
+    trigger: 'on-change'
+    distro:
+      - el7
+      - fc25
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+      - '{project}_{version}_{stage}-on-demand-{distro}-{arch}'
+
+- project:
+    name: ovirt-engine-api-explorer_checks
+    project: ovirt-engine-api-explorer
+    version:
+      - master:
+          branch: master
+    stage: check-patch
+    trigger: 'on-change'
+    distro:
+      - el7
+      - fc25
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
