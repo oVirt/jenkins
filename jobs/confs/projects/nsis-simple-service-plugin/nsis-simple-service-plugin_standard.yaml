@@ -1,0 +1,36 @@
+- project: &base-commons
+    name: 'nsis-simple-service-plugin-commons'
+    project: nsis-simple-service-plugin
+    trigger: on-change
+    version:
+      - master:
+          branch: master
+      - 4.1:
+          branch: master
+    distro:
+      - el7
+      - fc24
+      - fc26
+    exclude:
+      - version: master
+        distro: fc24
+      - version: 4.1
+        distro: fc26
+
+- project:
+    <<: *base-commons
+    name: nsis-simple-service-plugin
+    project: nsis-simple-service-plugin
+    stage: check-patch
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-commons
+    name: nsis-simple-service-plugin_build-artifacts
+    project: nsis-simple-service-plugin
+    stage: build-artifacts
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
