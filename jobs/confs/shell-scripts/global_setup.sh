@@ -25,6 +25,7 @@ main() {
 
 setup_os_repos() {
     local os
+    local arch
     local conf_file
 
     if [[ ! -e /etc/os-release ]]; then
@@ -34,8 +35,14 @@ setup_os_repos() {
     fi
     source /etc/os-release
     os="${ID:?}${VERSION_ID:?}"
+    arch="$(uname -i)"
     echo "Detected slave OS: $os"
-    conf_file="$WORKSPACE/jenkins/data/slave-repos/${os}.conf"
+    echo "Detected slave arch: $arch"
+    if [[ $arch == x86_64 ]]; then
+        conf_file="$WORKSPACE/jenkins/data/slave-repos/${os}.conf"
+    else
+        conf_file="$WORKSPACE/jenkins/data/slave-repos/${os}-${arch}.conf"
+    fi
     if [[ ! -e "$conf_file" ]]; then
         echo "Configuration file: '$conf_file' not found."
         echo "Skipping slave OS repo configuration".
