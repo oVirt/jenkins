@@ -11,7 +11,7 @@
       - check-patch
     distro:
       - fc24
-      - fc25
+      - fc26
     exclude:
       - version: master
         distro: fc24
@@ -35,6 +35,7 @@
       - el7
       - fc24
       - fc25
+      - fc26
     exclude:
       - version: master
         distro: fc24
