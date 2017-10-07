@@ -24,6 +24,7 @@
       - 'fedora-updates-fc25'
       - 'fedora-base-fc26'
       - 'fedora-updates-fc26'
+      - 'fedora-base-fc27'
     arch: x86_64
     jobs:
       - 'system-sync_mirrors-{repo}-{arch}'
