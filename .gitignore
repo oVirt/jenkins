@@ -7,3 +7,7 @@
 __pycache__
 .cache
 /exported-artifacts
+mocker-*.cfg
+*.class
+.bash_history
+.python_history
