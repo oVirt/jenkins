@@ -746,7 +746,7 @@ run_script() {
             # Remove all system repos from the environment to ensure we're not
             # using any pakcge repos we didn't specify explicitly
             rpm -qf /etc/system-release \
-                | xargs -r rpm -ql fedora-repos epel-release \
+                | xargs -r rpm -ql fedora-repos{,-rawhide} epel-release \
                 | grep '/etc/yum\.repos\.d/.*\.repo' | xargs -r rm -fv
             logdir="$MOUNT_POINT/$LOGS_DIR/${mock_chroot}.${script##*/}"
             [[ -d "\\\$logdir" ]] \\
@@ -793,7 +793,7 @@ EOC
             # Remove all system repos from the environment to ensure we're not
             # using any pakcge repos we didn't specify explicitly
             rpm -qf /etc/system-release \
-                | xargs -r rpm -ql fedora-repos epel-release \
+                | xargs -r rpm -ql fedora-repos{,-rawhide} epel-release \
                 | grep '/etc/yum\.repos\.d/.*\.repo' | xargs -r rm -fv
             logdir="$MOUNT_POINT/$LOGS_DIR/${mock_chroot}.${script##*/}"
             [[ -d "\$logdir" ]] \\
