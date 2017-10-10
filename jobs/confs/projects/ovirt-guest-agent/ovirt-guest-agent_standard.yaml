@@ -34,7 +34,6 @@
       - el6
       - el7
       - fc24
-      - fc25
       - fc26
     exclude:
       - version: master
