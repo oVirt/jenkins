@@ -1,0 +1,36 @@
+- project: &base-commons
+    name: 'ovirt-wgt-commons'
+    project: ovirt-wgt
+    trigger: on-change
+    version:
+      - master:
+          branch: master
+      - 4.1:
+          branch: ovirt-wgt-4.1
+    distro:
+      - el7
+      - fc24
+      - fc26
+    exclude:
+      - version: master
+        distro: fc24
+      - version: 4.1
+        distro: fc26
+
+- project:
+    <<: *base-commons
+    name: ovirt-wgt
+    project: ovirt-wgt
+    stage: check-patch
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-commons
+    name: ovirt-wgt_build-artifacts
+    project: ovirt-wgt
+    stage: build-artifacts
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
