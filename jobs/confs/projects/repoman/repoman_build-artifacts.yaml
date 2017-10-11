@@ -10,7 +10,6 @@
       - check-merged
       - build-artifacts
     distro:
-      - el6
       - el7
       - fc24
       - fc25
