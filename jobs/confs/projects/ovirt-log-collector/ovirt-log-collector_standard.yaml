@@ -19,16 +19,9 @@
       - check-patch
       - check-merged
     distro:
-      - fc24
       - fc27
       - el7
     exclude:
-      - version: master
-        distro: fc24
-      - version: 4.2
-        distro: fc24
-      - version: 4.0
-        distro: fc24
       - version: 4.0
         distro: fc27
       - version: 4.1
