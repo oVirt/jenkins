@@ -143,8 +143,6 @@
 
       - copy-create-job-artifact:
           project: cockpit-ovirt_4.1_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: cockpit-ovirt_4.1_build-artifacts-fc24-x86_64
 
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-engine-sdk-ruby_4.1_build-artifacts-
