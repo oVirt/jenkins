@@ -12,12 +12,9 @@
       - check-merged
     distro:
       - el7
-      - fc24
       - fc26
       - fc27
     exclude:
-      - version: master
-        distro: fc24
       - version: 4.1
         distro: fc26
       - version: 4.1
