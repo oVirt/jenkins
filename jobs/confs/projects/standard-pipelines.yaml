@@ -2,6 +2,7 @@
     name: standard-pipelines
     jobs:
       - standard-manual-runner
+      - standard-webhook-trigger
 
 - project:
     name: oVirt-standard-pipelines-github
@@ -10,4 +11,4 @@
     project:
       - ovirt-ansible
     jobs:
-      - '{org}_{project}_standard-check-pr'
+      - '{org}_{project}_standard-gh-jobs'
