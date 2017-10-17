@@ -8,6 +8,7 @@
     queue-name:
       - ovirt-master
       - ovirt-4.1
+      - ovirt-4.2
     jobs:
       - '{queue-name}_change-queue'
       - '{queue-name}_change-queue-tester'
@@ -21,5 +22,6 @@
     version:
       - master
       - 4.1
+      - 4.2
     jobs:
       - 'deploy-to_ovirt-{version}_tested'
