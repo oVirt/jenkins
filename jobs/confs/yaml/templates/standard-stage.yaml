@@ -208,6 +208,7 @@
     triggers:
       - '{stage}_{scmtype}_jenkins-trigger_{trigger}':
           project: '{project}'
+          gerrit-subpath: '{gerrit-subpath}'
           trigger-repo: '{trigger-repo}'
           branch: '{branch}'
           trigger-times: '{trigger-times}'
