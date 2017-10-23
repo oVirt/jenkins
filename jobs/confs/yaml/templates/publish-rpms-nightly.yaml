@@ -1,8 +1,8 @@
-- job:
-    name: 'ovirt_master_publish-rpms_nightly'
+- job-template:
+    name: 'ovirt_{release}_publish-rpms_nightly'
     description: >
-      Collects RPMs from all oVirt projects (master branches) and publish them
-      to resources.ovirt.org yum repository.<br>
+      This job updates the oVirt nightly snapshot repos from the ovirt tested
+      repos. It is scheduled to run every night.<br>
       This job is automatically updated by jenkins job builder, any manual
       change will be lost in the next update. If you want to make permanent
       changes, check out the <a href="http://gerrit.ovirt.org/gitweb?p=jenkins.git;a=tree;h=refs/heads/master;hb=refs/heads/master">
@@ -30,8 +30,6 @@
       - shell: |
           rm -rf $WORKSPACE/artifacts
           mkdir $WORKSPACE/artifacts
-
-
     publishers:
       # We're not using the publish-rpms-nightly-publishers macro here because
       # code here is different (has the new 'sync from tested' functionality).
@@ -43,26 +41,26 @@
       - ssh:
           site: resources.ovirt.org
           source: '**/*.rpm, **/*.tar.gz, **/*.iso **/*.exe'
-          target: ovirt-master-snapshot.tmp
+          target: ovirt-{release}-snapshot.tmp
           command: |
             READY_WAIT_ATTEMPTS=50
             READY_WAIT_INTERVAL=60s
 
-            /bin/repoman ovirt-master-snapshot.tmp \
-              add /srv/resources/repos/ovirt/tested/master/rpm:latest:only-missing
-            find ovirt-master-snapshot.tmp -depth \
+            /bin/repoman ovirt-{release}-snapshot.tmp \
+              add /srv/resources/repos/ovirt/tested/{release}/rpm:latest:only-missing
+            find ovirt-{release}-snapshot.tmp -depth \
               -type d -name repodata -print0 | \
               xargs -0 -r rm -rf
-            find ovirt-master-snapshot.tmp \
+            find ovirt-{release}-snapshot.tmp \
               -type f -name '*.rpm' -print0 | \
               xargs -0 -r touch
 
-            mkdir -p artifacts/ovirt-master-snapshot.tmp
-            rm -rf artifacts/ovirt-master-snapshot.tmp/*
-            mv ovirt-master-snapshot.tmp/* artifacts/ovirt-master-snapshot.tmp
+            mkdir -p artifacts/ovirt-{release}-snapshot.tmp
+            rm -rf artifacts/ovirt-{release}-snapshot.tmp/*
+            mv ovirt-{release}-snapshot.tmp/* artifacts/ovirt-{release}-snapshot.tmp
             # Wait until the *.ready directory is not there (cron job is done)
             let attempt=0
-            while [[ -d artifacts/ovirt-master-snapshot.ready ]]; do
+            while [[ -d artifacts/ovirt-{release}-snapshot.ready ]]; do
               if ((attempt >= READY_WAIT_ATTEMPTS)); then
                 echo "Timed out waiting for cron job to finish"
                 exit 1
@@ -72,8 +70,8 @@
               echo " (attempt $attempt of $READY_WAIT_ATTEMPTS)"
               sleep $READY_WAIT_INTERVAL
             done
-            mv  artifacts/ovirt-master-snapshot.tmp  artifacts/ovirt-master-snapshot.ready
+            mv  artifacts/ovirt-{release}-snapshot.tmp  artifacts/ovirt-{release}-snapshot.ready
 
-            rm -rf ovirt-master-snapshot.tmp
+            rm -rf ovirt-{release}-snapshot.tmp
       - publish-rpms-nightly-cleanup
       - publish-rpms-nightly-email

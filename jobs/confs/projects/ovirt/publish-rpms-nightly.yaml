@@ -1,0 +1,6 @@
+- project:
+    name: publish-rpms-nightly
+    release:
+      - master
+    jobs:
+      - 'ovirt_{release}_publish-rpms_nightly'
