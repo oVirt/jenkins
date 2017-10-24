@@ -4,6 +4,7 @@
       - cleanup-slave
       - global-setup
       - upstream-source-collector
+      - project-setup
       - shell: |
           if [[ ${{CREATE_IMAGES}} = "yes" ]]; then
               touch ${{PROJECT}}/CREATE_IMAGES.marker

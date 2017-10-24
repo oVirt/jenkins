@@ -1,0 +1,4 @@
+- builder:
+    name: project-setup
+    builders:
+      - shell: !include-raw: shell-scripts/project_setup.sh

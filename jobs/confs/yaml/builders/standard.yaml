@@ -23,6 +23,7 @@
       - cleanup-slave
       - global-setup
       - upstream-source-collector
+      - project-setup
       - mock_runner:
           project: '{project}'
           distro: '{distro}'
