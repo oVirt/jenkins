@@ -12,3 +12,12 @@
       - ovirt-ansible
     jobs:
       - '{org}_{project}_standard-gh-jobs'
+
+- project:
+    name: KubeVirt-standard-pipelines-github
+    github-auth-id: github-auth-token
+    org: kubevirt
+    project:
+      - kubevirt
+    jobs:
+      - '{org}_{project}_standard-gh-jobs'
