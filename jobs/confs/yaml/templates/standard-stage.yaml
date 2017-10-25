@@ -191,7 +191,7 @@
       - inject: *standard-template-properties-inject
       - throttle: *standard-template-properties-throttle
       - build-discarder:
-          num-to-keep: 120
+          num-to-keep: 10
           artifact-num-to-keep: 2
 
 - job-template:
