@@ -1,0 +1,15 @@
+- project:
+    name: ovirt-demo-tool
+    project: ovirt-demo-tool
+    trigger: 'on-change'
+    node-filter: integ-tests
+    version:
+      - master:
+          branch: master
+    distro: el7
+    arch: x86_64
+    stage:
+      - check-patch
+      - check-merged
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
