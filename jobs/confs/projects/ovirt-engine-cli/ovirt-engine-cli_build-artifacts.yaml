@@ -16,7 +16,6 @@
     distro:
         - el6
         - el7
-        - fc24
         - fc25
     exclude:
       - version: 3.6
@@ -25,8 +24,6 @@
         distro: fc25
       - version: 4.1
         distro: fc25
-      - version: master
-        distro: fc24
     arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
