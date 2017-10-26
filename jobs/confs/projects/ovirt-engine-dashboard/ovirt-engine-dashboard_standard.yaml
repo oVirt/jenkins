@@ -15,7 +15,6 @@
     trigger: 'on-change'
     distro:
         - el7
-        - fc24
         - fc25
         - fc26
         - fc27
@@ -23,10 +22,16 @@
       - { version: 4.1, distro: fc25 }
       - { version: 4.1, distro: fc26 }
       - { version: 4.1, distro: fc27 }
-      - { version: 4.2, distro: fc24 }
       - { version: 4.2, distro: fc25 }
       - { version: 4.2, distro: fc26 }
-      - { version: master, distro: fc24 }
+      - version: 4.0
+        distro: fc25
+      - version: 4.0
+        distro: fc26
+      - version: 4.1
+        distro: fc25
+      - version: 4.1
+        distro: fc26
 
     arch: x86_64
     jobs:
