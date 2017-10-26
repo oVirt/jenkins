@@ -134,8 +134,6 @@
 
       - copy-create-job-artifact:
           project: mom_4.1_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: mom_4.1_build-artifacts-fc24-x86_64
 
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-wgt_4.1_build-artifacts-
