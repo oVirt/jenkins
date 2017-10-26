@@ -10,11 +10,8 @@
     stage: build-artifacts
     distro:
         - el7
-        - fc24
         - fc25
     exclude:
-      - version: master
-        distro: fc24
       - version: 4.1
         distro: fc25
     trigger: 'on-change'
@@ -35,11 +32,8 @@
     stage: check-patch
     distro:
       - el7
-      - fc24
       - fc25
     exclude:
-      - version: master
-        distro: fc24
       - version: 4.1
         distro: fc25
     trigger: 'on-change'
