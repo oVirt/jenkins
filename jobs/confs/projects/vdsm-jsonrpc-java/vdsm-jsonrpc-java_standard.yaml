@@ -12,13 +12,10 @@
     distro:
       - el6
       - el7
-      - fc24
       - fc25
     exclude:
       - version: master
         distro: el6
-      - version: master
-        distro: fc24
       - version: 4.1
         distro: el6
       - version: 4.1
@@ -26,11 +23,7 @@
       - version: 4.0
         distro: el6
       - version: 4.0
-        distro: fc24
-      - version: 4.0
         distro: fc25
-      - version: 3.6
-        distro: fc24
       - version: 3.6
         distro: fc25
     project:
