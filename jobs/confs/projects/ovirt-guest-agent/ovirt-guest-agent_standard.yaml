@@ -10,11 +10,7 @@
     stage:
       - check-patch
     distro:
-      - fc24
       - fc26
-    exclude:
-      - version: master
-        distro: fc24
     trigger: 'on-change'
     arch: x86_64
     jobs:
@@ -33,11 +29,7 @@
     distro:
       - el6
       - el7
-      - fc24
       - fc26
-    exclude:
-      - version: master
-        distro: fc24
     trigger: 'on-change'
     arch: x86_64
     jobs:

@@ -168,8 +168,6 @@
           project: ovirt-guest-agent_4.1_build-artifacts-el6-x86_64
       - copy-create-job-artifact:
           project: ovirt-guest-agent_4.1_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-guest-agent_4.1_build-artifacts-fc24-x86_64
 
       - copy-create-job-artifact-vdsm-4.1-platforms:
           project-prefix: ovirt-provider-ovn_4.1_build-artifacts-
