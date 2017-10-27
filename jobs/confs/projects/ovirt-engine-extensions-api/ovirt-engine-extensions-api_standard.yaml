@@ -1,0 +1,25 @@
+- project: &base-params
+    name: ovirt-engine-extensions-api_standard
+    project:
+      - ovirt-engine-extensions-api
+    version:
+      - master:
+          branch: master
+    stage:
+      - check-patch
+    distro:
+      - el7
+      - fc25
+      - fc26
+    trigger: 'on-change'
+    arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: ovirt-engine-extensions-api_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+
