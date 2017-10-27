@@ -6,37 +6,21 @@
       - master:
           branch: master
       - 4.1:
-          branch: master
-      - 4.0:
-          branch: master
-      - 3.6:
-          branch: master
+          branch: ovirt-engine-extension-logger-log4j-1.0
     stage:
       - check-patch
     distro:
-      - el6
       - el7
       - fc24
       - fc25
+      - fc26
     exclude:
       - version: master
-        distro: el6
-      - version: master
         distro: fc24
       - version: 4.1
-        distro: el6
+        distro: fc25
       - version: 4.1
-        distro: fc25
-      - version: 4.0
-        distro: el6
-      - version: 4.0
-        distro: fc24
-      - version: 4.0
-        distro: fc25
-      - version: 3.6
-        distro: fc24
-      - version: 3.6
-        distro: fc25
+        distro: fc26
     trigger: 'on-change'
     arch: x86_64
     jobs:
