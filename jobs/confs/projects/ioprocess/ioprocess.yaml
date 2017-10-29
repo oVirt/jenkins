@@ -45,8 +45,7 @@
       - version: 4.1
         distro: fc26
     arch:
-      - x86_64:
-          node-filter: fc23 || fc24
+      - x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
@@ -79,7 +78,6 @@
 - project:
     <<: *ioprocess_standard_common
     name: ioprocess_check-patch_x86_64
-    node-filter: fc23 || fc24
     arch: x86_64
     stage: check-patch
     distro:
@@ -118,7 +116,6 @@
 - project:
     <<: *ioprocess_standard_common
     name: ioprocess_check-merged_x86_64
-    node-filter: fc23 || fc24
     arch: x86_64
     stage: check-merged
     distro:
@@ -159,7 +156,6 @@
 
 - project:
     name: ioprocess_0.15_created
-    node-filter: 'el7 || fc23 || fc24'
     project:
       - ioprocess
     version:
@@ -180,7 +176,6 @@
 
 - project:
     name: ioprocess_0.15_merged
-    node-filter: 'el7 || fc23 || fc24'
     project:
       - ioprocess
     version:
