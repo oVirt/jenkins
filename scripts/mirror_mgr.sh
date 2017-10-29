@@ -185,6 +185,9 @@ check_yum_sync_needed() {
     local reposync_out
 
     echo "Checking if mirror needs a resync"
+    # Delete cached yum metadata to ensure we get new metadata from upstream
+    # repo
+    rm -rf "$MIRRORS_CACHE/$repo_name"
     for arch in $(IFS=,; echo $repo_archs) ; do
         reposync_out="$(
             run_reposync "$repo_name" "$arch" "$reposync_conf" --urls --quiet
