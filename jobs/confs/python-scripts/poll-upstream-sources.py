@@ -207,7 +207,7 @@ def generate_gerrit_message(message, checksum, work_folder_cmd):
     :rtype: string
     :returns: commit message with change ID and checksum
     """
-    message_template = '{message}\n\nChange-Id: I{change_id}\n\n\nx-md5: {md5}'
+    message_template = '{message}\n\nx-md5: {md5}\n\n\nChange-Id: I{change_id}'
 
     with open('change_id_data', 'w') as cid:
         cid.write("tree {tree}".format(tree=git(work_folder_cmd, 'write-tree',
@@ -224,8 +224,8 @@ def generate_gerrit_message(message, checksum, work_folder_cmd):
     change_id = git(work_folder_cmd, 'hash-object', '-t', 'commit',
                     'change_id_data', append_stderr=False)
 
-    return message_template.format(message=message, change_id=change_id,
-                                   md5=checksum)
+    return message_template.format(message=message, md5=checksum,
+                                   change_id=change_id)
 
 
 def push_changes(push_remote, work_folder_cmd):
