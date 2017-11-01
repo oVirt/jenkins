@@ -11,6 +11,8 @@
           server-name: '{gerrit-server}'
           trigger-on:
             - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'ci re-merge please'
           escape-quotes: true
           projects:
             - project-compare-type: 'REG_EXP'

@@ -23,7 +23,9 @@
           <<: *gerrit-trigger-base
           gerrit-subpath: '{gerrit-subpath}'
           trigger-on:
-              - change-merged-event
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'ci re-merge please'
 
 - trigger:
     name: build-artifacts_gerrit_trigger_on-custom-repo-change
@@ -87,7 +89,9 @@
           <<: *gerrit-trigger-base
           gerrit-subpath: '{gerrit-subpath}'
           trigger-on:
-              - change-merged-event
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'ci re-merge please'
 
 - trigger:
     name: check-merged_gerrit_trigger_on-custom-repo-change
