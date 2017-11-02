@@ -180,53 +180,6 @@ cleanup_lago_network_interfaces() {
     return 0
 }
 
-cleanup_lago_vms() {
-    local vm \
-        vms
-    local failed=false
-    # remove lago-type vms, that is, 8chars of hash + '-some_tag'
-    vms=($( \
-        sudo virsh list \
-        | grep -Po '^ *[[:digit:]]* +[[:alnum:]]{8}-[^[:space:]]*' \
-        | awk '{print $2}' \
-    ))
-    for vm in "${vms[@]}"; do
-        echo "Removing domain $vm"
-        sudo virsh destroy "$vm" \
-        || {
-            failed=true
-            echo "ERROR: Failed to cleanup domain $vm"
-        }
-    done
-    if $failed; then
-        return 1
-    fi
-    return 0
-}
-
-cleanup_lago_virtual_network_interfaces() {
-    local links \
-        link
-    local failed=false
-    # remove lago-type interfaces, that is, 8chars of hash + '-some_tag'
-    links=($( \
-        sudo virsh net-list \
-        | grep -Po '^ *[[:alnum:]]{8}-[^[:space:]]*' \
-    ))
-    for link in "${links[@]}"; do
-        echo "Removing virtual interface $link"
-        sudo virsh net-destroy "$link" \
-        || {
-            failed=true
-            echo "ERROR: Failed to cleanup virtual interface $link"
-        }
-    done
-    if $failed; then
-        return 1
-    fi
-    return 0
-}
-
 is_docker_using_devicemapper() {
     # Check if docker is using devicemapper as it's storage driver
     if grep -q "devicemapper" <<< $(sudo docker info 2>/dev/null); then
@@ -294,19 +247,43 @@ clean_device_mappings_except_docker() {
 }
 
 cleanup_lago() {
-    cleanup_lago_vms || :
-    cleanup_lago_virtual_network_interfaces || :
     cleanup_lago_network_interfaces || :
-    sudo service libvirtd restart || :
 }
 
-cleanup_libvirt() {
+cleanup_libvirt_vms() {
     # Drop all left over libvirt domains
     for UUID in $(sudo virsh list --all --uuid); do
+        echo "Removing domain with UUID: $UUID"
         sudo -E virsh destroy $UUID || :
         sleep 2
         sudo -E virsh undefine --remove-all-storage --snapshots-metadata $UUID || :
     done
+}
+
+cleanup_libvirt_networks() {
+    local links \
+        link
+    local failed=false
+    # remove lago-type interfaces, that is, 8chars of hash + '-some_tag'
+    links=($( sudo virsh net-list --name | grep -vF default ))
+    for link in "${links[@]}"; do
+        echo "Removing virtual network: $link"
+        sudo virsh net-destroy "$link" \
+        || {
+            failed=true
+            echo "ERROR: Failed to cleanup virtual network: $link"
+        }
+    done
+    if $failed; then
+        return 1
+    fi
+    return 0
+}
+
+cleanup_libvirt() {
+    cleanup_libvirt_vms || :
+    cleanup_libvirt_networks || :
+    sudo service libvirtd restart || :
 }
 
 cleanup_docker () {
