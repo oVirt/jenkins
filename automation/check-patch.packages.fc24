@@ -7,6 +7,8 @@ pytest
 python-mock
 python-jinja2
 python-paramiko
+python2-pyasn1
+python3-pyasn1
 PyYAML
 git
 python3
