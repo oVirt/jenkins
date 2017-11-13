@@ -77,3 +77,15 @@
     email-to: 'infra@ovirt.org, sabose@redhat.com'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
+
+- project:
+    <<: *system-tests-common
+    name: ovirt-system-performance-suite
+    suite_type: performance
+    project: 'ovirt-system-tests'
+    version:
+      - master:
+          chroot_distro: el7
+    email-to: 'infra@ovirt.org, rgolan@redhat.com'
+    jobs:
+        - '{project}_{suite_type}-suite-{version}'
