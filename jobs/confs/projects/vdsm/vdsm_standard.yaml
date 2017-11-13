@@ -60,9 +60,7 @@
       - 3.6:
           branch: ovirt-3.6
           repoversion: 3.6
-    arch:
-      - x86_64:
-          node-filter: fc24 || fc25 || fc26
+    arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
       - '{project}_{version}_{stage}-on-demand-{distro}-{arch}'
@@ -105,8 +103,7 @@
           branch: master
       - 4.1:
           branch: ovirt-4.1
-    distro:
-      - el7
+    distro: el7
     arch: ppc64le
     node-filter: ppc64le
     jobs:
@@ -115,15 +112,12 @@
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-patch
-    node-filter: fc24 || fc25 || fc26
     arch: x86_64
     stage: check-patch
 
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-merged
-    node-filter: fc24 || fc25 || fc26
+    distro: el7
     arch: x86_64
     stage: check-merged
-    distro:
-      - el7
