@@ -1,98 +1,13 @@
 #!/usr/bin/env python
 """test_usrc.py - Tests for usrc.py
 """
-from six import iteritems
 import pytest
-from functools import partial
 from scripts.usrc import (
     get_upstream_sources, update_upstream_sources,
-    commit_upstream_sources_update, git
+    commit_upstream_sources_update
 )
 from textwrap import dedent
 from hashlib import md5
-
-
-def git_at(path):
-    return partial(
-        git,
-        '--git-dir={0}'.format(path / '.git'),
-        '--work-tree={0}'.format(str(path))
-    )
-
-
-@pytest.fixture
-def gitrepo(tmpdir):
-    def repo_maker(reponame, *commits):
-        repodir = tmpdir / reponame
-        repogit = git_at(repodir)
-        git('init', str(repodir))
-        for i, commit in enumerate(commits):
-            for fname, fcontents in iteritems(commit.get('files', {})):
-                (repodir / fname).write(fcontents, ensure=True)
-                repogit('add', fname)
-            repogit('commit', '-m', commit.get('msg', "Commit #{0}".format(i)))
-        return repodir
-    return repo_maker
-
-
-def last_sha(repo_path):
-    return git_at(repo_path)('log', '--format=format:%H', '-1').rstrip()
-
-
-def test_gitrepo(gitrepo):
-    repo = gitrepo(
-        'tst_repo',
-        {
-            'msg': 'First commit',
-            'files': {
-                'fil1.txt': 'Text of fil1',
-                'fil2.txt': 'Text of fil2',
-            },
-        },
-        {
-            'msg': 'Second commit',
-            'files': {
-                'fil2.txt': 'Modified text of fil2',
-                'fil3.txt': 'Text of fil3',
-            },
-        },
-    )
-    assert (repo / '.git').isdir()
-    assert (repo / 'fil1.txt').isfile()
-    assert (repo / 'fil1.txt').read() == 'Text of fil1'
-    assert (repo / 'fil2.txt').isfile()
-    assert (repo / 'fil2.txt').read() == 'Modified text of fil2'
-    assert (repo / 'fil3.txt').isfile()
-    assert (repo / 'fil3.txt').read() == 'Text of fil3'
-    repogit = git_at(repo)
-    assert repogit('status', '--short') == ''
-    assert repogit('status', '-v').splitlines()[0].endswith('On branch master')
-    log = repogit('log', '--pretty=format:%s').splitlines()
-    assert len(log) == 2
-    assert log == ['Second commit', 'First commit']
-    # Test adding commits to existing repo during test
-    gitrepo(
-        'tst_repo',
-        {
-            'msg': 'Third commit',
-            'files': {
-                'fil3.txt': 'Modified text of fil3',
-                'fil4.txt': 'Text of fil4',
-            },
-        },
-    )
-    assert (repo / 'fil1.txt').isfile()
-    assert (repo / 'fil1.txt').read() == 'Text of fil1'
-    assert (repo / 'fil2.txt').isfile()
-    assert (repo / 'fil2.txt').read() == 'Modified text of fil2'
-    assert (repo / 'fil3.txt').isfile()
-    assert (repo / 'fil3.txt').read() == 'Modified text of fil3'
-    assert (repo / 'fil4.txt').isfile()
-    assert (repo / 'fil4.txt').read() == 'Text of fil4'
-    assert repogit('status', '--short') == ''
-    log = repogit('log', '--pretty=format:%s').splitlines()
-    assert len(log) == 3
-    assert log == ['Third commit', 'Second commit', 'First commit']
 
 
 @pytest.fixture
@@ -110,8 +25,8 @@ def upstream(gitrepo):
 
 
 @pytest.fixture
-def downstream(gitrepo, upstream):
-    sha = last_sha(upstream)
+def downstream(gitrepo, upstream, git_last_sha):
+    sha = git_last_sha(upstream)
     return gitrepo(
         'downstream',
         {
@@ -159,20 +74,20 @@ def updated_upstream(gitrepo, upstream, downstream):
     })
 
 
-def test_update_upstream_sources(monkeypatch, updated_upstream, downstream):
+def test_update_upstream_sources(
+    monkeypatch, updated_upstream, downstream, git_status
+):
     monkeypatch.chdir(downstream)
     # Verify that downstream in unmodified
     assert not (downstream / 'upstream_file.txt').exists()
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
-    gstatus = git('status', '--short', '--porcelain').rstrip()
-    assert gstatus == ''
+    assert git_status(downstream) == ''
     update_upstream_sources()
     assert not (downstream / 'upstream_file.txt').exists()
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
-    gstatus = git('status', '--short', '--porcelain').rstrip()
-    assert gstatus == ' M automation/upstream_sources.yaml'
+    assert git_status(downstream) == ' M automation/upstream_sources.yaml'
     get_upstream_sources()
     assert (downstream / 'upstream_file.txt').isfile()
     assert (downstream / 'upstream_file.txt').read() == 'Updated US content'
@@ -182,20 +97,20 @@ def test_update_upstream_sources(monkeypatch, updated_upstream, downstream):
     assert (downstream / 'overriden_file.txt').read() == 'Overriding content'
 
 
-def test_no_update_upstream_sources(monkeypatch, upstream, downstream):
+def test_no_update_upstream_sources(
+    monkeypatch, upstream, downstream, git_status
+):
     monkeypatch.chdir(downstream)
     # Verify that downstream in unmodified
     assert not (downstream / 'upstream_file.txt').exists()
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
-    gstatus = git('status', '--short', '--porcelain').rstrip()
-    assert gstatus == ''
+    assert git_status(downstream) == ''
     update_upstream_sources()
     assert not (downstream / 'upstream_file.txt').exists()
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
-    gstatus = git('status', '--short', '--porcelain').rstrip()
-    assert gstatus == ''
+    assert git_status(downstream) == ''
     get_upstream_sources()
     assert (downstream / 'upstream_file.txt').isfile()
     assert (downstream / 'upstream_file.txt').read() == 'Upstream content'
@@ -205,7 +120,7 @@ def test_no_update_upstream_sources(monkeypatch, upstream, downstream):
     assert (downstream / 'overriden_file.txt').read() == 'Overriding content'
 
 
-def test_commit_us_src_update(monkeypatch, updated_upstream, downstream):
+def test_commit_us_src_update(monkeypatch, updated_upstream, downstream, git):
     monkeypatch.chdir(downstream)
     update_upstream_sources()
     us_yaml = downstream / 'automation' / 'upstream_sources.yaml'
@@ -219,7 +134,7 @@ def test_commit_us_src_update(monkeypatch, updated_upstream, downstream):
     assert md5_header == 'x-md5: ' + us_yaml_md5
 
 
-def test_commit_us_src_no_update(monkeypatch, downstream):
+def test_commit_us_src_no_update(monkeypatch, downstream, git):
     monkeypatch.chdir(downstream)
     commit_upstream_sources_update()
     log = git('log', '--pretty=format:%s').splitlines()
