@@ -7,10 +7,6 @@
           branch: master
       - 4.1:
           branch: master
-      - 4.0:
-          branch: master
-      - 3.6:
-          branch: master
     stage:
       - check-patch
     distro:
@@ -21,14 +17,6 @@
       - version: master
         distro: fc24
       - version: 4.1
-        distro: fc26
-      - version: 4.0
-        distro: fc24
-      - version: 4.0
-        distro: fc26
-      - version: 3.6
-        distro: fc24
-      - version: 3.6
         distro: fc26
     trigger: 'on-change'
     arch: x86_64
@@ -54,8 +42,6 @@
     <<: *base-params
     name: mom_build-artifacts-manual-any
     version:
-      - '3.6'
-      - '4.0'
       - '4.1'
       - 'master'
     jobs:
