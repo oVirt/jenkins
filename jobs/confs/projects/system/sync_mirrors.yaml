@@ -25,6 +25,7 @@
       - 'fedora-base-fc26'
       - 'fedora-updates-fc26'
       - 'fedora-base-fc27'
+      - 'fedora-updates-fc27'
       - 'fedora-base-fcraw'
     arch: x86_64
     jobs:
