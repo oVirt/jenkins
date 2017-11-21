@@ -2,32 +2,20 @@
 """pusher.py - A tool for automated pushing of patches to SCMs
 """
 from __future__ import absolute_import, print_function
+import sys
 import argparse
 import logging
+import logging.handlers
 import os
 import re
 import yaml
 import json
+from copy import copy
 from collections import namedtuple, Iterable, Mapping
-from six import iteritems
-try:
-    from subprocess import check_output, STDOUT
-except ImportError:
-    from subprocess import STDOUT, Popen, CalledProcessError, PIPE
-
-    # Backport check_output for EL6
-    def check_output(*popenargs, **kwargs):
-        if 'stdout' in kwargs:
-            raise ValueError('stdout argument not allowed.')
-        process = Popen(stdout=PIPE, *popenargs, **kwargs)
-        output, unused_err = process.communicate()
-        retcode = process.poll()
-        if retcode:
-            cmd = kwargs.get("args")
-            if cmd is None:
-                cmd = popenargs[0]
-            raise CalledProcessError(retcode, cmd)
-        return output
+from itertools import chain
+from six import iteritems, string_types
+from traceback import format_exception
+from subprocess import Popen, CalledProcessError, STDOUT, PIPE
 
 
 logger = logging.getLogger(__name__)
@@ -58,13 +46,22 @@ class PushMapMatchError(PushMapError):
 
 def main():
     args = parse_args()
-    args.handler(args)
+    try:
+        setup_console_logging(args, logger)
+        args.handler(args)
+        return 0
+    except IOError as e:
+        logger.exception('%s: %s', e.strerror, e.filename)
+    except Exception as e:
+        logger.exception("%s", e.message)
+    return 1
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Tool for automated pushing of patches to SCMs'
     )
+    add_logging_args(parser)
     subparsers = parser.add_subparsers()
     push_parser = subparsers.add_parser(
         'push', help='Push commit in $CWD',
@@ -92,6 +89,64 @@ def parse_args():
     return parser.parse_args()
 
 
+def add_logging_args(parser):
+    """Add logging-related command line argumenets
+
+    :param ArgumentParser parser: An argument parser to add the parameters to
+    """
+    parser.add_argument(
+        '-v', '--verbose', action='store_true', help='provide verbose output'
+    )
+    parser.add_argument(
+        '-d', '--debug', action='store_true', help='provide debugging output'
+    )
+    parser.add_argument(
+        '--log', nargs='?', const=sys.stderr, help=(
+            'Log to the specified file. If no filename is specified, output'
+            ' the regular output messages to STDERR in full log format.'
+        )
+    )
+
+
+def setup_console_logging(args, logger=None):
+    """Configure logging for when running as a console app
+
+    :param argparse.Namespace args: Argument parsing results for an
+                                    ArgumentParser object to which
+                                    add_logging_args had been applied.
+    :param logging.Logger logger:   (Optional) A logger to apply configuration
+                                    to. If unspecified, configuration will be
+                                    applied to the root logger.
+    """
+    if logger is None:
+        logger = logging.getLogger()
+    if args.debug:
+        level = logging.DEBUG
+    elif args.verbose:
+        level = logging.INFO
+    else:
+        level = logging.WARN
+    logger.setLevel(level)
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setFormatter(ExceptionHider('%(message)s'))
+    logger.addHandler(stderr_handler)
+    if args.log is None:
+        pass
+    elif args.log == sys.stderr:
+        stderr_handler.setFormatter(ExceptionSpreader(
+            '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
+        ))
+    else:
+        file_handler = logging.handlers.WatchedFileHandler(args.log)
+        file_handler.setFormatter(ExceptionSpreader(
+            '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
+        ))
+        file_handler.setLevel(1)  # Set lowest possible level
+        stderr_handler.setLevel(level)
+        logger.setLevel(1)  # Set lowest possible level
+        logger.addHandler(file_handler)
+
+
 def push_main(args):
     push_to_scm(
         dst_branch=args.branch,
@@ -117,14 +172,18 @@ def push_to_scm(dst_branch, push_map, if_not_exists=True, unless_hash=None):
                               hash, don't try to push it.
     """
     if get_patch_sha() == unless_hash:
+        logger.info("HEAD commit is '%s', skipping push", unless_hash)
         return
     push_details = read_push_details(push_map)
+    logger.info("Would push to: '%s'", push_details.push_url)
     if push_details.host_key:
         add_key_to_known_hosts(push_details.host_key)
     if if_not_exists and check_if_similar_patch_pushed(push_details):
+        logger.info('Found similar patch in SCM server, not pushing')
         return
     dest_to_push_to = 'HEAD:refs/for/{0}'.format(dst_branch)
-    git('push', push_details.push_url, dest_to_push_to, append_stderr=True)
+    logger.info("Push to: '%s' at '%s'", push_details.push_url, dest_to_push_to)
+    git('push', push_details.push_url, dest_to_push_to)
 
 
 def read_push_details(push_map):
@@ -281,16 +340,22 @@ def check_if_similar_patch_pushed(push_details):
     msg_param = 'message:{checksum}'.format(checksum=checksum)
     cmd_list = ['ssh', '-p', '29418', server_url, 'gerrit', 'query',
                 '--format=JSON', 'status:open', project_param, msg_param]
-    logger.info("executing: %s" % str(cmd_list))
-    res = check_output(['ssh', '-p', '29418', server_url, 'gerrit', 'query',
-                        '--format=JSON', 'status:open', project, msg_param])
+    logger.debug("executing: %s" % ' '.join(cmd_list))
 
-    logger.info(res)
+    process = Popen(cmd_list, stdout=PIPE, stderr=PIPE)
+    output, error = process.communicate()
+    output = output.decode('utf-8')
+    retcode = process.poll()
+    logger.debug("'ssh' exited with status: %d", retcode, extra={'blocks': (
+        ('stderr', error.decode('utf-8')), ('stdout', output)
+    )},)
+    if retcode:
+        raise CalledProcessError(retcode, cmd_list)
 
-    if res and json.loads(res.splitlines()[-1]).get('rowCount', 0) >= 1:
-        return True
-    else:
-        return False
+    return (
+        output
+        and json.loads(output.splitlines()[-1]).get('rowCount', 0) >= 1
+    )
 
 
 def get_patch_header(header, default=None):
@@ -336,6 +401,7 @@ def add_key_to_known_hosts(key):
     """
     ssh_folder = os.path.expanduser('~/.ssh/')
     if not os.path.exists(ssh_folder):
+        logger.debug("Creating directory: '%s'", ssh_folder)
         os.mkdir(ssh_folder, 0o766)
 
     known_hosts_file = os.path.join(ssh_folder, 'known_hosts')
@@ -355,34 +421,41 @@ def add_key_to_known_hosts(key):
         known_hosts.write("{0}\n".format(key))
 
 
+class GitProcessError(CalledProcessError):
+    pass
+
+
 def git(*args, **kwargs):
     """
     Util function to execute git commands
 
-    :param list args:         a list of git command line args
-    :param dictionary kwargs: for example,
-                              if one wants to append the stderr to
-                              the stdout, he can set append_stderr
-                              key to true
+    :param list *args:         A list of git command line args
+    :param bool append_stderr: If set to true, append STDERR to the output
+
+    Executes git commands and return output. Raise GitProcessError if Git fails
 
     :rtype: string
     :returns: output or error of the command
-
-    Executes git commands and return output or empty
-    string if command has failed
     """
     git_command = ['git']
     git_command.extend(args)
 
-    stderr = (STDOUT if kwargs.get('append_stderr', False) else None)
-    logger.info("Executing command: "
-                "{command}".format(command=' '.join(git_command)))
-    std_out = check_output(git_command, stderr=stderr)
-    if kwargs.get('print_command_output', True):
-        for log_line in std_out.splitlines():
-            logger.info(log_line)
-
-    return std_out.decode('utf-8')
+    stderr = (STDOUT if kwargs.get('append_stderr', False) else PIPE)
+    logger.debug("Executing command: '%s'", ' '.join(git_command))
+    process = Popen(git_command, stdout=PIPE, stderr=stderr)
+    output, error = process.communicate()
+    retcode = process.poll()
+    if error is None:
+        error = ''
+    else:
+        error = error.decode('utf-8')
+    output = output.decode('utf-8')
+    logger.debug('Git exited with status: %d', retcode, extra={'blocks': (
+        ('stderr', error), ('stdout', output)
+    )},)
+    if retcode:
+        raise GitProcessError(retcode, git_command)
+    return output
 
 
 def setupLogging(level=logging.INFO):
@@ -396,5 +469,128 @@ def setupLogging(level=logging.INFO):
     logging.getLogger().level = level
 
 
+class BlockFormatter(logging.Formatter):
+    """A log formatter that knows how to handle text blocks that are embedded
+    in the log object
+    """
+    def format(self, record):
+        """Called by the logging.Handler object to do the actual log formatting
+
+        :param logging.LogRecord record: The log record to be formatted
+
+        This format generates extra log lines to display text blocks embedded
+        in the log object as indented text
+
+        :rtype: str
+        :returns: The string to be written to the log
+        """
+        blocks = getattr(record, 'blocks', None)
+        if blocks is None:
+            return super(BlockFormatter, self).format(record)
+        out_rec = copy(record)
+        exc_info = out_rec.exc_info
+        out_rec.exc_info = None
+        out = [super(BlockFormatter, self).format(out_rec)]
+        for block in self._iter_blocks(blocks):
+            if isinstance(block, string_types):
+                title, text = None, block
+            elif isinstance(block, Iterable) and len(block) == 2:
+                title, text = block
+            else:
+                title, text = None, block
+            if title is not None:
+                out.append(self._log_line(out_rec, '  ---- %s ----', title))
+            for line in text.splitlines():
+                out.append(self._log_line(out_rec, '    %s', line))
+        if exc_info:
+            out.append(self.formatException(exc_info))
+        return '\n'.join(out)
+
+    def _iter_blocks(self, blocks):
+        """Returns an iterator over any text blocks added to a log record
+
+        :param object blocks: An object representing text blocks, may be a
+                              single string, a Mapping an Iterable or any other
+                              object that can be converted into a string.
+        :rtype: Iterator
+        :returns: An iterator over blocks where each block my be either
+                  a string or a pair if a title string and a text string.
+        """
+        if isinstance(blocks, string_types):
+            return iter((blocks,))
+        elif isinstance(blocks, Mapping):
+            return iteritems(blocks)
+        elif isinstance(blocks, Iterable):
+            return blocks
+        else:
+            return iter((str(blocks),))
+
+    def _log_line(self, mut_rec, msg, line):
+        """format a single log line using the superclass formatter
+
+        :param logrecord mut_rec: a logrecord object that is allowed to be
+                                  mutated and contains the extra data about the
+                                  message we're logging
+        :param str msg:           a logger format string for the line to format
+        :param str line:          the log line to format
+        :type: str
+        :returns: a formatted log line
+        """
+        mut_rec.msg = msg
+        mut_rec.args = (line,)
+        return super(BlockFormatter, self).format(mut_rec)
+
+
+class ExceptionSpreader(BlockFormatter):
+    """A log formatter that takes care of properly formatting exception objects
+    if they are attached to logs
+    """
+    def format(self, record):
+        """Called by the logging.Handler object to do the actual log formatting
+
+        :param logging.LogRecord record: The log record to be formatted
+
+        This formatter converts the embedded excpetion opbject into a text
+        block and the uses the BlockFormatter to display it
+
+        :rtype: str
+        :returns: The string to be written to the log
+        """
+        if record.exc_info is None:
+            return super(ExceptionSpreader, self).format(record)
+        out_rec = copy(record)
+        out_rec.exc_info = None
+        if getattr(out_rec, 'blocks', None) is None:
+            out_rec.blocks = format_exception(*record.exc_info)
+        else:
+            out_rec.blocks = chain(
+                self._iter_blocks(out_rec.blocks),
+                (('excpetion', ''.join(format_exception(*record.exc_info))),)
+            )
+        return super(ExceptionSpreader, self).format(out_rec)
+
+
+class ExceptionHider(BlockFormatter):
+    """A log formatter that ensures that exception objects are not dumped into
+    the logs
+    """
+    def format(self, record):
+        """Called by the logging.Handler object to do the actual log formatting
+
+        :param logging.LogRecord record: The log record to be formatted
+
+        This formatter essentially strips away any embedded exception objects
+        from the record objects.
+
+        :rtype: str
+        :returns: The string to be written to the log
+        """
+        if record.exc_info is None:
+            return super(ExceptionHider, self).format(record)
+        out_rec = copy(record)
+        out_rec.exc_info = None
+        return super(ExceptionHider, self).format(out_rec)
+
+
 if __name__ == '__main__':
-    main()
+    exit(main())

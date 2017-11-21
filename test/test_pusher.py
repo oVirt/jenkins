@@ -6,6 +6,7 @@ from textwrap import dedent
 from functools import partial
 from itertools import cycle
 import py
+from subprocess import CalledProcessError
 try:
     from unittest.mock import MagicMock, call
 except ImportError:
@@ -16,7 +17,13 @@ from scripts.pusher import (
     push_to_scm, get_push_details, parse_push_details_struct, PushDetails,
     get_remote_url_from_ws, get_patch_header, add_key_to_known_hosts,
     PushMapError, PushMapMatchError, PushMapSyntaxError, PushMapIOError,
+    GitProcessError
 )
+
+
+class TestGitProcessError(object):
+    def test_inheritance(self):
+        assert issubclass(GitProcessError, CalledProcessError)
 
 
 class TestPushMapError(object):

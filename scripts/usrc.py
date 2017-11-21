@@ -3,31 +3,21 @@
 """
 from __future__ import absolute_import, print_function
 import argparse
+import sys
 import os
 import logging
+import logging.handlers
 import yaml
+from copy import copy
 from hashlib import sha1, md5
 from xdg.BaseDirectory import xdg_cache_home
 from time import time
 from socket import gethostbyname, gethostname
-try:
-    from subprocess import check_output, STDOUT
-except ImportError:
-    from subprocess import STDOUT, Popen, CalledProcessError, PIPE
-
-    # Backport check_output for EL6
-    def check_output(*popenargs, **kwargs):
-        if 'stdout' in kwargs:
-            raise ValueError('stdout argument not allowed.')
-        process = Popen(stdout=PIPE, *popenargs, **kwargs)
-        output, unused_err = process.communicate()
-        retcode = process.poll()
-        if retcode:
-            cmd = kwargs.get("args")
-            if cmd is None:
-                cmd = popenargs[0]
-            raise CalledProcessError(retcode, cmd)
-        return output
+from subprocess import Popen, CalledProcessError, STDOUT, PIPE
+from six import string_types, iteritems
+from collections import Iterable, Mapping
+from itertools import chain
+from traceback import format_exception
 
 
 UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
@@ -39,13 +29,22 @@ logger = logging.getLogger(__name__)
 
 def main():
     args = parse_args()
-    args.handler(args)
+    try:
+        setup_console_logging(args, logger)
+        args.handler(args)
+        return 0
+    except IOError as e:
+        logger.exception('%s: %s', e.strerror, e.filename)
+    except Exception as e:
+        logger.exception("%s", e.message)
+    return 1
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Upstream source dependency handling tool'
     )
+    add_logging_args(parser)
     subparsers = parser.add_subparsers()
     get_parser = subparsers.add_parser(
         'get', help='Download upstream sources',
@@ -74,6 +73,64 @@ def parse_args():
         )
     )
     return parser.parse_args()
+
+
+def add_logging_args(parser):
+    """Add logging-related command line argumenets
+
+    :param ArgumentParser parser: An argument parser to add the parameters to
+    """
+    parser.add_argument(
+        '-v', '--verbose', action='store_true', help='provide verbose output'
+    )
+    parser.add_argument(
+        '-d', '--debug', action='store_true', help='provide debugging output'
+    )
+    parser.add_argument(
+        '--log', nargs='?', const=sys.stderr, help=(
+            'Log to the specified file. If no filename is specified, output'
+            ' the regular output messages to STDERR in full log format.'
+        )
+    )
+
+
+def setup_console_logging(args, logger=None):
+    """Configure logging for when running as a console app
+
+    :param argparse.Namespace args: Argument parsing results for an
+                                    ArgumentParser object to which
+                                    add_logging_args had been applied.
+    :param logging.Logger logger:   (Optional) A logger to apply configuration
+                                    to. If unspecified, configuration will be
+                                    applied to the root logger.
+    """
+    if logger is None:
+        logger = logging.getLogger()
+    if args.debug:
+        level = logging.DEBUG
+    elif args.verbose:
+        level = logging.INFO
+    else:
+        level = logging.WARN
+    logger.setLevel(level)
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setFormatter(ExceptionHider('%(message)s'))
+    logger.addHandler(stderr_handler)
+    if args.log is None:
+        pass
+    elif args.log == sys.stderr:
+        stderr_handler.setFormatter(ExceptionSpreader(
+            '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
+        ))
+    else:
+        file_handler = logging.handlers.WatchedFileHandler(args.log)
+        file_handler.setFormatter(ExceptionSpreader(
+            '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
+        ))
+        file_handler.setLevel(1)  # Set lowest possible level
+        stderr_handler.setLevel(level)
+        logger.setLevel(1)  # Set lowest possible level
+        logger.addHandler(file_handler)
 
 
 def get_main(args):
@@ -116,11 +173,11 @@ def commit_upstream_sources_update():
         # Skip committing if upstream_sources.yaml not changed
         return
     if check_if_branch_exists('commit_branch'):
-        git('branch', '-D', 'commit_branch', append_stderr=True)
-    git('checkout', '-b', 'commit_branch', append_stderr=True)
+        git('branch', '-D', 'commit_branch')
+    git('checkout', '-b', 'commit_branch')
     with open(UPSTREAM_SOURCES_PATH, 'r') as stream:
         checksum = md5(stream.read().encode('utf-8')).hexdigest()
-    git('add', UPSTREAM_SOURCES_PATH, append_stderr=True)
+    git('add', UPSTREAM_SOURCES_PATH)
 
     commit_message = generate_gerrit_message('Changed commit SHA1', checksum)
     git('commit', '-m', commit_message)
@@ -163,7 +220,6 @@ def upstream_source_collector(git_section, dst_path):
             '--git-dir=' + os.path.join(work_dir, '.git'),
             '--work-tree=' + dst_path,
             'checkout', repo['commit'], '-f',
-            append_stderr=True
         )
 
     # the below code will 'prefer' ds changes over us ones
@@ -171,7 +227,6 @@ def upstream_source_collector(git_section, dst_path):
         '--git-dir=' + os.path.join(dst_path, '.git'),
         '--work-tree=' + dst_path,
         "reset", "--hard",
-        append_stderr=True
     )
 
 
@@ -183,12 +238,11 @@ def clone_repo(git_url, git_commit, branch, work_dir):
     :param string git_commit: git SHA1 to checkout to
     :param string branch:     git branch to fetch commit from
     """
-    git('init', work_dir, append_stderr=True)
+    git('init', work_dir)
     # TODO: check if git_commit is already available locally and skip fetching
     git(
         '--git-dir=' + os.path.join(work_dir, '.git'),
         'fetch', '--tags', git_url, branch,
-        append_stderr=False
     )
 
 
@@ -207,8 +261,13 @@ def update_git_sha_in_yaml(git_section):
         latest_commit = get_latest_commit(repo['branch'], repo['url'])
         if not latest_commit:
             continue
-        has_changed = has_changed or (latest_commit != repo['commit'])
-        repo['commit'] = latest_commit
+        if latest_commit != repo['commit']:
+            logger.info(
+                "Latest commit updated for branch '%s' in repo '%s'",
+                repo['branch'], repo['url']
+            )
+            has_changed = True
+            repo['commit'] = latest_commit
 
     return has_changed
 
@@ -235,6 +294,10 @@ def get_latest_commit(branch, git_url):
             # We need to do this so we don't get strange unicode flags in YAML
             # we produce form Python2
             sha = sha.encode('ascii', 'ignore')
+        logger.debug(
+            "Got latest commit '%s' for branch '%s' in repo '%s'",
+            sha, branch, git_url
+        )
         return sha
 
     logger.warn("Could not find latest commit for branch: {0}".format(branch))
@@ -293,34 +356,41 @@ def check_if_branch_exists(branch_to_check):
     return False
 
 
+class GitProcessError(CalledProcessError):
+    pass
+
+
 def git(*args, **kwargs):
     """
     Util function to execute git commands
 
-    :param list args:         a list of git command line args
-    :param dictionary kwargs: for example,
-                              if one wants to append the stderr to
-                              the stdout, he can set append_stderr
-                              key to true
+    :param list *args:         A list of git command line args
+    :param bool append_stderr: If set to true, append STDERR to the output
+
+    Executes git commands and return output. Raise GitProcessError if Git fails
 
     :rtype: string
     :returns: output or error of the command
-
-    Executes git commands and return output or empty
-    string if command has failed
     """
     git_command = ['git']
     git_command.extend(args)
 
-    stderr = (STDOUT if kwargs.get('append_stderr', False) else None)
-    logger.info("Executing command: "
-                "{command}".format(command=' '.join(git_command)))
-    std_out = check_output(git_command, stderr=stderr)
-    if kwargs.get('print_command_output', True):
-        for log_line in std_out.splitlines():
-            logger.info(log_line)
-
-    return std_out.decode('utf-8')
+    stderr = (STDOUT if kwargs.get('append_stderr', False) else PIPE)
+    logger.info("Executing command: '%s'", ' '.join(git_command))
+    process = Popen(git_command, stdout=PIPE, stderr=stderr)
+    output, error = process.communicate()
+    retcode = process.poll()
+    if error is None:
+        error = ''
+    else:
+        error = error.decode('utf-8')
+    output = output.decode('utf-8')
+    logger.debug('Git exited with status: %d', retcode, extra={'blocks': (
+        ('stderr', error), ('stdout', output)
+    )},)
+    if retcode:
+        raise GitProcessError(retcode, git_command)
+    return output
 
 
 def setupLogging(level=logging.INFO):
@@ -334,5 +404,127 @@ def setupLogging(level=logging.INFO):
     logging.getLogger().level = level
 
 
+class BlockFormatter(logging.Formatter):
+    """A log formatter that knows how to handle text blocks that are embedded
+    in the log object
+    """
+    def format(self, record):
+        """Called by the logging.Handler object to do the actual log formatting
+
+        :param logging.LogRecord record: The log record to be formatted
+
+        This format generates extra log lines to display text blocks embedded
+        in the log object as indented text
+
+        :rtype: str
+        :returns: The string to be written to the log
+        """
+        blocks = getattr(record, 'blocks', None)
+        if blocks is None:
+            return super(BlockFormatter, self).format(record)
+        out_rec = copy(record)
+        exc_info = out_rec.exc_info
+        out_rec.exc_info = None
+        out = [super(BlockFormatter, self).format(out_rec)]
+        for block in self._iter_blocks(blocks):
+            if isinstance(block, string_types):
+                title, text = None, block
+            elif isinstance(block, Iterable) and len(block) == 2:
+                title, text = block
+            else:
+                title, text = None, block
+            if title is not None:
+                out.append(self._log_line(out_rec, '  ---- %s ----', title))
+            for line in text.splitlines():
+                out.append(self._log_line(out_rec, '    %s', line))
+        if exc_info:
+            out.append(self.formatException(exc_info))
+        return '\n'.join(out)
+
+    def _iter_blocks(self, blocks):
+        """Returns an iterator over any text blocks added to a log record
+
+        :param object blocks: An object representing text blocks, may be a
+                              single string, a Mapping an Iterable or any other
+                              object that can be converted into a string.
+        :rtype: Iterator
+        :returns: An iterator over blocks where each block my be either
+                  a string or a pair if a title string and a text string.
+        """
+        if isinstance(blocks, string_types):
+            return iter((blocks,))
+        elif isinstance(blocks, Mapping):
+            return iteritems(blocks)
+        elif isinstance(blocks, Iterable):
+            return blocks
+        else:
+            return iter((str(blocks),))
+
+    def _log_line(self, mut_rec, msg, line):
+        """Returns an iterator over any text blocks added to a log record
+
+        :param object blocks: An object representing text blocks, may be a
+                              single string, a Mapping an Iterable or any other
+                              object that can be converted into a string.
+        :rtype: Iterator
+        :returns: An iterator over blocks where each block my be either
+                  a string or a pair if a title string and a text string.
+        """
+        mut_rec.msg = msg
+        mut_rec.args = (line,)
+        return super(BlockFormatter, self).format(mut_rec)
+
+
+class ExceptionSpreader(BlockFormatter):
+    """A log formatter that takes care of properly formatting exception objects
+    if they are attached to logs
+    """
+    def format(self, record):
+        """Called by the logging.Handler object to do the actual log formatting
+
+        :param logging.LogRecord record: The log record to be formatted
+
+        This formatter converts the embedded excpetion opbject into a text
+        block and the uses the BlockFormatter to display it
+
+        :rtype: str
+        :returns: The string to be written to the log
+        """
+        if record.exc_info is None:
+            return super(ExceptionSpreader, self).format(record)
+        out_rec = copy(record)
+        out_rec.exc_info = None
+        if getattr(out_rec, 'blocks', None) is None:
+            out_rec.blocks = format_exception(*record.exc_info)
+        else:
+            out_rec.blocks = chain(
+                self._iter_blocks(out_rec.blocks),
+                (('excpetion', ''.join(format_exception(*record.exc_info))),)
+            )
+        return super(ExceptionSpreader, self).format(out_rec)
+
+
+class ExceptionHider(BlockFormatter):
+    """A log formatter that ensures that exception objects are not dumped into
+    the logs
+    """
+    def format(self, record):
+        """Called by the logging.Handler object to do the actual log formatting
+
+        :param logging.LogRecord record: The log record to be formatted
+
+        This formatter essentially strips away any embedded exception objects
+        from the record objects.
+
+        :rtype: str
+        :returns: The string to be written to the log
+        """
+        if record.exc_info is None:
+            return super(ExceptionHider, self).format(record)
+        out_rec = copy(record)
+        out_rec.exc_info = None
+        return super(ExceptionHider, self).format(out_rec)
+
+
 if __name__ == '__main__':
-    main()
+    exit(main())

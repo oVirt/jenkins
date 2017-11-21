@@ -4,10 +4,16 @@
 import pytest
 from scripts.usrc import (
     get_upstream_sources, update_upstream_sources,
-    commit_upstream_sources_update
+    commit_upstream_sources_update, GitProcessError
 )
 from textwrap import dedent
 from hashlib import md5
+from subprocess import CalledProcessError
+
+
+class TestGitProcessError(object):
+    def test_inheritance(self):
+        assert issubclass(GitProcessError, CalledProcessError)
 
 
 @pytest.fixture
