@@ -22,3 +22,5 @@
       - default-properties
     wrappers:
       - default-wrapper
+    git-config-name: 'oVirt Staging Jenkins'
+    git-config-email: 'infra@ovirt.org'

@@ -1,0 +1,9 @@
+---
+- ^https://gerrit-staging.phx.ovirt.org/(.*)$:
+    push_url: 'ssh://jenkins@gerrit-staging.phx.ovirt.org:29418/\1'
+    host_key:
+      "[gerrit-staging.phx.ovirt.org]:29418 ssh-rsa \
+      AAAAB3NzaC1yc2EAAAADAQABAAAAgQCUpLYPDoy7WJlSsR3lmIJv2XCDkf3E8Oq\
+      cA0+zNWSO/zam2UjNkReA5BP8GiHDPiW+1V/nSvK40/qF7PcZD8NtVsad6ZljA+\
+      LyYDa8NVwdBefcrC30fHT4rFTIBkU9ow8o/MbcIOPES6IX/jOpN4NrNV65QfdCK\
+      GHz2GMUz9aChQ=="
