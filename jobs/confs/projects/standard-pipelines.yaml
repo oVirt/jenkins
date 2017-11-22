@@ -10,6 +10,11 @@
     org: oVirt
     project:
       - ovirt-ansible
+      - ovirt-ansible-cluster-upgrade
+      - ovirt-ansible-image-template
+      - ovirt-ansible-infra
+      - ovirt-ansible-manageiq
+      - ovirt-ansible-vm-infra
     jobs:
       - '{org}_{project}_standard-gh-jobs'
 
