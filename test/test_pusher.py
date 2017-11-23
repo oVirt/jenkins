@@ -17,7 +17,7 @@ from scripts.pusher import (
     push_to_scm, get_push_details, parse_push_details_struct, PushDetails,
     get_remote_url_from_ws, get_patch_header, add_key_to_known_hosts,
     PushMapError, PushMapMatchError, PushMapSyntaxError, PushMapIOError,
-    GitProcessError
+    GitProcessError, InvalidGitRef, git_rev_parse
 )
 
 
@@ -197,6 +197,16 @@ def test_push_gerrit_unless_hash(
     head_hash, older_hash = local_log()[0:2]
     push_to_scm(
         'master', gerrit_push_map, unless_hash=head_hash, if_not_exists=True
+    )
+    assert remote_log('master') == remote_log('refs/for/master')
+    assert not mock_check_pushed.called
+    push_to_scm(
+        'master', gerrit_push_map, unless_hash='HEAD', if_not_exists=True
+    )
+    assert remote_log('master') == remote_log('refs/for/master')
+    assert not mock_check_pushed.called
+    push_to_scm(
+        'master', gerrit_push_map, unless_hash='master', if_not_exists=True
     )
     assert remote_log('master') == remote_log('refs/for/master')
     assert not mock_check_pushed.called
@@ -470,3 +480,23 @@ def test_add_key_to_known_hosts(tmpdir, monkeypatch, existing, key, expected):
     monkeypatch.setenv('HOME', str(tmpdir))
     add_key_to_known_hosts(key)
     assert expected == known_hosts.read()
+
+
+@pytest.mark.parametrize(('ref', 'exp_idx'), [
+    ('HEAD', 0),
+    ('HEAD^', 1),
+    ('refs/heads/master', 0),
+    ('refs/remotes/origin/master', 1),
+    ('master', 0),
+    ('master~1', 1),
+    ('no/such/ref', InvalidGitRef),
+])
+def test_git_rev_parse(local_repo_patch, local_log, monkeypatch, ref, exp_idx):
+    monkeypatch.chdir(local_repo_patch)
+    if isinstance(exp_idx, type) and issubclass(exp_idx, Exception):
+        with pytest.raises(exp_idx) as e:
+            git_rev_parse(ref)
+        assert e.value.ref == ref
+    else:
+        out = git_rev_parse(ref)
+        assert out == local_log()[exp_idx]

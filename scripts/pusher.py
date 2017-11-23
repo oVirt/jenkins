@@ -80,7 +80,10 @@ def parse_args():
     )
     push_parser.add_argument(
         '--unless-hash',
-        help='Push only if HEAD is different then the specified Git hash',
+        help=(
+            'Push only if HEAD is different than the specified Git hash'
+            'or commit reference'
+        ),
     )
     push_parser.add_argument(
         '--if-not-exists', action='store_true',
@@ -168,12 +171,13 @@ def push_to_scm(dst_branch, push_map, if_not_exists=True, unless_hash=None):
     :param str if_not_exists: If set to 'True' (the default), check remote for
                               a similar patch before pushing, and don't push if
                               it exists.
-    :param str unless_hash:   Given a Git hash value, if HEAD is equal to this
-                              hash, don't try to push it.
+    :param str unless_hash:   Given a Git hash value, or a commit ref, if HEAD
+                              is equal to this commit, don't try to push it.
     """
-    if get_patch_sha() == unless_hash:
-        logger.info("HEAD commit is '%s', skipping push", unless_hash)
-        return
+    if unless_hash is not None:
+        if get_patch_sha() == git_rev_parse(unless_hash):
+            logger.info("HEAD commit is '%s', skipping push", unless_hash)
+            return
     push_details = read_push_details(push_map)
     logger.info("Would push to: '%s'", push_details.push_url)
     if push_details.host_key:
@@ -590,6 +594,30 @@ class ExceptionHider(BlockFormatter):
         out_rec = copy(record)
         out_rec.exc_info = None
         return super(ExceptionHider, self).format(out_rec)
+
+
+class InvalidGitRef(Exception):
+    def __init__(self, message, ref):
+        super(InvalidGitRef, self).__init__(message)
+        self.ref = ref
+
+
+def git_rev_parse(ref):
+    """Parse a git ref and return the equivalent hash
+
+    :param str ref: A git commit reference to parse (branch name, tag, etc.)
+
+    :rtype: str
+    """
+    try:
+        return git('rev-parse', ref).rstrip()
+    except GitProcessError as e:
+        if e.returncode == 128:
+            raise InvalidGitRef(
+                "Invalid Git ref given: '{0}'".format(ref), ref
+            )
+        else:
+            raise
 
 
 if __name__ == '__main__':
