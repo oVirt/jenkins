@@ -34,9 +34,43 @@
 
 - project:
     <<: *base-commons
+    name: ovirt-host-ppc64le
+    project: ovirt-host
+    version:
+      - master:
+          branch: master
+      - 4.1:
+          branch: ovirt-4.1
+    distro:
+      - el7
+    stage: check-patch
+    arch: ppc64le
+    node-filter: ppc64le
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-commons
     name: ovirt-host_build-artifacts
     project: ovirt-host
     stage: build-artifacts
     arch: x86_64
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
+
+- project:
+    <<: *base-commons
+    name: ovirt-host-ppc64le_build-artifacts
+    project: ovirt-host
+    version:
+      - master:
+          branch: master
+      - 4.1:
+          branch: ovirt-4.1
+    distro:
+      - el7
+    stage: build-artifacts
+    arch: ppc64le
+    node-filter: ppc64le
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
