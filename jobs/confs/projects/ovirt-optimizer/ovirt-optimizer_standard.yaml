@@ -33,6 +33,8 @@
     name: ovirt-optimizer_build-artifacts
     stage: build-artifacts
     version:
+      - master:
+          branch: master
       - 4.1:
           branch: master
       - 4.0:
@@ -40,6 +42,10 @@
       - 3.6:
           branch: v0.9.z
     exclude:
+      - version: master
+        distro: el6
+      - version: master
+        distro: fc24
       - version: 3.6
         distro: fc24
       - version: 3.6
