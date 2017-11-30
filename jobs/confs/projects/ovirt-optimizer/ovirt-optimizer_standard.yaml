@@ -5,24 +5,21 @@
     version:
       - master:
           branch: master
-      - 3.6:
-          branch: v0.9.z
+      - 4.1:
+          branch: master
+      - 4.2:
+          branch: master
     stage:
       - check-patch
     trigger: 'on-change'
     distro:
-      - el6
       - el7
-      - fc24
       - fc25
+      - fc24
     exclude:
       - version: master
-        distro: el6
-      - version: master
         distro: fc24
-      - version: 3.6
-        distro: fc24
-      - version: 3.6
+      - version: 4.1
         distro: fc25
     arch: x86_64
     jobs:
@@ -37,27 +34,13 @@
           branch: master
       - 4.1:
           branch: master
-      - 4.0:
+      - 4.2:
           branch: master
-      - 3.6:
-          branch: v0.9.z
     exclude:
       - version: master
-        distro: el6
-      - version: master
         distro: fc24
-      - version: 3.6
-        distro: fc24
-      - version: 3.6
-        distro: fc25
-      - version: 4.0
-        distro: el6
-      - version: 4.0
-        distro: fc25
       - version: 4.1
         distro: fc25
-      - version: 4.1
-        distro: el6
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
