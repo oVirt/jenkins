@@ -3,8 +3,6 @@ echo "shell-scripts/jenkins_check_yaml.sh"
 
 JJB_PROJECTS_FOLDER="${JJB_PROJECTS_FOLDER:?must be defined in Jenkins instance}"
 
-US_SRC_COLLECTOR="python-scripts/upstream-source-collector.py"
-
 generate_jobs_xml() {
     local confs_dir="${1:?}"
     local xmls_output_dir="${2:?}"
@@ -39,7 +37,6 @@ generate_old_xmls() {
     local project_folder="${3:?}"
     local old_project_ws="$(mktemp -d)"
     local old_confs_dir="$old_project_ws/jenkins/$confs_dir"
-    local us_sources_location="${project_folder%/*}"
     local branch_name=$(date +%s)
 
     git branch $branch_name HEAD^
@@ -47,8 +44,8 @@ generate_old_xmls() {
         cd "$old_project_ws"
         git clone --branch $branch_name --reference "$project_folder/.git" \
             "file:///$project_folder" jenkins
-        python "$project_folder/$confs_dir/$US_SRC_COLLECTOR" --usdir "$us_sources_location"
         cd jenkins
+        "$project_folder/scripts/usrc.py" -v get
         if ! [[ -d "$confs_dir" ]]; then
             echo "  No previous config"
             exit 1

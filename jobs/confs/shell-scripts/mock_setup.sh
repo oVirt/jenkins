@@ -63,12 +63,6 @@ if $failed; then
     exit 1
 fi
 
-rm -Rf mock mock-cache exported-artifacts || \
-    sudo -n rm -Rf mock mock-cache exported-artifacts
-mkdir -p mock exported-artifacts
-chgrp mock mock "$WORKSPACE" "$WORKSPACE"/exported-artifacts
-chmod g+rws mock
-
 # Make sure the cache has a newer timestamp than the config file or it will
 # not be used
 sudo -n touch /var/cache/mock/*/root_cache/cache.tar.gz 2>/dev/null || :

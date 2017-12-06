@@ -9,7 +9,7 @@ main() {
     local failed=false
 
     setup_os_repos
-    mk_wokspace_tmp
+    mk_wokspace_dirs
     extra_packages || failed=true
 
     if can_sudo systemctl; then
@@ -66,9 +66,9 @@ setup_os_repos() {
     done
 }
 
-mk_wokspace_tmp() {
+mk_wokspace_dirs() {
     rm -rf "$WORKSPACE/tmp"
-    mkdir -p "$WORKSPACE/tmp"
+    mkdir -p "$WORKSPACE/"{tmp,exported-artifacts}
 }
 
 extra_packages() {

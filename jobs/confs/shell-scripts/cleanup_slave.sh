@@ -369,6 +369,11 @@ rollback_os_repos() {
     fi
 }
 
+cleanup_old_artifacts() {
+    safe_remove "$WORKSPACE/exported-artifacts" &&
+        mkdir "$WORKSPACE/exported-artifacts"
+}
+
 can_sudo() {
     local cmd="${1:?}"
 
@@ -409,6 +414,7 @@ main() {
     cleanup_lago || failed=true
     cleanup_libvirt || failed=true
     cleanup_docker || failed=true
+    cleanup_old_artifacts || failed=true
     echo "---------------------------------------------------------------"
     sudo -n df -h || df -h || :
     if $failed; then

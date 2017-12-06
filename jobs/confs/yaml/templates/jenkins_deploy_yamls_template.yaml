@@ -32,7 +32,8 @@
           git-proto: '{git-proto}'
           gerrit-subpath: '{gerrit-subpath}'
     builders:
-      - upstream-source-collector
+      - upstream-source-collector:
+          project: '{project}'
       - shell: !include-raw-escape: shell-scripts/jenkins_deploy_yamls.sh
       - shell: !include-raw-escape: shell-scripts/jenkins_cleanup_yaml.sh
       - system-groovy:

@@ -3,7 +3,8 @@
     builders:
       - cleanup-slave
       - global-setup
-      - upstream-source-collector
+      - upstream-source-collector:
+          project: '{project}'
       - project-setup
       - shell: |
           if [[ ${{CREATE_IMAGES}} = "yes" ]]; then

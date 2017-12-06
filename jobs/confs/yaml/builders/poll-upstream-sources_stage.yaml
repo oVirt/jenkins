@@ -1,4 +1,0 @@
-- builder:
-    name: poll-upstream-sources_stage
-    builders:
-        - shell: !include-raw: python-scripts/poll-upstream-sources.py

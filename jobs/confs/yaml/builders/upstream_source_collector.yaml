@@ -1,4 +1,41 @@
 - builder:
     name: upstream-source-collector
     builders:
-        - shell: !include-raw: python-scripts/upstream-source-collector.py
+      - usrc:
+          project: 'jenkins'
+          usrc_update: ''
+      - usrc:
+          project: '{project}'
+          usrc_update: '{usrc_update}'
+
+- builder:
+    name: usrc
+    builders:
+      - shell: |
+          WORKSPACE="${{WORKSPACE:-$PWD}}"
+          LOGDIR="$WORKSPACE/exported-artifacts/usrc_logs"
+          mkdir -p "$LOGDIR"
+
+          usrc="$WORKSPACE/jenkins/scripts/usrc.py"
+          [[ -x "$usrc" ]] || usrc="$WORKSPACE/jenkins/scripts/usrc_local.py"
+
+          cd "./{project}"
+          [[ "{usrc_update}" ]] && \
+              "$usrc" --log="$LOGDIR/update_{project}.log" update --commit
+          "$usrc" --log="$LOGDIR/get_{project}.log" get
+
+- builder:
+    name: pusher
+    builders:
+      - shell: |
+          WORKSPACE="${{WORKSPACE:-$PWD}}"
+          LOGDIR="$WORKSPACE/exported-artifacts/pusher_logs"
+          mkdir -p "$LOGDIR"
+
+          cd "./{project}"
+          "$WORKSPACE/jenkins/scripts/pusher.py" \
+              --log="$LOGDIR/push_{project}.log" \
+              push \
+                --if-not-exists \
+                --unless-hash="${{GERRIT_PATCHSET_REVISION:-$GERRIT_BRANCH}}" \
+                "${{GERRIT_BRANCH##*/}}"
