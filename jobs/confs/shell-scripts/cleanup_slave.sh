@@ -13,7 +13,7 @@ umount_everyhting_inside() {
     )
     local inner_dir
     for inner_dir in "${inner_dirs[@]}"; do
-        sudo umount --lazy "$inner_dir" \
+        sudo -n umount --lazy "$inner_dir" \
         && echo "    Umounted $inner_dir" \
         || {
             res=1
@@ -29,9 +29,13 @@ safe_remove() {
     if [[ -d "$dir" ]]; then
         umount_everyhting_inside "$dir" \
         || return 1
-        sudo rm -Rf "$dir"
+        rm -Rf "$dir" || {
+            [[ -d "$dir" ]] && sudo -n rm -Rf "$dir"
+        }
     else
-        sudo rm -f "$dir"
+        rm -f "$dir" || {
+            [[ -e "$dir" ]] && sudo -n rm -f "$dir"
+        }
     fi
     return 0
 }
@@ -47,6 +51,10 @@ cleanup_home() {
 }
 
 cleanup_var() {
+    if ! can_sudo rm; then
+        log WARN "Skipping /var cleanup - not enough sudo permissions"
+        return 0
+    fi
     local res=0
     local dir
     echo "Cleaning up /var/tmp"
@@ -69,6 +77,10 @@ cleanup_postgres() {
         echo "    Postgres installation not found, skipping"
         return 0
     fi
+    if ! can_sudo rm psql; then
+        log WARN "Skipping postgres cleanup - not enough sudo permissions"
+        return 0
+    fi
     pushd /tmp
     psql="sudo -u postgres psql"
     dbs=(
@@ -86,6 +98,10 @@ cleanup_postgres() {
 }
 
 cleanup_logs() {
+    if ! can_sudo rm bash dmesg; then
+        log WARN: "Skipping system log cleanup - not enough sudo permissions"
+        return 0
+    fi
     echo "Emptying some common logs"
     local log empty_logfiles remove_logfiles
     empty_logfiles=(
@@ -95,22 +111,26 @@ cleanup_logs() {
         /var/log/messages-*
         /var/log/secure-*
     )
-    for log in "${empty_logfiles[@]}"; do
+    for logf in "${empty_logfiles[@]}"; do
         [[ -f "$log" ]] \
-            && sudo bash -c "> $log" \
+            && sudo -n bash -c "> $logf" \
             && echo "    $log"
     done
-    for log in "${remove_logfiles[@]}"; do
-        [[ -f "$log" ]] \
-            && safe_remove "$log" \
-            && echo "    $log"
+    for logf in "${remove_logfiles[@]}"; do
+        [[ -f "$logf" ]] \
+            && safe_remove "$logf" \
+            && echo "    $logf"
     done
-    sudo dmesg -c >/dev/null
+    sudo -n dmesg -c >/dev/null
     echo "Done"
     return 0
 }
 
 cleanup_journal() {
+    if ! can_sudo systemctl service; then
+        log WARN "Skipping journal cleanup - no sudo permissions"
+        return 0
+    fi
     local dir
     echo "Cleaning up journal logs (if any)"
     if ! sudo service systemd-journald status &>/dev/null; then
@@ -147,19 +167,22 @@ cleanup_workspaces() {
 }
 
 cleanup_lago_network_interfaces() {
-    local links \
-        link
+    if ! can_sudo ip; then
+        log WARN "Skipping Lago network cleanup - no sudo permissions for 'ip'"
+        return 0
+    fi
+    local links link
     local failed=false
     # remove lago-type interfaces, that is, 8chars of hash + '-some_tag'
     # or 4 chars of hash + 6 chars of hash
     links=(
         $( \
-            sudo ip link show \
+            sudo -n ip link show \
             | grep -Po '^[[:alnum:]]*: [[:alnum:]]{8}-[^:]*' \
             | awk '{print $2}' \
         )
         $( \
-            sudo ip link show \
+            sudo -n ip link show \
             | grep -Po '^[[:alnum:]]*: [[:alnum:]]{4}-[[:alnum:]]{6}[^:]*' \
             | awk '{print $2}' \
         )
@@ -168,10 +191,10 @@ cleanup_lago_network_interfaces() {
         #If the interface has an '@' the name is before it
         link="${link%%@*}"
         echo "Removing interface $link"
-        sudo ip link delete "$link" \
+        sudo -n ip link delete "$link" \
         || {
             failed=true
-            echo "ERROR: Failed to cleanup interface $link"
+            log ERROR "Failed to cleanup interface $link"
         }
     done
     if $failed; then
@@ -189,6 +212,10 @@ is_docker_using_devicemapper() {
 }
 
 cleanup_loop_devices() {
+    if ! can_sudo dmsetup || ! can_sudo losetup; then
+        log WARN "Skipping loop device cleanup - no sudo for dmsetup/losetup"
+        return 0
+    fi
     # If docker is using devicemapper then we remove all dm pools
     # except for the pool(s) used by docker
     local failed=false
@@ -198,15 +225,15 @@ cleanup_loop_devices() {
         clean_device_mappings_except_docker
     else
         echo "Removing all mappings..."
-        sudo dmsetup remove_all || :
+        sudo -n dmsetup remove_all || :
     fi
     echo "Removing the used loop devices..."
-    sudo losetup -D || :
+    sudo -n losetup -D || :
     if [[ "$failed" == "true" ]]; then
         echo "Failed to free some loop devices:"
-        sudo losetup
+        sudo -n losetup
         echo "--- device mappings"
-        sudo dmsetup info
+        sudo -n dmsetup info
         return 1
     fi
     return 0
@@ -231,18 +258,18 @@ clean_device_mappings_except_docker() {
     if ! grep -q "$(get_docker_dm_storage_pool)" <<< $(sudo dmsetup ls); then
         # Docker thinks it's been assigned with a different device
         # than what devicemapper actually did
-        echo "Found error in Docker sotrage configuration. Restarting Docker"
-        sudo systemctl stop docker
-        sudo rm -rf /var/lib/docker/
-        sudo systemctl start docker
+        echo "Found error in Docker storage configuration. Restarting Docker"
+        sudo -n systemctl stop docker
+        sudo -n rm -rf /var/lib/docker/
+        sudo -n systemctl start docker
     fi
     all_dm_pools_no_docker=(
-        $(sudo dmsetup ls | \
+        $(sudo -n dmsetup ls | \
           grep -v "$(get_docker_dm_storage_pool)" | \
           cut -d$'\t' -f1)
     )
     [[ ${#all_dm_pools_no_docker[@]} -ne 0 ]] && \
-        sudo dmsetup remove "${all_dm_pools_no_docker[@]}" || :
+        sudo -n dmsetup remove "${all_dm_pools_no_docker[@]}" || :
     return 0
 }
 
@@ -254,9 +281,9 @@ cleanup_libvirt_vms() {
     # Drop all left over libvirt domains
     for UUID in $(sudo virsh list --all --uuid); do
         echo "Removing domain with UUID: $UUID"
-        sudo -E virsh destroy $UUID || :
+        sudo -nE virsh destroy $UUID || :
         sleep 2
-        sudo -E virsh undefine --remove-all-storage --snapshots-metadata $UUID || :
+        sudo -nE virsh undefine --remove-all-storage --snapshots-metadata $UUID || :
     done
 }
 
@@ -265,13 +292,13 @@ cleanup_libvirt_networks() {
         link
     local failed=false
     # remove lago-type interfaces, that is, 8chars of hash + '-some_tag'
-    links=($( sudo virsh net-list --name | grep -vF default ))
+    links=($( sudo -n virsh net-list --name | grep -vF default ))
     for link in "${links[@]}"; do
         echo "Removing virtual network: $link"
-        sudo virsh net-destroy "$link" \
+        sudo -n virsh net-destroy "$link" \
         || {
             failed=true
-            echo "ERROR: Failed to cleanup virtual network: $link"
+            log ERROR "Failed to cleanup virtual network: $link"
         }
     done
     if $failed; then
@@ -281,28 +308,40 @@ cleanup_libvirt_networks() {
 }
 
 cleanup_libvirt() {
+    if ! can_sudo virsh; then
+        log WARN "Skipping libvirt cleanup - no sudo permissions for virsh"
+        return 0
+    fi
     cleanup_libvirt_vms || :
     cleanup_libvirt_networks || :
-    sudo service libvirtd restart || :
+    sudo -n service libvirtd restart || :
 }
 
 cleanup_docker () {
     local fail=false
 
     if ! [[ -x /bin/docker ]]; then
-        echo "CLEANUP: Skipping Docker cleanup because Docker not installed"
+        log WARN "Skipping Docker cleanup - Docker not installed"
+        return 0
+    fi
+    if ! can_sudo docker; then
+        log WARN "Skipping Docker cleanup - no sudo permissions to use it"
+        return 0
+    fi
+    if ! can_sudo systemctl; then
+        log WARN "Skipping Docker cleanup - no permissions to manage services"
         return 0
     fi
 
-    sudo systemctl start docker || return 1
+    sudo -n systemctl start docker || return 1
     echo "CLEANUP: Stop all running containers and remove unwanted images"
-    sudo docker ps -q -a | xargs -r sudo docker rm -f
+    sudo -n docker ps -q -a | xargs -r sudo -n docker rm -f
     [[ $? -ne 0 ]] && fail=true
-    sudo docker images --format "{{.ID}}" | sort -u | grep -vFxf <( \
-        sudo docker images --format {{.Repository}}:{{.ID}} | \
+    sudo -n docker images --format "{{.ID}}" | sort -u | grep -vFxf <( \
+        sudo -n docker images --format {{.Repository}}:{{.ID}} | \
         grep -E "^docker\.io/(${DOCKER_REPOS_WHITELIST})[:/].*" | \
         cut -d: -f2
-    ) | xargs -r sudo docker rmi -f
+    ) | xargs -r sudo -n docker rmi -f
     [[ $? -ne 0 ]] && fail=true
 
     if ! $fail; then
@@ -321,13 +360,33 @@ rollback_os_repos() {
         [[ -f "$yum_conf" ]] || continue
         [[ -f "${yum_conf}.rbk" ]] || continue
         echo "Rolling back uncommitted OS repo update: $yum_conf"
-        sudo mv --force "${yum_conf}.rbk" "$yum_conf" || failed=true
+        sudo -n mv --force "${yum_conf}.rbk" "$yum_conf" || failed=true
     done
     if $failed; then
         return 1
     else
         return 0
     fi
+}
+
+can_sudo() {
+    local cmd="${1:?}"
+
+    sudo -nl "$cmd" >& /dev/null
+}
+
+log() {
+    local level="${1:?}"
+    shift
+    local message="$*"
+    local prefix
+
+    if [[ ${#FUNCNAME[@]} -gt 1 ]]; then
+        prefix="cleanup_slave[${FUNCNAME[1]}]"
+    else
+        prefix="cleanup_slave"
+    fi
+    echo "$prefix $level: $message"
 }
 
 main() {
@@ -337,7 +396,7 @@ main() {
     echo "###############################################################"
     echo "#    Cleaning up slave                                        #"
     echo "###############################################################"
-    sudo df -h || :
+    sudo -n df -h || df -h || :
     echo "---------------------------------------------------------------"
     rollback_os_repos || failed=true
     cleanup_postgres || failed=true
@@ -351,7 +410,7 @@ main() {
     cleanup_libvirt || failed=true
     cleanup_docker || failed=true
     echo "---------------------------------------------------------------"
-    sudo df -h || :
+    sudo -n df -h || df -h || :
     if $failed; then
         echo "###############################################################"
         echo "#    Slave cleanup done: Some steps FAILED!                   #"

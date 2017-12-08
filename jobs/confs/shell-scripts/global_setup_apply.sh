@@ -13,7 +13,7 @@ apply_os_repos() {
         [[ -f "$yum_conf" ]] || continue
         [[ -f "${yum_conf}.rbk" ]] || continue
         echo "Applying OS repo update for: $yum_conf"
-        sudo mv --force "${yum_conf}.rbk" "${yum_conf}.old"
+        sudo -n mv --force "${yum_conf}.rbk" "${yum_conf}.old"
     done
 }
 

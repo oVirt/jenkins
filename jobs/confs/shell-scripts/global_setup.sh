@@ -11,12 +11,17 @@ main() {
     setup_os_repos
     mk_wokspace_tmp
     extra_packages || failed=true
-    docker_setup || failed=true
-    setup_postfix || failed=true
+
+    if can_sudo systemctl; then
+        docker_setup || failed=true
+        setup_postfix || failed=true
+    else
+        log WARN "Skipping services setup - not enough sudo permissions"
+    fi
 
     # If we failed in any step, abort to avoid breaking the host
     if $failed; then
-        echo "Aborting."
+        log ERROR "Aborting."
         return 1
     fi
     return 0
@@ -27,36 +32,37 @@ setup_os_repos() {
     local arch
     local conf_file
 
+    if ! can_sudo cp; then
+        log WARN "Skipping slave repo setup - no sudo permissions"
+    fi
     if [[ ! -e /etc/os-release ]]; then
-        echo "Cannot find '/etc/os-release'"
-        echo "Skipping slave OS repo configuration".
+        log INFO "Cannot find '/etc/os-release', Skipping slave repo config".
         return
     fi
     source /etc/os-release
     os="${ID:?}${VERSION_ID:?}"
     arch="$(uname -i)"
-    echo "Detected slave OS: $os"
-    echo "Detected slave arch: $arch"
+    log DEBUG "Detected slave OS: $os"
+    log DEBUG "Detected slave arch: $arch"
     if [[ $arch == x86_64 ]]; then
         conf_file="$WORKSPACE/jenkins/data/slave-repos/${os}.conf"
     else
         conf_file="$WORKSPACE/jenkins/data/slave-repos/${os}-${arch}.conf"
     fi
     if [[ ! -e "$conf_file" ]]; then
-        echo "Configuration file: '$conf_file' not found."
-        echo "Skipping slave OS repo configuration".
+        log INFO "File: '$conf_file' not found. Skipping slave OS repo config".
         return
     fi
-    echo "Configuring slave repos with: '$conf_file'"
+    log INFO "Configuring slave repos with: '$conf_file'"
     for yum_conf in /etc{{/yum,}/yum.conf,/dnf/dnf.conf}; do
         [[ -f "$yum_conf" ]] || continue
         if cmp --quiet "$yum_conf" "$conf_file"; then
-            echo "'$yum_conf' does not need to be updated"
+            log INFO: "'$yum_conf' does not need to be updated"
             continue
         fi
-        echo "Placing repo configuration in: '$yum_conf'"
-        sudo cp --backup --suffix=.rbk "$conf_file" "$yum_conf"
-        sudo restorecon "$yum_conf"
+        log INFO: "Placing repo configuration in: '$yum_conf'"
+        sudo -n cp --backup --suffix=.rbk "$conf_file" "$yum_conf"
+        sudo -n restorecon "$yum_conf"
     done
 }
 
@@ -68,33 +74,68 @@ mk_wokspace_tmp() {
 extra_packages() {
     # Add extra packages we need for mock_runner.sh
     if [[ -e '/usr/bin/dnf' ]]; then
-        sudo dnf -y install python3-PyYAML PyYAML python3-pyxdg pyxdg \
-            python-jinja2 python-paramiko
+        verify_packages python3-PyYAML PyYAML python3-pyxdg python2-pyxdg \
+            python-jinja2 python-paramiko createrepo
     else
-        sudo yum -y install python34-PyYAML PyYAML pyxdg \
-            python-jinja2 python2-paramiko
+        verify_packages python34-PyYAML PyYAML python2-pyxdg python-jinja2 \
+            python2-paramiko createrepo
     fi
 }
 
 docker_setup () {
     #Install docker engine and start the service
-    sudo yum -y install docker
-    if ! sudo systemctl start docker; then
-        echo "[DOCKER SETUP] Failed to start docker.service"
+    verify_packages docker
+    if ! sudo -n systemctl start docker; then
+        log ERROR "Failed to start docker.service"
         return 1
     fi
-    echo "[DOCKER SETUP] Docker service started"
+    log INFO "Docker service started"
     return 0
 }
 
 setup_postfix() {
-    if [[ -e '/usr/bin/dnf' ]]; then
-        sudo dnf -y install postfix
-    else
-        sudo yum -y install postfix
+    verify_packages postfix
+    sudo -n systemctl enable postfix
+    sudo -n systemctl start postfix
+}
+
+verify_packages() {
+    local packages=("$@")
+
+    local tool='/usr/bin/dnf'
+    if [[ ! -e "$tool" ]]; then
+        tool=/bin/yum
     fi
-    sudo systemctl enable postfix
-    sudo systemctl start postfix
+    if can_sudo "$tool"; then
+        sudo -n "$tool" install -y "${packages[@]}"
+    fi
+    local failed=0
+    for package in "${packages[@]}"; do
+        "$tool" provides --disablerepo='*' "$package" >& /dev/null && continue
+        log ERROR "package '$package' is not, and could not be, installed"
+        (( ++failed ))
+    done
+    return $failed
+}
+
+can_sudo() {
+    local cmd="${1:?}"
+
+    sudo -nl "$cmd" >& /dev/null
+}
+
+log() {
+    local level="${1:?}"
+    shift
+    local message="$*"
+    local prefix
+
+    if [[ ${#FUNCNAME[@]} -gt 1 ]]; then
+        prefix="global_setup[${FUNCNAME[1]}]"
+    else
+        prefix="global_setup"
+    fi
+    echo "$prefix $level: $message"
 }
 
 main "@$"

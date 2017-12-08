@@ -4,7 +4,7 @@ shopt -s nullglob
 
 # cleanup and setup env
 if [[  "$CLEAN_CACHE" == "true" ]]; then
-    sudo rm -Rf /var/cache/mock
+    sudo -n rm -Rf /var/cache/mock
 fi
 
 failed=false
@@ -49,7 +49,7 @@ for chroot in "${chroots[@]}"; do
         echo "Found mounted dirs inside the chroot $chroot. Trying to umount."
     fi
     for mount in "${mounts[@]}"; do
-        sudo umount --lazy "$mount" \
+        sudo -n umount --lazy "$mount" \
         || {
             echo "ERROR:  Failed to umount $mount."
             failed=true
@@ -63,14 +63,15 @@ if $failed; then
     exit 1
 fi
 
-sudo rm -Rf mock mock-cache exported-artifacts
+rm -Rf mock mock-cache exported-artifacts || \
+    sudo -n rm -Rf mock mock-cache exported-artifacts
 mkdir -p mock exported-artifacts
 chgrp mock mock "$WORKSPACE" "$WORKSPACE"/exported-artifacts
 chmod g+rws mock
 
 # Make sure the cache has a newer timestamp than the config file or it will
 # not be used
-sudo touch /var/cache/mock/*/root_cache/cache.tar.gz 2>/dev/null || :
+sudo -n touch /var/cache/mock/*/root_cache/cache.tar.gz 2>/dev/null || :
 # Make sure yum caches are clean
-sudo yum clean all
+sudo -n yum clean all || :
 exit 0
