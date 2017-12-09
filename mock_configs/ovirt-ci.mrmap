@@ -9,3 +9,4 @@ fcraw:fedora-rawhide-x86_64
 fc24:fedora-24-ppc64le
 fc25:fedora-25-ppc64le
 fc26:fedora-26-ppc64le
+fc26:fedora-26-s390x

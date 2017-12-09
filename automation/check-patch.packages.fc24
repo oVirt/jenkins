@@ -1,7 +1,5 @@
-jenkins-job-builder
 python-pip
 python-setuptools
-python-ordereddict
 python-requests
 pytest
 python-mock

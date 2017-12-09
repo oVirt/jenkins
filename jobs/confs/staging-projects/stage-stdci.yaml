@@ -9,7 +9,11 @@
       - dummy-1:
           branch: master
     distro:
-      - el7
+      - el7:
+          arch: x86_64
+      - fc26:
+          arch: s390x
+          node-filter: s390x
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
