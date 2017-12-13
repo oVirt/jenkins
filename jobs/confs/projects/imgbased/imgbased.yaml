@@ -24,16 +24,16 @@
     stage: build-artifacts
     distro:
       - el7
-      - fc25
+      - fc27
     exclude:
       - version: 4.2
-        distro: fc25
+        distro: fc27
       - version: 4.1
-        distro: fc25
+        distro: fc27
       - version: 4.0
-        distro: fc25
+        distro: fc27
       - version: 3.6
-        distro: fc25
+        distro: fc27
     trigger: 'on-change'
     arch:
       - x86_64
@@ -59,16 +59,16 @@
       - check-merged
     distro:
       - el7
-      - fc25
+      - fc27
     exclude:
       - version: 4.2
-        distro: fc25
+        distro: fc27
       - version: 4.1
-        distro: fc25
+        distro: fc27
       - version: 4.0
-        distro: fc25
+        distro: fc27
       - version: 3.6
-        distro: fc25
+        distro: fc27
     trigger: 'on-change'
     arch:
       - x86_64
