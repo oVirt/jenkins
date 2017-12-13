@@ -4,11 +4,12 @@
 import pytest
 from scripts.usrc import (
     get_upstream_sources, update_upstream_sources,
-    commit_upstream_sources_update, GitProcessError
+    commit_upstream_sources_update, GitProcessError, GitUpstreamSource
 )
 from textwrap import dedent
 from hashlib import md5
 from subprocess import CalledProcessError
+from six import iteritems
 
 
 class TestGitProcessError(object):
@@ -54,6 +55,72 @@ def downstream(gitrepo, upstream, git_last_sha):
     )
 
 
+class TestGitUpstreamSource(object):
+    @pytest.mark.parametrize('struct,expected', [
+        (
+            dict(url='some/url', branch='br1', commit='some_sha'),
+            dict(url='some/url', branch='br1', commit='some_sha'),
+        )
+    ])
+    def test_from_yaml_struct(self, struct, expected):
+        out = GitUpstreamSource.from_yaml_struct(struct)
+        for exp_attr, exp_val in iteritems(expected):
+            assert getattr(out, exp_attr) == exp_val
+
+    @pytest.mark.parametrize('init_args,expected', [
+        (
+            dict(url='some/url', branch='br1', commit='some_sha'),
+            dict(url='some/url', branch='br1', commit='some_sha'),
+        )
+    ])
+    def test_to_yaml_struct(self, init_args, expected):
+        gus = GitUpstreamSource(**init_args)
+        out = gus.to_yaml_struct()
+        assert out == expected
+
+    def test_get(self, upstream, downstream, git_last_sha):
+        gus = GitUpstreamSource(
+            str(upstream), 'master', git_last_sha(upstream)
+        )
+        assert not (downstream / 'upstream_file.txt').exists()
+        gus.get(str(downstream))
+        assert (downstream / 'upstream_file.txt').isfile()
+        assert (downstream / 'upstream_file.txt').read() == 'Upstream content'
+        assert (downstream / 'overriden_file.txt').isfile()
+        assert (downstream / 'overriden_file.txt').read() == \
+            'Overridden content'
+
+    def test_update(self, gitrepo, upstream, git_last_sha):
+        url, branch, commit = str(upstream), 'master', git_last_sha(upstream)
+        gus = GitUpstreamSource(url, branch, commit)
+        gus_id = id(gus)
+        updated = gus.updated()
+        assert id(gus) == gus_id
+        assert gus.url == url
+        assert gus.branch == branch
+        assert gus.commit == commit
+        assert updated == gus
+        assert id(updated) == id(gus)
+        gitrepo('upstream', {
+            'msg': 'New US commit',
+            'files': {
+                'upstream_file.txt': 'Updated US content',
+                'overriden_file.txt': 'Updated overridden content',
+            }
+        })
+        new_commit = git_last_sha(upstream)
+        updated = gus.updated()
+        assert id(gus) == gus_id
+        assert gus.url == url
+        assert gus.branch == branch
+        assert gus.commit == commit
+        assert updated != gus
+        assert id(updated) != id(gus)
+        assert updated.url == url
+        assert updated.branch == branch
+        assert updated.commit == new_commit
+
+
 def test_get_upstream_sources(monkeypatch, downstream):
     monkeypatch.chdir(downstream)
     assert not (downstream / 'upstream_file.txt').exists()
@@ -89,7 +156,8 @@ def test_update_upstream_sources(
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
     assert git_status(downstream) == ''
-    update_upstream_sources()
+    mod_list = update_upstream_sources()
+    assert len(list(mod_list)) == 1
     assert not (downstream / 'upstream_file.txt').exists()
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
@@ -112,7 +180,8 @@ def test_no_update_upstream_sources(
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
     assert git_status(downstream) == ''
-    update_upstream_sources()
+    mod_list = update_upstream_sources()
+    assert len(list(mod_list)) == 0
     assert not (downstream / 'upstream_file.txt').exists()
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'

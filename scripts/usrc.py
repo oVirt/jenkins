@@ -15,8 +15,9 @@ from time import time
 from socket import gethostbyname, gethostname
 from subprocess import Popen, CalledProcessError, STDOUT, PIPE
 from six import string_types, iteritems
+from six.moves import zip
 from collections import Iterable, Mapping
-from itertools import chain
+from itertools import chain, tee
 from traceback import format_exception
 
 
@@ -143,28 +144,147 @@ def update_main(args):
         commit_upstream_sources_update()
 
 
+class GitUpstreamSource(object):
+    """A class representing Git-based upstream source dependencies
+    """
+    def __init__(self, url, branch, commit):
+        self.url, self.branch, self.commit = url, branch, commit
+        cache_dir_name = sha1(url.encode('utf-8')).hexdigest()
+        cache_dir = os.path.join(xdg_cache_home, CACHE_NAME, cache_dir_name)
+        self._cache_dir = cache_dir
+        self._cache_git_dir = os.path.join(cache_dir, '.git')
+
+    def _cache_git(self, *args):
+        return git('--git-dir=' + self._cache_git_dir, *args)
+
+    def _init_cache(self):
+        git('init', self._cache_dir)
+
+    @classmethod
+    def from_yaml_struct(cls, struct):
+        """Initialise instance from a structure read from yaml
+
+        :rtype: GitUpstreamSource
+        """
+        return cls(struct['url'], struct['branch'], struct['commit'])
+
+    def to_yaml_struct(self):
+        """Return a structure representing this source that is safe for saving
+        to YAML
+
+        :rtype: dict
+        """
+        return dict(url=self.url, branch=self.branch, commit=self.commit)
+
+    def get(self, dst_path):
+        """Get the upstream source into the given path
+
+        :param str dst_path: The path to get source into
+        """
+        # TODO: check if git_commit is already available locally and skip
+        #       fetching
+        self._fetch()
+        self._cache_git(
+            '--work-tree=' + dst_path,
+            'checkout', self.commit, '-f',
+        )
+
+    def updated(self):
+        """Look for the most up-to-date commit of the upstream source
+
+        :returns: A new GitUpstreamSource instance representing the updated
+            source. If self is already pointing to the most updated commit,
+            returns self
+        :rtype: GitUpstreamSource
+        """
+        self._fetch()
+        latest_commit = self._cache_git(
+            'rev-parse', 'refs/remotes/origin/{0}'.format(self.branch)
+        ).strip()
+        if not isinstance(latest_commit, str):
+            # We normalize unicode output into an Ascii string because we know
+            # git SHAs are only hex numbers and therefore only contain Ascii
+            # characters.
+            # We need to do this so we don't get strange unicode flags in YAML
+            # we produce form Python2
+            latest_commit = latest_commit.encode('ascii', 'ignore')
+        if latest_commit == self.commit:
+            return self
+        logger.info(
+            "Latest commit updated for branch '%s' in repo '%s'",
+            self.branch, self.url
+        )
+        return self.__class__(self.url, self.branch, latest_commit)
+
+    def _fetch(self):
+        """Fetch the remote branch into the local cache
+        """
+        self._init_cache()
+        self._cache_git(
+            'fetch', '--tags', self.url,
+            '+{0}:refs/remotes/origin/{0}'.format(self.branch)
+        )
+
+
+def load_upstream_sources():
+    """Load upstream source objects from configuration file
+
+    :rtype: tuple
+    """
+    sources_doc = read_yaml_to_obj(UPSTREAM_SOURCES_PATH)
+    if not sources_doc:
+        return tuple()
+
+    return tuple(
+        GitUpstreamSource.from_yaml_struct(obj)
+        for obj in sources_doc.get('git', [])
+    )
+
+
+def save_upstream_sources(upstream_sources):
+    """Save upstream objects to YAML
+
+    :param Iterable upstream_sources: A collection of upstream source objects
+    """
+    sources_doc = dict(
+        git=[usrc.to_yaml_struct() for usrc in upstream_sources]
+    )
+    with open(UPSTREAM_SOURCES_PATH, 'w') as stream:
+        yaml.dump(sources_doc, stream, default_flow_style=False)
+
+
 def get_upstream_sources():
     """Download the US sources listed in upstream_sources.yaml
     """
+    upstream_sources = load_upstream_sources()
     dst_path = os.getcwd()
-    sources_doc = read_yaml_to_obj(UPSTREAM_SOURCES_PATH)
-    if not sources_doc:
-        return
 
-    upstream_source_collector(sources_doc.get('git', []), dst_path)
+    for usrc in upstream_sources:
+        usrc.get(dst_path)
+
+    # the below code will 'prefer' ds changes over us ones
+    git(
+        '--git-dir=' + os.path.join(dst_path, '.git'),
+        '--work-tree=' + dst_path,
+        "reset", "--hard",
+    )
 
 
 def update_upstream_sources():
-    sources_doc = read_yaml_to_obj(UPSTREAM_SOURCES_PATH)
-    if not sources_doc:
-        return
+    """Update the commit hashes for US sources listed in upstream_sources.yaml
+    """
+    upstream_sources = load_upstream_sources()
 
-    has_changed = update_git_sha_in_yaml(sources_doc.get('git', []))
+    updated_sources, us2 = tee(usrc.updated() for usrc in upstream_sources)
+    modified_sources, ms2 = tee(
+        new for new, old in zip(us2, upstream_sources) if new != old
+    )
+    has_changed = next((True for ms in ms2), False)
     if not has_changed:
-        return
+        return modified_sources
 
-    with open(UPSTREAM_SOURCES_PATH, 'w') as stream:
-        yaml.dump(sources_doc, stream, default_flow_style=False)
+    save_upstream_sources(updated_sources)
+    return modified_sources
 
 
 def commit_upstream_sources_update():
@@ -199,109 +319,6 @@ def read_yaml_to_obj(file_name):
         logger.info('File {file_name} cannot be opened or is not a'
                     ' valid yaml'.format(file_name=file_name))
         return None
-
-
-def upstream_source_collector(git_section, dst_path):
-    """
-    Processing the git section in the upstream_sources.yaml
-
-    :param list git_section: list of us git repos
-    :param string dst_path:  path to project
-
-    Go over all repos in git section and copy them on top of the current
-    project. In the end, just reset all modified files so they'll go back to be
-    their current project's version
-    """
-    for repo in git_section:
-        work_dir_name = sha1(repo['url'].encode('utf-8')).hexdigest()
-        work_dir = os.path.join(xdg_cache_home, CACHE_NAME, work_dir_name)
-        clone_repo(repo['url'], repo['commit'], repo['branch'], work_dir)
-        git(
-            '--git-dir=' + os.path.join(work_dir, '.git'),
-            '--work-tree=' + dst_path,
-            'checkout', repo['commit'], '-f',
-        )
-
-    # the below code will 'prefer' ds changes over us ones
-    git(
-        '--git-dir=' + os.path.join(dst_path, '.git'),
-        '--work-tree=' + dst_path,
-        "reset", "--hard",
-    )
-
-
-def clone_repo(git_url, git_commit, branch, work_dir):
-    """
-    Will clone a repo to the relevant folder
-
-    :param string git_url:    git repo url
-    :param string git_commit: git SHA1 to checkout to
-    :param string branch:     git branch to fetch commit from
-    """
-    git('init', work_dir)
-    # TODO: check if git_commit is already available locally and skip fetching
-    git(
-        '--git-dir=' + os.path.join(work_dir, '.git'),
-        'fetch', '--tags', git_url, branch,
-    )
-
-
-def update_git_sha_in_yaml(git_section):
-    """
-    update upstream sources yaml with newer commits SHA1
-
-    :param list git_section: list of git upstream repos, branchs and SHA1s
-
-    :rtype: boolean
-    :returns: whether the yaml doc has been updates or not
-    """
-    has_changed = False
-
-    for repo in git_section:
-        latest_commit = get_latest_commit(repo['branch'], repo['url'])
-        if not latest_commit:
-            continue
-        if latest_commit != repo['commit']:
-            logger.info(
-                "Latest commit updated for branch '%s' in repo '%s'",
-                repo['branch'], repo['url']
-            )
-            has_changed = True
-            repo['commit'] = latest_commit
-
-    return has_changed
-
-
-def get_latest_commit(branch, git_url):
-    """
-    Get latest commit of a branch from remote repository
-
-    :param string branch:  git branch
-    :param string git_url: git repository url
-
-    :rtype: string
-    :returns: last commit of a branch or None if it couldn't be found
-    """
-    # TODO: Fetch commit into the cached upstream repo instead of just using
-    # ls-remote
-    branches_and_refs = git('ls-remote', git_url, branch).splitlines()
-    if len(branches_and_refs) >= 1:
-        sha = branches_and_refs[0].split()[0]
-        if not isinstance(sha, str):
-            # We normalize unicode output into an Ascii string because we know
-            # git SHAs are only hex numbers and therefore only contain Ascii
-            # characters.
-            # We need to do this so we don't get strange unicode flags in YAML
-            # we produce form Python2
-            sha = sha.encode('ascii', 'ignore')
-        logger.debug(
-            "Got latest commit '%s' for branch '%s' in repo '%s'",
-            sha, branch, git_url
-        )
-        return sha
-
-    logger.warn("Could not find latest commit for branch: {0}".format(branch))
-    return None
 
 
 def generate_gerrit_message(message, checksum):
