@@ -19,6 +19,7 @@ from six.moves import zip
 from collections import Iterable, Mapping
 from itertools import chain, tee
 from traceback import format_exception
+from textwrap import dedent
 
 
 UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
@@ -139,9 +140,9 @@ def get_main(args):
 
 
 def update_main(args):
-    update_upstream_sources()
+    updates = update_upstream_sources()
     if args.commit:
-        commit_upstream_sources_update()
+        commit_upstream_sources_update(updates)
 
 
 class GitUpstreamSource(object):
@@ -225,6 +226,47 @@ class GitUpstreamSource(object):
             '+{0}:refs/remotes/origin/{0}'.format(self.branch)
         )
 
+    @property
+    def commit_title(self):
+        """Return the title of the latest commit of the upstream source
+
+        :rtype: str
+        """
+        self._fetch()
+        ttl = self._cache_git('log', '-1', '--pretty=format:%s', self.commit)
+        if not isinstance(ttl, str):
+            ttl = ttl.encode('utf-8', 'ignore')
+        return dedent(ttl)
+
+    @property
+    def commit_details(self):
+        """Return a big string with details about the latest commit of the
+        upstream source
+
+        :rtype: str
+        """
+        self._fetch()
+        git_format = dedent(
+            '''
+            Project: {0}
+            Branch:  {1}
+            Commit:  %H
+            Author:  %an
+            Date:    %ad
+
+            %w(0,4,4)%s
+
+            %w(0,4,4)%b
+            '''
+        ).strip().format(self.url, self.branch)
+        msg = self._cache_git(
+            'log', '-1', '--date=rfc',
+            '--pretty=format:' + git_format, self.commit
+        )
+        if not isinstance(msg, str):
+            msg = msg.encode('utf-8', 'ignore')
+        return dedent(msg)
+
 
 def load_upstream_sources():
     """Load upstream source objects from configuration file
@@ -287,9 +329,14 @@ def update_upstream_sources():
     return modified_sources
 
 
-def commit_upstream_sources_update():
-    status = git('status', '--porcelain', UPSTREAM_SOURCES_PATH).rstrip()
-    if not status.endswith(' ' + UPSTREAM_SOURCES_PATH):
+def commit_upstream_sources_update(updates):
+    """Commit updates made to the upstream_sources.yaml file
+
+    :param Iterable updates: Iterator over upstream source objects representing
+                             sources that were updated
+    """
+    updates = list(updates)
+    if not updates:
         # Skip committing if upstream_sources.yaml not changed
         return
     if check_if_branch_exists('commit_branch'):
@@ -298,8 +345,36 @@ def commit_upstream_sources_update():
     with open(UPSTREAM_SOURCES_PATH, 'r') as stream:
         checksum = md5(stream.read().encode('utf-8')).hexdigest()
     git('add', UPSTREAM_SOURCES_PATH)
+    if len(updates) == 1:
+        commit_message = dedent(
+            '''
+            Updated US source to: {commit_hash:.7} {commit_title}
 
-    commit_message = generate_gerrit_message('Changed commit SHA1', checksum)
+            Updated upstream source commit.
+            Commit details follow:
+
+            {commit_details}
+            '''
+        ).lstrip().format(
+            commit_hash=updates[0].commit,
+            commit_title=updates[0].commit_title,
+            commit_details=updates[0].commit_details,
+        )
+    else:
+        commit_message = dedent(
+            '''
+            Updated {count} upstream sources
+
+            Updated upstream source commits.
+            Updated commit details follow:
+
+            {commit_details}
+            '''
+        ).lstrip().format(
+            count=len(updates),
+            commit_details="\n".join(u.commit_details for u in updates),
+        )
+    commit_message = generate_gerrit_message(commit_message, checksum)
     git('commit', '-m', commit_message)
 
 
@@ -337,7 +412,7 @@ def generate_gerrit_message(message, checksum):
     :rtype: string
     :returns: commit message with change ID and checksum
     """
-    message_template = '{message}\n\nx-md5: {md5}\n\n\nChange-Id: I{change_id}'
+    message_template = '{message}\nx-md5: {md5}\nChange-Id: I{change_id}'
 
     with open('change_id_data', 'w') as cid:
         cid.write("tree {tree}".format(tree=git('write-tree')))

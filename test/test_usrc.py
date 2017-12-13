@@ -22,7 +22,13 @@ def upstream(gitrepo):
     return gitrepo(
         'upstream',
         {
-            'msg': 'First US commit',
+            'msg': dedent(
+                '''
+                First US commit
+
+                Some detailed description about the first upstream commit
+                '''
+            ).lstrip(),
             'files': {
                 'upstream_file.txt': 'Upstream content',
                 'overriden_file.txt': 'Overridden content',
@@ -120,6 +126,41 @@ class TestGitUpstreamSource(object):
         assert updated.branch == branch
         assert updated.commit == new_commit
 
+    def test_commit_details(self, upstream, git_last_sha, git_at):
+        url, branch, commit = str(upstream), 'master', git_last_sha(upstream)
+        git = git_at(upstream)
+        us_date = git('log', '-1', '--pretty=format:%ad', '--date=rfc').strip()
+        us_author = git('log', '-1', '--pretty=format:%an').strip()
+        expected = dedent(
+            '''
+            Project: {project}
+            Branch:  {branch}
+            Commit:  {sha}
+            Author:  {author}
+            Date:    {date}
+
+                First US commit
+
+                Some detailed description about the first upstream commit
+            '''
+        ).lstrip().format(
+            project=str(upstream),
+            branch='master',
+            sha=commit,
+            author=us_author,
+            date=us_date,
+        )
+        gus = GitUpstreamSource(url, branch, commit)
+        out = gus.commit_details
+        assert out == expected
+
+    def test_commit_title(self, upstream, git_last_sha, git_at):
+        url, branch, commit = str(upstream), 'master', git_last_sha(upstream)
+        expected = "First US commit"
+        gus = GitUpstreamSource(url, branch, commit)
+        out = gus.commit_title
+        assert out == expected
+
 
 def test_get_upstream_sources(monkeypatch, downstream):
     monkeypatch.chdir(downstream)
@@ -139,7 +180,16 @@ def updated_upstream(gitrepo, upstream, downstream):
     # they get created before this fixture
     # Add an upstream commit
     return gitrepo('upstream', {
-        'msg': 'New US commit',
+        'msg': dedent(
+            '''
+            New US commit title
+
+            New upstream commit message body with a couple of lines of detailed
+            change description text.
+
+            and_some: header
+            '''
+        ).lstrip(),
         'files': {
             'upstream_file.txt': 'Updated US content',
             'overriden_file.txt': 'Updated overridden content',
@@ -196,22 +246,61 @@ def test_no_update_upstream_sources(
 
 
 def test_commit_us_src_update(monkeypatch, updated_upstream, downstream, git):
+    monkeypatch.chdir(updated_upstream)
+    us_sha = git('log', '-1', '--pretty=format:%H').strip()
+    us_date = git('log', '-1', '--pretty=format:%ad', '--date=rfc').strip()
+    us_author = git('log', '-1', '--pretty=format:%an').strip()
     monkeypatch.chdir(downstream)
-    update_upstream_sources()
+    updates = update_upstream_sources()
     us_yaml = downstream / 'automation' / 'upstream_sources.yaml'
     us_yaml_md5 = md5(us_yaml.read().encode('utf-8')).hexdigest()
-    commit_upstream_sources_update()
+    commit_upstream_sources_update(updates)
     log = git('log', '--pretty=format:%s').splitlines()
     assert len(log) == 2
-    assert log == ['Changed commit SHA1', 'First DS commit']
-    log = git('log', '-1', '--pretty=format:%b').splitlines()
-    md5_header = next((line for line in log if line.startswith('x-md5: ')), '')
-    assert md5_header == 'x-md5: ' + us_yaml_md5
+    assert log == [
+        'Updated US source to: {0:.7} New US commit title'.format(us_sha),
+        'First DS commit'
+    ]
+    log = git('log', '-1', '--pretty=format:%b')
+    chid_hdr = next(
+        (ln for ln in log.splitlines() if ln.startswith('Change-Id: ')), ''
+    )
+    _, chid = chid_hdr.split(': ', 1)
+    assert log == dedent(
+        '''
+        Updated upstream source commit.
+        Commit details follow:
+
+        Project: {project}
+        Branch:  {branch}
+        Commit:  {sha}
+        Author:  {author}
+        Date:    {date}
+
+            New US commit title
+
+            New upstream commit message body with a couple of lines of detailed
+            change description text.
+
+            and_some: header
+
+        x-md5: {xmd5}
+        Change-Id: {chid}
+        '''
+    ).lstrip().format(
+        project=str(updated_upstream),
+        branch='master',
+        sha=us_sha,
+        author=us_author,
+        date=us_date,
+        xmd5=us_yaml_md5,
+        chid=chid,
+    )
 
 
 def test_commit_us_src_no_update(monkeypatch, downstream, git):
     monkeypatch.chdir(downstream)
-    commit_upstream_sources_update()
+    commit_upstream_sources_update([])
     log = git('log', '--pretty=format:%s').splitlines()
     assert len(log) == 1
     assert log == ['First DS commit']
