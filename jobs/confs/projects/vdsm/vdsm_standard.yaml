@@ -110,18 +110,27 @@
 
 - project:
     <<: *vdsm_standard_common
-    name: vdsm_build-artifacts_ppc64le
+    name: vdsm_build-artifacts_altarch
     stage: build-artifacts
     version:
       - master:
           branch: master
       - 4.1:
           branch: ovirt-4.1
-    distro: el7
-    arch: ppc64le
-    node-filter: ppc64le
+    distro:
+      - el7
+      - fc27
+    arch:
+      - ppc64le:
+          node-filter: ppc64le
+      - s390x:
+          node-filter: s390x
+    exclude:
+      - { version: 4.1, arch: s390x, }
+      - {               arch: s390x,   distro: el7, }
+      - {               arch: ppc64le, distro: fc27, }
     jobs:
-      - '{project}_{version}_build-artifacts-{distro}-ppc64le'
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
     <<: *vdsm_standard_common
