@@ -5,10 +5,10 @@
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: ovirt-engine-dashboard-1.2
       - 4.1:
           branch: ovirt-engine-dashboard-1.1
-      - 4.0:
-          branch: ovirt-engine-dashboard-1.0
     stage:
       - check-merged
       - check-patch
@@ -18,19 +18,15 @@
         - fc24
         - fc25
         - fc26
+        - fc27
     exclude:
-      - version: 4.0
-        distro: fc24
-      - version: 4.0
-        distro: fc25
-      - version: 4.0
-        distro: fc26
-      - version: 4.1
-        distro: fc25
-      - version: 4.1
-        distro: fc26
-      - version: master
-        distro: fc24
+      - { version: 4.1, distro: fc25 }
+      - { version: 4.1, distro: fc26 }
+      - { version: 4.1, distro: fc27 }
+      - { version: 4.2, distro: fc24 }
+      - { version: 4.2, distro: fc25 }
+      - { version: 4.2, distro: fc26 }
+      - { version: master, distro: fc24 }
 
     arch: x86_64
     jobs:
@@ -43,4 +39,3 @@
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
       - '{project}_{version}_{stage}-on-demand-{distro}-{arch}'
-
