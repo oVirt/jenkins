@@ -60,7 +60,7 @@
 
 - project:
     <<: *base-commons
-    name: ovirt-host-ppc64le_build-artifacts
+    name: ovirt-host-altarch_build-artifacts
     project: ovirt-host
     version:
       - master:
@@ -69,8 +69,16 @@
           branch: ovirt-4.1
     distro:
       - el7
+      - fc27
     stage: build-artifacts
-    arch: ppc64le
-    node-filter: ppc64le
+    arch:
+      - ppc64le:
+          node-filter: ppc64le
+      - s390x:
+          node-filter: s390x
+    exclude:
+      - { version: 4.1, arch: s390x, }
+      - {               arch: s390x,   distro: el7, }
+      - {               arch: ppc64le, distro: fc27, }
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
