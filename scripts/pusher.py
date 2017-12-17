@@ -14,6 +14,7 @@ from copy import copy
 from collections import namedtuple, Iterable, Mapping
 from itertools import chain
 from six import iteritems, string_types
+from six.moves.urllib.parse import urlparse
 from traceback import format_exception
 from subprocess import Popen, CalledProcessError, STDOUT, PIPE
 
@@ -25,7 +26,7 @@ DEFAULT_PUSH_MAP = os.path.join(
     'data', 'git-push-url-map.yaml'
 )
 
-PushDetails = namedtuple('Push_details', 'push_url host_key')
+PushDetails = namedtuple('Push_details', 'push_url host_key merge_flags')
 
 
 class PushMapError(Exception):
@@ -48,8 +49,11 @@ def main():
     args = parse_args()
     try:
         setup_console_logging(args, logger)
-        args.handler(args)
-        return 0
+        retval = args.handler(args)
+        if retval is None:
+            return 0
+        else:
+            return retval
     except IOError as e:
         logger.exception('%s: %s', e.strerror, e.filename)
     except Exception as e:
@@ -88,6 +92,77 @@ def parse_args():
     push_parser.add_argument(
         '--if-not-exists', action='store_true',
         help='Avoid pushing if similar commit was already pushed',
+    )
+    merge_parser = subparsers.add_parser(
+        'merge', help='Merge specified commit in $CWD',
+        description='Merge the local commit into the appropriate remote SCM',
+    )
+    merge_parser.set_defaults(handler=merge_main)
+    merge_parser.add_argument(
+        'commit', help='A ref of the commit to merge. Defaults to HEAD',
+        nargs='?', default='HEAD',
+    )
+    merge_parser.add_argument(
+        '--push-map', default=DEFAULT_PUSH_MAP,
+        help=(
+            'Path to a push map YAML file that specifies details about how'
+            ' to connect to the remote SCM servers and merge changes.'
+        ),
+    )
+    merge_mxg = merge_parser.add_mutually_exclusive_group()
+    merge_mxg.add_argument(
+        '--check-header', nargs=1, default='automerge',
+        help=(
+            'Set the name of the commit message header to check in order to'
+            ' confirm running a merge. If option is not specified, The'
+            ' "automerge" header will be checked.'
+        )
+    )
+    merge_mxg.add_argument(
+        '--no-check-header', const=None, action='store_const',
+        dest='check_header',
+        help='Skip commit message header check.',
+    )
+    get_header_parser = subparsers.add_parser(
+        'get_header', help='Get commit message header value',
+        description=(
+            'Get commit message header value for a specified commit in $PWD'
+        ),
+    )
+    get_header_parser.set_defaults(handler=get_header_main)
+    get_header_parser.add_argument(
+        'header', help='The header to get a value for'
+    )
+    get_header_parser.add_argument(
+        'commit', help=(
+            'A ref of the commit to get value from. Defaults to HEAD'
+        ),
+        nargs='?', default='HEAD',
+    )
+    get_header_parser.add_argument(
+        '--default-value', default=None,
+        help=(
+            'A default value to return if the header was not specified in the'
+            ' commit. If unspecified, the command will raise an error if the'
+            ' header is missing'
+        )
+    )
+    is_header_true_parser = subparsers.add_parser(
+        'is_header_true', help='Check commit message header for truth',
+        description=(
+            'Check if commit message header value for a specified commit in '
+            '$PWD is set to "true" or "on"'
+        ),
+    )
+    is_header_true_parser.set_defaults(handler=is_header_true_main)
+    is_header_true_parser.add_argument(
+        'header', help='The header to check'
+    )
+    is_header_true_parser.add_argument(
+        'commit', help=(
+            'A ref of the commit to get header from. Defaults to HEAD'
+        ),
+        nargs='?', default='HEAD',
     )
     return parser.parse_args()
 
@@ -159,6 +234,25 @@ def push_main(args):
     )
 
 
+def merge_main(args):
+    merge_to_scm(
+        push_map=args.push_map,
+        commit=args.commit,
+        check_header=args.check_header,
+    )
+
+
+def get_header_main(args):
+    print(get_patch_header(args.header, args.default_value, args.commit))
+
+
+def is_header_true_main(args):
+    if patch_header_is_true(args.header, args.commit):
+        return 0
+    else:
+        return 100
+
+
 def push_to_scm(dst_branch, push_map, if_not_exists=True, unless_hash=None):
     """Push commits to the specified remote branch
 
@@ -190,6 +284,34 @@ def push_to_scm(dst_branch, push_map, if_not_exists=True, unless_hash=None):
     git('push', push_details.push_url, dest_to_push_to)
 
 
+def merge_to_scm(push_map, commit='HEAD', check_header='automerge'):
+    """Make a remote SCM merge a given commit
+
+    :param str push_map:     The path to a file containing information about
+                             remote SCM servers that is needed to push changes
+                             to them.
+    :param str commit:       (Optional) A ref to the commit to merge. The
+                             default is HEAD
+    :param str check_header: (Optional) The name of a commit header that should
+                             be set to 'true' or 'yes' in order for the merge
+                             to be attempted. Set to 'automerge' be default,
+                             cat be set to None to skip header check.
+    """
+    if check_header is not None:
+        if not patch_header_is_true(check_header, commit):
+            return
+    commit_hash = git_rev_parse(commit)
+    logger.info("Will merge commit: %s", commit_hash)
+    push_details = read_push_details(push_map)
+    logger.info("Would merge to: '%s'", push_details.push_url)
+    if push_details.host_key:
+        add_key_to_known_hosts(push_details.host_key)
+    gerrit_cli(
+        push_details, 'review', commit_hash, '--submit',
+        *push_details.merge_flags
+    )
+
+
 def read_push_details(push_map):
     """Read information about how to push commits to remote SCM server
 
@@ -201,7 +323,7 @@ def read_push_details(push_map):
               made to the repo at $PWD
     """
     try:
-        with open(push_map, 'r') as stream:
+        with open(os.path.expanduser(push_map), 'r') as stream:
             push_map_data = yaml.safe_load(stream)
     except IOError as e:
         raise PushMapIOError("Failed to read push map: '{0}'".format(e))
@@ -288,8 +410,9 @@ def get_push_details(push_map_data, remote_url):
 
         push_details = parse_push_details_struct(push_details_struct)
 
-        return PushDetails(match_obj.expand(push_details.push_url),
-                           push_details.host_key)
+        return PushDetails(
+            match_obj.expand(push_details.push_url), *push_details[1:]
+        )
 
     # If there was no match between remote and push,exit
     raise PushMapMatchError((
@@ -316,8 +439,20 @@ def parse_push_details_struct(push_details_struct):
         )
 
     host_key = push_details_struct.get('host_key', '')
+    merge_flags = push_details_struct.get('merge_flags', [])
+    if isinstance(merge_flags, Mapping):
+        merge_flags = sorted([
+            '{0}={1}'.format(k, v) for k, v in iteritems(merge_flags)
+        ])
+    elif isinstance(merge_flags, string_types):
+        merge_flags = merge_flags.split()
+    elif isinstance(merge_flags, Iterable):
+        merge_flags = \
+            list(chain.from_iterable(str(x).split() for x in merge_flags))
+    else:
+        merge_flags = str(merge_flags).split()
 
-    return PushDetails(push_details_struct['push_url'], host_key)
+    return PushDetails(push_details_struct['push_url'], host_key, merge_flags)
 
 
 def check_if_similar_patch_pushed(push_details):
@@ -336,16 +471,36 @@ def check_if_similar_patch_pushed(push_details):
     :returns: True if patch exists and false if not
     """
     checksum = get_patch_header('x-md5')
-    url = push_details.push_url
-    url_list = url.split('/')
-    server_url = url_list[2].split(':')[0]
-    project = "/".join(url_list[3:]).replace('.git', '')
+    project = \
+        re.sub('^/?(.*)(.git)?$', '\\1', urlparse(push_details.push_url).path)
     project_param = "project:{project}".format(project=project)
     msg_param = 'message:{checksum}'.format(checksum=checksum)
-    cmd_list = ['ssh', '-p', '29418', server_url, 'gerrit', 'query',
-                '--format=JSON', 'status:open', project_param, msg_param]
-    logger.debug("executing: %s" % ' '.join(cmd_list))
+    output = gerrit_cli(
+        push_details,
+        'query', '--format=JSON', 'status:open', project_param, msg_param
+    )
+    return (
+        output
+        and json.loads(output.splitlines()[-1]).get('rowCount', 0) >= 1
+    )
 
+
+def gerrit_cli(push_details, *cli_args):
+    """
+    Run Gerrit CLI commands
+
+    :param PushDetails push_details: Details about the Gerrit host to talk to
+    :param list cli_args:            Arguments to the Gerrit CLI
+
+    :rtype: str
+    :returns: The output of the invoked command. A CalledProcessError exception
+              will be raised if the command fails
+    """
+    server, _, port = urlparse(push_details.push_url).netloc.rpartition(':')
+    if not port:
+        port = '29418'
+    cmd_list = ('ssh', '-p', port, server, 'gerrit') + cli_args
+    logger.debug("executing: %s" % ' '.join(cmd_list))
     process = Popen(cmd_list, stdout=PIPE, stderr=PIPE)
     output, error = process.communicate()
     output = output.decode('utf-8')
@@ -355,26 +510,27 @@ def check_if_similar_patch_pushed(push_details):
     )},)
     if retcode:
         raise CalledProcessError(retcode, cmd_list)
-
-    return (
-        output
-        and json.loads(output.splitlines()[-1]).get('rowCount', 0) >= 1
-    )
+    return output
 
 
-def get_patch_header(header, default=None):
-    """Get the value of a given header in the topmost patch in $PWD
+def get_patch_header(header, default=None, commit='HEAD'):
+    """Get the value of a given header in the given commit in $PWD
 
     :param str header:  The name of the header which value we want to get
     :param str default: A default value to return if the give header is not
-                        found. If this is not set, an KeyError excepction will
+                        found. If this is not set, an KeyError exception will
                         be thrown instead of returning a value.
+    :param str commit:  (Optional) The commit to look for headers in. Defaults
+                        to HEAD.
 
     :rtype: str
     :returns: The value of the given header if specified in the commit message
               of the HEAD commit in $CWD
     """
-    msg_lines = git('log', '-1', '--pretty=format:%b').splitlines()
+    try:
+        msg_lines = git('log', '-1', '--pretty=format:%b', commit).splitlines()
+    except GitProcessError:
+        raise KeyError("Commit ref '{0}' not found".format(commit))
     header_value = next((
         line[len(header) + 2:] for line in msg_lines
         if line.startswith(header + ': ')
@@ -382,11 +538,26 @@ def get_patch_header(header, default=None):
     if header_value is None:
         if default is None:
             raise KeyError(
-                "Header: '{0}' not found in HEAD commit".format(header)
+                "Header: '{0}' not found in ref: '{1}'".format(header, commit)
             )
         else:
             return default
     return header_value
+
+
+def patch_header_is_true(header, commit='HEAD'):
+    """Check if given commit message header of given commit is set to true
+
+    :param str header:  The name of the header which value we want to check
+    :param str commit:  (Optional) The commit to look for headers in. Defaults
+                        to HEAD.
+    :rtype: bool
+    :returns: True if the header exists and is set to 'true' or 'on' (case
+              insensitive)
+    """
+    hdr_val = get_patch_header(header, 'no', commit).lower()
+    logger.info("Header: '%s' resolved to '%s'", header, hdr_val)
+    return hdr_val in ['true', 'yes']
 
 
 def get_patch_sha():

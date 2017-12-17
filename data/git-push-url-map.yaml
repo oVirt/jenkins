@@ -1,6 +1,6 @@
 ---
-- ^https://gerrit-staging.phx.ovirt.org/(.*)$:
-    push_url: 'ssh://jenkins@gerrit-staging.phx.ovirt.org:29418/\1'
+- ^(https|(git\+)?ssh)://(.*@)?gerrit-staging.phx.ovirt.org(:29418)?/(.*)$:
+    push_url: 'ssh://jenkins@gerrit-staging.phx.ovirt.org:29418/\5'
     host_key:
       "[gerrit-staging.phx.ovirt.org]:29418 ssh-rsa \
       AAAAB3NzaC1yc2EAAAADAQABAAAAgQCUpLYPDoy7WJlSsR3lmIJv2XCDkf3E8Oq\

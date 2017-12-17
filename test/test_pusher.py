@@ -17,7 +17,8 @@ from scripts.pusher import (
     push_to_scm, get_push_details, parse_push_details_struct, PushDetails,
     get_remote_url_from_ws, get_patch_header, add_key_to_known_hosts,
     PushMapError, PushMapMatchError, PushMapSyntaxError, PushMapIOError,
-    GitProcessError, InvalidGitRef, git_rev_parse
+    GitProcessError, InvalidGitRef, git_rev_parse, merge_to_scm,
+    check_if_similar_patch_pushed, patch_header_is_true,
 )
 
 
@@ -343,14 +344,30 @@ def test_get_push_details_syntax(push_map_data, expected):
 @pytest.mark.parametrize(
     ('struct', 'expected'), [
         (dict(), PushMapSyntaxError),
-        (dict(push_url='some_url'), PushDetails('some_url', '')),
+        (dict(push_url='some_url'), PushDetails('some_url', '', [])),
         (
             dict(push_url='some_url', host_key='some_key'),
-            PushDetails('some_url', 'some_key')
+            PushDetails('some_url', 'some_key', [])
         ),
         ('not-a-dict', PushMapSyntaxError),
         (['still', 'not', 'a', 'dict'], PushMapSyntaxError),
         (7, PushMapSyntaxError),
+        (
+            dict(push_url='some_url', merge_flags=['op1', 'op2', 'op3']),
+            PushDetails('some_url', '', ['op1', 'op2', 'op3'])
+        ),
+        (
+            dict(push_url='some_url', merge_flags=['op1', 'op2 op3']),
+            PushDetails('some_url', '', ['op1', 'op2', 'op3'])
+        ),
+        (
+            dict(push_url='some_url', merge_flags='op1 op2 op3'),
+            PushDetails('some_url', '', ['op1', 'op2', 'op3'])
+        ),
+        (
+            dict(push_url='a_url', merge_flags={'o1': 1, 'o2': 2, 'o3': 3}),
+            PushDetails('a_url', '', ['o1=1', 'o2=2', 'o3=3'])
+        ),
     ]
 )
 def test_parse_push_details_struct(struct, expected):
@@ -378,34 +395,63 @@ def test_get_remote_url_from_ws(gitrepo, git, monkeypatch):
     assert out == 'crazy  origin_url '
 
 
-@pytest.mark.xfail
-def test_check_if_similar_patch_pushed():
-    # TODO
-    assert False
-
-
-@pytest.mark.xfail
-def test_add_private_key_to_known_hosts():
-    # TODO
-    assert False
+def test_check_if_similar_patch_pushed(monkeypatch):
+    pd = PushDetails(
+        push_url='ssh://user@gerrit.server.org:29418/some_project',
+        host_key='some_host_key',
+        merge_flags=[],
+    )
+    communicate = MagicMock(side_effect=[(
+        '{"rowCount": 1}'.encode('utf-8'), 'STDERR'.encode('utf-8')
+    )])
+    poll = MagicMock(side_effect=(0,))
+    process = MagicMock(communicate=communicate, poll=poll)
+    popen = MagicMock(side_effect=(process,))
+    monkeypatch.setattr('scripts.pusher.Popen', popen)
+    get_patch_header = MagicMock(side_effect=('some-md5-checksum',))
+    monkeypatch.setattr('scripts.pusher.get_patch_header', get_patch_header)
+    out = check_if_similar_patch_pushed(pd)
+    assert popen.called
+    assert list(popen.call_args[0][0]) == [
+        'ssh', '-p', '29418', 'user@gerrit.server.org',
+        'gerrit', 'query', '--format=JSON', 'status:open',
+        'project:some_project', 'message:some-md5-checksum',
+    ]
+    assert get_patch_header.called
+    assert get_patch_header.call_args == call('x-md5')
+    assert out
 
 
 @pytest.mark.parametrize(
-    ('header', 'default', 'expected'), [
-        ('header-at-top', None, 'Header at top value'),
-        ('header-in-middle', None, 'Header in middle value'),
-        ('spaced_out_header', None, 'Spaced out value'),
-        ('bottom-header1', None, 'Value 1'),
-        ('bottom-header1', 'given default', 'Value 1'),
-        ('bottom-header2', None, 'Value 2'),
-        ('numeric-header', None, '17'),
-        ('none-existant-header', None, KeyError),
-        ('none-existant-header', 'given default', 'given default'),
+    ('header', 'default', 'commit', 'expected'), [
+        ('header-at-top', None, 'HEAD', 'Header at top value'),
+        ('header-in-middle', None, 'HEAD', 'Header in middle value'),
+        ('spaced_out_header', None, 'HEAD', 'Spaced out value'),
+        ('bottom-header1', None, 'HEAD', 'Value 1'),
+        ('bottom-header1', 'given default', 'HEAD', 'Value 1'),
+        ('bottom-header2', None, 'HEAD', 'Value 2'),
+        ('numeric-header', None, 'HEAD', '17'),
+        ('none-existant-header', None, 'HEAD', KeyError),
+        ('none-existant-header', 'given default', 'HEAD', 'given default'),
+        ('header-at-top', None, 'HEAD^', 'Header at top first commit value'),
+        ('header-in-middle', None, 'HEAD^', KeyError),
     ]
 )
-def test_get_patch_header(monkeypatch, gitrepo, header, default, expected):
+def test_get_patch_header(
+    monkeypatch, gitrepo, header, default, commit, expected
+):
     repo = gitrepo(
         'repo',
+        {
+            'msg': dedent(
+                """
+                First commit message title
+
+                header-at-top: Header at top first commit value
+                """
+            ).lstrip(),
+            'files': {'dummy.txt': 'dummy1'},
+        },
         {
             'msg': dedent(
                 """
@@ -427,16 +473,40 @@ def test_get_patch_header(monkeypatch, gitrepo, header, default, expected):
                 numeric-header: 17
                 """
             ).lstrip(),
-            'files': {'dummy.txt': 'dummy'},
+            'files': {'dummy.txt': 'dummy2'},
         }
     )
     monkeypatch.chdir(repo)
     if isinstance(expected, type) and issubclass(expected, Exception):
         with pytest.raises(expected):
-            get_patch_header(header, default)
+            get_patch_header(header, default, commit)
     else:
-        out = get_patch_header(header, default)
+        out = get_patch_header(header, default, commit)
         assert out == expected
+
+
+@pytest.mark.parametrize('header_value,expected', [
+    ('yes', True),
+    ('Yes', True),
+    ('true', True),
+    ('TRUE', True),
+    ('no', False),
+    ('NO', False),
+    ('false', False),
+])
+def test_patch_header_is_true(monkeypatch, header_value, expected):
+    get_patch_header = MagicMock(side_effect=cycle((header_value,)))
+    monkeypatch.setattr('scripts.pusher.get_patch_header', get_patch_header)
+    out = patch_header_is_true('a_patch_header', 'a_commit_ref')
+    assert get_patch_header.called
+    assert get_patch_header.call_args == \
+        call('a_patch_header', 'no', 'a_commit_ref')
+    assert out == expected
+    out = patch_header_is_true('another_patch_header')
+    assert get_patch_header.called
+    assert get_patch_header.call_args == \
+        call('another_patch_header', 'no', 'HEAD')
+    assert out == expected
 
 
 @pytest.mark.parametrize(('existing', 'key', 'expected'), [
@@ -500,3 +570,61 @@ def test_git_rev_parse(local_repo_patch, local_log, monkeypatch, ref, exp_idx):
     else:
         out = git_rev_parse(ref)
         assert out == local_log()[exp_idx]
+
+
+@pytest.mark.parametrize('check_header,header_value,is_merged', [
+    ('automerge', 'yes', True),
+    ('automerge', 'Yes', True),
+    ('automerge', 'true', True),
+    ('automerge', 'TRUE', True),
+    ('automerge', 'no', False),
+    ('automerge', 'NO', False),
+    (None, 'yes', True),
+    (None, 'no', True),
+])
+def test_merge_to_scm(monkeypatch, check_header, header_value, is_merged):
+    git_rev_parse = MagicMock(side_effect=('some_git_hash',))
+    get_patch_header = MagicMock(side_effect=(header_value,))
+    add_key_2_kh = MagicMock()
+    push_details = PushDetails(
+        push_url='ssh://user@gerrit.server:29418/some_project',
+        host_key='a_host_key',
+        merge_flags=[
+            '--code-review', '+2', '--verified', '+1', '--label', 'custom=+1',
+        ],
+    )
+    read_push_details = MagicMock(side_effect=(push_details,))
+    gerrit_cli = MagicMock()
+    monkeypatch.setattr('scripts.pusher.git_rev_parse', git_rev_parse)
+    monkeypatch.setattr('scripts.pusher.get_patch_header', get_patch_header)
+    monkeypatch.setattr('scripts.pusher.add_key_to_known_hosts', add_key_2_kh)
+    monkeypatch.setattr('scripts.pusher.read_push_details', read_push_details)
+    monkeypatch.setattr('scripts.pusher.gerrit_cli', gerrit_cli)
+    merge_to_scm('/push/map/path', 'a_commit_ref', check_header)
+    if check_header is None:
+        assert not get_patch_header.called
+    else:
+        assert get_patch_header.called
+        assert get_patch_header.call_args == \
+            call(check_header, 'no', 'a_commit_ref')
+    if is_merged:
+        assert git_rev_parse.called
+        assert git_rev_parse.call_args == call('a_commit_ref')
+        assert read_push_details.called
+        assert read_push_details.call_args == call('/push/map/path')
+        assert add_key_2_kh.called
+        assert add_key_2_kh.call_args == call('a_host_key')
+        assert gerrit_cli.called
+        assert gerrit_cli.call_args == call(
+            push_details,
+            'review', 'some_git_hash',
+            '--submit',
+            '--code-review', '+2',
+            '--verified', '+1',
+            '--label', 'custom=+1',
+        )
+    else:
+        assert not git_rev_parse.called
+        assert not read_push_details.called
+        assert not add_key_2_kh.called
+        assert not gerrit_cli.called
