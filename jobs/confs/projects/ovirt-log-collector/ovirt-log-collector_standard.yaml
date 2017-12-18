@@ -6,6 +6,9 @@
       - master:
           branch: master
           repoversion: master
+      - 4.2:
+          branch: ovirt-log-collector-4.2
+          repoversion: 4.2
       - 4.1:
           branch: ovirt-log-collector-4.1
           repoversion: 4.1
@@ -21,6 +24,8 @@
       - el7
     exclude:
       - version: master
+        distro: fc24
+      - version: 4.2
         distro: fc24
       - version: 4.0
         distro: fc24
@@ -53,6 +58,7 @@
     name: ovirt-log-collector_build-artifacts-manual-any
     version:
       - 'master'
+      - '4.2'
       - '4.1'
       - '4.0'
     jobs:
