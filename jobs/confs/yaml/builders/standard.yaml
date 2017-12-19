@@ -58,6 +58,20 @@
       - inject:
           properties-content: |
             GERRIT_TRIGGER_CI_VOTE_LABEL: --label Continuous-Integration=<CODE_REVIEW>
+      - conditional-step:
+          condition-kind: shell
+          on-evaluation-failure: dont-run
+          condition-command: |
+            cd "$PROJECT" &&
+            "$WORKSPACE"/jenkins/scripts/pusher.py is_header_true automerge
+          steps:
+            - inject:
+                properties-content: "\
+                  GERRIT_TRIGGER_CI_VOTE_LABEL: \
+                    --label Continuous-Integration=<CODE_REVIEW> \
+                    --code-review=2 \
+                    --verified=1 \
+                    --submit"
       - standard_stage:
           project: '{project}'
           distro: '{distro}'
