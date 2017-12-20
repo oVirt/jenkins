@@ -11,6 +11,7 @@
     project:
       - ovirt-ansible
       - ovirt-ansible-cluster-upgrade
+      - ovirt-ansible-disaster-recovery
       - ovirt-ansible-engine-setup
       - ovirt-ansible-image-template
       - ovirt-ansible-infra
