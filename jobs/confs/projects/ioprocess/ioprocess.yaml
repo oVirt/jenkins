@@ -4,196 +4,54 @@
       project:
         - ioprocess
       trigger: 'on-change'
-      version:
-        - master:
-            branch: master
-        - 0.16:
-            branch: ioprocess-0.16
       jobs:
         - '{project}_{version}_{stage}-{distro}-{arch}'
 
 - project:
     <<: *ioprocess_standard_common
-    name: ioprocess_build-artifacts_x86_64
-    stage: build-artifacts
+    name: ioprocess-master
     version:
       - master:
           branch: master
           repoversion: master
+    stage:
+      - build-artifacts
+      - check-patch
+    distro:
+      - el7
+      - fc26
+    arch:
+      - x86_64
+      - ppc64le:
+          node-filter: ppc64le
+
+- project:
+    <<: *ioprocess_standard_common
+    name: ioprocess-4.1
+    version:
       - 4.1:
           branch: ioprocess-0.16
           repoversion: 4.1
+    stage:
+      - build-artifacts
+    distro:
+      - el7
+      - fc24
+    arch:
+      - x86_64
+      - ppc64le:
+          node-filter: ppc64le
+
+- project:
+    <<: *ioprocess_standard_common
+    name: ioprocess-4.0
+    version:
       - 4.0:
           branch: ioprocess-0.16
           repoversion: 4.0
+    stage:
+      - build-artifacts
     distro:
       - el7
-      - fc24
-      - fc25
-      - fc26
-    exclude:
-      - version: master
-        distro: fc24
-      - version: 4.0
-        distro: fc24
-      - version: 4.0
-        distro: fc25
-      - version: 4.0
-        distro: fc26
-      - version: 4.1
-        distro: fc25
-      - version: 4.1
-        distro: fc26
     arch:
       - x86_64
-    jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
-
-- project:
-    <<: *ioprocess_standard_common
-    name: ioprocess_build-artifacts_ppc64le
-    stage: build-artifacts
-    version:
-      - master:
-          branch: master
-          repoversion: master
-      - 4.1:
-          branch: ioprocess-0.16
-          repoversion: 4.1
-    distro:
-      - el7
-      - fc24
-      - fc25
-    exclude:
-      - version: master
-        distro: fc24
-      - version: 4.1
-        distro: fc25
-    arch:
-      - ppc64le:
-          node-filter: ppc64le
-    jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
-
-- project:
-    <<: *ioprocess_standard_common
-    name: ioprocess_check-patch_x86_64
-    arch: x86_64
-    stage: check-patch
-    distro:
-      - el7
-      - fc24
-      - fc25
-      - fc26
-    exclude:
-      - version: master
-        distro: fc24
-      - version: 0.16
-        distro: fc24
-      - version: 0.16
-        distro: fc25
-      - version: 0.16
-        distro: fc26
-
-- project:
-    <<: *ioprocess_standard_common
-    name: ioprocess_check-patch_ppc64le
-    arch:
-      - ppc64le:
-          node-filter: ppc64le
-    stage: check-patch
-    distro:
-      - el7
-      - fc24
-    exclude:
-      - version: master
-        distro: fc24
-      - version: 0.16
-        distro: el7
-      - version: 0.16
-        distro: fc24
-
-- project:
-    <<: *ioprocess_standard_common
-    name: ioprocess_check-merged_x86_64
-    arch: x86_64
-    stage: check-merged
-    distro:
-      - el7
-      - fc24
-      - fc25
-      - fc26
-    exclude:
-      - version: master
-        distro: fc24
-      - version: 0.16
-        distro: fc24
-      - version: 0.16
-        distro: fc25
-      - version: 0.16
-        distro: fc26
-
-- project:
-    <<: *ioprocess_standard_common
-    name: ioprocess_check-merged_ppc64le
-    arch:
-      - ppc64le:
-          node-filter: ppc64le
-    stage: check-merged
-    distro:
-      - el7
-      - fc24
-      - fc25
-    exclude:
-      - version: master
-        distro: fc24
-      - version: 0.16
-        distro: el7
-      - version: 0.16
-        distro: fc24
-      - version: 0.16
-        distro: fc25
-
-- project:
-    name: ioprocess_0.15_created
-    project:
-      - ioprocess
-    version:
-      - 0.15:
-          branch: ioprocess-0.15
-    distro:
-      - el7
-    arch: x86_64
-    mock-build-type: all
-    jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_created':
-          extra-build-packages: |
-            automake
-            autoreconf
-            gettext-devel
-            glib2-devel
-            yajl-devel
-
-- project:
-    name: ioprocess_0.15_merged
-    project:
-      - ioprocess
-    version:
-      - 0.15:
-          branch: ioprocess-0.15
-          repoversion: 3.6
-    distro:
-      - el7
-    arch: x86_64
-    trigger:
-      - merged
-      - created
-    mock-build-type: all
-    jobs:
-      - '{project}_{version}_create-rpms-{distro}-{arch}_merged':
-          extra-build-packages: |
-            automake
-            autoreconf
-            gettext-devel
-            glib2-devel
-            yajl-devel
