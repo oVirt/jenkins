@@ -20,6 +20,8 @@
     distro:
       - el7
       - fc26
+      - fc27
+      - fcraw
     arch:
       - x86_64
       - ppc64le:
