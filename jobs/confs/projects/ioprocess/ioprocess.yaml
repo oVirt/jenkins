@@ -26,6 +26,10 @@
       - x86_64
       - ppc64le:
           node-filter: ppc64le
+    exclude:
+        - { stage: check-patch, distro: fc26, arch: ppc64le }
+        - { stage: check-patch, distro: fc27, arch: ppc64le }
+        - { stage: check-patch, distro: fcraw, arch: ppc64le }
 
 - project:
     <<: *ioprocess_standard_common
