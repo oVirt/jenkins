@@ -11,7 +11,7 @@ import re
 import yaml
 import json
 from copy import copy
-from collections import namedtuple, Iterable, Mapping
+from collections import Iterable, Mapping
 from itertools import chain
 from six import iteritems, string_types
 from six.moves.urllib.parse import urlparse
@@ -26,7 +26,46 @@ DEFAULT_PUSH_MAP = os.path.join(
     'data', 'git-push-url-map.yaml'
 )
 
-PushDetails = namedtuple('Push_details', 'push_url host_key merge_flags')
+
+class PushDetails(object):
+    """Class to represent configuration details about SCM hosts we want to
+    communicate with
+    """
+    def __init__(
+        self, push_url, host_key=None, merge_flags=None,
+        maintainer_groups=None, maintainers=None
+    ):
+        if merge_flags is None:
+            merge_flags = []
+        if maintainer_groups is None:
+            maintainer_groups = []
+        if maintainers is None:
+            maintainers = []
+        self.push_url, self.host_key, self.merge_flags = \
+            push_url, host_key, merge_flags
+        self.maintainer_groups, self.maintainers = \
+            maintainer_groups, maintainers
+
+    def __eq__(self, other):
+        return (
+            self.push_url, self.host_key, self.merge_flags,
+            self.maintainer_groups, self.maintainers
+        ) == (
+            other.push_url, other.host_key, other.merge_flags,
+            other.maintainer_groups, other.maintainers
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __repr__(self):
+        return repr({
+            'push_url': self.push_url,
+            'host_key': self.host_key,
+            'merge_flags': self.merge_flags,
+            'maintainer_groups': self.maintainer_groups,
+            'maintainers:': self.maintainers,
+        })
 
 
 class PushMapError(Exception):
@@ -42,6 +81,10 @@ class PushMapSyntaxError(PushMapError):
 
 
 class PushMapMatchError(PushMapError):
+    pass
+
+
+class PatchInfoError(Exception):
     pass
 
 
@@ -92,6 +135,41 @@ def parse_args():
     push_parser.add_argument(
         '--if-not-exists', action='store_true',
         help='Avoid pushing if similar commit was already pushed',
+    )
+    can_merge_parser = subparsers.add_parser(
+        'can_merge', help='Check if allowed to merge specified commit in $CWD',
+        description=(
+            'Check if the local commit is allowed to be automatically merged'
+            ' into the appropriate remote SCM. For a commit to be auto merged,'
+            ' a certain header must be set if specified, and the commit owner'
+            ' must be one of the project maintainers.'
+        ),
+    )
+    can_merge_parser.set_defaults(handler=can_merge_main)
+    can_merge_parser.add_argument(
+        'commit', help='A ref of the commit to merge. Defaults to HEAD',
+        nargs='?', default='HEAD',
+    )
+    can_merge_parser.add_argument(
+        '--push-map', default=DEFAULT_PUSH_MAP,
+        help=(
+            'Path to a push map YAML file that specifies details about how'
+            ' to connect to the remote SCM servers and merge changes.'
+        ),
+    )
+    can_merge_mxg = can_merge_parser.add_mutually_exclusive_group()
+    can_merge_mxg.add_argument(
+        '--check-header', nargs=1, default='automerge',
+        help=(
+            'Set the name of the commit message header to check in order to'
+            ' confirm running a merge. If option is not specified, The'
+            ' "automerge" header will be checked.'
+        )
+    )
+    can_merge_mxg.add_argument(
+        '--no-check-header', const=None, action='store_const',
+        dest='check_header',
+        help='Skip commit message header check.',
     )
     merge_parser = subparsers.add_parser(
         'merge', help='Merge specified commit in $CWD',
@@ -242,6 +320,17 @@ def merge_main(args):
     )
 
 
+def can_merge_main(args):
+    if can_merge_to_scm(
+        push_map=args.push_map,
+        commit=args.commit,
+        check_header=args.check_header,
+    ):
+        return 0
+    else:
+        return 100
+
+
 def get_header_main(args):
     print(get_patch_header(args.header, args.default_value, args.commit))
 
@@ -297,19 +386,63 @@ def merge_to_scm(push_map, commit='HEAD', check_header='automerge'):
                              to be attempted. Set to 'automerge' be default,
                              cat be set to None to skip header check.
     """
-    if check_header is not None:
-        if not patch_header_is_true(check_header, commit):
-            return
+    if not can_merge_to_scm(push_map, commit, check_header):
+        return
     commit_hash = git_rev_parse(commit)
     logger.info("Will merge commit: %s", commit_hash)
     push_details = read_push_details(push_map)
     logger.info("Would merge to: '%s'", push_details.push_url)
-    if push_details.host_key:
-        add_key_to_known_hosts(push_details.host_key)
     gerrit_cli(
         push_details, 'review', commit_hash, '--submit',
         *push_details.merge_flags
     )
+
+
+def can_merge_to_scm(push_map, commit='HEAD', check_header='automerge'):
+    """Check if commit can be merged in remote SCM
+
+    :param str push_map:     The path to a file containing information about
+                             remote SCM servers that is needed to push changes
+                             to them.
+    :param str commit:       (Optional) A ref to the commit to merge. The
+                             default is HEAD
+    :param str check_header: (Optional) The name of a commit header that should
+                             be set to 'true' or 'yes' in order for the merge
+                             to be attempted. Set to 'automerge' be default,
+                             cat be set to None to skip header check.
+    :rtype: bool
+    :returns: True if commit contains the proper commit message header, it is
+              set to a truth value and the commit patch owner is a member of
+              the project maintainers group as specified in the push_map
+    """
+    if check_header is not None:
+        if not patch_header_is_true(check_header, commit):
+            return False
+    else:
+        logger.info("Skipped patch header check")
+    push_details = read_push_details(push_map)
+    logger.info("Would check merging to: '%s'", push_details.push_url)
+    if push_details.host_key:
+        add_key_to_known_hosts(push_details.host_key)
+    patch_owner = get_patch_owner(push_details, commit)
+    if patch_owner is None:
+        raise PatchInfoError(
+            "Cannot detect who the ptch owner is,"
+            " was the patch submitted to the SCM?"
+        )
+        return False
+    logger.debug("Checking if '%s' is in push map file", patch_owner)
+    if patch_owner in push_details.maintainers:
+        logger.info("'%s' found in push map", patch_owner)
+        return True
+    logger.debug("Checking if '%s' is in maintainer groups", patch_owner)
+    for group in push_details.maintainer_groups:
+        logger.debug("Checking if '%s' is in group '%s'", patch_owner, group)
+        if gerrit_user_in_group(push_details, patch_owner, group):
+            logger.info("'%s' found in group '%s'", patch_owner, group)
+            return True
+    logger.info("'%s' is not allowed to automerge", patch_owner)
+    return False
 
 
 def read_push_details(push_map):
@@ -409,10 +542,13 @@ def get_push_details(push_map_data, remote_url):
             continue
 
         push_details = parse_push_details_struct(push_details_struct)
+        push_details.push_url = match_obj.expand(push_details.push_url)
+        push_details.maintainer_groups = \
+            [match_obj.expand(expr) for expr in push_details.maintainer_groups]
+        push_details.maintainers = \
+            [match_obj.expand(expr) for expr in push_details.maintainers]
 
-        return PushDetails(
-            match_obj.expand(push_details.push_url), *push_details[1:]
-        )
+        return push_details
 
     # If there was no match between remote and push,exit
     raise PushMapMatchError((
@@ -438,21 +574,48 @@ def parse_push_details_struct(push_details_struct):
             'Push details in a push map file must include the push_url key'
         )
 
-    host_key = push_details_struct.get('host_key', '')
     merge_flags = push_details_struct.get('merge_flags', [])
     if isinstance(merge_flags, Mapping):
         merge_flags = sorted([
             '{0}={1}'.format(k, v) for k, v in iteritems(merge_flags)
         ])
-    elif isinstance(merge_flags, string_types):
-        merge_flags = merge_flags.split()
-    elif isinstance(merge_flags, Iterable):
-        merge_flags = \
-            list(chain.from_iterable(str(x).split() for x in merge_flags))
     else:
-        merge_flags = str(merge_flags).split()
+        merge_flags = parse_yaml_to_list(merge_flags)
 
-    return PushDetails(push_details_struct['push_url'], host_key, merge_flags)
+    return PushDetails(
+        push_url=push_details_struct['push_url'],
+        host_key=push_details_struct.get('host_key', None),
+        merge_flags=merge_flags,
+        maintainer_groups=parse_yaml_to_list(
+            push_details_struct.get('maintainer_groups', [])
+        ),
+        maintainers=parse_yaml_to_list(
+            push_details_struct.get('maintainers', [])
+        ),
+    )
+
+
+def parse_yaml_to_list(yaml_object):
+    """Read a YAML section into a list
+
+    :param object yaml_object: A value that is read from YAML
+
+    Lists can be represented in YAML as YAML lists, as whitespace-separated
+    strings or as lists of such strings. If a Mapping is given, the keys will
+    be sorted and used as the values in the list.
+
+    :rtype: list
+    :returns: A list generated from the YAML object.
+    """
+    if isinstance(yaml_object, Mapping):
+        yaml_object = sorted(yaml_object)
+    elif isinstance(yaml_object, string_types):
+        yaml_object = [yaml_object]
+    elif isinstance(yaml_object, Iterable):
+        pass
+    else:
+        yaml_object = [str(yaml_object)]
+    return list(chain.from_iterable(str(x).split() for x in yaml_object))
 
 
 def check_if_similar_patch_pushed(push_details):
@@ -483,6 +646,50 @@ def check_if_similar_patch_pushed(push_details):
         output
         and json.loads(output.splitlines()[-1]).get('rowCount', 0) >= 1
     )
+
+
+def get_patch_owner(push_details, commit='HEAD'):
+    """Get the Gerrit username for the owner of the given commit
+
+    :param PushDetails push_details: Details about where we're pushing the
+                                     patch to
+    :param str commit:               (Optional) A commit ref for a commit in
+                                     $PWD, Defaults to HEAD.
+    :rtype: str
+    :returns: The Gerrit username for the owner of the patchset that includes
+              the given commit
+    """
+    git_hash = git_rev_parse(commit)
+    change_json_lines = gerrit_cli(
+        push_details, 'query', '--format=json', 'commit:' + git_hash
+    ).splitlines()
+    if len(change_json_lines) <= 1:
+        return None
+    change = json.loads(change_json_lines[0])
+    return change['owner']['username']
+
+
+def gerrit_user_in_group(push_details, user, group):
+    """Returns True if given user is in given group in Gerrit
+
+    :param PushDetails push_details: Details about where we're pushing the
+                                     patch to
+    :param str user:                 The name of the user to look for
+    :param str group:                The name of the group to check
+
+    :rtype: bool
+    :returns: True if the user is a member of the given group
+    """
+    lsm_out = gerrit_cli(push_details, 'ls-members', '--recursive', group)
+    lsm_out = lsm_out.splitlines()
+    if len(lsm_out) <= 1:
+        # Empty or non-existant group
+        return False
+    lsm_out_table = (l.split('\t') for l in lsm_out)
+    next(lsm_out_table)
+    member_usernames = (username for _, username, _, _ in lsm_out_table)
+    member_usernames = set(member_usernames)
+    return user in member_usernames
 
 
 def gerrit_cli(push_details, *cli_args):

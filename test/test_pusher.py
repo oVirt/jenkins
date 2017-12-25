@@ -18,7 +18,8 @@ from scripts.pusher import (
     get_remote_url_from_ws, get_patch_header, add_key_to_known_hosts,
     PushMapError, PushMapMatchError, PushMapSyntaxError, PushMapIOError,
     GitProcessError, InvalidGitRef, git_rev_parse, merge_to_scm,
-    check_if_similar_patch_pushed, patch_header_is_true,
+    check_if_similar_patch_pushed, patch_header_is_true, get_patch_owner,
+    gerrit_user_in_group, parse_yaml_to_list, can_merge_to_scm, PatchInfoError,
 )
 
 
@@ -45,6 +46,130 @@ class TestPushMapSyntaxError(object):
 class TestPushMapIOError(object):
     def test_inheritance(self):
         assert issubclass(PushMapIOError, PushMapError)
+
+
+class TestPatchInfoError(object):
+    def test_inheritance(self):
+        assert issubclass(PatchInfoError, Exception)
+
+
+class TestPushDetails(object):
+    def test_init(self):
+        pd = PushDetails('a_push_url')
+        assert pd.push_url == 'a_push_url'
+        assert pd.host_key is None
+        assert pd.merge_flags == []
+        assert pd.maintainer_groups == []
+        assert pd.maintainers == []
+        pd = PushDetails('a_push_url', 'a_host_key')
+        assert pd.push_url == 'a_push_url'
+        assert pd.host_key == 'a_host_key'
+        assert pd.merge_flags == []
+        assert pd.maintainer_groups == []
+        assert pd.maintainers == []
+        pd = PushDetails('a_push_url', 'a_host_key', ['merge', 'flags'])
+        assert pd.push_url == 'a_push_url'
+        assert pd.host_key == 'a_host_key'
+        assert pd.merge_flags == ['merge', 'flags']
+        assert pd.maintainer_groups == []
+        assert pd.maintainers == []
+        pd = PushDetails(
+            'a_push_url', 'a_host_key', ['merge', 'flags'],
+            ['gr1', 'gr2'], ['mnt1', 'mnt2'],
+        )
+        assert pd.push_url == 'a_push_url'
+        assert pd.host_key == 'a_host_key'
+        assert pd.merge_flags == ['merge', 'flags']
+        assert pd.maintainer_groups == ['gr1', 'gr2']
+        assert pd.maintainers == ['mnt1', 'mnt2']
+
+    def test_named_init(self):
+        pd = PushDetails(
+            push_url='a_push_url',
+            merge_flags=['merge', 'flags'],
+            host_key='a_host_key',
+            maintainer_groups=['gr1', 'gr2'],
+            maintainers=['mnt1', 'mnt2'],
+        )
+        assert pd.push_url == 'a_push_url'
+        assert pd.host_key == 'a_host_key'
+        assert pd.merge_flags == ['merge', 'flags']
+        assert pd.maintainer_groups == ['gr1', 'gr2']
+        assert pd.maintainers == ['mnt1', 'mnt2']
+        pd = PushDetails(
+            push_url='a_push_url',
+            merge_flags=['merge', 'flags'],
+            host_key='a_host_key',
+        )
+        assert pd.push_url == 'a_push_url'
+        assert pd.host_key == 'a_host_key'
+        assert pd.merge_flags == ['merge', 'flags']
+        assert pd.maintainer_groups == []
+        assert pd.maintainers == []
+        pd = PushDetails(
+            push_url='a_push_url',
+            merge_flags=['merge', 'flags'],
+        )
+        assert pd.push_url == 'a_push_url'
+        assert pd.host_key is None
+        assert pd.merge_flags == ['merge', 'flags']
+        assert pd.maintainer_groups == []
+        assert pd.maintainers == []
+
+    def test_eq(self):
+        pd1 = PushDetails(
+            push_url='a_push_url',
+            merge_flags=['merge', 'flags'],
+            host_key='a_host_key',
+            maintainer_groups=['gr1', 'gr2'],
+            maintainers=['mnt1', 'mnt2'],
+        )
+        pd2 = PushDetails(
+            push_url='a_push_url',
+            merge_flags=['merge', 'flags'],
+            host_key='a_host_key',
+            maintainer_groups=['gr1', 'gr2'],
+            maintainers=['mnt1', 'mnt2'],
+        )
+        assert id(pd1) != id(pd2)
+        assert pd1 == pd2
+
+    @pytest.mark.parametrize('unset_attrs', [
+        ('merge_flags',),
+        ('host_key',),
+        ('maintainer_groups',),
+        ('maintainers',),
+        ('merge_flags', 'host_key', 'maintainer_groups', 'maintainers',),
+    ])
+    def test_neq(self, unset_attrs):
+        pd1_attrs = dict(
+            push_url='a_push_url',
+            merge_flags=['merge', 'flags'],
+            host_key='a_host_key',
+            maintainer_groups=['gr1', 'gr2'],
+            maintainers=['mnt1', 'mnt2'],
+        )
+        pd2_attrs = dict()
+        pd2_attrs.update(pd1_attrs)
+        for attr in unset_attrs:
+            pd2_attrs.pop(attr)
+        pd1 = PushDetails(**pd1_attrs)
+        pd2 = PushDetails(**pd2_attrs)
+        all_attrs = (
+            'push_url', 'merge_flags', 'host_key', 'maintainer_groups',
+            'maintainers',
+        )
+        print(unset_attrs)
+        for attr in all_attrs:
+            if attr in unset_attrs:
+                print('{0} != {0}'.format(attr))
+                assert getattr(pd1, attr) != getattr(pd2, attr)
+                continue
+            print('{0} == {0}'.format(attr))
+            assert getattr(pd1, attr) == getattr(pd2, attr)
+        assert id(pd1) != id(pd2)
+        assert pd1 != pd2
+        assert not (pd1 == pd2)
 
 
 @pytest.fixture
@@ -341,10 +466,55 @@ def test_get_push_details_syntax(push_map_data, expected):
         assert out.push_url == expected
 
 
+@pytest.mark.parametrize('push_map_data, remote_url, expected', [
+    (
+        [{'^(https|(git+)?ssh)://((.*)@)?server\.com(:29418)?/(.*)$': {
+            'push_url': 'ssh://jenkins@server.com:29418/\\6',
+            'host_key': 'some_host_key',
+            'merge_flags': '--code-review=2 --verified=1',
+            'maintainer_groups': ['\\6', '\\6-maintainers'],
+            'maintainers': '\\4',
+        }}],
+        'ssh://jenkins@server.com:29418/project_name',
+        PushDetails(
+            push_url='ssh://jenkins@server.com:29418/project_name',
+            host_key='some_host_key',
+            merge_flags=['--code-review=2', '--verified=1'],
+            maintainer_groups=['project_name', 'project_name-maintainers'],
+            maintainers=['jenkins'],
+        )
+    )
+])
+def test_get_push_details_expansion(push_map_data, remote_url, expected):
+    out = get_push_details(push_map_data, remote_url)
+    assert isinstance(out, PushDetails)
+    assert out.push_url == expected.push_url
+    assert out.host_key == expected.host_key
+    assert out.merge_flags == expected.merge_flags
+    assert out.maintainer_groups == expected.maintainer_groups
+    assert out.maintainers == expected.maintainers
+    assert out == expected
+
+
+@pytest.mark.parametrize('yaml_object, expected', [
+    (['val1', 'val2', 'val3'], ['val1', 'val2', 'val3']),
+    (['val1 val2 val3'], ['val1', 'val2', 'val3']),
+    (['val1', 'val2 val3'], ['val1', 'val2', 'val3']),
+    (['val1  \n val2 val3'], ['val1', 'val2', 'val3']),
+    ({'k1': 'v1', 'k2': 'v2'}, ['k1', 'k2']),
+    ({'k1 k2': 'v2'}, ['k1', 'k2']),
+    ({'k2 k1': 'v2'}, ['k2', 'k1']),
+    ('      ', []),
+])
+def test_parse_yaml_to_list(yaml_object, expected):
+    out = parse_yaml_to_list(yaml_object)
+    assert out == expected
+
+
 @pytest.mark.parametrize(
     ('struct', 'expected'), [
         (dict(), PushMapSyntaxError),
-        (dict(push_url='some_url'), PushDetails('some_url', '', [])),
+        (dict(push_url='some_url'), PushDetails('some_url')),
         (
             dict(push_url='some_url', host_key='some_key'),
             PushDetails('some_url', 'some_key', [])
@@ -354,20 +524,29 @@ def test_get_push_details_syntax(push_map_data, expected):
         (7, PushMapSyntaxError),
         (
             dict(push_url='some_url', merge_flags=['op1', 'op2', 'op3']),
-            PushDetails('some_url', '', ['op1', 'op2', 'op3'])
+            PushDetails('some_url', merge_flags=['op1', 'op2', 'op3'])
         ),
         (
             dict(push_url='some_url', merge_flags=['op1', 'op2 op3']),
-            PushDetails('some_url', '', ['op1', 'op2', 'op3'])
+            PushDetails('some_url', merge_flags=['op1', 'op2', 'op3'])
         ),
         (
             dict(push_url='some_url', merge_flags='op1 op2 op3'),
-            PushDetails('some_url', '', ['op1', 'op2', 'op3'])
+            PushDetails('some_url', merge_flags=['op1', 'op2', 'op3'])
         ),
         (
             dict(push_url='a_url', merge_flags={'o1': 1, 'o2': 2, 'o3': 3}),
-            PushDetails('a_url', '', ['o1=1', 'o2=2', 'o3=3'])
+            PushDetails('a_url', merge_flags=['o1=1', 'o2=2', 'o3=3'])
         ),
+        (
+            dict(push_url='a_url', maintainer_groups='gr1 gr2 gr3'),
+            PushDetails('a_url', maintainer_groups=['gr1', 'gr2', 'gr3'])
+        ),
+        (
+            dict(push_url='a_url', maintainers='mr1 mr2 mr3'),
+            PushDetails('a_url', maintainers=['mr1', 'mr2', 'mr3'])
+        )
+
     ]
 )
 def test_parse_push_details_struct(struct, expected):
@@ -395,12 +574,18 @@ def test_get_remote_url_from_ws(gitrepo, git, monkeypatch):
     assert out == 'crazy  origin_url '
 
 
-def test_check_if_similar_patch_pushed(monkeypatch):
-    pd = PushDetails(
-        push_url='ssh://user@gerrit.server.org:29418/some_project',
-        host_key='some_host_key',
-        merge_flags=[],
+@pytest.fixture
+def push_details():
+    return PushDetails(
+        push_url='ssh://user@gerrit.server:29418/some_project',
+        host_key='a_host_key',
+        merge_flags=[
+            '--code-review', '+2', '--verified', '+1', '--label', 'custom=+1',
+        ],
     )
+
+
+def test_check_if_similar_patch_pushed(monkeypatch, push_details):
     communicate = MagicMock(side_effect=[(
         '{"rowCount": 1}'.encode('utf-8'), 'STDERR'.encode('utf-8')
     )])
@@ -410,10 +595,10 @@ def test_check_if_similar_patch_pushed(monkeypatch):
     monkeypatch.setattr('scripts.pusher.Popen', popen)
     get_patch_header = MagicMock(side_effect=('some-md5-checksum',))
     monkeypatch.setattr('scripts.pusher.get_patch_header', get_patch_header)
-    out = check_if_similar_patch_pushed(pd)
+    out = check_if_similar_patch_pushed(push_details)
     assert popen.called
     assert list(popen.call_args[0][0]) == [
-        'ssh', '-p', '29418', 'user@gerrit.server.org',
+        'ssh', '-p', '29418', 'user@gerrit.server',
         'gerrit', 'query', '--format=JSON', 'status:open',
         'project:some_project', 'message:some-md5-checksum',
     ]
@@ -572,48 +757,25 @@ def test_git_rev_parse(local_repo_patch, local_log, monkeypatch, ref, exp_idx):
         assert out == local_log()[exp_idx]
 
 
-@pytest.mark.parametrize('check_header,header_value,is_merged', [
-    ('automerge', 'yes', True),
-    ('automerge', 'Yes', True),
-    ('automerge', 'true', True),
-    ('automerge', 'TRUE', True),
-    ('automerge', 'no', False),
-    ('automerge', 'NO', False),
-    (None, 'yes', True),
-    (None, 'no', True),
-])
-def test_merge_to_scm(monkeypatch, check_header, header_value, is_merged):
+@pytest.mark.parametrize('can_merge', [True, False])
+def test_merge_to_scm(monkeypatch, can_merge, push_details):
     git_rev_parse = MagicMock(side_effect=('some_git_hash',))
-    get_patch_header = MagicMock(side_effect=(header_value,))
-    add_key_2_kh = MagicMock()
-    push_details = PushDetails(
-        push_url='ssh://user@gerrit.server:29418/some_project',
-        host_key='a_host_key',
-        merge_flags=[
-            '--code-review', '+2', '--verified', '+1', '--label', 'custom=+1',
-        ],
-    )
+    can_merge_to_scm = MagicMock(side_effect=(can_merge,))
     read_push_details = MagicMock(side_effect=(push_details,))
     gerrit_cli = MagicMock()
     monkeypatch.setattr('scripts.pusher.git_rev_parse', git_rev_parse)
-    monkeypatch.setattr('scripts.pusher.get_patch_header', get_patch_header)
-    monkeypatch.setattr('scripts.pusher.add_key_to_known_hosts', add_key_2_kh)
+    monkeypatch.setattr('scripts.pusher.can_merge_to_scm', can_merge_to_scm)
     monkeypatch.setattr('scripts.pusher.read_push_details', read_push_details)
     monkeypatch.setattr('scripts.pusher.gerrit_cli', gerrit_cli)
-    merge_to_scm('/push/map/path', 'a_commit_ref', check_header)
-    if check_header is None:
-        assert not get_patch_header.called
-    else:
-        assert get_patch_header.called
-        assert get_patch_header.call_args == \
-            call(check_header, 'no', 'a_commit_ref')
-    if is_merged:
+    merge_to_scm('/push/map/path', 'a_commit_ref', 'a_header')
+    assert can_merge_to_scm.called
+    assert can_merge_to_scm.call_args == \
+        call('/push/map/path', 'a_commit_ref', 'a_header')
+    if can_merge:
         assert git_rev_parse.called
         assert git_rev_parse.call_args == call('a_commit_ref')
         assert read_push_details.called
         assert read_push_details.call_args == call('/push/map/path')
-        assert add_key_2_kh.called
-        assert add_key_2_kh.call_args == call('a_host_key')
         assert gerrit_cli.called
         assert gerrit_cli.call_args == call(
             push_details,
@@ -626,5 +788,146 @@ def test_merge_to_scm(monkeypatch, check_header, header_value, is_merged):
     else:
         assert not git_rev_parse.called
         assert not read_push_details.called
-        assert not add_key_2_kh.called
         assert not gerrit_cli.called
+
+
+def test_get_patch_owner(monkeypatch, push_details):
+    git_rev_parse = MagicMock(side_effect=('some_git_hash',))
+    gerrit_cli = MagicMock(side_effect=(dedent(
+        '''
+        {"owner":{"username":"some_user"}}
+        {"rowCount":1}
+        '''
+    ).lstrip(),))
+    monkeypatch.setattr('scripts.pusher.git_rev_parse', git_rev_parse)
+    monkeypatch.setattr('scripts.pusher.gerrit_cli', gerrit_cli)
+    out = get_patch_owner(push_details, 'some_git_ref')
+    assert git_rev_parse.called
+    assert git_rev_parse.call_args == call('some_git_ref')
+    assert gerrit_cli.called
+    assert gerrit_cli.call_args == call(
+        push_details, 'query', '--format=json', 'commit:some_git_hash'
+    )
+    assert out == 'some_user'
+
+
+def test_get_no_patch_owner(monkeypatch, push_details):
+    git_rev_parse = MagicMock(side_effect=('some_git_hash',))
+    gerrit_cli = MagicMock(side_effect=(dedent(
+        '''
+        {"rowCount":0}
+        '''
+    ).lstrip(),))
+    monkeypatch.setattr('scripts.pusher.git_rev_parse', git_rev_parse)
+    monkeypatch.setattr('scripts.pusher.gerrit_cli', gerrit_cli)
+    out = get_patch_owner(push_details, 'some_git_ref')
+    assert git_rev_parse.called
+    assert git_rev_parse.call_args == call('some_git_ref')
+    assert gerrit_cli.called
+    assert gerrit_cli.call_args == call(
+        push_details, 'query', '--format=json', 'commit:some_git_hash'
+    )
+    assert out is None
+
+
+@pytest.mark.parametrize('lsm_out, expected', [
+    (dedent(
+        '''
+        id\tusername\tfull name\temail
+        1000001\tuser1\tFirst User\tuser1@domain.com
+        1000002\tuser2\tSecond User\tuser2@domain.com
+        1000003\tuser3\tThird User\tuser3@domain.com
+        '''
+    ).lstrip(), True),
+    (dedent(
+        '''
+        id\tusername\tfull name\temail
+        1000003\tuser3\tThird User\tuser3@domain.com
+        '''
+    ).lstrip(), False),
+    (dedent(
+        '''
+        Group not found or not visible
+        '''
+    ).lstrip(), False),
+])
+def test_gerrit_user_in_group(monkeypatch, push_details, lsm_out, expected):
+    gerrit_cli = MagicMock(side_effect=(lsm_out,))
+    monkeypatch.setattr('scripts.pusher.gerrit_cli', gerrit_cli)
+    out = gerrit_user_in_group(push_details, 'user2', 'a_group')
+    assert gerrit_cli.called
+    assert gerrit_cli.call_args == call(
+        push_details, 'ls-members', '--recursive', 'a_group'
+    )
+    assert out == expected
+
+
+@pytest.mark.parametrize('has_hdr, u_in_group, u_in_file, exp', [
+    (True,  True,  True,  True),
+    (True,  True,  False, True),
+    (True,  False, True,  True),
+    (True,  False, False, False),
+    (False, True,  True,  False),
+    (False, True,  False, False),
+    (False, False, True,  False),
+    (False, False, False, False),
+    (None,  True,  True,  True),
+    (None,  True,  False, True),
+    (None,  False, True,  True),
+    (None,  False, False, False),
+])
+def test_can_merge_to_scm(has_hdr, u_in_group, u_in_file, exp, monkeypatch):
+    add_key_to_known_hosts = MagicMock()
+    patch_header_is_true = MagicMock(side_effect=(has_hdr,))
+    gerrit_user_in_group = MagicMock(side_effect=(False, u_in_group))
+    get_patch_owner = MagicMock(side_effect=('a_user',))
+    push_details = PushDetails(
+        push_url='a_push_url',
+        host_key='some_host_key',
+        maintainer_groups=['gr1', 'gr2'],
+        maintainers=u_in_file and ['a_user'] or [],
+    )
+    read_push_details = MagicMock(side_effect=(push_details,))
+    monkeypatch.setattr(
+        'scripts.pusher.add_key_to_known_hosts', add_key_to_known_hosts
+    )
+    monkeypatch.setattr(
+        'scripts.pusher.patch_header_is_true', patch_header_is_true
+    )
+    monkeypatch.setattr(
+        'scripts.pusher.gerrit_user_in_group', gerrit_user_in_group
+    )
+    monkeypatch.setattr('scripts.pusher.get_patch_owner', get_patch_owner)
+    monkeypatch.setattr('scripts.pusher.read_push_details', read_push_details)
+    if has_hdr is None:
+        check_header = None
+    else:
+        check_header = 'a_header'
+    out = can_merge_to_scm('/push/map/path', 'a_commit', check_header)
+    assert out == exp
+    if has_hdr is None:
+        assert not patch_header_is_true.called
+    else:
+        assert patch_header_is_true.called
+        assert patch_header_is_true.call_args == call('a_header', 'a_commit')
+    if has_hdr or has_hdr is None:
+        assert read_push_details.called
+        assert read_push_details.call_args == call('/push/map/path')
+        assert add_key_to_known_hosts.called
+        assert add_key_to_known_hosts.call_args == call('some_host_key')
+        assert get_patch_owner.called
+        assert get_patch_owner.call_args == call(push_details, 'a_commit')
+        if u_in_file:
+            assert not gerrit_user_in_group.called
+        else:
+            assert gerrit_user_in_group.called
+            assert gerrit_user_in_group.call_count == 2
+            assert gerrit_user_in_group.call_args_list == [
+                call(push_details, 'a_user', 'gr1'),
+                call(push_details, 'a_user', 'gr2'),
+            ]
+    else:
+        assert not read_push_details.called
+        assert not add_key_to_known_hosts.called
+        assert not get_patch_owner.called
+        assert not gerrit_user_in_group.called
