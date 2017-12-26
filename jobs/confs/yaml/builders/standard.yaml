@@ -62,8 +62,15 @@
           condition-kind: shell
           on-evaluation-failure: dont-run
           condition-command: |
-            cd "$PROJECT" &&
-            "$WORKSPACE"/jenkins/scripts/pusher.py is_header_true automerge
+            WORKSPACE="${{WORKSPACE:-$PWD}}"
+            LOGDIR="$WORKSPACE/exported-artifacts/pusher_logs"
+            mkdir -p "$LOGDIR"
+
+            cd "$PROJECT"
+            "$WORKSPACE"/jenkins/scripts/pusher.py \
+                --log="$LOGDIR/can_merge_{project}.log" \
+                -v \
+                can_merge
           steps:
             - inject:
                 properties-content: "\
