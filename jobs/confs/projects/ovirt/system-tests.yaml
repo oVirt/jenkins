@@ -38,7 +38,7 @@
           chroot_distro: el7
       - master:
           chroot_distro: el7
-    email-to: 'sbonazzo@redhat.com, infra@ovirt.org, lveyde@redhat.com'
+    email-to: 'sbonazzo@redhat.com, infra@ovirt.org, lveyde@redhat.com, stirabos@redhat.com, irosenzw@redhat.com'
     jobs:
       - '{project}_{suite_type}-suite-{version}'
 
