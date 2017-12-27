@@ -20,6 +20,7 @@ from collections import Iterable, Mapping
 from itertools import chain, tee
 from traceback import format_exception
 from textwrap import dedent
+from pprint import pformat
 
 
 UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
@@ -148,12 +149,24 @@ def update_main(args):
 class GitUpstreamSource(object):
     """A class representing Git-based upstream source dependencies
     """
-    def __init__(self, url, branch, commit):
+    def __init__(self, url, branch, commit, automerge='no'):
         self.url, self.branch, self.commit = url, branch, commit
+        if isinstance(automerge, string_types):
+            if automerge.lower() in ('yes', 'true'):
+                self.automerge = 'yes'
+            elif automerge.lower() == 'never':
+                self.automerge = 'never'
+            else:
+                self.automerge = 'no'
+        else:
+            self.automerge = 'yes' if automerge else 'no'
         cache_dir_name = sha1(url.encode('utf-8')).hexdigest()
         cache_dir = os.path.join(xdg_cache_home, CACHE_NAME, cache_dir_name)
         self._cache_dir = cache_dir
         self._cache_git_dir = os.path.join(cache_dir, '.git')
+        logger.debug("Got upstream source: '%s'", self.url, extra={
+            'blocks': pformat(self.to_yaml_struct())
+        })
 
     def _cache_git(self, *args):
         return git('--git-dir=' + self._cache_git_dir, *args)
@@ -167,7 +180,12 @@ class GitUpstreamSource(object):
 
         :rtype: GitUpstreamSource
         """
-        return cls(struct['url'], struct['branch'], struct['commit'])
+        return cls(
+            struct['url'],
+            struct['branch'],
+            struct['commit'],
+            struct.get('automerge', 'no'),
+        )
 
     def to_yaml_struct(self):
         """Return a structure representing this source that is safe for saving
@@ -175,7 +193,10 @@ class GitUpstreamSource(object):
 
         :rtype: dict
         """
-        return dict(url=self.url, branch=self.branch, commit=self.commit)
+        struct = dict(url=self.url, branch=self.branch, commit=self.commit)
+        if self.automerge != 'no':
+            struct['automerge'] = self.automerge
+        return struct
 
     def get(self, dst_path):
         """Get the upstream source into the given path
@@ -215,7 +236,9 @@ class GitUpstreamSource(object):
             "Latest commit updated for branch '%s' in repo '%s'",
             self.branch, self.url
         )
-        return self.__class__(self.url, self.branch, latest_commit)
+        return self.__class__(
+            self.url, self.branch, latest_commit, self.automerge
+        )
 
     def _fetch(self):
         """Fetch the remote branch into the local cache
@@ -345,35 +368,7 @@ def commit_upstream_sources_update(updates):
     with open(UPSTREAM_SOURCES_PATH, 'r') as stream:
         checksum = md5(stream.read().encode('utf-8')).hexdigest()
     git('add', UPSTREAM_SOURCES_PATH)
-    if len(updates) == 1:
-        commit_message = dedent(
-            '''
-            Updated US source to: {commit_hash:.7} {commit_title}
-
-            Updated upstream source commit.
-            Commit details follow:
-
-            {commit_details}
-            '''
-        ).lstrip().format(
-            commit_hash=updates[0].commit,
-            commit_title=updates[0].commit_title,
-            commit_details=updates[0].commit_details,
-        )
-    else:
-        commit_message = dedent(
-            '''
-            Updated {count} upstream sources
-
-            Updated upstream source commits.
-            Updated commit details follow:
-
-            {commit_details}
-            '''
-        ).lstrip().format(
-            count=len(updates),
-            commit_details="\n".join(u.commit_details for u in updates),
-        )
+    commit_message = generate_update_commit_message(updates)
     commit_message = generate_gerrit_message(commit_message, checksum)
     git('commit', '-m', commit_message)
 
@@ -396,6 +391,57 @@ def read_yaml_to_obj(file_name):
         return None
 
 
+def generate_update_commit_message(updates):
+    """Generate the commit message for an update commit
+
+    :param Iterable updates: Iterator over upstream source objects representing
+                             sources that were updated
+    :rtype: str
+    :returns: commit message with update information
+    """
+    updates = list(updates)
+    if len(updates) == 1:
+        message = dedent(
+            '''
+            Updated US source to: {commit_hash:.7} {commit_title}
+
+            Updated upstream source commit.
+            Commit details follow:
+
+            {commit_details}
+
+            '''
+        ).lstrip().format(
+            commit_hash=updates[0].commit,
+            commit_title=updates[0].commit_title,
+            commit_details=updates[0].commit_details,
+        )
+    else:
+        message = dedent(
+            '''
+            Updated {count} upstream sources
+
+            Updated upstream source commits.
+            Updated commit details follow:
+
+            {commit_details}
+
+            '''
+        ).lstrip().format(
+            count=len(updates),
+            commit_details="\n\n".join(u.commit_details for u in updates),
+        )
+    print('checking AM')
+    print([u.automerge for u in updates])
+    if any(True for update in updates if update.automerge == 'yes'):
+        print('found yes')
+        if all(update.automerge != 'never' for update in updates):
+            print('not found never')
+            message += 'automerge: yes\n'
+
+    return message
+
+
 def generate_gerrit_message(message, checksum):
     """
     Generate commit message
@@ -412,7 +458,7 @@ def generate_gerrit_message(message, checksum):
     :rtype: string
     :returns: commit message with change ID and checksum
     """
-    message_template = '{message}\nx-md5: {md5}\nChange-Id: I{change_id}'
+    message_template = '{message}x-md5: {md5}\nChange-Id: I{change_id}'
 
     with open('change_id_data', 'w') as cid:
         cid.write("tree {tree}".format(tree=git('write-tree')))

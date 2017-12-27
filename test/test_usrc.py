@@ -4,12 +4,18 @@
 import pytest
 from scripts.usrc import (
     get_upstream_sources, update_upstream_sources,
-    commit_upstream_sources_update, GitProcessError, GitUpstreamSource
+    commit_upstream_sources_update, GitProcessError, GitUpstreamSource,
+    generate_update_commit_message
 )
 from textwrap import dedent
 from hashlib import md5
 from subprocess import CalledProcessError
 from six import iteritems
+from six.moves import map
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 
 
 class TestGitProcessError(object):
@@ -65,8 +71,81 @@ class TestGitUpstreamSource(object):
     @pytest.mark.parametrize('struct,expected', [
         (
             dict(url='some/url', branch='br1', commit='some_sha'),
-            dict(url='some/url', branch='br1', commit='some_sha'),
-        )
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='no',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='yes',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='yes',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='never',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='never',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='no',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='no',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='True',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='yes',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='False',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='no',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge=True,
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='yes',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge=False,
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='no',
+            ),
+        ),
     ])
     def test_from_yaml_struct(self, struct, expected):
         out = GitUpstreamSource.from_yaml_struct(struct)
@@ -77,7 +156,74 @@ class TestGitUpstreamSource(object):
         (
             dict(url='some/url', branch='br1', commit='some_sha'),
             dict(url='some/url', branch='br1', commit='some_sha'),
-        )
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='yes',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='yes',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='never',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='never',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='no',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='True',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='yes',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='False',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge=True,
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge='yes',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                automerge=False,
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+            ),
+        ),
     ])
     def test_to_yaml_struct(self, init_args, expected):
         gus = GitUpstreamSource(**init_args)
@@ -304,3 +450,134 @@ def test_commit_us_src_no_update(monkeypatch, downstream, git):
     log = git('log', '--pretty=format:%s').splitlines()
     assert len(log) == 1
     assert log == ['First DS commit']
+
+
+@pytest.mark.parametrize('updates,expected', [
+    (
+        [dict(commit_title='commit 1')],
+        dedent(
+            '''
+            Updated US source to: 1234567 commit 1
+
+            Updated upstream source commit.
+            Commit details follow:
+
+            COMMIT 1 DETAILS
+
+            '''
+        ).lstrip(),
+    ),
+    (
+        [dict(commit_title='commit 1'), dict(commit_title='commit 2')],
+        dedent(
+            '''
+            Updated 2 upstream sources
+
+            Updated upstream source commits.
+            Updated commit details follow:
+
+            COMMIT 1 DETAILS
+
+            COMMIT 2 DETAILS
+
+            '''
+        ).lstrip(),
+    ),
+    (
+        [dict(commit_title='commit 1', automerge='yes')],
+        dedent(
+            '''
+            Updated US source to: 1234567 commit 1
+
+            Updated upstream source commit.
+            Commit details follow:
+
+            COMMIT 1 DETAILS
+
+            automerge: yes
+            '''
+        ).lstrip(),
+    ),
+    (
+        [dict(commit_title='commit 1', automerge='no')],
+        dedent(
+            '''
+            Updated US source to: 1234567 commit 1
+
+            Updated upstream source commit.
+            Commit details follow:
+
+            COMMIT 1 DETAILS
+
+            '''
+        ).lstrip(),
+    ),
+    (
+        [dict(commit_title='commit 1', automerge='never')],
+        dedent(
+            '''
+            Updated US source to: 1234567 commit 1
+
+            Updated upstream source commit.
+            Commit details follow:
+
+            COMMIT 1 DETAILS
+
+            '''
+        ).lstrip(),
+    ),
+    (
+        [
+            dict(commit_title='commit 1', automerge='yes'),
+            dict(commit_title='commit 2', automerge='no'),
+        ],
+        dedent(
+            '''
+            Updated 2 upstream sources
+
+            Updated upstream source commits.
+            Updated commit details follow:
+
+            COMMIT 1 DETAILS
+
+            COMMIT 2 DETAILS
+
+            automerge: yes
+            '''
+        ).lstrip(),
+    ),
+    (
+        [
+            dict(commit_title='commit 1', automerge='never'),
+            dict(commit_title='commit 2', automerge='yes'),
+        ],
+        dedent(
+            '''
+            Updated 2 upstream sources
+
+            Updated upstream source commits.
+            Updated commit details follow:
+
+            COMMIT 1 DETAILS
+
+            COMMIT 2 DETAILS
+
+            '''
+        ).lstrip(),
+    ),
+])
+def test_generate_update_commit_message(updates, expected):
+    def mock_update_object(update_dict):
+        commit_title = update_dict['commit_title']
+        return MagicMock(
+            commit_title=commit_title,
+            commit=update_dict.get(
+                'commit', '1234567890abcdef1234567890abcdef12345678'
+            ),
+            commit_details=update_dict.get(
+                'commit_details', (commit_title + ' details').upper()
+            ),
+            automerge=update_dict.get('automerge', 'no')
+        )
+    out = generate_update_commit_message(map(mock_update_object, updates))
+    assert out == expected
