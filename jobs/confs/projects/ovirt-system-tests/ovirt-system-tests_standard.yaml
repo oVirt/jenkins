@@ -1,7 +1,6 @@
 - project:
     name: ovirt-system-tests_check-patch
     node-filter: integ-tests
-    notification-url: 'https://ovirt-ovirt-engine.getbadges.io/api/app/webhook/66f43bb2-6b98-4aab-8d1a-7acca6704dab'
     project:
       - ovirt-system-tests
     version:
