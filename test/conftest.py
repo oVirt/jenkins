@@ -77,9 +77,14 @@ def gitrepo(tmpdir, git, git_at):
         git('init', str(repodir))
         for i, commit in enumerate(commits):
             for fname, fcontents in iteritems(commit.get('files', {})):
+                if fcontents is None:
+                    if (repodir / fname).exists():
+                        repogit('rm', fname)
+                    continue
                 (repodir / fname).write(fcontents, ensure=True)
                 repogit('add', fname)
-            repogit('commit', '-m', commit.get('msg', "Commit #{0}".format(i)))
+            msg = commit.get('msg', "Commit #{0}".format(i))
+            repogit('commit', '-m', msg, '--allow-empty')
         return repodir
     return repo_maker
 

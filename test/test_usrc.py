@@ -5,7 +5,8 @@ import pytest
 from scripts.usrc import (
     get_upstream_sources, update_upstream_sources,
     commit_upstream_sources_update, GitProcessError, GitUpstreamSource,
-    generate_update_commit_message
+    generate_update_commit_message, git_ls_files, git_read_file, ls_all_files,
+    files_diff, get_modified_files
 )
 from textwrap import dedent
 from hashlib import md5
@@ -13,9 +14,9 @@ from subprocess import CalledProcessError
 from six import iteritems
 from six.moves import map
 try:
-    from unittest.mock import MagicMock
+    from unittest.mock import MagicMock, call, sentinel
 except ImportError:
-    from mock import MagicMock
+    from mock import MagicMock, call, sentinel
 
 
 class TestGitProcessError(object):
@@ -307,6 +308,19 @@ class TestGitUpstreamSource(object):
         out = gus.commit_title
         assert out == expected
 
+    def test_ls_files(self, monkeypatch):
+        git_ls_files = MagicMock(side_effect=(sentinel.some_files,))
+        fetch = MagicMock()
+        monkeypatch.setattr('scripts.usrc.git_ls_files', git_ls_files)
+        gus = GitUpstreamSource('git://url.of/repo', 'a_branch', 'a_commit')
+        gus._fetch = fetch
+        out = gus.ls_files()
+        assert git_ls_files.called
+        assert git_ls_files.call_args == \
+            call('a_commit', git_func=gus._cache_git)
+        assert fetch.called
+        assert out == sentinel.some_files
+
 
 def test_get_upstream_sources(monkeypatch, downstream):
     monkeypatch.chdir(downstream)
@@ -581,3 +595,200 @@ def test_generate_update_commit_message(updates, expected):
         )
     out = generate_update_commit_message(map(mock_update_object, updates))
     assert out == expected
+
+
+@pytest.fixture
+def some_commits(gitrepo, git_at):
+    gr = gitrepo(
+        'some_commits',
+        {
+            'msg': 'Initial commit',
+        },
+        {
+            'msg': 'First commit',
+            'files': {
+                'unmodified.txt': 'Unmodified content',
+                'modified_in_2nd_commit.txt': 'abcdef',
+                'modified_in_3rd_commit.txt': 'ghijkl',
+                'removed_in_2nd_commit.txt': 'mnopqr',
+                'removed_in_3rd_commit.txt': 'stuvwx',
+            },
+        },
+        {
+            'msg': 'Second commit',
+            'files': {
+                'modified_in_2nd_commit.txt': 'yz1234',
+                'removed_in_2nd_commit.txt': None,
+                'added_in_2nd_commit.txt': '567890',
+                'removed_in_3rd_commit_too.txt': 'ABCDEF',
+            },
+        },
+        {
+            'msg': 'Third commit',
+            'files': {
+                'modified_in_3rd_commit.txt': 'GHIJKL',
+                'removed_in_3rd_commit.txt': None,
+                'removed_in_3rd_commit_too.txt': None,
+            },
+        },
+    )
+    git = git_at(gr)
+    git('branch', 'first-commit', 'HEAD^^')
+    git('branch', 'second-commit', 'HEAD^')
+    git('branch', 'third-commit', 'HEAD')
+    return gr
+
+
+@pytest.mark.parametrize('commit, expected', [
+    ('HEAD', [
+        u'unmodified.txt',
+        u'modified_in_2nd_commit.txt',
+        u'modified_in_3rd_commit.txt',
+        u'added_in_2nd_commit.txt',
+    ]),
+    ('HEAD^', [
+        u'unmodified.txt',
+        u'modified_in_2nd_commit.txt',
+        u'modified_in_3rd_commit.txt',
+        u'added_in_2nd_commit.txt',
+        u'removed_in_3rd_commit.txt',
+        u'removed_in_3rd_commit_too.txt',
+    ]),
+    ('first-commit', [
+        u'unmodified.txt',
+        u'modified_in_2nd_commit.txt',
+        u'modified_in_3rd_commit.txt',
+        u'removed_in_2nd_commit.txt',
+        u'removed_in_3rd_commit.txt',
+    ]),
+])
+def test_git_ls_files(monkeypatch, some_commits, commit, expected):
+    monkeypatch.chdir(some_commits)
+    out = git_ls_files(commit)
+    assert sorted(out) == sorted(expected)
+
+
+def test_git_ls_files_git_func():
+    files = dedent(
+        u'''
+        100644 blob d96dc95707c20a371b14928ee42071f00e00b645\tfile1.txt
+        100644 blob 08cf76c72911f5f336ec71e1c9045dfd3107b92e\tfile2.txt
+        '''
+    ).lstrip()
+    git_func = MagicMock(side_effect=(files,))
+    out = git_ls_files('some_commit', git_func=git_func)
+    assert git_func.called
+    assert git_func.call_args == \
+        call('ls-tree', '--full-tree', '-r', 'some_commit')
+    assert out == {
+        'file1.txt': (0o100644, 'd96dc95707c20a371b14928ee42071f00e00b645'),
+        'file2.txt': (0o100644, '08cf76c72911f5f336ec71e1c9045dfd3107b92e'),
+    }
+
+
+@pytest.mark.parametrize('path, commit, expected', [
+    ('modified_in_3rd_commit.txt', 'HEAD', u'GHIJKL'),
+    ('modified_in_3rd_commit.txt', None, u'GHIJKL'),
+    ('modified_in_3rd_commit.txt', 'HEAD^', u'ghijkl'),
+    ('modified_in_3rd_commit.txt', 'HEAD^^', u'ghijkl'),
+    ('modified_in_2nd_commit.txt', 'HEAD', u'yz1234'),
+    ('modified_in_2nd_commit.txt', 'HEAD^', u'yz1234'),
+    ('modified_in_2nd_commit.txt', 'HEAD^^', u'abcdef'),
+    ('added_in_2nd_commit.txt', 'second-commit', u'567890'),
+    ('added_in_2nd_commit.txt', 'second-commit^', GitProcessError),
+    ('no_such_file.txt', 'HEAD', GitProcessError),
+])
+def test_git_read_file(monkeypatch, some_commits, path, commit, expected):
+    monkeypatch.chdir(some_commits)
+    if isinstance(expected, type) and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            git_read_file(path, commit)
+    else:
+        out = git_read_file(path, commit)
+        assert out == expected
+
+
+def test_git_read_file_git_func():
+    git_func = MagicMock(side_effect=(u'some_output',))
+    out = git_read_file('some/path', 'some_commit', git_func)
+    assert git_func.called
+    assert git_func.call_args == \
+        call('cat-file', '-p', 'some_commit:some/path')
+    assert out == u'some_output'
+
+
+def test_ls_all_files(monkeypatch):
+    upstream_sources = (
+        MagicMock(
+            spec=GitUpstreamSource,
+            ls_files=MagicMock(side_effect=({
+                'file1.txt': (1234, 'file1_hash'),
+                'overriden1.txt': (1234, 'overridden_hash1'),
+                'overriden2.txt': (1234, 'overridden_hash2'),
+            },))
+        ),
+        MagicMock(
+            spec=GitUpstreamSource,
+            ls_files=MagicMock(side_effect=({
+                'file2.txt': (1234, 'file2_hash'),
+                'overriden1.txt': (1234, 'overriding_hash1'),
+            },))
+        ),
+    )
+    load_usrc = MagicMock(side_effect=(upstream_sources,))
+    git_ls_files = MagicMock(side_effect=({
+        'file3.txt': (1234, 'file3_hash'),
+        'overriden2.txt': (1234, 'overriding_hash2'),
+    },))
+    monkeypatch.setattr('scripts.usrc.load_upstream_sources', load_usrc)
+    monkeypatch.setattr('scripts.usrc.git_ls_files', git_ls_files)
+    out = ls_all_files('some_commit')
+    assert load_usrc.called
+    assert load_usrc.call_args == call('some_commit')
+    assert git_ls_files.called
+    assert git_ls_files.call_args == call('some_commit')
+    assert out == {
+        'file1.txt': (1234, 'file1_hash'),
+        'file2.txt': (1234, 'file2_hash'),
+        'overriden1.txt': (1234, 'overriding_hash1'),
+        'file3.txt': (1234, 'file3_hash'),
+        'overriden2.txt': (1234, 'overriding_hash2'),
+    }
+
+
+def test_files_diff():
+    old_files = {
+        'unchanged.txt': (1234, 'unchanged_hash'),
+        'changed.txt': (1234, 'original_hash'),
+        'changed_mode.txt': (1234, 'some_hash'),
+        'removed.txt': (1234, 'removed_hash'),
+    }
+    new_files = {
+        'unchanged.txt': (1234, 'unchanged_hash'),
+        'changed.txt': (1234, 'changed_hash'),
+        'changed_mode.txt': (5678, 'some_hash'),
+        'added.txt': (1234, 'added_hash'),
+    }
+    expected = set((
+        'changed.txt',
+        'changed_mode.txt',
+        'removed.txt',
+        'added.txt',
+    ))
+    out = files_diff(old_files, new_files)
+    assert set(out) == expected
+
+
+def test_get_modified_files(monkeypatch):
+    ls_all_files = MagicMock(side_effect=lambda x: getattr(sentinel, x))
+    files_diff = MagicMock(side_effect=(sentinel.a_diff,))
+    monkeypatch.setattr('scripts.usrc.ls_all_files', ls_all_files)
+    monkeypatch.setattr('scripts.usrc.files_diff', files_diff)
+    out = get_modified_files('new_commit', 'old_commit')
+    assert ls_all_files.call_count == 2
+    assert call('new_commit') in ls_all_files.call_args_list
+    assert call('old_commit') in ls_all_files.call_args_list
+    assert files_diff.called
+    assert files_diff.call_args == \
+        call(sentinel.old_commit, sentinel.new_commit)
+    assert out == sentinel.a_diff

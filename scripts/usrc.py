@@ -14,9 +14,9 @@ from xdg.BaseDirectory import xdg_cache_home
 from time import time
 from socket import gethostbyname, gethostname
 from subprocess import Popen, CalledProcessError, STDOUT, PIPE
-from six import string_types, iteritems
+from six import string_types, iteritems, viewkeys
 from six.moves import zip
-from collections import Iterable, Mapping
+from collections import Iterable, Mapping, Set
 from itertools import chain, tee
 from traceback import format_exception
 from textwrap import dedent
@@ -75,6 +75,26 @@ def parse_args():
             ' overwritten if it already exists'
         )
     )
+    changed_files_parser = subparsers.add_parser(
+        'changed-files', help='List files changed between commits',
+        description=(
+            'List all the files that were changed between commits to the'
+            ' source code in $PWD, including changes that were actually made'
+            ' to upstream sources'
+        )
+    )
+    changed_files_parser.add_argument(
+        'new_commit', nargs='?', default='HEAD',
+        help='The commit to look for changed files in, defaults to HEAD'
+    )
+    changed_files_parser.add_argument(
+        'old_commit', nargs='?', default=None,
+        help=(
+            'The commit to look for changed files from, defaults to the'
+            ' commit before the one given in NEW_COMMIT'
+        )
+    )
+    changed_files_parser.set_defaults(handler=changed_files_main)
     return parser.parse_args()
 
 
@@ -144,6 +164,11 @@ def update_main(args):
     updates = update_upstream_sources()
     if args.commit:
         commit_upstream_sources_update(updates)
+
+
+def changed_files_main(args):
+    for file_name in get_modified_files(args.new_commit, args.old_commit):
+        print(file_name)
 
 
 class GitUpstreamSource(object):
@@ -290,16 +315,61 @@ class GitUpstreamSource(object):
             msg = msg.encode('utf-8', 'ignore')
         return dedent(msg)
 
+    def ls_files(self):
+        """Lists the files provided by this upstream source
 
-def load_upstream_sources():
+        :rtype: dict
+        :returns: A mapping from file names to tuples of file mode and file
+                  checksum
+        """
+        self._fetch()
+        return git_ls_files(self.commit, git_func=self._cache_git)
+
+
+def load_upstream_sources(commit=None):
     """Load upstream source objects from configuration file
 
+    :param str commit: (Optional) The commit to load the configuration from. If
+                       unspecified, will load from $PWD even if uncommitted
     :rtype: tuple
     """
-    sources_doc = read_yaml_to_obj(UPSTREAM_SOURCES_PATH)
-    if not sources_doc:
-        return tuple()
+    if commit is None:
+        try:
+            with open(UPSTREAM_SOURCES_PATH, 'r') as stream:
+                return parse_upstream_sources(stream)
+        except IOError:
+            logger.info("File '%s' cannot be opened", UPSTREAM_SOURCES_PATH)
+            return tuple()
+    else:
+        try:
+            stream = git_read_file(UPSTREAM_SOURCES_PATH, commit)
+            return parse_upstream_sources(stream)
+        except GitProcessError:
+            logger.info(
+                "File '%s' cannot be read from commit '%s'",
+                UPSTREAM_SOURCES_PATH, commit
+            )
+            return tuple()
 
+
+class ConfigError(Exception):
+    pass
+
+
+def parse_upstream_sources(stream, context=UPSTREAM_SOURCES_PATH):
+    """Parse a given text stream and return upstream sources
+
+    :param object stream: A string or a file object containing YAML text or
+                          upstream sources confoguration
+    :param str context:   (Optional) The place we read the stream from, this is
+                          used for adding detail to error messages.
+    :rtype: tuple
+    :returns: A tuple of GitUpstreamSource objects
+    """
+    try:
+        sources_doc = yaml.safe_load(stream)
+    except yaml.ScannerError:
+        raise ConfigError("Invalid YAML in '%2'", context)
     return tuple(
         GitUpstreamSource.from_yaml_struct(obj)
         for obj in sources_doc.get('git', [])
@@ -352,6 +422,29 @@ def update_upstream_sources():
     return modified_sources
 
 
+def get_modified_files(new_commit=None, old_commit=None):
+    """Gets the list of files modified locally or in upstreams between commits
+
+    :param str new_commit: (Optional) The commit to look for modified files in.
+                           Defaults to HEAD
+    :param str old_commit: (Optional) The older commit to compare with.
+                           Defaults to one before the one which is given in
+                           'new_commit'.
+    :rtype: Iterable
+    :returns: Iterator over modified file paths
+    """
+    if new_commit is None:
+        new_commit = 'HEAD'
+    if old_commit is None:
+        old_commit = new_commit + '^'
+    logger.info(
+        'Looking for files changed between %s and %s', old_commit, new_commit
+    )
+    old_files = ls_all_files(old_commit)
+    new_fils = ls_all_files(new_commit)
+    return files_diff(old_files, new_fils)
+
+
 def commit_upstream_sources_update(updates):
     """Commit updates made to the upstream_sources.yaml file
 
@@ -371,24 +464,6 @@ def commit_upstream_sources_update(updates):
     commit_message = generate_update_commit_message(updates)
     commit_message = generate_gerrit_message(commit_message, checksum)
     git('commit', '-m', commit_message)
-
-
-def read_yaml_to_obj(file_name):
-    """
-    Opens a yaml file and returns an object
-
-    :param string file_name: yaml file path
-
-    :rtype: dictionary
-    :returns: an object out of the yaml
-    """
-    try:
-        with open(file_name, 'r') as stream:
-            return yaml.safe_load(stream)
-    except IOError:
-        logger.info('File {file_name} cannot be opened or is not a'
-                    ' valid yaml'.format(file_name=file_name))
-        return None
 
 
 def generate_update_commit_message(updates):
@@ -476,6 +551,61 @@ def generate_gerrit_message(message, checksum):
                                    change_id=change_id)
 
 
+def ls_all_files(commit=None):
+    """List all files in repo in $PWD including those from upstream sources
+
+    :param str commit:        (Optional) The commit to list files in. If
+                              unspecified, HEAD is used.
+    :rtype: dict
+    :returns: A dict mapping file names to tuples containing the file mode and
+              content checksum
+    """
+    if commit is None:
+        commit = 'HEAD'
+    upstream_sources = load_upstream_sources(commit)
+    files = dict()
+    for usrc in upstream_sources:
+        files.update(usrc.ls_files())
+    files.update(git_ls_files(commit))
+    return files
+
+
+def files_diff(old_files, new_files):
+    """Returns which files changed between two file sets
+
+    :param dict old_files: The list of older files as a mapping of file names
+                           to tuples of file mode and checksum, as returned by
+                           ls_all_files.
+    :param dict new_files: The list of newer files, similarly as a mapping.
+
+    :rtype: Iterable
+    :returns: The set of files that changed between the state represented by
+              old_files to the one represented by new_fils
+    """
+    old_file_paths = dict_keys_set(old_files)
+    new_file_paths = dict_keys_set(new_files)
+    for file_path in old_file_paths ^ new_file_paths:
+        yield file_path
+    for file_path in old_file_paths & new_file_paths:
+        if old_files[file_path] != new_files[file_path]:
+            yield file_path
+
+
+def dict_keys_set(d):
+    """Returns a read-only set of the keys in a given dict
+
+    This is generally for Python <= 2.6 compatibility as dict.viewkeys is
+    available in Python >= 2.7
+    """
+    if hasattr(d, 'viewkeys'):
+        return viewkeys(d)
+    keys = d.keys()
+    if isinstance(keys, Set):
+        # In python3 keys() returns a set view
+        return keys
+    return set(keys)
+
+
 def check_if_branch_exists(branch_to_check):
     """
     Checks if a local branch already exists
@@ -492,6 +622,52 @@ def check_if_branch_exists(branch_to_check):
             return True
 
     return False
+
+
+def git_ls_files(commit=None, git_func=None):
+    """List the files in a given commit
+
+    :param str commit:        (Optional) The commit to list files in. If
+                              unspecified, HEAD is used.
+    :param function git_func: (Optional) The function to use to run git,
+                              defaults to 'git'
+    :rtype: dict
+    :returns: A dict mapping file names to tuples containing the file mode and
+              content checksum
+    """
+    if commit is None:
+        commit = 'HEAD'
+    if git_func is None:
+        git_func = git
+    lines = git_func('ls-tree', '--full-tree', '-r', commit).splitlines()
+    data_and_names = (line.split(u'\t') for line in lines)
+    names_and_split_data = ((n, d.split(u' ')) for d, n in data_and_names)
+    names_and_tuples = \
+        ((n, (int(m, base=8), h)) for n, (m, _, h) in names_and_split_data)
+    return dict(names_and_tuples)
+
+
+def git_read_file(path, commit=None, git_func=None):
+    """Read a specified file from a specific Git commit
+
+    :param str path:          The path to the file to read, relative to the
+                              repository root
+    :param str commit:        (Optional) The commit to get the file from. If
+                              unspecified, HEAD is used.
+    :param function git_func: (Optional) The function to use to run git,
+                              defaults to 'git'
+
+    This function may raise a GitProcessError exception if the file or commit
+    are not found
+
+    :rtype: str
+    :returns: The contents of the file
+    """
+    if commit is None:
+        commit = 'HEAD'
+    if git_func is None:
+        git_func = git
+    return git_func('cat-file', '-p', '{0}:{1}'.format(commit, path))
 
 
 class GitProcessError(CalledProcessError):
