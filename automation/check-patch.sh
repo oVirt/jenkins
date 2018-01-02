@@ -7,9 +7,12 @@ main() {
     rm -rf exported-artifacts
     mkdir exported-artifacts
 
+    local usrc="scripts/usrc.py"
+    [[ -x "$usrc" ]] || usrc="scripts/usrc_local.py"
+
     # dispatch tests according to what changed in git
     local changed_files
-    changed_files="$(git show --pretty="format:" --name-only)"
+    changed_files="$($usrc changed-files)"
 
     # These are the files which are involved with the containers flow
     local containers_flow="Dockerfiles|collect_artifacts.sh|standard-stage.yaml|cleanup_slave.sh"
