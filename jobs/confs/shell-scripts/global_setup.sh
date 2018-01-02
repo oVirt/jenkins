@@ -75,10 +75,10 @@ extra_packages() {
     # Add extra packages we need for mock_runner.sh
     if [[ -e '/usr/bin/dnf' ]]; then
         verify_packages python3-PyYAML PyYAML python3-pyxdg python2-pyxdg \
-            python-jinja2 python-paramiko createrepo
+            python-jinja2 python-paramiko createrepo python-py python3-py
     else
         verify_packages python34-PyYAML PyYAML python2-pyxdg python-jinja2 \
-            python2-paramiko createrepo qemu-kvm-ev libvirt
+            python2-paramiko createrepo qemu-kvm-ev libvirt python-py python3-py
     fi
 }
 

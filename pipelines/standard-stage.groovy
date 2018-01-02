@@ -21,20 +21,29 @@ def loader_main(loader) {
 
         checkout_project(project)
         dir(project.name) {
-            jobs = get_std_ci_jobs(project, std_ci_stage)
-            queues = get_std_ci_queues(project)
-            if(!queues.empty && std_ci_stage != 'build-artifacts') {
-                // If we need to submit the change the queues, make sure we
-                // generate builds
-                jobs += get_std_ci_jobs(project, 'build-artifacts')
-            }
+            // This is a temporary workaround for KubeVirt project
+            sh """
+                [[ ! -f automation/check-patch.yaml ]] && exit 0
+                cp automation/check-patch.yaml .stdci.yaml
+            """
+        }
+        job_properties = get_std_ci_job_properties(project, std_ci_stage)
+        jobs = get_std_ci_jobs(job_properties)
+        queues = get_std_ci_queues(project, job_properties)
+        if(!queues.empty && std_ci_stage != 'build-artifacts') {
+            // If we need to submit the change the queues, make sure we
+            // generate builds
+            build_job_properties = get_std_ci_job_properties(
+                project, 'build-artifacts'
+            )
+            jobs += get_std_ci_jobs(build_job_properties)
         }
         if(jobs.empty) {
             echo "No STD-CI job definitions found"
         } else {
             def job_list = "Will run ${jobs.size()} job(s):"
             job_list += jobs.collect { job ->
-                "\n- ${job.stage}.${job.distro}.${job.arch}"
+                "\n- ${get_job_name(job)}"
             }.join()
             print(job_list)
         }
@@ -135,11 +144,7 @@ def get_project() {
     } else if(params.X_GitHub_Event == 'push') {
         get_project_from_github_push()
     } else if('GERRIT_EVENT_TYPE' in params) {
-        if(params.GERRIT_EVENT_TYPE == 'patchset-created') {
-            get_project_from_gerrit_created()
-        } else if(params.GERRIT_EVENT_TYPE == 'change-merged') {
-            get_project_from_gerrit_merged()
-        }
+        get_project_from_gerrit()
     } else {
         error "Cannot detect project from trigger or parameter information!"
     }
@@ -152,32 +157,36 @@ def check_whitelist(Project project) {
     }
 }
 
-def get_project_from_gerrit_created() {
-    return new Project(
+def is_gerrit_change_merged() {
+    // Check if the change is merged. Requires Gerrit Trigger env params!
+    def change_merged_sh = readFile("jenkins/scripts/check_if_merged.sh")
+    def is_merged = sh returnStatus: true, script: change_merged_sh
+    return is_merged == 0
+}
+
+def get_project_from_gerrit() {
+    Project project = new Project(
         clone_url: "https://${params.GERRIT_NAME}/${params.GERRIT_PROJECT}",
         name: params.GERRIT_PROJECT.tokenize('/')[-1],
         branch: params.GERRIT_BRANCH,
         refspec: params.GERRIT_REFSPEC,
         change_owner: params.GERRIT_PATCHSET_UPLOADER_EMAIL,
-        check_whitelist: {
-            def whitelist_filter = readFile(
-                "jenkins/scripts/whitelist_filter.sh"
-            )
-            def ret = sh returnStatus: true, script: whitelist_filter
-            return ret == 0
-        }
     )
-}
-
-def get_project_from_gerrit_merged() {
-    Project project = get_project_from_gerrit_created()
+    if(!is_gerrit_change_merged()) {
+        // Change is not merged. Initialize whitelist checking function
+        project.check_whitelist = {
+            def whitelist_sh = readFile("jenkins/scripts/whitelist_filter.sh")
+            def is_whitelisted = sh returnStatus: true, script: whitelist_sh
+            return is_whitelisted == 0
+        }
+        return project
+    }
+    // Change is merged. Initialize queue build args getter
     project.get_queue_build_args = { String queue ->
         get_generic_queue_build_args(
             queue, project.name, project.branch, project.head,
-            params.GH_EV_HEAD_COMMIT_url
         )
     }
-    project.check_whitelist = { -> true }
     return project
 }
 
@@ -295,177 +304,48 @@ def checkout_project(Project project) {
     checkout_repo(project.name, project.refspec, project.clone_url, project.head)
 }
 
-def get_std_ci_jobs(project, std_ci_stage) {
-    def jobs = []
-    def distros = get_std_ci_distros(std_ci_stage)
-    for(di = 0; di < distros.size(); ++di) {
-        def distro = distros[di]
-        def archs = get_std_ci_archs(std_ci_stage, distro)
-        for(ai = 0; ai < archs.size(); ++ai) {
-            def arch = archs[ai]
-            def runtime_reqs = \
-                get_std_ci_runtime_reqs(std_ci_stage, distro, arch)
-            def script = get_std_ci_script(std_ci_stage, distro, arch)
-            if(script) {
-                jobs << [
-                    stage: std_ci_stage,
-                    distro: distro,
-                    arch: arch,
-                    runtime_reqs: runtime_reqs,
-                    script: script,
-                ]
-            }
-        }
+def get_std_ci_job_properties(Project project, String std_ci_stage) {
+    def stdci_job_properties = "jobs_for_${std_ci_stage}.yaml"
+    withEnv(['PYTHONPATH=jenkins']) {
+        sh """\
+            #!/usr/bin/env python
+            from scripts.stdci_dsl.api import (
+                get_formatted_threads, setupLogging
+            )
+
+            setupLogging()
+            stdci_config = get_formatted_threads(
+                'pipeline_dict', '${project.name}', '${std_ci_stage}'
+            )
+            with open('${stdci_job_properties}', 'w') as conf:
+                conf.write(stdci_config)
+        """.stripIndent()
     }
-    return jobs
+    def cfg = readYaml file: stdci_job_properties
+    return cfg
 }
 
-def get_std_ci_queues(Project project) {
-    if(params.X_GitHub_Event != 'push' && params.GERRIT_EVENT_TYPE != 'change-merged') {
-        // Only Enqueue on actual push events
+def get_std_ci_jobs(Map job_properties) {
+    return job_properties.get('jobs')
+}
+
+def get_std_ci_global_options(Map job_properties) {
+    return job_properties.get('global_config')
+}
+
+def get_std_ci_queues(Project project, Map job_properties) {
+    if(get_stage_name() != 'check-merged') {
+        // Only Enqueue on actual merge/push events
         return []
     }
     print "Checking if change should be enqueued"
-    def branch_queue_map = get_std_ci_dict(["release_branches"])
+    def branch_queue_map = \
+        get_std_ci_global_options(job_properties).get("release_branches")
     def o = branch_queue_map.get(project.branch, [])
     if (o in Collection) {
         return o.collect { it as String } as Set
     } else {
         return [o as String]
-    }
-}
-
-def get_std_ci_distros(String std_ci_stage) {
-    print "Looking up distros for running $std_ci_stage"
-    def distros = get_std_ci_list(["${std_ci_stage}.distros", 'distros'])
-    return distros.empty ? ['el7'] : distros
-}
-
-def get_std_ci_archs(String std_ci_stage, String distro) {
-    print "Lookng up $distro architectures for $std_ci_stage"
-    def archs = get_std_ci_list([
-        "${std_ci_stage}.${distro}.archs",
-        "${std_ci_stage}.archs",
-        'archs',
-    ])
-    return archs.empty ? ['x86_64'] : archs
-}
-
-def get_std_ci_runtime_reqs(String std_ci_stage, String distro, String arch) {
-    print "Looking up runtime_requirements for $std_ci_stage on $distro/$arch"
-    return get_std_ci_dict([
-        "${std_ci_stage}.${distro}.${arch}.runtime_requirements",
-        "${std_ci_stage}.${distro}.runtime_requirements",
-        "${std_ci_stage}.${arch}.runtime_requirements",
-        "${std_ci_stage}.runtime_requirements",
-        "runtime_requirements",
-    ])
-}
-
-def get_std_ci_script(String std_ci_stage, String distro, String arch) {
-    def possible_paths = [
-        [std_ci_stage, distro, arch, 'sh'],
-        [std_ci_stage, distro, 'sh'],
-        [std_ci_stage, 'sh'],
-    ].findResults { get_possible_file_paths(it) }
-    for(pi = 0; pi < possible_paths.size(); ++pi) {
-        def possible_path = possible_paths[pi].join('.')
-        if(fileExists(possible_path)) {
-            return possible_path
-        }
-    }
-}
-
-def get_std_ci_list(List<String> locations) {
-    def rv = get_std_ci_object(locations)
-    def o = rv.object
-    def l = rv.location
-    if(o == null) {
-        return []
-    } else if (o in Collection) {
-        return o.collect { it as String } as Set
-    } else {
-        error("Invalid data at ${l}, should be a list")
-    }
-}
-
-def get_std_ci_dict(List<String> locations) {
-    def rv = get_std_ci_object(locations)
-    def o = rv.object
-    def l = rv.location
-    if(o == null) {
-        return [:]
-    } else if(o in Map) {
-        return o
-    } else {
-        error("Invalid data at ${l}, should be a mapping")
-    }
-}
-
-def get_std_ci_object(List<String> locations) {
-    for(li = 0; li < locations.size(); ++li) {
-        def paths = get_paths_for_location(locations[li])
-        for(pi = 0; pi < paths.size(); ++ pi) {
-            def path = paths[pi]
-            if(!fileExists(path.file_path)) {
-                continue
-            }
-            def yaml = readYaml file: path.file_path
-            def o = get_yaml_object(yaml, path.yaml_path)
-            if(o == null) {
-                continue
-            }
-            return [
-                object: o,
-                location: "${path.file_path}[${path.yaml_path}]"
-            ]
-        }
-    }
-    return [ object: null, location: "--not-found--", ]
-}
-
-@NonCPS
-def get_paths_for_location(String location, List extentions=['yaml', 'yml']) {
-    def parts = location.tokenize('.')
-    if(parts.size() > 1) {
-        return get_possible_file_paths(parts[0..-2], extentions).collect { pt ->
-            return [ file_path: pt, yaml_path: parts[-1..-1], ]
-        }
-    } else {
-        return extentions.collect { extention ->
-            return [ file_path: "automation.$extention", yaml_path: parts, ]
-        }
-    }
-}
-
-@NonCPS
-def get_possible_file_paths(List path_parts, List extentions = ['']) {
-    extentions.collectMany { extention ->
-        if(extention.empty) {
-            [ "automation/${path_parts.join('.')}", ]
-        } else {
-            ((path_parts.size()-1)..0).collect { ext_pos ->
-                'automation/' + (
-                    path_parts[0..ext_pos] + [extention] +
-                    path_parts[ext_pos+1..<path_parts.size()]
-                ).join('.')
-            }
-        }
-    }
-}
-
-@NonCPS
-def get_yaml_object(Object yaml, List yaml_path) {
-    yaml_path.inject(yaml) { yaml_ptr, path_part ->
-        if(yaml_ptr in Map) {
-            yaml_ptr.get(path_part)
-        } else if(yaml_ptr in Collection) {
-            yaml_ptr.findResult {
-                if(it in Map) {
-                    it.get(path_part)
-                }
-            }
-        }
     }
 }
 
@@ -505,18 +385,23 @@ def mk_enqueue_change_branch(Project project, String queue) {
     }
 }
 
+def get_job_name(Map job) {
+    if(job.substage == "default")
+        return "${job.stage}.${job.distro}.${job.arch}"
+    return "${job.stage}.${job.substage}.${job.distro}.${job.arch}"
+}
+
 def run_std_ci_jobs(project, jobs) {
     def branches = [:]
     for(job in jobs) {
-        branches["${job.stage}.${job.distro}.${job.arch}"] = \
-            mk_std_ci_runner(project, job)
+        branches[get_job_name(job)] = mk_std_ci_runner(project, job)
     }
     parallel branches
 }
 
 def mk_std_ci_runner(project, job) {
     return {
-        String ctx = "${job.stage}.${job.distro}.${job.arch}"
+        String ctx = get_job_name(job)
         project.notify(ctx, 'PENDING', 'Allocating runner node')
         String node_label = get_std_ci_node_label(job)
         if(node_label.empty) {
@@ -531,7 +416,7 @@ def mk_std_ci_runner(project, job) {
 }
 
 def get_job_dir(job) {
-    return "${job.stage}.${job.distro}.${job.arch}"
+    return get_job_name(job)
 }
 
 @NonCPS
@@ -573,7 +458,7 @@ class TestFailedRef implements Serializable {
 def run_std_ci_on_node(project, job, stash_name) {
     TestFailedRef tfr = new TestFailedRef()
     Boolean success = false
-    String ctx = "${job.stage}.${job.distro}.${job.arch}"
+    String ctx = get_job_name(job)
     try {
         try {
             project.notify(ctx, 'PENDING', 'Setting up test environment')
@@ -612,7 +497,7 @@ def run_std_ci_on_node(project, job, stash_name) {
 }
 
 def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
-    String ctx = "${job.stage}.${job.distro}.${job.arch}"
+    String ctx = get_job_name(job)
     try {
         run_jjb_script('mock_setup.sh')
         // TODO: Load mirros once for whole pipeline

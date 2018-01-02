@@ -19,5 +19,6 @@
     gerrit-server: 'gerrit.ovirt.org'
     project:
       - jenkins
+      - stdci-staging
     jobs:
       - '{project}_standard-gerrit-jobs'
