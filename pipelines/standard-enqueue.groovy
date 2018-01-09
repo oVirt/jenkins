@@ -175,9 +175,13 @@ def version_to_queue(version) {
     }
 }
 
-def email_notify(status, recipients='infra@ovirt.org') {
+def email_notify(status, recipients=null) {
+    if(recipients == null) {
+        recipients = env.ERROR_MAIL_RECIPIENTS ?: 'infra@ovirt.org'
+    }
+    def subject_tag = env.ERROR_MAIL_TAG ?: 'oVirt CI'
     emailext(
-        subject: "[oVirt Jenkins] ${env.JOB_NAME}" +
+        subject: "[$subject_tag] ${env.JOB_NAME}" +
             " - Build #${env.BUILD_NUMBER} - ${status}!",
         body: [
             "Build: ${env.BUILD_URL}",

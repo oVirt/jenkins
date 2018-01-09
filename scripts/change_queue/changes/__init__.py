@@ -9,6 +9,7 @@ import smtplib
 import re
 from textwrap import wrap
 from threading import Lock
+from os import environ
 
 from scripts.object_utils import object_witp_opt_attrs, object_proxy
 from scripts.gerrit import GerritPatchset
@@ -288,6 +289,8 @@ class GerritMergedChange(ChangeWithBuilds, EmailNotifyingChange):
     def from_jenkins_env(cls):
         o = cls(gerrit_patchset=GerritPatchset.from_jenkins_env())
         o.set_builds_from_env()
+        o._set_originator_from_env()
+        o._set_recipients_from_env()
         return o
 
     @property
@@ -328,6 +331,20 @@ class GerritMergedChange(ChangeWithBuilds, EmailNotifyingChange):
             self.gerrit_patchset.project.name,
             self.gerrit_patchset.branch.name,
         )
+
+    def _set_recipients_from_env(self):
+        """Set mail recipients from env vars
+        """
+        if 'CQ_GERRIT_RECIPIENTS' in environ:
+            recipients = re.split(', *', environ['CQ_GERRIT_RECIPIENTS'])
+            self.rejected_recipients = recipients
+            self.failed_recipients = recipients
+
+    def _set_originator_from_env(self):
+        """Set mail originator from env vars
+        """
+        if 'CQ_GERRIT_ORIGINATOR' in environ:
+            self.originator = environ['CQ_GERRIT_ORIGINATOR']
 
 
 class GitMergedChange(ChangeWithBuilds, EmailNotifyingChange):

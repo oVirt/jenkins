@@ -139,6 +139,43 @@ class TestGerritMergedChange(object):
         assert not a_gerrit_merged_change.successful_recipients
         assert a_gerrit_merged_change.failed_recipients == infra
 
+    def test_mail_originator(self, a_gerrit_merged_change):
+        jenkins = 'oVirt Jenkins <jenkins@ovirt.org>'
+        assert a_gerrit_merged_change.added_originator == jenkins
+        assert a_gerrit_merged_change.rejected_originator == jenkins
+        assert a_gerrit_merged_change.successful_originator == jenkins
+        assert a_gerrit_merged_change.failed_originator == jenkins
+
+    def test_set_recipients_from_e(self, a_gerrit_merged_change, monkeypatch):
+        infra = ('infra@ovirt.org',)
+        addresses = ('some@mail.com', 'another@mail.com')
+        a_gerrit_merged_change._set_recipients_from_env()
+        assert not a_gerrit_merged_change.added_recipients
+        assert a_gerrit_merged_change.rejected_recipients == infra
+        assert not a_gerrit_merged_change.successful_recipients
+        assert a_gerrit_merged_change.failed_recipients == infra
+        monkeypatch.setenv('CQ_GERRIT_RECIPIENTS', ', '.join(addresses))
+        a_gerrit_merged_change._set_recipients_from_env()
+        assert not a_gerrit_merged_change.added_recipients
+        assert a_gerrit_merged_change.rejected_recipients == addresses
+        assert not a_gerrit_merged_change.successful_recipients
+        assert a_gerrit_merged_change.failed_recipients == addresses
+
+    def test_set_originator_from_e(self, a_gerrit_merged_change, monkeypatch):
+        jenkins = 'oVirt Jenkins <jenkins@ovirt.org>'
+        originator = 'someone@mail.com'
+        a_gerrit_merged_change._set_originator_from_env()
+        assert a_gerrit_merged_change.added_originator == jenkins
+        assert a_gerrit_merged_change.rejected_originator == jenkins
+        assert a_gerrit_merged_change.successful_originator == jenkins
+        assert a_gerrit_merged_change.failed_originator == jenkins
+        monkeypatch.setenv('CQ_GERRIT_ORIGINATOR', originator)
+        a_gerrit_merged_change._set_originator_from_env()
+        assert a_gerrit_merged_change.added_originator == originator
+        assert a_gerrit_merged_change.rejected_originator == originator
+        assert a_gerrit_merged_change.successful_originator == originator
+        assert a_gerrit_merged_change.failed_originator == originator
+
 
 class TestGitMergedChange(object):
     @pytest.fixture
