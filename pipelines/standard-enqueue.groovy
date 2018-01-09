@@ -167,7 +167,12 @@ def builds_per_queue(builds) {
 
 @NonCPS
 def version_to_queue(version) {
-    "ovirt-${version}"
+    if(version.contains('-')) {
+        version
+    }
+    else {
+        "ovirt-${version}"
+    }
 }
 
 def email_notify(status, recipients='infra@ovirt.org') {
