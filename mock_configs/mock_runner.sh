@@ -283,11 +283,6 @@ gen_mock_config() {
 import os
 import platform
 
-# Needed when running on dnf systems
-distro_maj = int(platform.linux_distribution()[1].split('.', 1)[0])
-if int(distro_maj) >= 23:
-    config_opts['yum_command'] = '/usr/bin/yum-deprecated'
-
 # This alleviates the io of installing the chroot
 config_opts["nosync"] = True
 # we are not going to build cross-arch packages, we can force it
@@ -296,7 +291,7 @@ EOH
     if [[ "$with_mounts" != 'no' ]]; then
         echo "Adding mount points" >&2
         cat >>"$tmp_conf" <<EOH
-config_opts["plugin_conf"]["bind_mount_enable"]='True'
+config_opts["plugin_conf"]["bind_mount_enable"]=True
 config_opts['chroothome'] = '$MOUNT_POINT'
 config_opts["plugin_conf"]["bind_mount_opts"]["dirs"]=[
     # Mount the local dir to $MOUNT_POINT
