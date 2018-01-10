@@ -31,14 +31,24 @@
 - project:
     <<: *system-tests-common
     name: ovirt-system-he-tests
-    suite_type: he-basic
+    suite_type:
+      - he-basic
+      - he-basic-ansible
     project: 'ovirt-system-tests'
     version:
       - 4.1:
           chroot_distro: el7
       - master:
           chroot_distro: el7
-    email-to: 'sbonazzo@redhat.com, infra@ovirt.org, lveyde@redhat.com, stirabos@redhat.com, irosenzw@redhat.com'
+    exclude:
+      - { suite_type: he-basic-ansible, version: 4.1 }
+    email-to: >
+      didi@redhat.com,
+      sbonazzo@redhat.com,
+      infra@ovirt.org,
+      lveyde@redhat.com,
+      stirabos@redhat.com,
+      irosenzw@redhat.com
     jobs:
       - '{project}_{suite_type}-suite-{version}'
 
