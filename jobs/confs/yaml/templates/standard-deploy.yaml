@@ -41,7 +41,7 @@
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
 
 - job-template: &deploy-job-template
-    name: 'deploy-to_ovirt-{version}_tested'
+    name: 'deploy-to_{queue-name}_tested'
     properties:
       - throttle:
           max-per-node: 1
@@ -60,12 +60,16 @@
     builders:
       - shell: |
           [[ "$REPOMAN_SOURCES" == "" ]] && exit 1
+          queue_name="{queue-name}"
+          # For 'ovirt-*' queues strip the 'ovirt-' prefix to be compatible
+          # with directory naming scheme that included the oVirt release
+          # version rather then the queue name
           (
-              echo "repo-extra-dir:{version}"
+              echo "repo-extra-dir:${{queue_name##ovirt-}}"
               echo "$REPOMAN_SOURCES"
           ) | ssh \
               -o StrictHostKeyChecking=no \
-              deploy-ovirt-experimental@resources.ovirt.org
+              "{deploy-user}@{deploy-host}"
     wrappers:
       - ssh-agent-credentials:
           users:

@@ -12,19 +12,9 @@
       - ovirt-master
       - ovirt-4.1
       - ovirt-4.2
+    deploy-user: deploy-ovirt-experimental
+    deploy-host: resources.ovirt.org
     jobs:
       - '{queue-name}_change-queue'
       - '{queue-name}_change-queue-tester'
-
-# We're adding the deploy-to-tested job here because we're likely to
-# just create a job per queue in the future. We currently cannot define
-# these jobs in terms of queue-names because we need to maintain
-# compatibility with the 'experimental' flow.
-- project:
-    name: deploy-to_ovirt_tested
-    version:
-      - master
-      - 4.1
-      - 4.2
-    jobs:
-      - 'deploy-to_ovirt-{version}_tested'
+      - 'deploy-to_{queue-name}_tested'
