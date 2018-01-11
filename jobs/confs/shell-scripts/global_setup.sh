@@ -75,10 +75,11 @@ extra_packages() {
     # Add extra packages we need for mock_runner.sh
     if [[ -e '/usr/bin/dnf' ]]; then
         verify_packages python3-PyYAML PyYAML python3-pyxdg python2-pyxdg \
-            python-jinja2 python-paramiko createrepo python-py python3-py
+            python-jinja2 python-paramiko createrepo python-py python3-py mock
     else
         verify_packages python34-PyYAML PyYAML python2-pyxdg python-jinja2 \
-            python2-paramiko createrepo qemu-kvm-ev libvirt python-py python3-py
+            python2-paramiko createrepo qemu-kvm-ev libvirt python-py \
+            python3-py mock
     fi
 }
 
@@ -103,11 +104,13 @@ verify_packages() {
     local packages=("$@")
 
     local tool='/usr/bin/dnf'
+    local tool_inst_opts=(--best --allowerasing)
     if [[ ! -e "$tool" ]]; then
         tool=/bin/yum
+        tool_inst_opts=()
     fi
     if can_sudo "$tool"; then
-        sudo -n "$tool" install -y "${packages[@]}"
+        sudo -n "$tool" "${tool_inst_opts[@]}" install -y "${packages[@]}"
     fi
     local failed=0
     for package in "${packages[@]}"; do
