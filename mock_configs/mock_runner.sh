@@ -663,7 +663,8 @@ run_shell() {
         mock_conf \
         mock_dir \
         mock_chroot \
-        base_chroot
+        base_chroot \
+        mock_enable_network
 
     base_chroot="${mock_env#*:}"
     distro_id="${mock_env%:*}"
@@ -681,6 +682,9 @@ run_shell() {
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
 
+    # If mock supports the --enable-network option, we need to use it
+    mock_enable_network=($(mock --help 2>&1 | grep -o -- --enable-network))
+
     echo "Using base mock conf $MOCK_CONF_DIR/${base_chroot}.cfg" >&2
     prepare_chroot "$base_chroot" "$distro_id" "$script" \
     || return 1
@@ -691,6 +695,7 @@ run_shell() {
         --configdir="$mock_dir" \\
         --root="$mock_chroot" \\
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \\
+        "${mock_enable_network[@]}" \\
         --shell
 EOC
     $MOCK \
@@ -698,6 +703,7 @@ EOC
         --configdir="$mock_dir" \
         --root="$mock_chroot" \
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \
+        "${mock_enable_network[@]}" \
         --shell
     res=$?
 
@@ -717,6 +723,8 @@ run_script() {
         configdir \
         custom_conf \
         distro_id
+        mock_enable_network
+
     base_chroot="${mock_env#*:}"
     distro_id="${mock_env%%:*}"
     if [[ -z "$distro_id" ]] || [[ -z "$base_chroot" ]]; then
@@ -731,6 +739,9 @@ run_script() {
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
 
+    # If mock supports the --enable-network option, we need to use it
+    mock_enable_network=($(mock --help 2>&1 | grep -o -- --enable-network))
+
     echo "Using base mock conf $MOCK_CONF_DIR/${base_chroot}.cfg" >&2
     prepare_chroot "$base_chroot" "${mock_env%%:*}" "$script" \
     || return 1
@@ -741,6 +752,7 @@ run_script() {
         --configdir="$mock_dir" \\
         --no-clean \\
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \\
+        "${mock_enable_network[@]}" \\
         --shell <<EOS
             set -e
             # Remove all system repos from the environment to ensure we're not
@@ -788,6 +800,7 @@ EOC
         --configdir="$mock_dir" \
         --no-clean \
         --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \
+        "${mock_enable_network[@]}" \
         --shell <<EOS
             set -e
             # Remove all system repos from the environment to ensure we're not
