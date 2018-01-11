@@ -72,9 +72,18 @@ def checkout_repo(
                 userRemoteConfigs: [[
                     refspec: "+${refspec}:myhead",
                     url: url
-                ]]
+                ]],
+                extensions: [[$class: 'CleanBeforeCheckout']],
             ]
         )
+        sh """
+            WORKSPACE="\${WORKSPACE:-\$(dirname \$PWD)}"
+
+            usrc="\$WORKSPACE/jenkins/scripts/usrc.py"
+            [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/scripts/usrc_local.py"
+
+            "\$usrc" --log -d get
+        """
     }
 }
 
