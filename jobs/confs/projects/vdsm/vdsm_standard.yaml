@@ -22,6 +22,8 @@
         - fcraw
       exclude:
         - version: master
+          distro: fc26
+        - version: master
           distro: fc25
         - version: master
           distro: fc24
