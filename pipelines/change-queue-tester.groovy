@@ -50,7 +50,7 @@ def loader_main(loader) {
         }
         try {
             stage('waiting for artifact builds') {
-                wait_for_artifacts(change_data.builds)
+                change_data.builds = wait_for_artifacts(change_data.builds)
             }
             stage('preparing test data') {
                 prepare_test_data(change_data)
@@ -154,16 +154,20 @@ def load_change_data() {
 
 def wait_for_artifacts(builds) {
     waitUntil {
-        update_builds_status(builds)
+        builds = update_builds_status(builds)
         all_builds_dequeued(builds)
     }
     if(any_builds_removed_from_queue(builds)) {
         error 'Some build jobs were removed from build queue'
     }
-    waitUntil { all_builds_done(builds) }
+    waitUntil {
+        builds = update_builds_status(builds)
+        all_builds_done(builds)
+    }
     if(!all_builds_succeeded(builds)) {
         error 'Some build jobs failed'
     }
+    return builds
 }
 
 def prepare_test_data(change_data) {
@@ -214,11 +218,17 @@ def report_test_results(result) {
 
 @NonCPS
 def update_builds_status(builds) {
-    builds.each {
+    builds.findResults {
+        def job = Jenkins.instance.getItem(it.job_name)
+        if(job == null) {
+            print("Job: ${it.job_name} seems to have been removed - ignoring")
+            // returning null will make this build record not appear in the
+            // returned collection
+            return null
+        }
         if(('build_id' in it) || !('queue_id' in it)) {
             return it
         }
-        def job = Jenkins.instance.getItem(it.job_name)
         def build = job.builds.find { bld -> bld.queueId == it['queue_id'] }
         if(build == null) {
             if(Jenkins.instance.queue.getItem(it['queue_id']) != null) {
@@ -262,7 +272,17 @@ def any_builds_removed_from_queue(builds) {
 @NonCPS
 def all_builds_done(builds) {
     return !builds.any {
-        if(Jenkins.instance.getItem(it.job_name).getBuild(it.build_id).isBuilding()) {
+        def job = Jenkins.instance.getItem(it.job_name)
+        if(job == null) {
+            print("Job: ${it.job_name} seems to have been removed - ignoring")
+            return false
+        }
+        def build = job.getBuild(it.build_id)
+        if(build == null) {
+            print("Cannot find build ${it.build_id} of ${it.job_name}.")
+            return false
+        }
+        if(build.isBuilding()) {
             print("${it.job_name} (${it.build_id}) still building")
             return true
         }
@@ -273,7 +293,16 @@ def all_builds_done(builds) {
 @NonCPS
 def all_builds_succeeded(builds) {
     return builds.every {
-        def build = Jenkins.instance.getItem(it.job_name).getBuild(it.build_id)
+        def job = Jenkins.instance.getItem(it.job_name)
+        if(job == null) {
+            print("Job: ${it.job_name} seems to have been removed - ignoring")
+            return true
+        }
+        def build = job.getBuild(it.build_id)
+        if(build == null) {
+            print("Cannot find build ${it.build_id} of ${it.job_name}.")
+            return false
+        }
         if(build.result.isBetterOrEqualTo(hudson.model.Result.SUCCESS)) {
             return true
         }
