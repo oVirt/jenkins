@@ -5,15 +5,18 @@ Project project
 def jobs
 def queues
 
-def loader_main(loader) {
+def on_load(loader){
     // Copy methods from loader to this script
     metaClass.checkout_repo = loader.&checkout_repo
     metaClass.checkout_jenkins_repo = loader.&checkout_jenkins_repo
     metaClass.run_jjb_script = loader.&run_jjb_script
+}
 
+def loader_main(loader) {
     stage('Detecting STD-CI jobs') {
         std_ci_stage = get_stage_name()
         project = get_project()
+        check_whitelist(project)
         currentBuild.displayName += " ${project.name} [$std_ci_stage]"
 
         checkout_project(project)
@@ -67,6 +70,37 @@ def get_stage_name() {
     if('STD_CI_STAGE' in params) {
         return params.STD_CI_STAGE
     }
+    def stage
+    if (params.GERRIT_EVENT_TYPE){
+        stage = get_stage_gerrit()
+    } else {
+        stage = get_stage_github()
+    }
+    if (stage) { return stage }
+    error "Failed to detect stage from trigger event or parameters"
+}
+
+@NonCPS
+def get_stage_gerrit() {
+    if (params.GERRIT_EVENT_TYPE == "patchset-created" ||
+        params.GERRIT_EVENT_TYPE == "draft-published") {
+        return 'check-patch'
+    }
+    if (params.GERRIT_EVENT_TYPE == "change-merged") { return 'check-merged' }
+    if (params.GERRIT_EVENT_TYPE == "comment-added") {
+        if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci test please$/) {
+            return 'check-patch'
+        } else if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci build please$/) {
+            return 'build-artifacts'
+        } else if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci re-merge please$/) {
+            return 'check-merged'
+        }
+    }
+    return null
+}
+
+@NonCPS
+def get_stage_github() {
     if(params.ghprbActualCommit) {
         // We assume ghprbActualCommit will always be set by the ghprb trigger,
         // so if we get here it means we got triggered by it
@@ -76,10 +110,8 @@ def get_stage_name() {
         // We run check-patch by default
         return 'check-patch'
     }
-    if(params.X_GitHub_Event == 'push') {
-        return 'check-merged'
-    }
-    error "Failed to detect stage from trigger event or parameters"
+    if(params.X_GitHub_Event == 'push') { return 'check-merged' }
+    return null
 }
 
 class Project implements Serializable {
@@ -88,9 +120,11 @@ class Project implements Serializable {
     String branch
     String refspec
     String head
+    String change_owner
     def notify = \
         { context, status, short_msg=null, long_msg=null, url=null -> }
     def get_queue_build_args = null
+    def check_whitelist = { -> true }
 }
 
 def get_project() {
@@ -100,9 +134,51 @@ def get_project() {
         get_project_from_github_pr()
     } else if(params.X_GitHub_Event == 'push') {
         get_project_from_github_push()
+    } else if('GERRIT_EVENT_TYPE' in params) {
+        if(params.GERRIT_EVENT_TYPE == 'patchset-created') {
+            get_project_from_gerrit_created()
+        } else if(params.GERRIT_EVENT_TYPE == 'change-merged') {
+            get_project_from_gerrit_merged()
+        }
     } else {
         error "Cannot detect project from trigger or parameter information!"
     }
+}
+
+def check_whitelist(Project project) {
+    if(!project.check_whitelist()){
+        currentBuild.result = 'NOT_BUILT'
+        error("User $project.change_owner is not whitelisted")
+    }
+}
+
+def get_project_from_gerrit_created() {
+    return new Project(
+        clone_url: "https://${params.GERRIT_NAME}/${params.GERRIT_PROJECT}",
+        name: params.GERRIT_PROJECT.tokenize('/')[-1],
+        branch: params.GERRIT_BRANCH,
+        refspec: params.GERRIT_REFSPEC,
+        change_owner: params.GERRIT_PATCHSET_UPLOADER_EMAIL,
+        check_whitelist: {
+            def whitelist_filter = readFile(
+                "jenkins/scripts/whitelist_filter.sh"
+            )
+            def ret = sh returnStatus: true, script: whitelist_filter
+            return ret == 0
+        }
+    )
+}
+
+def get_project_from_gerrit_merged() {
+    Project project = get_project_from_gerrit_created()
+    project.get_queue_build_args = { String queue ->
+        get_generic_queue_build_args(
+            queue, project.name, project.branch, project.head,
+            params.GH_EV_HEAD_COMMIT_url
+        )
+    }
+    project.check_whitelist = { -> true }
+    return project
 }
 
 def get_project_from_params() {
@@ -119,7 +195,8 @@ def get_project_from_github_pr() {
         params.ghprbGhRepository.tokenize('/')[-1],
         params.ghprbTargetBranch,
         "refs/pull/${params.ghprbPullId}/merge",
-        params.ghprbActualCommit
+        params.ghprbActualCommit,
+        params.ghprbTriggerAuthorLogin
     )
 }
 
@@ -130,6 +207,7 @@ def get_project_from_github_push() {
         params.GH_EV_REF.tokenize('/')[-1],
         params.GH_EV_REF,
         params.GHPUSH_SHA,
+        params.GHPUSH_PUSHER_email,
         params.GHPUSH_SHA
     )
     project.get_queue_build_args = { String queue ->
@@ -143,7 +221,7 @@ def get_project_from_github_push() {
 
 def get_github_project(
     String org, String repo, String branch, String test_ref, String notify_ref,
-    String checkout_head = null
+    String change_owner, String checkout_head = null
 ) {
     Project project = new Project(
         clone_url: "https://github.com/$org/$repo",
@@ -151,6 +229,7 @@ def get_github_project(
         branch: branch,
         refspec: test_ref,
         head: checkout_head,
+        change_owner: change_owner,
     )
     if(env.SCM_NOTIFICATION_CREDENTIALS) {
         def last_status = null
@@ -191,13 +270,19 @@ def get_generic_queue_build_args(
     withEnv(['PYTHONPATH=jenkins']) {
         sh """\
             #!/usr/bin/env python
+            from os import environ
             from scripts.change_queue import JenkinsChangeQueueClient
-            from scripts.change_queue.changes import GitMergedChange
+            from scripts.change_queue.changes import (
+                GitMergedChange, GerritMergedChange
+            )
 
             jcqc = JenkinsChangeQueueClient('${queue}')
-            change = GitMergedChange(
-                '$project', '$branch', '$sha'${url ? ", '$url'" : ""}
-            )
+            if 'GERRIT_EVENT_TYPE' in environ:
+                change = GerritMergedChange.from_jenkins_env()
+            else:
+                change = GitMergedChange(
+                    '$project', '$branch', '$sha'${url ? ", '$url'" : ""}
+                )
             change.set_current_build_from_env()
             jcqc.add(change).as_pipeline_build_step_json('${json_file}')
         """.stripIndent()
@@ -236,7 +321,7 @@ def get_std_ci_jobs(project, std_ci_stage) {
 }
 
 def get_std_ci_queues(Project project) {
-    if(params.X_GitHub_Event != 'push') {
+    if(params.X_GitHub_Event != 'push' && params.GERRIT_EVENT_TYPE != 'change-merged') {
         // Only Enqueue on actual push events
         return []
     }
@@ -494,6 +579,13 @@ def run_std_ci_on_node(project, job, stash_name) {
             checkout_project(project)
             run_jjb_script('cleanup_slave.sh')
             run_jjb_script('global_setup.sh')
+            withCredentials(
+                [file(credentialsId: 'ci_secrets_file', variable: 'CI_SECRETS_FILE')]
+            ) {
+                withEnv(["PROJECT=$project.name", "STD_VERSION=$project.branch"]) {
+                    run_jjb_script('project_setup.sh')
+                }
+            }
             run_std_ci_in_mock(project, job, tfr)
         } finally {
             project.notify(ctx, 'PENDING', 'Collecting results')
@@ -562,6 +654,7 @@ def mock_runner(script, distro, arch, mirrors=null) {
         ../jenkins/mock_configs/mock_runner.sh \\
             --execute-script "$script" \\
             --mock-confs-dir ../jenkins/mock_configs \\
+            --secrets-file "$WORKSPACE/std_ci_secrets.yaml" \\
             --try-proxy \\
             $mirrors_arg \
             "${distro}.*${arch}"

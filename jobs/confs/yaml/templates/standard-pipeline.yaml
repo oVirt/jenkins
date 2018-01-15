@@ -1,4 +1,4 @@
-- job-template: &standard-pipeline
+- job-template: &standard-github-pipeline
     name: '{org}_{project}_standard-check-pr'
     project-type: workflow
     quiet-period: 0
@@ -35,7 +35,7 @@
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
 
 - job-template:
-    <<: *standard-pipeline
+    <<: *standard-github-pipeline
     name: '{org}_{project}_standard-on-ghpush'
     # Push ordering is important so disable concurrency
     concurrent: false
@@ -144,3 +144,92 @@
           description: The standard-CI stage to emulate
           default: check-patch
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
+
+- job-template:
+    name: '{project}_standard-check-patch'
+    project-type: workflow
+    quiet-period: 0
+    concurrent: true
+    properties:
+      - build-discarder:
+          days-to-keep: 14
+          artifact-num-to-keep: 60
+      - inject:
+          properties-content: |
+            SCM_NOTIFICATION_CREDENTIALS=''
+            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
+            STDCI_SCM_URL={stdci-scm-url}
+            STDCI_SCM_REFSPEC={stdci-scm-refspec}
+    triggers:
+      - gerrit:
+          server-name: '{gerrit-server}'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: true
+                exclude-no-code-change: true
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: '^ci (test|build) please.*'
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: '{gerrit-subpath}{project}'
+              branches:
+                - branch-compare-type: 'REG_EXP'
+                  branch-pattern: '.*'
+          escape-quotes: true
+          override-votes: true
+          gerrit-build-successful-codereview-value: 1
+          gerrit-build-failed-codereview-value: -1
+          gerrit-build-unstable-codereview-value: -1
+          notbuilt-message: |
+            To avoid overloading the infrastructure, a whitelist for
+            running gerrit triggered jobs has been set in place, if
+            you feel like you should be in it, please contact infra at
+            ovirt dot org.
+    dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
+
+- job-template:
+    name: '{project}_standard-on-merge'
+    project-type: workflow
+    quiet-period: 0
+    concurrent: false
+    properties:
+      - build-discarder:
+          days-to-keep: 14
+          artifact-num-to-keep: 60
+      - inject:
+          properties-content: |
+            SCM_NOTIFICATION_CREDENTIALS=''
+            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
+            STDCI_SCM_URL={stdci-scm-url}
+            STDCI_SCM_REFSPEC={stdci-scm-refspec}
+    triggers:
+      - gerrit:
+          server-name: '{gerrit-server}'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: '^ci re-merge please.*'
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: '{gerrit-subpath}{project}'
+              branches:
+                - branch-compare-type: 'REG_EXP'
+                  branch-pattern: '.*'
+          escape-quotes: true
+          override-votes: true
+          gerrit-build-successful-codereview-value: 1
+          gerrit-build-failed-codereview-value: -1
+          gerrit-build-unstable-codereview-value: -1
+          notbuilt-message: |
+            To avoid overloading the infrastructure, a whitelist for
+            running gerrit triggered jobs has been set in place, if
+            you feel like you should be in it, please contact infra at
+            ovirt dot org.
+    dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
+
+- job-group:
+    name: '{project}_standard-gerrit-jobs'
+    jobs:
+      - '{gerrit-subpath}{project}_standard-check-patch'
+      - '{gerrit-subpath}{project}_standard-on-merge'

@@ -27,3 +27,4 @@
     default-scm-url-prefix: https://gerrit-staging.ovirt.org
     stdci-scm-url: https://gerrit.ovirt.org/jenkins
     stdci-scm-refspec: refs/heads/master
+    gerrit-subpath: ''
