@@ -51,6 +51,7 @@ def loader_main(loader) {
         try {
             stage('waiting for artifact builds') {
                 change_data.builds = wait_for_artifacts(change_data.builds)
+                wait_for_test_artifacts(change_data)
             }
             stage('preparing test data') {
                 prepare_test_data(change_data)
@@ -168,6 +169,14 @@ def wait_for_artifacts(builds) {
         error 'Some build jobs failed'
     }
     return builds
+}
+
+def wait_for_test_artifacts(change_data) {
+    if(test_functions.metaClass.respondsTo(test_functions, 'wait_for_artifacts')) {
+        test_functions.wait_for_artifacts(change_data)
+    } else {
+        echo "No wait_for_artifacts defined for this change-queue"
+    }
 }
 
 def prepare_test_data(change_data) {

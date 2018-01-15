@@ -28,6 +28,10 @@ def extra_load_change_data_py(change_list_var, mirrors_var) {
     """.stripIndent()
 }
 
+def wait_for_artifacts(change_data) {
+    wait_for_tested_deployment(ovirt_release)
+}
+
 def run_tests(change_data) {
     run_ost_tests(ovirt_release)
 }
@@ -166,6 +170,35 @@ def mock_runner(script, distro, mirrors=null) {
     """
 }
 
+def wait_for_tested_deployment(version) {
+    def job_name = "deploy-to_ovirt-${version}_tested"
+    def build_id
+    def queue_id = get_queue_id(job_name)
+    if(queue_id != null) {
+        waitUntil {
+            print("Waiting for queued ${job_name} to be start building")
+            !is_in_queue(queue_id)
+        }
+        build_id = get_build_from_queue(job_name, queue_id)
+        if(build_id == null) {
+            print("${job_name} build was removed from queue")
+            return
+        }
+    } else {
+        build_id = get_last_build(job_name)
+        if(build_id == null) {
+            print("${job_name} seems to have never been built")
+            return
+        }
+    }
+    if(!build_is_done(job_name, build_id)) {
+        waitUntil {
+            print("${job_name} ($build_id} is still building")
+            build_is_done(job_name, build_id)
+        }
+    }
+}
+
 def deploy_to_tested(version, change_data) {
     def extra_sources = make_extra_sources(change_data.builds)
     build(
@@ -174,10 +207,61 @@ def deploy_to_tested(version, change_data) {
             name: 'REPOMAN_SOURCES',
             value: extra_sources,
         )],
-        wait: true,
+        wait: false,
     )
 }
 
+@NonCPS
+def get_queue_id(job_name) {
+    return Jenkins.instance.queue.items.toList().find({
+        it.task.name == job_name
+    })?.id
+}
+
+@NonCPS
+def is_in_queue(queue_id) {
+    Jenkins.instance.queue.getItem(queue_id) != null
+}
+
+@NonCPS
+def get_build_from_queue(job_name, queue_id) {
+    def job = Jenkins.instance.getItem(job_name)
+    if(job == null) {
+        print("Job: ${job_name} not found - ignoring")
+        return null
+    }
+    return job.builds.find({ bld -> bld.queueId == queue_id })?.id
+}
+
+@NonCPS
+def get_last_build(job_name) {
+    def job = Jenkins.instance.getItem(job_name)
+    if(job == null) {
+        print("Job: ${job_name} not found - ignoring")
+        return null
+    }
+    def builds = job.getNewBuilds()
+    if(builds.isEmpty()) {
+        return null
+    } else {
+        return builds.first().id
+    }
+}
+
+@NonCPS
+def build_is_done(job_name, build_id) {
+    def job = Jenkins.instance.getItem(job_name)
+    if(job == null) {
+        print("Job: ${job_name} not found - ignoring")
+        return true
+    }
+    def build = job.getBuild(build_id)
+    if(build == null) {
+        print("Cannot find build ${build_id} of ${job_name}.")
+        return true
+    }
+    return !build.isBuilding()
+}
 
 // We need to return 'this' so the tester job can invoke functions from
 // this script
