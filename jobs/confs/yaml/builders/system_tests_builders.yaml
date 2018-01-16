@@ -15,7 +15,7 @@
           ## check which version of lago to use, and append to .repos
           if ! [[ -z "${{LAGO_CUSTOM_REPO// }}" ]]; then
               timestamp=$(date +%s)
-              for repo in $(find ${{PROJECT}}/automation/ -type f -name '*.repos'); do
+              for repo in $(find ${{PROJECT}}/automation/ -type f -name '*.repos*'); do
                   sed -i '/^lago/ d' "$repo"
                   echo "lago_injected-$timestamp,$LAGO_CUSTOM_REPO" >> "$repo"
               done
