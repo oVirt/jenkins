@@ -722,7 +722,7 @@ run_script() {
     local base_chroot \
         configdir \
         custom_conf \
-        distro_id
+        distro_id \
         mock_enable_network
 
     base_chroot="${mock_env#*:}"
