@@ -8,6 +8,7 @@
             - upgrade-from-release
             - upgrade-from-prevrelease
             - he-basic
+            - he-basic-ansible
             - hc-basic
             - image-ng
             - ansible
