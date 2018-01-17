@@ -4,12 +4,17 @@
 import pytest
 
 from scripts.stdci_dsl.job_thread import JobThread
-from scripts.stdci_dsl.api import _pipeline_dict_formatter, get_threads
+from scripts.stdci_dsl.api import (
+    _pipeline_dict_formatter, get_threads, RuntimeEnvDefinition,
+    NoThreadForEnv
+)
+from scripts.stdci_dsl.options.normalize import RepoConfig
 
 
 @pytest.fixture(scope='function')
 def project_dir(tmpdir):
     root = tmpdir
+    secrets_file = root.join('secrets_file').write('a')
     automation = tmpdir.mkdir('automation')
     (automation/'check-patch.sh').write('code code code ...')
     (automation/'check-patch.repos').write('repo1\nrepo2\nrepo3')
@@ -17,8 +22,62 @@ def project_dir(tmpdir):
         "stage: check-patch\n"
         "runtime_requirements: dummy_req\n"
         "packages: [pkg1, pkg2, pkg3]\n"
+        "environment:\n"
+        "  - name: 'test'\n"
+        "    valueFrom:\n"
+        "      runtimeEnv: 'PWD'\n"
     )
     return root
+
+
+def test_RuntimeEnvDefinition(project_dir):
+    obj = RuntimeEnvDefinition(
+        str(project_dir), 'check-patch', 'default', 'el7', 'x86_64'
+    )
+    assert obj.script == project_dir/'automation/check-patch.sh'
+    assert obj.yumrepos == None
+    assert obj.environment == [{'name': 'test', 'valueFrom': {'runtimeEnv': 'PWD'}}]
+    assert obj.repos == [
+        RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),
+        RepoConfig('repo-1f02dddd81d2931b7c82f0a857dc2431', 'repo2'),
+        RepoConfig('repo-1fb4cda750e4eac7714ee79c6bb4db28', 'repo3'),
+    ]
+    assert obj.packages == ['pkg1', 'pkg2', 'pkg3']
+    assert obj.mounts == []
+
+
+def test_RuntimeEnvDefinition_NoThreadForEnv_exception(project_dir):
+    with pytest.raises(NoThreadForEnv) as exinfo:
+        RuntimeEnvDefinition(
+            str(project_dir), 'build', 'default', 'fc25', 'ppc64le'
+        )
+    assert 'Could not find thread for requested env: {0}'.format(
+        ('build', 'default', 'fc25', 'ppc64le')) == str(exinfo.value)
+
+
+def test_runner_yaml_dumper(project_dir, tmpdir):
+    env = RuntimeEnvDefinition(
+        str(project_dir), 'check-patch', 'default', 'el7', 'x86_64'
+    )
+    fmt = env.format('yaml_dumper')
+    assert fmt == (
+            "environment:\n"
+            "- name: test\n"
+            "  valueFrom:\n"
+            "    runtimeEnv: PWD\n"
+            "hash: d0bf2d0c60a85aa61fa9ffd039e6198c\n"
+            "mounts: {}\n"
+            "packages:\n"
+            "- pkg1\n"
+            "- pkg2\n"
+            "- pkg3\n"
+            "repos:\n"
+            "  repo-1f02dddd81d2931b7c82f0a857dc2431: repo2\n"
+            "  repo-1fb4cda750e4eac7714ee79c6bb4db28: repo3\n"
+            "  repo-734392d7a1ac9e3cfe63184b3e48eb0c: repo1\n"
+            "script: %s\n"
+            "yumrepos: ''\n"
+    ) % (str(project_dir/'automation/check-patch.sh'))
 
 
 def test_get_threads(project_dir):
@@ -29,8 +88,12 @@ def test_get_threads(project_dir):
                 'yumrepos': None,
                 'script': project_dir/'automation/check-patch.sh',
                 'upstream_sources': {},
-                'repos': ['repo1', 'repo2', 'repo3'],
-                'environment': {},
+                'repos': [
+                    RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),
+                    RepoConfig('repo-1f02dddd81d2931b7c82f0a857dc2431', 'repo2'),
+                    RepoConfig('repo-1fb4cda750e4eac7714ee79c6bb4db28', 'repo3')
+                ],
+                'environment': [{'name': 'test', 'valueFrom': {'runtimeEnv': 'PWD'}}],
                 'runtime_requirements': 'dummy_req',
                 'mounts': [],
                 'release_branches': {},

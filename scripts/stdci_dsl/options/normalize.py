@@ -3,7 +3,8 @@
 from __future__ import absolute_import
 import logging
 from tempfile import mkstemp
-from collections import Mapping
+from collections import Mapping, Iterable, namedtuple
+from hashlib import md5
 from copy import copy
 from six import string_types
 from jinja2.sandbox import SandboxedEnvironment
@@ -15,6 +16,8 @@ from ..options.defaults import DefaultValue
 
 
 logger = logging.getLogger(__name__)
+RepoConfig = namedtuple('RepoConfig', 'name,url')
+MountConfig = namedtuple('MountConfig', 'src,dst')
 
 
 class ConfigurationSyntaxError(Exception):
@@ -59,8 +62,8 @@ def normalize(project, threads):
             continue
         yumrepos = _resolve_stdci_yum_config(project, thread, 'yumrepos')
         environment = _resolve_stdci_yaml_config(project, thread, 'environment')
-        mounts = _resolve_stdci_list_config(project, thread, 'mounts')
-        repos = _resolve_stdci_list_config(project, thread, 'repos')
+        mounts = _normalize_mounts_config(project, thread)
+        repos = _normalize_repos_config(project, thread)
         packages = _resolve_stdci_list_config(project, thread, 'packages')
         normalized_options = copy(thread_with_scdir.options)
         normalized_options['script'] = script
@@ -76,6 +79,62 @@ def normalize(project, threads):
             'Normalized thread_with_scdir options: %s', normalized_options
         )
         yield normalized_thread
+
+
+def _normalize_mounts_config(project, thread):
+    """Transform a list of mounts from the form ['source:destination']
+    to a namedtuple of (source, target)
+
+    :param list mounts: List of mounts
+
+    :rtype: list
+    :returns: List of namedtuples from the form (source, target)
+    """
+    mounts = _resolve_stdci_list_config(project, thread, 'mounts')
+    all_mounts = []
+    for mount in mounts:
+        if not isinstance(mount, string_types):
+            raise ConfigurationSyntaxError(
+                'Mount configuration must be a dots separated string from the'
+                ' form: source:destination or source only.'
+                ' Syntax error at: {0}'.format(str(mount))
+            )
+        mount_src, _, mount_dst = mount.partition(':')
+        if mount_dst == '':
+            # We received a mount with source only
+            mount_dst = mount_src
+        all_mounts.append(MountConfig(src=mount_src, dst=mount_dst))
+    return all_mounts
+
+
+def _normalize_repos_config(project, thread):
+    """Transform a list of repos from the form ['repo_name,repo_url'] into a
+    list of namedtuples from the form: (repo_name, repo_url)
+
+    :param list repos: List of repos. Every repo must be a string from the form
+                       'repo name, repo url'.
+
+    :rtype: list
+    :returns: List of namedtuples from the form (repo_name, repo_url)
+    """
+    repos = _resolve_stdci_list_config(project, thread, 'repos')
+    all_repos = []
+    for repo in repos:
+        if not isinstance(repo, string_types):
+            raise ConfigurationSyntaxError(
+                'Repo configuration must be a comma separated string from the'
+                ' form: repo_name,repo_url or repo_url only.'
+                ' Syntax error at: {0}'.format(str(repo))
+            )
+        repo_name, _, repo_url = repo.partition(',')
+        if repo_url == '':
+            # we received a repo with url only
+            repo_url = repo_name
+            repo_name = 'repo-{0}'.format(
+                md5(repo_url.encode('utf-8')).hexdigest()
+            )
+        all_repos.append(RepoConfig(name=repo_name, url=repo_url))
+    return all_repos
 
 
 def _resolve_stdci_script(project, thread):
@@ -280,10 +339,15 @@ def _resolve_stdci_yaml_config(project, thread, option):
     """
     yaml_config = thread.options[option]
 
-    if not isinstance(yaml_config, Mapping):
-        msg = '{0} must be a map not {1}'.format(option, type(option))
+    if not isinstance(yaml_config, (Mapping, Iterable)):
+        msg = '{0} must be a Map or an Iterable not {1}'.format(
+            option, type(option)
+        )
         logger.error(msg)
         raise ConfigurationSyntaxError(msg)
+    if isinstance(yaml_config, Iterable) and not isinstance(yaml_config, Mapping):
+        # inline specified
+        return yaml_config
 
     # validate and normalize the structure of 'fromfile' section
     config_paths = yaml_config.get('fromfile', None)

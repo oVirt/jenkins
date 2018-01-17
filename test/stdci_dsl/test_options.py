@@ -8,10 +8,9 @@ from scripts.stdci_dsl.options.defaults import apply_default_options
 from scripts.stdci_dsl.options.defaults.values import DefaultValue
 from scripts.stdci_dsl.job_thread import JobThread
 from scripts.stdci_dsl.options.normalize import (
-    _render_template,
-    _resolve_stdci_yaml_config,
-    _resolve_stdci_list_config,
-    _resolve_stdci_script,
+    _render_template, _resolve_stdci_yaml_config, _resolve_stdci_list_config,
+    _resolve_stdci_script, _normalize_repos_config, _normalize_mounts_config,
+    RepoConfig, MountConfig
 )
 
 
@@ -25,6 +24,86 @@ def stdci_project_dir(tmpdir):
     (automation/'check-patch.yumrepos').write('yumreposfile')
     (automation/'check-merged.sh').mksymlinkto('check-patch.sh')
     return project_dir
+
+
+@pytest.mark.parametrize(
+    "thread,expected",
+    [
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'mounts': [
+                    'mymount1:mymountdst1',
+                    'mymount2:mymountdst2',
+                    'mymountdst3'
+                ],
+            }),
+            [
+                MountConfig(src='mymount1', dst='mymountdst1'),
+                MountConfig(src='mymount2', dst='mymountdst2'),
+                MountConfig(src='mymountdst3', dst='mymountdst3')
+            ]
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'mounts': ['mount1', 'mount2', 'mount3'],
+            }),
+            [
+                MountConfig(src='mount1', dst='mount1'),
+                MountConfig(src='mount2', dst='mount2'),
+                MountConfig(src='mount3', dst='mount3')
+            ]
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {'mounts': []}),
+            []
+        )
+    ]
+)
+def test_normalize_mounts_config(thread, expected, stdci_project_dir):
+    res = _normalize_mounts_config(str(stdci_project_dir), thread)
+    assert res == expected
+
+
+@pytest.mark.parametrize(
+    "thread,expected",
+    [
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'repos': [
+                    'myrepo1,myrepourl1',
+                    'myrepo2,myrepourl2',
+                    'myrepourl3'
+                ],
+            }),
+            [
+                RepoConfig('myrepo1', 'myrepourl1'),
+                RepoConfig('myrepo2', 'myrepourl2'),
+                RepoConfig('repo-4639b47b04736088069cc6cc98b9e869', 'myrepourl3')
+            ]
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'repos': [
+                    'repourl1',
+                    'repourl2',
+                    'repourl3'
+                ],
+            }),
+            [
+                RepoConfig('repo-6ecbe834dc314939f1f07626c20171a7', 'repourl1'),
+                RepoConfig('repo-8d0c508dc795956e772ab3d1e37d0195', 'repourl2'),
+                RepoConfig('repo-c1f2a55f1eacefc4c42429033b723cb8', 'repourl3')
+            ]
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {'repos': []}),
+            []
+        )
+    ]
+)
+def test_normalize_repos_config(thread, expected, stdci_project_dir):
+    res = _normalize_repos_config(str(stdci_project_dir), thread)
+    assert res == expected
 
 
 @pytest.mark.parametrize(
@@ -186,6 +265,22 @@ def test_resolve_stdci_list_config(options, expected, stdci_project_dir):
                 },
             ),
             {'test': 'yaml cfg'}
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64',
+                {
+                    'environment': 'inline specified'
+                },
+            ),
+            'inline specified'
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64',
+                {
+                    'environment': ['inline', 'specified']
+                },
+            ),
+            ['inline', 'specified']
         )
     ]
 )

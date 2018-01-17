@@ -3,15 +3,18 @@
 from __future__ import absolute_import
 from itertools import chain
 import logging
+from hashlib import md5
 from six.moves import filter
 from yaml import safe_dump
 
-from .parser import stdci_parse
-from .categories import apply_default_categories
-from .options.defaults import apply_default_options
-from .options.globals import apply_global_options, _get_global_options
-from .options.parser_utils import get_merged_options
-from .options.normalize import normalize
+from .formatters.runners import get_formatter as get_runner_formatter
+from .formatters.pipelines import get_formatter as get_pipeline_formatter
+from ..categories import apply_default_categories
+from ..options.defaults import apply_default_options
+from ..options.globals import apply_global_options, _get_global_options
+from ..options.parser_utils import get_merged_options
+from ..options.normalize import normalize
+from ..parser import stdci_parse
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +30,42 @@ class FormatterNotFoundError(Exception):
 
 class UnknownFileSource(Exception):
     pass
+
+class NoThreadForEnv(Exception):
+    pass
+
+
+class RuntimeEnvDefinition():
+    def __init__(self, project, stage, substage, distro, arch):
+        all_threads = stdci_parse(project)
+        threads_with_default_categories = \
+            apply_default_categories(all_threads, stage)
+        thread = (
+            thread for thread in threads_with_default_categories if
+            thread.stage == stage and thread.substage == substage and
+            thread.distro == distro and thread.arch == arch
+        )
+        thread_with_defaults = apply_default_options(thread)
+        thread = next(normalize(project, thread_with_defaults), None)
+        if thread is None:
+            raise NoThreadForEnv(
+                'Could not find thread for requested env: {0}'
+                .format((stage, substage, distro, arch))
+            )
+        options = thread.options
+        self.script = options['script']
+        self.yumrepos = options['yumrepos']
+        self.environment = options['environment']
+        self.mounts = options['mounts']
+        self.repos = options['repos']
+        self.packages = options['packages']
+        self.hash = md5(
+            str(sorted(str(self.repos+self.packages))).encode('utf-8')
+        ).hexdigest()
+
+    def format(self, format_):
+        formatter, _, template = format_.partition(':')
+        return get_runner_formatter(formatter)(self, template)
 
 
 def get_threads(project, stage):
@@ -66,9 +105,7 @@ def get_formatted_threads(fmt, project, stage):
     :param str stage:   STDCI stage.
     """
     fmt_name, _, template = fmt.partition(':')
-    # formatters are functions that follow this convention:
-    # _{formatter name}_formatter(threads, template)
-    formatter = globals().get('_{0}_formatter'.format(fmt_name), None)
+    formatter = get_pipeline_formatter(fmt_name)
     if formatter is None:
         raise FormatterNotFoundError(
             'Could not resolve formatter name {0}.'.format(fmt_name)
