@@ -12,6 +12,9 @@
       - inject:
           properties-content: |
             SCM_NOTIFICATION_CREDENTIALS={github-auth-id}
+            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
+            STDCI_SCM_URL={stdci-scm-url}
+            STDCI_SCM_REFSPEC={stdci-scm-refspec}
     triggers:
       - github-pull-request: &github-pull-trigger-base
           org-list:
@@ -123,6 +126,11 @@
       - build-discarder:
           days-to-keep: 14
           artifact-num-to-keep: 60
+      - inject:
+          properties-content: |
+            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
+            STDCI_SCM_URL={stdci-scm-url}
+            STDCI_SCM_REFSPEC={stdci-scm-refspec}
     parameters:
       - string:
           name: STD_CI_CLONE_URL

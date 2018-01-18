@@ -46,9 +46,11 @@ def load_code(String code_file, def load_as=null) {
 }
 
 def checkout_jenkins_repo() {
+    def url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
     checkout_repo(
         repo_name: 'jenkins',
-        refspec: 'refs/heads/master',
+        refspec: env.STDCI_SCM_REFSPEC ?: 'refs/heads/master',
+        url: env.STDCI_SCM_URL ?: "${url_prefix}/jenkins"
     )
 }
 
@@ -59,7 +61,8 @@ def checkout_repo(
     String head=null
 ) {
     if(url == null) {
-        url = "https://gerrit.ovirt.org/${repo_name}"
+        url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
+        url = "${url_prefix}/${repo_name}"
     }
     if(head == null) {
         head = 'myhead'

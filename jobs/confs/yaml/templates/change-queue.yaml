@@ -10,6 +10,11 @@
     properties:
       - build-discarder:
           days-to-keep: 14
+      - inject:
+          properties-content: |
+            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
+            STDCI_SCM_URL={stdci-scm-url}
+            STDCI_SCM_REFSPEC={stdci-scm-refspec}
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
 
 - job-template:
@@ -19,4 +24,9 @@
     properties:
       - build-discarder:
           days-to-keep: 14
+      - inject:
+          properties-content: |
+            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
+            STDCI_SCM_URL={stdci-scm-url}
+            STDCI_SCM_REFSPEC={stdci-scm-refspec}
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy

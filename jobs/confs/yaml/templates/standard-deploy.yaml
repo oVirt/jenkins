@@ -7,6 +7,11 @@
       - build-discarder:
           num-to-keep: 100
           artifact-num-to-keep: 100
+      - inject:
+          properties-content: |
+            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
+            STDCI_SCM_URL={stdci-scm-url}
+            STDCI_SCM_REFSPEC={stdci-scm-refspec}
     triggers:
       - gerrit:
           server-name: '{gerrit-server}'
