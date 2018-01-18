@@ -557,6 +557,9 @@ def get_std_ci_node_label(job) {
         String[] job_distros = host_distros[dist_idx..<host_distros.size()]
         label_conditions << "(${job_distros.join(' || ')})"
     }
+    if (job.arch != "x86_64") {
+        label_conditions << job.arch
+    }
     return label_conditions.join(' && ')
 }
 
