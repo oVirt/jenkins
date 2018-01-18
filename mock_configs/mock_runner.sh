@@ -781,7 +781,12 @@ run_script() {
             res=0
             echo "========== Running the shellscript $script" \\
                 | tee -a \\\$logdir/${script##*/}.log
-            ./$script 2>&1 | tee -a \\\$logdir/${script##*/}.log \\
+            if [[ "$script" == /* ]]; then
+                script_path="$script"
+            else
+                script_path="./$script"
+            fi
+            "\$script_path" 2>&1 | tee -a \\\$logdir/${script##*/}.log \\
             || res=\\\${PIPESTATUS[0]}
             end="\\\$(date +%s)"
             echo "Took \\\$((end - start)) seconds" \\
@@ -829,10 +834,15 @@ EOC
             res=0
             echo "========== Running the shellscript $script" \
                 | tee -a \$logdir/${script##*/}.log
+            if [[ "$script" == /* ]]; then
+                script_path="$script"
+            else
+                script_path="./$script"
+            fi
             # It turns out that on some scripts if the following is not all
             # in the same line, it never runs and returns with 0 (giving false
             # positives)
-            ./$script 2>&1 | tee -a \$logdir/${script##*/}.log \
+            "\$script_path" 2>&1 | tee -a \$logdir/${script##*/}.log \
             && res=\${PIPESTATUS[0]}; \
             end="\$(date +%s)"; \
             echo "Took \$((end - start)) seconds" \
