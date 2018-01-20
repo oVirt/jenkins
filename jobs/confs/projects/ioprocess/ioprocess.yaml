@@ -19,7 +19,6 @@
       - check-patch
     distro:
       - el7
-      - fc26
       - fc27
       - fcraw
     arch:
@@ -29,11 +28,9 @@
       - s390x:
           node-filter: s390x
     exclude:
-        - { distro: fc26, arch: ppc64le }
         - { distro: fc27, arch: ppc64le }
         - { distro: fcraw, arch: ppc64le }
         - { distro: el7,  arch: s390x, }
-        - { distro: fc26, arch: s390x, }
         - { distro: fcraw, arch: s390x, }
         - { stage: check-patch, arch: s390x, }
 
