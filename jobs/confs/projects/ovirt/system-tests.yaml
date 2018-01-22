@@ -20,9 +20,11 @@
     project: 'ovirt-system-tests'
     version:
       - 4.1:
-          chroot_distro: fc24
+          chroot_distro: el7
+      - 4.2:
+          chroot_distro: el7
       - master:
-          chroot_distro: fc24
+          chroot_distro: el7
     email-to: 'sbonazzo@redhat.com, yturgema@redhat.com'
     jobs:
       - '{project}_{version}_image-ng-system-tests'
