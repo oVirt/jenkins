@@ -32,6 +32,12 @@
         distro: fc25
       - version: 3.6
         distro: fc26
+      - version: 3.6.13
+        distro: fc24
+      - version: 3.6.13
+        distro: fc25
+      - version: 3.6.13
+        distro: fc26
     arch: x86_64
     trigger: on-change
 
@@ -47,6 +53,8 @@
           branch: ovirt-engine-4.0
       - 3.6:
           branch: ovirt-engine-3.6
+      - 3.6.13:
+          branch: ovirt-engine-3.6-els
     stage: build-artifacts
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
@@ -64,6 +72,8 @@
           branch: ovirt-engine-4.0
       - 3.6:
           branch: ovirt-engine-3.6
+      - 3.6.13:
+          branch: ovirt-engine-3.6-els
     stage: check-patch
     trigger: on-change
     jobs:
@@ -81,6 +91,8 @@
           branch: ovirt-engine-4.0
       - 3.6:
           branch: ovirt-engine-3.6
+      - 3.6.13:
+          branch: ovirt-engine-3.6-els
     stage: check-merged
     notification-url: 'https://ovirt-ovirt-engine.getbadges.io/api/app/webhook/66f43bb2-6b98-4aab-8d1a-7acca6704dab'
     trigger: on-change
