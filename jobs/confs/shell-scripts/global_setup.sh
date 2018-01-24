@@ -78,7 +78,7 @@ extra_packages() {
             python-jinja2 python-paramiko createrepo
     else
         verify_packages python34-PyYAML PyYAML python2-pyxdg python-jinja2 \
-            python2-paramiko createrepo
+            python2-paramiko createrepo qemu-kvm-ev libvirt
     fi
 }
 
