@@ -25,7 +25,7 @@
           escape-quotes: true
           projects:
             - project-compare-type: 'REG_EXP'
-              project-pattern: '.*'
+              project-pattern: '{project-pattern}'
               branches:
                 - branch-compare-type: 'REG_EXP'
                   branch-pattern: '.*'

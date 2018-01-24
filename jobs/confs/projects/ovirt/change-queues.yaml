@@ -3,6 +3,7 @@
     email-originator: 'oVirt Jenkins <jenkins@ovirt.org>'
     email-recipients: 'infra@ovirt.org'
     email-tag: 'oVirt CI'
+    project-pattern: '.*'
     jobs:
       - 'standard-enqueue'
 
