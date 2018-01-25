@@ -143,6 +143,7 @@
 - project:
     <<: *vdsm_standard_common
     name: vdsm_check-merged
+    node-filter: el7
     distro: el7
     arch: x86_64
     stage: check-merged
