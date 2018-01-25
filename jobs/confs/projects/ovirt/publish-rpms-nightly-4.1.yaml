@@ -145,9 +145,6 @@
           project-prefix: py2exe-py2.7_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: vcredist-x86_4.1_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: python-windows_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
