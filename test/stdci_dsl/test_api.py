@@ -115,5 +115,4 @@ def test_get_threads(project_dir):
 def test_pipeline_formatter(threads, expected):
     threads_it = iter(threads)
     out = _pipeline_dict_formatter(threads_it)
-    print out
     assert  out == expected
