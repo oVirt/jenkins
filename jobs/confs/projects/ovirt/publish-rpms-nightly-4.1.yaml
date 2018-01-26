@@ -151,9 +151,6 @@
           project-prefix: nsis-simple-service-plugin_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: pywin32-py2.7_4.1_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-wgt_4.1_build-artifacts-
           project-suffix: ""
 
