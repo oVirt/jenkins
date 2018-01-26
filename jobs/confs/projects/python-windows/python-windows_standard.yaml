@@ -5,23 +5,14 @@
     version:
       - master:
           branch: master
-      - 4.1:
+      - 4.2:
           branch: master
     distro:
       - el7
-      - fc24
-      - fc26
       - fc27
       - fcraw
     exclude:
-      - version: master
-        distro: fc24
-      - version: 4.1
-        distro: fc26
-      - version: 4.1
-        distro: fc27
-      - version: 4.1
-        distro: fcraw
+      - { version: 4.2, distro: fcraw }
 
 - project:
     <<: *base-commons
