@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: ovirt-engine-extension-logger-log4j-1.0
       - 4.1:
           branch: ovirt-engine-extension-logger-log4j-1.0
     stage:
@@ -16,6 +18,8 @@
       - fc26
     exclude:
       - version: master
+        distro: fc24
+      - version: 4.2
         distro: fc24
       - version: 4.1
         distro: fc25
