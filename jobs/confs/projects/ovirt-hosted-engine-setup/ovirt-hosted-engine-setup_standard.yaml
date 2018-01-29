@@ -1,14 +1,14 @@
 - project: &base-params
     name: ovirt-hosted-engine-setup_build
-    project:
-      - ovirt-hosted-engine-setup
+    project: ovirt-hosted-engine-setup
+    trigger: on-change
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: ovirt-hosted-engine-setup-2.2
       - 4.1:
           branch: ovirt-hosted-engine-setup-2.1
-      - 4.0:
-          branch: ovirt-hosted-engine-setup-2.0
       - 3.6:
           branch: ovirt-hosted-engine-setup-1.3
     stage:
@@ -16,26 +16,18 @@
       - check-merged
     distro:
       - el7
-      - fc25
-      - fc26
+      - fc27
+      - fcraw
     exclude:
-      - version: 4.1
-        distro: fc25
-      - version: 4.1
-        distro: fc26
-      - version: 4.0
-        distro: fc25
-      - version: 4.0
-        distro: fc26
-      - version: 3.6
-        distro: fc25
-      - version: 3.6
-        distro: fc26
-    trigger: 'on-change'
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 3.6, distro: fcraw }
+      - { version: 4.2, distro: fc27 }
+      - { version: 4.1, distro: fc27 }
+      - { version: 3.6, distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
-
 
 - project:
     <<: *base-params
@@ -57,8 +49,8 @@
     name: ovirt-hosted-engine_build-artifacts-manual-any
     version:
       - '3.6'
-      - '4.0'
       - '4.1'
+      - '4.2'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
