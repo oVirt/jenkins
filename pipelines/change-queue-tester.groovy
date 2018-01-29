@@ -322,7 +322,7 @@ def all_builds_succeeded(builds) {
 
 @NonCPS
 def make_extra_sources(builds) {
-    return builds.collect { "${env.JENKINS_URL}${it.build_url}" }.join("\n")
+    return builds.collect { "jenkins:${env.JENKINS_URL}${it.build_url}" }.join("\n")
 }
 
 
