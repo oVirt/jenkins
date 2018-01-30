@@ -1,24 +1,25 @@
 - project: &base-params
     name: ovirt-iso-uploader_build
-    project:
-      - ovirt-iso-uploader
+    project: ovirt-iso-uploader
+    trigger: on-change
     version:
       - master:
           branch: master
-          repoversion: master
+      - 4.2:
+          branch: master
       - 4.1:
           branch: ovirt-iso-uploader-4.0
-          repoversion: 4.1
     stage:
       - check-patch
       - check-merged
     distro:
-      - fc25
       - el7
+      - fc27
+      - fcraw
     exclude:
-      - version: 4.1
-        distro: fc25
-    trigger: 'on-change'
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -43,6 +44,7 @@
     name: ovirt-iso-uploader_build-artifacts-manual-any
     version:
       - '4.1'
+      - '4.2'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
