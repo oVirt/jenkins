@@ -9,27 +9,18 @@
           branch: ovirt-4.2
       - 4.1:
           branch: ovirt-4.1
-      - 4.0:
-          branch: ovirt-4.0
       - 3.6:
           branch: ovirt-3.6
     distro:
       - el7
-      - fc26
       - fc27
+      - fcraw
     exclude:
-      - version: 4.1
-        distro: fc26
-      - version: 4.1
-        distro: fc27
-      - version: 4.0
-        distro: fc26
-      - version: 4.0
-        distro: fc27
-      - version: 3.6
-        distro: fc26
-      - version: 3.6
-        distro: fc27
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 3.6, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
+      - { version: 3.6, distro: fc27 }
 
 - project:
     <<: *base-commons
@@ -42,7 +33,7 @@
 
 - project:
     <<: *base-commons
-    name: ovirt-release-ppc64le
+    name: ovirt-release-altarch
     project: ovirt-release
     version:
       - master:
@@ -53,9 +44,19 @@
           branch: ovirt-4.1
     distro:
       - el7
+      - fc27
+      - fcraw
     stage: check-patch
-    arch: ppc64le
-    node-filter: ppc64le
+    arch:
+      - ppc64le:
+          node-filter: ppc64le
+      - s390x:
+          node-filter: s390x
+    exclude:
+      - { version: 4.1, arch: s390x, }
+      - {               arch: s390x,   distro: el7, }
+      - {               arch: ppc64le, distro: fc27, }
+      - {               arch: ppc64le, distro: fcraw, }
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
