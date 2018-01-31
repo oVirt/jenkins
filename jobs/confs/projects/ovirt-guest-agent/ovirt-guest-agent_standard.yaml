@@ -1,37 +1,33 @@
-- project:
+- project: &base-params
     name: ovirt-guest-agent_check-patch
-    project:
-      - ovirt-guest-agent
+    project: ovirt-guest-agent
+    trigger: on-change
     version:
       - master:
+          branch: master
+      - 4.2:
           branch: master
       - 4.1:
           branch: ovirt-4.1
     stage:
       - check-patch
     distro:
-      - fc26
-    trigger: 'on-change'
+      - el6
+      - el7
+      - fc27
+      - fcraw
+    exclude:
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
 - project:
+    <<: *base-params
     name: ovirt-guest-agent_build-artifacts
-    project:
-      - ovirt-guest-agent
-    version:
-      - master:
-          branch: master
-      - 4.1:
-          branch: ovirt-4.1
     stage: build-artifacts
-    distro:
-      - el6
-      - el7
-      - fc26
-    trigger: 'on-change'
-    arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
       - '{project}_{version}_{stage}-on-demand-{distro}-{arch}'
