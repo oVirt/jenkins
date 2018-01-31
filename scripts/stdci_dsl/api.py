@@ -87,7 +87,9 @@ def _pipeline_dict_formatter(threads, template=None):
     :rtype: str
     :returns: yaml config with vectors data from $vectors
     """
-    sample_thread = next(threads)
+    sample_thread = next(threads, None)
+    if not sample_thread:
+        return ''
     data = {}
     data['global_config'] = {
         'runtime_reqs': sample_thread.options['runtime_requirements'],

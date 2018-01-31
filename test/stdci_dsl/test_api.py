@@ -45,6 +45,10 @@ def test_get_threads(project_dir):
     "threads,expected",
     [
         (
+            [],
+            ''
+        ),
+        (
             [
                 JobThread(
                     'check-patch', 'default', 'fc25', 'x86_64',
