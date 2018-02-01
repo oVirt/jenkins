@@ -621,7 +621,9 @@ def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
             // Set flag to 'true' to indicate that exception from this point
             // means the test failed and not the CI system
             tfr.test_failed = true
-            mock_runner(job.script, job.distro, job.arch, mirrors)
+            timeout(time: 2, unit: 'HOURS') {
+                mock_runner(job.script, job.distro, job.arch, mirrors)
+            }
             // If we got here (no exception thrown so far), the test did not
             // fail
             tfr.test_failed = false
