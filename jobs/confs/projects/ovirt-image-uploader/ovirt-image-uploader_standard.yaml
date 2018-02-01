@@ -1,29 +1,25 @@
 - project: &base-params
     name: ovirt-image-uploader_master
-    project:
-      - ovirt-image-uploader
+    project: ovirt-image-uploader
+    trigger: on-change
     version:
-      - 4.0:
-          branch: ovirt-image-uploader-4.0
-          repoversion: 4.0
-      - 4.1:
-          branch: ovirt-image-uploader-4.0
-          repoversion: 4.1
       - master:
           branch: ovirt-image-uploader-4.0
-          repoversion: master
-    exclude:
-      - version: 4.0
-        distro: fc25
-      - version: 4.1
-        distro: fc25
+      - 4.2:
+          branch: ovirt-image-uploader-4.0
+      - 4.1:
+          branch: ovirt-image-uploader-4.0
     stage:
       - check-patch
       - check-merged
     distro:
-      - fc25
       - el7
-    trigger: 'on-change'
+      - fc27
+      - fcraw
+    exclude:
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -43,43 +39,12 @@
     jobs:
       - '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
 
-- project: &base-params-36
-    name: ovirt-image-uploader_3.6
-    project:
-      - ovirt-image-uploader
-    version:
-      - 3.6:
-          branch: ovirt-image-uploader-3.6
-    stage: check-patch
-    distro:
-      - el6
-      - el7
-    trigger: 'on-change'
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
-
-- project:
-    <<: *base-params-36
-    name: ovirt-image-uploader_3.6_build-artifacts
-    stage: build-artifacts
-    jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
-
-- project:
-    <<: *base-params-36
-    name: ovirt-image-uploader_3.6_build-artifacts-manual
-    stage: build-artifacts-manual
-    trigger: 'manual'
-    jobs:
-      - '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
-
 - project:
     <<: *base-params
     name: ovirt-image-uploader-artifacts-manual-any
     version:
-      - '3.6'
-      - '4.0'
       - '4.1'
+      - '4.2'
+      - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
