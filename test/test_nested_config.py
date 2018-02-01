@@ -84,6 +84,32 @@ def mock_merge_options(o1, o2):
                 ('y', '2', {'merged options': None})
             ]
         ),
+        (
+            {
+                'distro': ['el6', 'fc25', 'fc26', 'el7'],
+                'substage':
+                [
+                    'default',
+                    {
+                        'another':
+                        {
+                            'distro': 'el7',
+                            'script': {'abc':'efg'},
+                            'stage': 'check-patch'
+                        }
+                    }
+                ]
+            },
+            ('stage', 'substage', 'distro', 'arch'),
+            [
+                (None, 'default', None, None, {}),
+                ('check-patch', 'another', 'el7', None, {'merged options': None}),
+                (None, None, 'el6', None, {}),
+                (None, None, 'fc25', None, {}),
+                (None, None, 'fc26', None, {}),
+                (None, None, 'el7', None, {})
+            ]
+        ),
     ]
 )
 def test_dfs(data_in, categories, expected):

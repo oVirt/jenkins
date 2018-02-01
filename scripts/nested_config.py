@@ -109,10 +109,11 @@ def _dfs(data, categories, merge_options, seen_categories=None):
                 # cv is a Mapping where the keys are values for the level
                 # category and the values are potentially nested categories
                 cur_cat_val, next_node = next(iteritems(cv))
-                for depth_vector in _dfs(next_node,
-                                         categories,
-                                         merge_options,
-                                         seen_categories | set([category])):
+                next_level = _dfs(
+                    next_node, categories, merge_options,
+                    seen_categories | set([category])
+                )
+                for depth_vector in _aggregate(next_level, merge_options):
                     yield _compose_vector(
                         from_template=depth_vector,
                         with_options=merge_options(options, depth_vector[-1]),
