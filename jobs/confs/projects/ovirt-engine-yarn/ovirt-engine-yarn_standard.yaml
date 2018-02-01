@@ -1,28 +1,25 @@
 - project: &base-params
     name: ovirt-engine-yarn_build
-    project:
-      - ovirt-engine-yarn
+    project: ovirt-engine-yarn
+    trigger: on-change
     version:
       - master:
+          branch: master
+      - 4.2:
           branch: master
       - 4.1:
           branch: master
     stage:
-      - check-merged
       - check-patch
-    trigger: 'on-change'
+      - check-merged
     distro:
-        - el7
-        - fc25
-        - fc26
-        - fc27
+      - el7
+      - fc27
+      - fcraw
     exclude:
-      - version: 4.1
-        distro: fc25
-      - version: 4.1
-        distro: fc26
-      - version: 4.1
-        distro: fc27
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
