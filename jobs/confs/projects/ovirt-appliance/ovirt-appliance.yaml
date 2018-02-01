@@ -24,7 +24,7 @@
       - check-patch
       - check-merged
     trigger: 'on-change'
-    node-filter: physical || f24
+    node-filter: el7
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
