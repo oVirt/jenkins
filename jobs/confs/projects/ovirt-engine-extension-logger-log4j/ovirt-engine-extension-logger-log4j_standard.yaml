@@ -1,7 +1,7 @@
 - project: &base-params
     name: ovirt-engine-extension-logger-log4j_standard
-    project:
-      - ovirt-engine-extension-logger-log4j
+    project: ovirt-engine-extension-logger-log4j
+    trigger: on-change
     version:
       - master:
           branch: master
@@ -13,14 +13,12 @@
       - check-patch
     distro:
       - el7
-      - fc25
-      - fc26
+      - fc27
+      - fcraw
     exclude:
-      - version: 4.1
-        distro: fc25
-      - version: 4.1
-        distro: fc26
-    trigger: 'on-change'
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
