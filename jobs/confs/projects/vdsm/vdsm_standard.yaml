@@ -1,53 +1,27 @@
 - vdsm_standard_common:
     name: 'vdsm_standard_common'
     vdsm_standard--key: &vdsm_standard_common
-      project:
-        - vdsm
-      trigger: 'on-change'
+      project: vdsm
+      trigger: on-change
       version:
         - master:
             branch: master
+        - 4.2:
+            branch: ovirt-4.2
         - 4.1:
             branch: ovirt-4.1
-        - 4.0:
-            branch: ovirt-4.0
         - 3.6:
             branch: ovirt-3.6
       distro:
         - el7
-        - fc25
-        - fc26
         - fc27
         - fcraw
       exclude:
-        - version: master
-          distro: fc26
-        - version: master
-          distro: fc25
-        - version: 4.1
-          distro: fcraw
-        - version: 4.1
-          distro: fc27
-        - version: 4.1
-          distro: fc26
-        - version: 4.1
-          distro: fc25
-        - version: 4.0
-          distro: fcraw
-        - version: 4.0
-          distro: fc27
-        - version: 4.0
-          distro: fc26
-        - version: 4.0
-          distro: fc25
-        - version: 3.6
-          distro: fcraw
-        - version: 3.6
-          distro: fc27
-        - version: 3.6
-          distro: fc26
-        - version: 3.6
-          distro: fc25
+        - { version: 4.2, distro: fcraw }
+        - { version: 4.1, distro: fcraw }
+        - { version: 3.6, distro: fcraw }
+        - { version: 4.1, distro: fc27 }
+        - { version: 3.6, distro: fc27 }
       jobs:
         - '{project}_{version}_{stage}-{distro}-{arch}'
 
@@ -59,16 +33,12 @@
     version:
       - master:
           branch: master
-          repoversion: master
+      - 4.2:
+          branch: ovirt-4.2
       - 4.1:
           branch: ovirt-4.1
-          repoversion: 4.1
-      - 4.0:
-          branch: ovirt-4.0
-          repoversion: 4.0
       - 3.6:
           branch: ovirt-3.6
-          repoversion: 3.6
     arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
@@ -81,13 +51,10 @@
     version:
       - master:
           branch: master
-          repoversion: master
+      - 4.2:
+          branch: ovirt-4.2
       - 4.1:
           branch: ovirt-4.1
-          repoversion: 4.1
-      - 4.0:
-          branch: ovirt-4.0
-          repoversion: 4.0
     trigger: manual
     jobs:
       - '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
@@ -97,8 +64,8 @@
     name: vdsm_build-artifacts-manual-any
     stage: build-artifacts-manual
     version:
-      - '4.0'
       - '4.1'
+      - '4.2'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
@@ -110,11 +77,14 @@
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: ovirt-4.2
       - 4.1:
           branch: ovirt-4.1
     distro:
       - el7
       - fc27
+      - fcraw
     arch:
       - ppc64le:
           node-filter: ppc64le
@@ -124,6 +94,7 @@
       - { version: 4.1, arch: s390x, }
       - {               arch: s390x,   distro: el7, }
       - {               arch: ppc64le, distro: fc27, }
+      - {               arch: ppc64le, distro: fcraw, }
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
