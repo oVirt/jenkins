@@ -11,7 +11,6 @@
     mock-build-type: all
     distro:
       - fc25
-      - fc24
       - el6:
           extra-repos: |
             ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
