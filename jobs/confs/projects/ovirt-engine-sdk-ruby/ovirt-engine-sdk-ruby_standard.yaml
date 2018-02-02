@@ -12,22 +12,17 @@
           branch: sdk_4.0
     distro:
       - el7
-      - fc24
       - fc25
     arch:
       - x86_64:
-          node-filter: el7 || fc23 || fc24
+          node-filter: el7
       - ppc64le:
           node-filter: ppc64le
     exclude:
-      - version: master
-        distro: fc24
       - version: 4.1
         distro: fc25
       - version: 4.0
         distro: fc25
-      - version: 4.0
-        distro: fc24
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
