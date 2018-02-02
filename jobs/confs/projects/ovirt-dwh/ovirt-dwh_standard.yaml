@@ -1,14 +1,14 @@
 - project: &base-params
     name: ovirt-dwh_build
-    project:
-      - ovirt-dwh
+    project: ovirt-dwh
+    trigger: on-change
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: ovirt-engine-dwh-4.2
       - 4.1:
           branch: ovirt-engine-dwh-4.1
-      - 4.0:
-          branch: ovirt-engine-dwh-4.0
       - 3.6:
           branch: ovirt-engine-dwh-3.6
     stage:
@@ -17,21 +17,17 @@
     distro:
       - el6
       - el7
-      - fc25
+      - fc27
+      - fcraw
     exclude:
-      - version: master
-        distro: el6
-      - version: 4.1
-        distro: el6
-      - version: 4.1
-        distro: fc25
-      - version: 4.0
-        distro: el6
-      - version: 4.0
-        distro: fc25
-      - version: 3.6
-        distro: fc25
-    trigger: 'on-change'
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 3.6, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
+      - { version: 3.6, distro: fc27 }
+      - { version: master, distro: el6 }
+      - { version: 4.2, distro: el6 }
+      - { version: 4.1, distro: el6 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -56,8 +52,8 @@
     name: ovirt-dwh_build-artifacts-manual-any
     version:
       - '3.6'
-      - '4.0'
       - '4.1'
+      - '4.2'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
