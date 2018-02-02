@@ -1,40 +1,7 @@
 - project: &base-commons
-    name: 'ovirt-engine_commons'
+    name: ovirt-engine_commons
     project: ovirt-engine
-    distro:
-      - el6
-      - el7
-      - fc25
-      - fc26
-    exclude:
-      - version: master
-        distro: el6
-      - version: 4.1
-        distro: fc25
-      - version: 4.1
-        distro: fc26
-      - version: 4.1
-        distro: el6
-      - version: 4.0
-        distro: el6
-      - version: 4.0
-        distro: fc25
-      - version: 4.0
-        distro: fc26
-      - version: 3.6
-        distro: fc25
-      - version: 3.6
-        distro: fc26
-      - version: 3.6.13
-        distro: fc25
-      - version: 3.6.13
-        distro: fc26
-    arch: x86_64
     trigger: on-change
-
-- project:
-    <<: *base-commons
-    name: ovirt-engine_build_artifacts
     version:
       - master:
           branch: master
@@ -42,12 +9,31 @@
           branch: master
       - 4.1:
           branch: ovirt-engine-4.1
-      - 4.0:
-          branch: ovirt-engine-4.0
       - 3.6:
           branch: ovirt-engine-3.6
       - 3.6.13:
           branch: ovirt-engine-3.6-els
+    distro:
+      - el6
+      - el7
+      - fc27
+      - fcraw
+    exclude:
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 3.6, distro: fcraw }
+      - { version: 3.6.13, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
+      - { version: 3.6, distro: fc27 }
+      - { version: 3.6.13, distro: fc27 }
+      - { version: master, distro: el6 }
+      - { version: 4.2, distro: el6 }
+      - { version: 4.1, distro: el6 }
+    arch: x86_64
+
+- project:
+    <<: *base-commons
+    name: ovirt-engine_build_artifacts
     stage: build-artifacts
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
@@ -56,19 +42,6 @@
 - project:
     <<: *base-commons
     name: ovirt-engine_check-patch
-    version:
-      - master:
-          branch: master
-      - 4.2:
-          branch: master
-      - 4.1:
-          branch: ovirt-engine-4.1
-      - 4.0:
-          branch: ovirt-engine-4.0
-      - 3.6:
-          branch: ovirt-engine-3.6
-      - 3.6.13:
-          branch: ovirt-engine-3.6-els
     stage: check-patch
     trigger: on-change
     jobs:
@@ -77,19 +50,6 @@
 - project:
     <<: *base-commons
     name: ovirt-engine_check-merge
-    version:
-      - master:
-          branch: master
-      - 4.2:
-          branch: master
-      - 4.1:
-          branch: ovirt-engine-4.1
-      - 4.0:
-          branch: ovirt-engine-4.0
-      - 3.6:
-          branch: ovirt-engine-3.6
-      - 3.6.13:
-          branch: ovirt-engine-3.6-els
     stage: check-merged
     notification-url: 'https://ovirt-ovirt-engine.getbadges.io/api/app/webhook/66f43bb2-6b98-4aab-8d1a-7acca6704dab'
     trigger: on-change
