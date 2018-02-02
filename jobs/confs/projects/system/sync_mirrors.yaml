@@ -18,8 +18,6 @@
       - 'centos-opstools-testing-el7'
       - 'centos-qemu-ev-release-el7'
       - 'centos-kvm-common-el7'
-      - 'fedora-base-fc24'
-      - 'fedora-updates-fc24'
       - 'fedora-base-fc25'
       - 'fedora-updates-fc25'
       - 'fedora-base-fc26'
