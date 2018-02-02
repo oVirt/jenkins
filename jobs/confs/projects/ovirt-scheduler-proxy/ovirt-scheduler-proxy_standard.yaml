@@ -1,48 +1,35 @@
-- project:
-    name: ovirt-scheduler-proxy_build
-    project:
-      - ovirt-scheduler-proxy
-    version:
-      - master:
-          branch: master
-      - 4.1:
-          branch: master
-      - 4.0:
-          branch: master
-      - 3.6:
-          branch: master
-    stage: build-artifacts
-    trigger: 'on-change'
-    distro:
-        - el7
-        - fc25
-    exclude:
-      - version: 4.1
-        distro: fc25
-      - version: 4.0
-        distro: fc25
-      - version: 3.6
-        distro: fc25
-      - version: 3.6
-        distro: el7
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_build-artifacts-{distro}-{arch}'
-
-- project:
+- project: &base-params
     name: ovirt-scheduler-proxy_check-patch
-    project:
-      - ovirt-scheduler-proxy
+    project: ovirt-scheduler-proxy
+    trigger: on-change
     version:
       - master:
           branch: master
       - 4.2:
           branch: master
-    stage: check-patch
+      - 4.1:
+          branch: master
+      - 3.6:
+          branch: master
+    stage:
+      - check-patch
     distro:
       - el7
-      - fc25
-    trigger: 'on-change'
+      - fc27
+      - fcraw
+    exclude:
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 3.6, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
+      - { version: 3.6, distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: ovirt-scheduler-proxy_build-artifacts
+    stage: build-artifacts
+    jobs:
+      - '{project}_{version}_build-artifacts-{distro}-{arch}'
