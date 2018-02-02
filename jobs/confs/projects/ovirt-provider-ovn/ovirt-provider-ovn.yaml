@@ -1,8 +1,11 @@
 - project: &base-params
     name: ovirt-provider-ovn-standard
     project: ovirt-provider-ovn
+    trigger: on-change
     version:
       - master:
+          branch: master
+      - 4.2:
           branch: master
       - 4.1:
           branch: ovirt-4.1
@@ -11,11 +14,12 @@
       - check-merged
     distro:
       - el7
-      - fc25
+      - fc27
+      - fcraw
     exclude:
-      - version: 4.1
-        distro: fc25
-    trigger: 'on-change'
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -23,11 +27,6 @@
 - project:
     <<: *base-params
     name: ovirt-provider-ovn_build-artifacts
-    version:
-      - master:
-          branch: master
-      - 4.1:
-          branch: ovirt-4.1
     stage: build-artifacts
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
