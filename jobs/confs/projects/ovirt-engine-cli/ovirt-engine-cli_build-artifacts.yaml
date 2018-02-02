@@ -1,29 +1,30 @@
 - project:
     name: ovirt-engine-cli_build
-    project:
-      - ovirt-engine-cli
+    project: ovirt-engine-cli
+    trigger: on-change
     version:
       - master:
           branch: cli_3.6
-      - 4.1:
+      - 4.2:
           branch: cli_3.6
-      - 4.0:
+      - 4.1:
           branch: cli_3.6
       - 3.6:
           branch: cli_3.6
     stage: build-artifacts
-    trigger: 'on-change'
     distro:
-        - el6
-        - el7
-        - fc25
+      - el6
+      - el7
+      - fc27
+      - fcraw
     exclude:
-      - version: 3.6
-        distro: fc25
-      - version: 4.0
-        distro: fc25
-      - version: 4.1
-        distro: fc25
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 3.6, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
+      - { version: 3.6, distro: fc27 }
+      - { version: 4.2, distro: el6 }
+      - { version: 4.1, distro: el6 }
     arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
