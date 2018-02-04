@@ -122,12 +122,12 @@ def test_resolve_stdci_script(options, expected, stdci_project_dir):
                 {
                     'packages':
                     {
-                        'default_value': DefaultValue,
-                        'fromlistfile': 'check-patch.packages'
+                        DefaultValue: True,
+                        'fromlistfile': 'NotFound'
                     },
                 },
             ),
-            ['p1', 'p2']
+            []
         ),
         (
             JobThread('check-patch', 'default', 'el7', 'x86_64',
@@ -168,12 +168,12 @@ def test_resolve_stdci_list_config(options, expected, stdci_project_dir):
                 {
                     'environment':
                     {
-                        'default_value': DefaultValue,
-                        'fromfile': 'check-patch.environment.yaml'
+                        DefaultValue: True,
+                        'fromfile': 'NotFound'
                     },
                 },
             ),
-            {'test': 'yaml cfg'}
+            {}
         ),
         (
             JobThread('check-patch', 'default', 'el7', 'x86_64',
@@ -251,7 +251,7 @@ def test_get_merged_options(options1, options2, expected):
                         'scripts_directory': 'myCustomDir',
                         'yumrepos':
                         {
-                            'default_value': DefaultValue,
+                            DefaultValue: True,
                             'fromfile':
                             [
                                 '{{ stage }}.{{ substage }}.yumrepos.{{ distro }}.{{ arch }}',
@@ -262,7 +262,7 @@ def test_get_merged_options(options1, options2, expected):
                         },
                         'script':
                         {
-                            'default_value': DefaultValue,
+                            DefaultValue: True,
                             'fromfile':
                             [
                                 '{{ stage }}.{{ substage }}.sh.{{ distro }}.{{ arch }}',
@@ -283,7 +283,7 @@ def test_get_merged_options(options1, options2, expected):
                         'mounts': {'fromfile': 'path_to_file'},
                         'release_branches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
-                        'ignore_if_missing_script': False}
+                        'ignore_if_missing_script': True}
                     )
                 ],
         ),
@@ -306,7 +306,7 @@ def test_get_merged_options(options1, options2, expected):
                         'scripts_directory': 'myCustomDir',
                         'yumrepos':
                         {
-                            'default_value': DefaultValue,
+                            DefaultValue: True,
                             'fromfile':
                             [
                                 '{{ stage }}.{{ substage }}.yumrepos.{{ distro }}.{{ arch }}',
@@ -321,7 +321,7 @@ def test_get_merged_options(options1, options2, expected):
                         },
                         'script':
                         {
-                            'default_value': DefaultValue,
+                            DefaultValue: True,
                             'fromfile':
                             [
                                 '{{ stage }}.{{ substage }}.sh.{{ distro }}.{{ arch }}',
@@ -346,7 +346,7 @@ def test_get_merged_options(options1, options2, expected):
                         'mounts': {'fromfile': 'path_to_file'},
                         'release_branches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
-                        'ignore_if_missing_script': False
+                        'ignore_if_missing_script': True
                     }
                )
             ],

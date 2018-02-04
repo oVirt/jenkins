@@ -4,7 +4,6 @@ from __future__ import absolute_import
 import logging
 from tempfile import mkstemp
 from collections import Mapping
-from numbers import Number
 from copy import copy
 from six import string_types
 from jinja2.sandbox import SandboxedEnvironment
@@ -125,7 +124,15 @@ def _resolve_stdci_script(project, thread):
     found_script = _get_first_file(project/path_prefix, rendered_paths)
     if not (found_script or thread.options['ignore_if_missing_script']):
         # User specified path to script file and we couldn't resolve the path
-        msg = "Could not find script"
+        msg = (
+            "Could not find script for thread:\n"
+            "stage: {stage},\n"
+            "substage: {substage},\n"
+            "distro: {distro}\n"
+            "arch: {arch}"
+            .format(stage=thread.stage, substage=thread.substage,
+                    distro=thread.distro, arch=thread.arch)
+        )
         logger.error(msg)
         raise ConfigurationNotFound(msg)
     return found_script
@@ -177,14 +184,18 @@ def _resolve_stdci_yum_config(project, thread, option):
     )
     path_prefix = _get_path_prefix(thread, option)
     found_config = _get_first_file(project/path_prefix, rendered_paths)
-    default_value = False
-    if 'default_value' in yum_config:
-        default_value = (yum_config['default_value'] == DefaultValue)
-    else:
-        default_value = False
+    default_value = DefaultValue in yum_config
     if not (found_config or default_value):
         # User specified path to config file and we couldn't resolve the path
-        msg = "Could not find yum config"
+        msg = (
+            "Could not find yum config for thread:\n"
+            "stage: {stage},\n"
+            "substage: {substage},\n"
+            "distro: {distro}\n"
+            "arch: {arch}"
+            .format(stage=thread.stage, substage=thread.substage,
+                    distro=thread.distro, arch=thread.arch)
+        )
         logger.error(msg)
         raise ConfigurationNotFound(msg)
     return found_config
@@ -244,10 +255,7 @@ def _resolve_stdci_list_config(project, thread, option):
         with stdci_load(str(project/path_prefix), rendered_paths) as f:
             return f.read().splitlines()
     except ConfigurationNotFoundError:
-        if 'default_value' in list_config:
-            default_value = (list_config['default_value'] == DefaultValue)
-        else:
-            default_value = False
+        default_value = DefaultValue in list_config
         if not default_value:
             # User specified configuration file and we could not find it
             msg = "Could not find config file for {0}".format(option)
@@ -305,10 +313,7 @@ def _resolve_stdci_yaml_config(project, thread, option):
             logger.debug('Loaded config data for %s: %s', option, config_data)
             return config_data
     except ConfigurationNotFoundError:
-        if 'default_value' in yaml_config:
-            default_value = (yaml_config['default_value'] == DefaultValue)
-        else:
-            default_value = False
+        default_value = DefaultValue in yaml_config
         if not default_value:
             # User specified configuration file and we could not find it
             msg = "Could not find config file for {0}".format(option)
@@ -378,9 +383,8 @@ def _get_path_prefix(thread, option):
     scripts_directory = thread.options.get('scripts_directory', None)
     if scripts_directory:
         return scripts_directory
-    if 'default_value' in thread.options[option]:
-        if thread.options[option]['default_value'] == DefaultValue:
-            return 'automation'
+    if DefaultValue in thread.options[option]:
+        return 'automation'
     return ''
 
 

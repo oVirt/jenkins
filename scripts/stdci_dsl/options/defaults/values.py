@@ -15,7 +15,7 @@ def _default_templates_with_substage(ftype, from_=None):
                 '{{ stage }}.{{ substage }}.%s.{{ arch }}' % ftype,
                 '{{ stage }}.{{ substage }}.%s' % ftype,
             ],
-            'default_value': DefaultValue,
+            DefaultValue: True,
         }
     return {
         'fromlistfile': [
@@ -30,7 +30,7 @@ def _default_templates_with_substage(ftype, from_=None):
             '{{ stage }}.{{ substage }}.%s.{{ arch }}' % ftype,
             '{{ stage }}.{{ substage }}.%s' % ftype,
         ],
-        'default_value': DefaultValue,
+        DefaultValue: True,
     }
 
 
@@ -48,7 +48,7 @@ def _default_templates_without_substage(ftype, from_=None):
                 '{{ stage }}.%s.{{ arch }}' % ftype,
                 '{{ stage }}.%s' % ftype,
             ],
-            'default_value': DefaultValue,
+            DefaultValue: True,
         }
     return {
         'fromlistfile': [
@@ -71,7 +71,7 @@ def _default_templates_without_substage(ftype, from_=None):
             '{{ stage }}.%s.{{ arch }}' % ftype,
             '{{ stage }}.%s' % ftype,
         ],
-        'default_value': DefaultValue,
+        DefaultValue: True,
     }
 
 

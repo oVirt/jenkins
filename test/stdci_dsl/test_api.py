@@ -11,9 +11,9 @@ from scripts.stdci_dsl.api import _pipeline_dict_formatter, get_threads
 def project_dir(tmpdir):
     root = tmpdir
     automation = tmpdir.mkdir('automation')
-    automation.join('check-patch.sh').write('code code code ...')
-    automation.join('check-patch.repos').write('repo1\nrepo2\nrepo3')
-    root.join('automation.yaml').write(
+    (automation/'check-patch.sh').write('code code code ...')
+    (automation/'check-patch.repos').write('repo1\nrepo2\nrepo3')
+    (root/'automation.yaml').write(
         "stage: check-patch\n"
         "runtime_requirements: dummy_req\n"
         "packages: [pkg1, pkg2, pkg3]\n"
@@ -35,7 +35,7 @@ def test_get_threads(project_dir):
                 'mounts': [],
                 'release_branches': {},
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
-                'ignore_if_missing_script': False
+                'ignore_if_missing_script': True
             }
         )
     ]
