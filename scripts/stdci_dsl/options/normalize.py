@@ -399,7 +399,8 @@ def _get_first_file(search_dir, filenames):
         filenames = [filenames]
     logger.debug('Searching files in: %s', str(search_dir))
     found = next(
-        (search_dir/f for f in filenames if (search_dir/f).isfile()), None
+        (search_dir/f for f in filenames if (search_dir/f).check(file=True)),
+        None
     )
     if found is None:
         logger.debug('Could not find a valid file in: %s', filenames)

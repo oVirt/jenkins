@@ -18,13 +18,12 @@ from scripts.stdci_dsl.options.normalize import (
 @pytest.fixture(scope='function')
 def stdci_project_dir(tmpdir):
     project_dir = tmpdir.mkdir('stdci-project')
-    project_dir.mkdir('automation')
-    project_dir.join(
-        'automation/check-patch.environment.yaml'
-    ).write('test: yaml cfg\n')
-    project_dir.join('automation/check-patch.sh').write('script')
-    project_dir.join('automation/check-patch.packages').write('p1\np2')
-    project_dir.join('automation/check-patch.yumrepos').write('yumreposfile')
+    automation = project_dir.mkdir('automation')
+    (automation/'check-patch.environment.yaml').write('test: yaml cfg\n')
+    (automation/'check-patch.sh').write('script')
+    (automation/'check-patch.packages').write('p1\np2')
+    (automation/'check-patch.yumrepos').write('yumreposfile')
+    (automation/'check-merged.sh').mksymlinkto('check-patch.sh')
     return project_dir
 
 
@@ -76,6 +75,25 @@ def test_render_template(thread, templates, expected):
                 },
             ),
             'automation/check-patch.sh'
+        ),
+        (
+            JobThread('check-merged', 'default', 'el7', 'x86_64',
+                {
+                    'script':
+                    {
+                        'fromfile':
+                        [
+                            'no',
+                            'no',
+                            'check-merged.sh',
+                            'no'
+                        ]
+                    },
+                    'ignore_if_missing_script': False,
+                    'scripts_directory': 'automation'
+                },
+            ),
+            'automation/check-merged.sh'
         ),
     ]
 )
