@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 PREFIXES = ('', '.')
 FILE_NAMES = ('seaci', 'stdci', 'automation', 'ovirtci')
 SUFFIXES = ('.yaml', '.yml')
-CONFIG_FILES = (''.join(c) for c in product(PREFIXES, FILE_NAMES, SUFFIXES))
+CONFIG_FILES = [''.join(c) for c in product(PREFIXES, FILE_NAMES, SUFFIXES)]
 
 
 def stdci_parse(project):
