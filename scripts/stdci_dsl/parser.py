@@ -26,8 +26,12 @@ def stdci_parse(project):
     :rtype: Iterator
     :returns: Iterator over JobThead objects
     """
-    with stdci_load(project, CONFIG_FILES) as cfg_fd:
-        stdci_conf = safe_load(cfg_fd)
+    try:
+        with stdci_load(project, CONFIG_FILES) as cfg_fd:
+            stdci_conf = safe_load(cfg_fd)
+    except ConfigurationNotFoundError:
+        # In case the configuration was not found, fallback to the empty config
+        stdci_conf = {}
 
     return (
         JobThread(*v) for v in
