@@ -231,5 +231,5 @@
 - job-group:
     name: '{project}_standard-gerrit-jobs'
     jobs:
-      - '{gerrit-subpath}{project}_standard-check-patch'
-      - '{gerrit-subpath}{project}_standard-on-merge'
+      - '{project}_standard-check-patch'
+      - '{project}_standard-on-merge'
