@@ -5,6 +5,7 @@
 from contextlib import contextmanager
 import os
 import logging
+from itertools import product
 from six import string_types
 from yaml import safe_load
 from scripts.nested_config import gen_vectors
@@ -13,9 +14,13 @@ from scripts.stdci_dsl.job_thread import JobThread, STDCI_CATEGORIES
 
 
 logger = logging.getLogger(__name__)
-CONFIG_FILES = (
-    'automation.yaml', 'automation.yml', '.automation.yaml', '.automation.yml',
-)
+
+# The order of the constants blow matters. It affects the order in which we
+# search ci configurations.
+PREFIXES = ('', '.')
+FILE_NAMES = ('seaci', 'stdci', 'automation', 'ovirtci')
+SUFFIXES = ('.yaml', '.yml')
+CONFIG_FILES = (''.join(c) for c in product(PREFIXES, FILE_NAMES, SUFFIXES))
 
 
 def stdci_parse(project):
