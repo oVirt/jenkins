@@ -277,6 +277,14 @@ cleanup_lago() {
     cleanup_lago_network_interfaces || :
 }
 
+kill_lago_processes() {
+    if ! can_sudo "pkill -f lago"; then
+        log WARN "Skipping kill lago processes - not enough sudo permissions"
+        return 0
+    fi
+    sudo -n pkill -f lago || :
+}
+
 cleanup_libvirt_vms() {
     # Drop all left over libvirt domains
     for UUID in $(sudo virsh list --all --uuid); do
@@ -415,6 +423,7 @@ main() {
     cleanup_loop_devices || failed=true
     cleanup_lago || failed=true
     cleanup_libvirt || failed=true
+    kill_lago_processes || failed=true
     cleanup_docker || failed=true
     cleanup_old_artifacts || failed=true
     echo "---------------------------------------------------------------"
