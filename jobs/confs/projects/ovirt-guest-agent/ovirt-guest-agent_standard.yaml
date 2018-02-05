@@ -20,6 +20,8 @@
       - { version: 4.2, distro: fcraw }
       - { version: 4.1, distro: fcraw }
       - { version: 4.1, distro: fc27 }
+      - { version: master, distro: el6 }
+      - { version: 4.2, distro: el6 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
