@@ -375,9 +375,11 @@ cleanup_old_artifacts() {
 }
 
 can_sudo() {
-    local cmd="${1:?}"
+    local cmd
 
-    sudo -nl "$cmd" >& /dev/null
+    for cmd in "$@"; do
+        sudo -nl "$cmd" >& /dev/null || return 1
+    done
 }
 
 log() {
