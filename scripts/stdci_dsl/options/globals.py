@@ -5,6 +5,11 @@
 from itertools import tee
 
 
+GLOBAL_OPTIONS = (
+    'release_branches', 'runtime_requirements', 'upstream_sources',
+)
+
+
 def apply_global_options(threads):
     """Set global option config on a given iterable of threads
 
@@ -30,12 +35,9 @@ def _get_global_options(threads):
     :rtype: dict
     :returns: Global options config to apply on all job_threads
     """
-    _global_option_cfgs = (
-        'release_branches', 'runtime_requirements', 'upstream_sources',
-    )
     global_config = {}
     for thread in threads:
-        for global_option in _global_option_cfgs:
+        for global_option in GLOBAL_OPTIONS:
             if global_option in thread.options:
                 global_config[global_option] = thread.options[global_option]
     return global_config

@@ -40,22 +40,22 @@ def formatter(name):
 
 
 @formatter('pipeline_dict')
-def _pipeline_dict_formatter(threads, template=None):
+def _pipeline_dict_formatter(threads, global_options, template=None):
     """Format vectors data into pipeline dict
 
-    :param Iterable vectors: Iterable of JobThread objects
+    :param Iterable vectors:     Iterable of JobThread objects
+    :param dict global_options : Global options config
     :param str template:     Format template
                              (currently unused in this formatter)
 
     :rtype: str
     :returns: yaml config with vectors data from $vectors
     """
-    sample_thread = next(threads)
     data = {}
     data['global_config'] = {
-        'runtime_reqs': sample_thread.options['runtime_requirements'],
-        'release_branches': sample_thread.options['release_branches'],
-        'upstream_sources': sample_thread.options['upstream_sources'],
+        'runtime_reqs': global_options['runtime_requirements'],
+        'release_branches': global_options['release_branches'],
+        'upstream_sources': global_options['upstream_sources']
     }
     data['jobs'] = [
         {
@@ -66,6 +66,6 @@ def _pipeline_dict_formatter(threads, template=None):
             'script': str(thread.options['script']),
             'runtime_reqs': thread.options['runtime_requirements'],
             'release_branches': thread.options['release_branches'],
-        } for thread in chain([sample_thread], threads)
+        } for thread in threads
     ]
     return safe_dump(data, default_flow_style=False)

@@ -5,9 +5,10 @@ import pytest
 
 from scripts.stdci_dsl.job_thread import JobThread
 from scripts.stdci_dsl.api import (
-    _pipeline_dict_formatter, get_threads, RuntimeEnvDefinition,
-    NoThreadForEnv
+    get_threads, RuntimeEnvDefinition,
+    NoThreadForEnv, get_threads_with_globals
 )
+from scripts.stdci_dsl.api.formatters.pipelines import _pipeline_dict_formatter
 from scripts.stdci_dsl.options.normalize import RepoConfig
 
 
@@ -80,6 +81,35 @@ def test_runner_yaml_dumper(project_dir, tmpdir):
     ) % (str(project_dir/'automation/check-patch.sh'))
 
 
+def test_get_threads_with_globals(project_dir):
+    threads, gopts = get_threads_with_globals(str(project_dir), 'check-patch')
+    assert list(threads) == [
+        JobThread('check-patch', 'default', 'el7', 'x86_64',
+            {
+                'yumrepos': None,
+                'script': project_dir/'automation/check-patch.sh',
+                'upstream_sources': {},
+                'repos': [
+                    RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),
+                    RepoConfig('repo-1f02dddd81d2931b7c82f0a857dc2431', 'repo2'),
+                    RepoConfig('repo-1fb4cda750e4eac7714ee79c6bb4db28', 'repo3')
+                ],
+                'environment': [{'name': 'test', 'valueFrom': {'runtimeEnv': 'PWD'}}],
+                'runtime_requirements': 'dummy_req',
+                'mounts': [],
+                'release_branches': {},
+                'packages': ['pkg1', 'pkg2', 'pkg3'],
+                'ignore_if_missing_script': True
+            }
+        )
+    ]
+    assert gopts == {
+        'release_branches': {},
+        'runtime_requirements': 'dummy_req',
+        'upstream_sources': {}
+    }
+
+
 def test_get_threads(project_dir):
     threads = get_threads(str(project_dir), 'check-patch')
     assert list(threads) == [
@@ -105,11 +135,25 @@ def test_get_threads(project_dir):
 
 
 @pytest.mark.parametrize(
-    "threads,expected",
+    "threads,global_cfg,expected",
     [
         (
             [],
-            ''
+            {
+                'runtime_requirements': {'r': 'r'},
+                'release_branches': {'r': 'b'},
+                'upstream_sources': {'u': 's'},
+            },
+            (
+                'global_config:\n'
+                '  release_branches:\n'
+                '    r: b\n'
+                '  runtime_reqs:\n'
+                '    r: r\n'
+                '  upstream_sources:\n'
+                '    u: s\n'
+                'jobs: []\n'
+            )
         ),
         (
             [
@@ -141,19 +185,26 @@ def test_get_threads(project_dir):
                     }
                 )
             ],
+            {
+                'runtime_requirements': {'r': 'r'},
+                'release_branches': {'r': 'b'},
+                'upstream_sources': {'u': 's'},
+            },
             (
                 'global_config:\n'
-                '  release_branches: &id001\n'
+                '  release_branches:\n'
                 '    r: b\n'
-                '  runtime_reqs: &id002\n'
+                '  runtime_reqs:\n'
                 '    r: r\n'
                 '  upstream_sources:\n'
                 '    u: s\n'
                 'jobs:\n'
                 '- arch: x86_64\n'
                 '  distro: fc25\n'
-                '  release_branches: *id001\n'
-                '  runtime_reqs: *id002\n'
+                '  release_branches:\n'
+                '    r: b\n'
+                '  runtime_reqs:\n'
+                '    r: r\n'
                 '  script: s\n'
                 '  stage: check-patch\n'
                 '  substage: default\n'
@@ -179,7 +230,7 @@ def test_get_threads(project_dir):
         ),
     ]
 )
-def test_pipeline_formatter(threads, expected):
+def test_pipeline_formatter(threads, global_cfg, expected):
     threads_it = iter(threads)
-    out = _pipeline_dict_formatter(threads_it)
-    assert  out == expected
+    out = _pipeline_dict_formatter(threads_it, global_cfg)
+    assert out == expected

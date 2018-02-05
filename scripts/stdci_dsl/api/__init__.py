@@ -2,17 +2,17 @@
 
 from __future__ import absolute_import
 from itertools import chain
+from operator import itemgetter
 import logging
 from hashlib import md5
-from six.moves import filter
+from six.moves import zip
 from yaml import safe_dump
 
 from .formatters.runners import get_formatter as get_runner_formatter
 from .formatters.pipelines import get_formatter as get_pipeline_formatter
 from ..categories import apply_default_categories
 from ..options.defaults import apply_default_options
-from ..options.globals import apply_global_options, _get_global_options
-from ..options.parser_utils import get_merged_options
+from ..options.globals import apply_global_options, GLOBAL_OPTIONS
 from ..options.normalize import normalize
 from ..parser import stdci_parse
 
@@ -79,19 +79,39 @@ def get_threads(project, stage):
     :returns: Iterator over JobThread instances for the the current project and
               stage.
     """
+    threads_for_stage, _ = get_threads_with_globals(project, stage)
+    return threads_for_stage
+
+
+def get_threads_with_globals(project, stage):
+    """Parse stdci config for the given project and get relevant thread and
+    global config for the given stage.
+
+    :param str project: Path to stdci project's root directory.
+    :param str stage:   stdci stage.
+
+    :rtype: Tuple
+    :returns: Iterator over JobThread instances for the the current project and
+              stage and the global config
+    """
     logger.info("Generating thread objects for project: %s", project)
     all_threads = stdci_parse(project)
+    threads_with_global_options = apply_global_options(all_threads)
+    sample = next(threads_with_global_options)
+    threads_with_global_options = chain([sample], threads_with_global_options)
+    sample = next(apply_default_options([sample]))
+    global_options = dict(
+        zip(GLOBAL_OPTIONS, itemgetter(*GLOBAL_OPTIONS)(sample.options))
+    )
     threads_for_current_stage = (
-        thread for thread in all_threads
+        thread for thread in threads_with_global_options
         if thread.stage is None or thread.stage == stage
     )
     threads_with_default_categories = \
         apply_default_categories(threads_for_current_stage, stage)
-    threads_with_global_options = \
-        apply_global_options(threads_with_default_categories)
     threads_with_default_options = \
-        apply_default_options(threads_with_global_options)
-    return normalize(project, threads_with_default_options)
+        apply_default_options(threads_with_default_categories)
+    return normalize(project, threads_with_default_options), global_options
 
 
 def get_formatted_threads(fmt, project, stage):
@@ -110,41 +130,8 @@ def get_formatted_threads(fmt, project, stage):
         raise FormatterNotFoundError(
             'Could not resolve formatter name {0}.'.format(fmt_name)
         )
-    threads = get_threads(project, stage)
-    return formatter(threads, template)
-
-
-def _pipeline_dict_formatter(threads, template=None):
-    """Format vectors data into pipeline dict
-
-    :param Iterable vectors: Iterable of JobThread objects
-    :param str template:     Format template
-                             (currently unused in this formatter)
-
-    :rtype: str
-    :returns: yaml config with vectors data from $vectors
-    """
-    sample_thread = next(threads, None)
-    if not sample_thread:
-        return ''
-    data = {}
-    data['global_config'] = {
-        'runtime_reqs': sample_thread.options['runtime_requirements'],
-        'release_branches': sample_thread.options['release_branches'],
-        'upstream_sources': sample_thread.options['upstream_sources'],
-    }
-    data['jobs'] = [
-        {
-            'stage': thread.stage,
-            'substage': thread.substage,
-            'distro': thread.distro,
-            'arch': thread.arch,
-            'script': str(thread.options['script']),
-            'runtime_reqs': thread.options['runtime_requirements'],
-            'release_branches': thread.options['release_branches'],
-        } for thread in chain([sample_thread], threads)
-    ]
-    return safe_dump(data, default_flow_style=False)
+    threads, global_cfg = get_threads_with_globals(project, stage)
+    return formatter(threads, global_cfg, template)
 
 
 def setupLogging(level=logging.INFO):
