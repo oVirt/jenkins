@@ -40,6 +40,8 @@
           branch: sdk_4.0
       - 4.1:
           branch: sdk_4.1
+      - 4.2:
+          branch: master
       - master:
           branch: master
     exclude:
@@ -66,6 +68,8 @@
     version:
       - master:
           branch: sdk_3.6
+      - 4.2:
+          branch: sdk_3.6
       - 4.1:
           branch: sdk_3.6
       - 4.0:
@@ -83,12 +87,16 @@
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: master
       - 4.1:
           branch: sdk_4.1
       - 4.0:
           branch: sdk_4.0
     exclude:
       - version: master
+        distro: el6
+      - version: 4.2
         distro: el6
       - version: 4.1
         distro: el6
@@ -112,12 +120,18 @@
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: master
       - 4.1:
           branch: sdk_4.1
     exclude:
       - version: master
         distro: el6
       - version: master
+        distro: fc26
+      - version: 4.2
+        distro: el6
+      - version: 4.2
         distro: fc26
       - version: 4.1
         distro: el6
