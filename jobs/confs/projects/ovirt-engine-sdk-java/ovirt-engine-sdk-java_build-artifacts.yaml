@@ -28,12 +28,16 @@
           branch: sdk_4.0
       - 4.1:
           branch: sdk_4.1
+      - 4.2:
+          branch: master
       - master:
           branch: master
     exclude:
       - version: 4.0
         distro: fc25
       - version: 4.1
+        distro: fc25
+      - version: 4.2
         distro: fc25
     jobs:
         - 'java-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
@@ -45,6 +49,8 @@
     project: ovirt-engine-sdk-java
     version:
       - master:
+          branch: sdk_3.6
+      - 4.2:
           branch: sdk_3.6
       - 4.1:
           branch: sdk_3.6
@@ -62,6 +68,8 @@
     project: ovirt-engine-sdk-java
     version:
       - master:
+          branch: master
+      - 4.2:
           branch: master
       - 4.1:
           branch: sdk_4.1
