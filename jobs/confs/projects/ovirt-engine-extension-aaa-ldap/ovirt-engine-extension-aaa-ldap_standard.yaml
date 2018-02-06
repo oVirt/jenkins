@@ -1,7 +1,7 @@
 - project: &base-params
     name: ovirt-engine-extension-aaa-ldap_standard
-    project:
-      - ovirt-engine-extension-aaa-ldap
+    project: ovirt-engine-extension-aaa-ldap
+    trigger: on-change
     version:
       - master:
           branch: master
@@ -13,22 +13,12 @@
       - check-patch
     distro:
       - el7
-      - fc25
-      - fc26
+      - fc27
+      - fcraw
     exclude:
-      - version: 4.1
-        distro: el6
-      - version: 4.1
-        distro: fc25
-      - version: 4.0
-        distro: el6
-      - version: 4.0
-        distro: fc25
-      - version: 3.6
-        distro: fc25
-      - version: 4.1
-        distro: fc26
-    trigger: 'on-change'
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
