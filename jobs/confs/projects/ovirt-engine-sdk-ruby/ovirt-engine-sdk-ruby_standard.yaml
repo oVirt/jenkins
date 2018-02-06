@@ -6,6 +6,8 @@
     version:
       - master:
           branch: master
+      - 4.2:
+          branch: master
       - 4.1:
           branch: sdk_4.1
       - 4.0:
@@ -19,6 +21,8 @@
       - ppc64le:
           node-filter: ppc64le
     exclude:
+      - version: 4.2
+        distro: fc25
       - version: 4.1
         distro: fc25
       - version: 4.0
