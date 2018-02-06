@@ -2,7 +2,7 @@
     name: ovirt-engine-sdk-ruby_checks
     project: ovirt-engine-sdk-ruby
     stage: check-patch
-    trigger: 'on-change'
+    trigger: on-change
     version:
       - master:
           branch: master
@@ -10,23 +10,25 @@
           branch: master
       - 4.1:
           branch: sdk_4.1
-      - 4.0:
-          branch: sdk_4.0
     distro:
       - el7
-      - fc25
+      - fc27
+      - fcraw
     arch:
       - x86_64:
           node-filter: el7
       - ppc64le:
           node-filter: ppc64le
+      - s390x:
+          node-filter: s390x
     exclude:
-      - version: 4.2
-        distro: fc25
-      - version: 4.1
-        distro: fc25
-      - version: 4.0
-        distro: fc25
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
+      - { version: 4.1, arch: s390x, }
+      - {               arch: s390x,   distro: el7, }
+      - {               arch: ppc64le, distro: fc27, }
+      - {               arch: ppc64le, distro: fcraw, }
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
