@@ -95,6 +95,7 @@
       - {               arch: s390x,   distro: el7, }
       - {               arch: ppc64le, distro: fc27, }
       - {               arch: ppc64le, distro: fcraw, }
+      - {               arch: s390x, distro: fcraw, }
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
