@@ -74,16 +74,3 @@
       - ppc64le:
           node-filter: ppc64le
 
-- project:
-    <<: *ioprocess_standard_common
-    name: ioprocess-4.0
-    version:
-      - 4.0:
-          branch: ioprocess-0.16
-          repoversion: 4.0
-    stage:
-      - build-artifacts
-    distro:
-      - el7
-    arch:
-      - x86_64
