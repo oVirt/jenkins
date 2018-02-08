@@ -7,7 +7,7 @@
       - master:
           branch: master
       - 4.2:
-          branch: master
+          branch: sdk_4.2
       - 4.1:
           branch: sdk_4.1
     distro:
