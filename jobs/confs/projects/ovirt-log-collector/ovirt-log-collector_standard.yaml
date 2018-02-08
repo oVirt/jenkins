@@ -1,32 +1,29 @@
 - project: &base-params
     name: ovirt-log_collector_build
-    project:
-      - ovirt-log-collector
+    project: ovirt-log-collector
+    trigger: on-change
     version:
       - master:
           branch: master
-          repoversion: master
       - 4.2:
           branch: ovirt-log-collector-4.2
-          repoversion: 4.2
       - 4.1:
           branch: ovirt-log-collector-4.1
-          repoversion: 4.1
-      - 4.0:
-          branch: ovirt-log-collector-4.0
-          repoversion: 4.0
+      - 3.6:
+          branch: ovirt-log-collector-3.6
     stage:
       - check-patch
       - check-merged
     distro:
-      - fc27
       - el7
+      - fc27
+      - fcraw
     exclude:
-      - version: 4.0
-        distro: fc27
-      - version: 4.1
-        distro: fc27
-    trigger: 'on-change'
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 3.6, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
+      - { version: 3.6, distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -50,9 +47,9 @@
     <<: *base-params
     name: ovirt-log-collector_build-artifacts-manual-any
     version:
-      - 'master'
-      - '4.2'
+      - '3.6'
       - '4.1'
-      - '4.0'
+      - '4.2'
+      - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
