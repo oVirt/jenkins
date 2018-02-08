@@ -52,11 +52,7 @@ def _pipeline_dict_formatter(threads, global_options, template=None):
     :returns: yaml config with vectors data from $vectors
     """
     data = {}
-    data['global_config'] = {
-        'runtime_reqs': global_options['runtime_requirements'],
-        'release_branches': global_options['release_branches'],
-        'upstream_sources': global_options['upstream_sources']
-    }
+    data['global_config'] = global_options
     data['jobs'] = [
         {
             'stage': thread.stage,

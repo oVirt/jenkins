@@ -5,9 +5,7 @@
 from itertools import tee
 
 
-GLOBAL_OPTIONS = (
-    'release_branches', 'runtime_requirements', 'upstream_sources',
-)
+GLOBAL_OPTIONS = ('release_branches', 'upstream_sources',)
 
 
 def apply_global_options(threads):

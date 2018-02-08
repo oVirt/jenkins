@@ -513,7 +513,7 @@ def test_apply_default_options(threads, expected):
                 JobThread('a', 'b', 'c', 'd', {'p': 'p'}),
                 JobThread('c', 'd', 'c', 'd', {'runtime_requirements': 'rtr'})
             ],
-            {'runtime_requirements': 'rtr'}
+            {}
         ),
         (
             [
@@ -532,7 +532,6 @@ def test_apply_default_options(threads, expected):
             ],
             {
                 'release_branches': 'rbrnch',
-                'runtime_requirements': 'rtr',
                 'upstream_sources': 'usrc'
             }
         ),

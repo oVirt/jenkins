@@ -105,7 +105,6 @@ def test_get_threads_with_globals(project_dir):
     ]
     assert gopts == {
         'release_branches': {},
-        'runtime_requirements': 'dummy_req',
         'upstream_sources': {}
     }
 
@@ -140,7 +139,6 @@ def test_get_threads(project_dir):
         (
             [],
             {
-                'runtime_requirements': {'r': 'r'},
                 'release_branches': {'r': 'b'},
                 'upstream_sources': {'u': 's'},
             },
@@ -148,8 +146,6 @@ def test_get_threads(project_dir):
                 'global_config:\n'
                 '  release_branches:\n'
                 '    r: b\n'
-                '  runtime_reqs:\n'
-                '    r: r\n'
                 '  upstream_sources:\n'
                 '    u: s\n'
                 'jobs: []\n'
@@ -161,18 +157,18 @@ def test_get_threads(project_dir):
                     'check-patch', 'default', 'fc25', 'x86_64',
                     {
                         'script': 's',
-                        'runtime_requirements': {'r': 'r'},
                         'release_branches': {'r': 'b'},
                         'upstream_sources': {'u': 's'},
+                        'runtime_requirements': {'r': 'r'},
                     }
                 ),
                 JobThread(
                     'build-artifacts', 'default', 'fc26', 'x86_64',
                     {
                         'script': 's',
-                        'runtime_requirements': {'r': 'r'},
                         'release_branches': {'r': 'b'},
                         'upstream_sources': {'u': 's'},
+                        'runtime_requirements': {'r': 'r'},
                     }
                 ),
                 JobThread(
@@ -186,7 +182,6 @@ def test_get_threads(project_dir):
                 )
             ],
             {
-                'runtime_requirements': {'r': 'r'},
                 'release_branches': {'r': 'b'},
                 'upstream_sources': {'u': 's'},
             },
@@ -194,8 +189,6 @@ def test_get_threads(project_dir):
                 'global_config:\n'
                 '  release_branches:\n'
                 '    r: b\n'
-                '  runtime_reqs:\n'
-                '    r: r\n'
                 '  upstream_sources:\n'
                 '    u: s\n'
                 'jobs:\n'
