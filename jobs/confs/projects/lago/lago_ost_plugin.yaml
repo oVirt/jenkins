@@ -6,7 +6,6 @@
         - master:
             branch: master
       distro:
-        - fc25
         - fc26
         - fc27
         - el7
