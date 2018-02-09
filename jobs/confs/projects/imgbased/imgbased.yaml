@@ -1,77 +1,37 @@
-##############################################################################
-###   Projects
-##############################################################################
 - project: &base-params
-    name: imgbased
-    project:
-      - imgbased
+    name: imgbased_build
+    project: imgbased
+    trigger: 'on-change'
     version:
       - master:
           branch: master
-          repoversion: master
       - 4.2:
           branch: ovirt-4.2
-          repoversion: 4.2
       - 4.1:
           branch: ovirt-4.1
-          repoversion: 4.1
-      - 4.0:
-          branch: ovirt-4.0
-          repoversion: 4.0
       - 3.6:
           branch: ovirt-3.6
-          repoversion: 3.6
     stage: build-artifacts
     distro:
       - el7
       - fc27
+      - fcraw
     exclude:
-      - version: 4.2
-        distro: fc27
-      - version: 4.1
-        distro: fc27
-      - version: 4.0
-        distro: fc27
-      - version: 3.6
-        distro: fc27
-    trigger: 'on-change'
-    arch:
-      - x86_64
+      - { version: 4.2, distro: fcraw }
+      - { version: 4.1, distro: fcraw }
+      - { version: 3.6, distro: fcraw }
+      - { version: 4.1, distro: fc27 }
+      - { version: 3.6, distro: fc27 }
+    arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
 
 - project:
+    <<: *base-params
     name: imgbased-lint
-    project: imgbased
-    version:
-      - master:
-          branch: master
-      - 4.2:
-          branch: ovirt-4.2
-      - 4.1:
-          branch: ovirt-4.1
-      - 4.0:
-          branch: ovirt-4.0
-      - 3.6:
-          branch: ovirt-3.6
     stage:
       - check-patch
       - check-merged
-    distro:
-      - el7
-      - fc27
-    exclude:
-      - version: 4.2
-        distro: fc27
-      - version: 4.1
-        distro: fc27
-      - version: 4.0
-        distro: fc27
-      - version: 3.6
-        distro: fc27
-    trigger: 'on-change'
-    arch:
-      - x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
