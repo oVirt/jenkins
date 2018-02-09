@@ -2,14 +2,12 @@
     name: infra-ansible
     project: infra-ansible
     stage: check-patch
-    trigger: 'on-change'
+    trigger: on-change
     version:
       - master:
           branch: master
     distro:
       - el7
-      - fc25
-      - fc26
     arch: x86_64
     jobs:
         - '{project}_{version}_{stage}-{distro}-{arch}'
