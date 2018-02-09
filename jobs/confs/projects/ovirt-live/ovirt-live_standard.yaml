@@ -1,0 +1,14 @@
+- project:
+    name: ovirt-live
+    project: ovirt-live
+    trigger: on-change
+    version:
+      - master:
+          branch: master
+    distro: el7
+    arch: x86_64
+    stage:
+      - check-patch
+      - build-artifacts
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
