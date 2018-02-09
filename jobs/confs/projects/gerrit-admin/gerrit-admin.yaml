@@ -9,7 +9,7 @@
       - check-patch
       - check-merged
     distro:
-      - fc23
+      - el7
     trigger: 'on-change'
     arch: x86_64
     jobs:
