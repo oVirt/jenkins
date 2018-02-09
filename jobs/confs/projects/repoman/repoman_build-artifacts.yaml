@@ -1,7 +1,7 @@
 - project:
     name: repoman_build
-    project:
-      - repoman
+    project: repoman
+    trigger: on-change
     version:
       - master:
           branch: master
@@ -11,10 +11,7 @@
       - build-artifacts
     distro:
       - el7
-      - fc25
-      - fc26
       - fc27
-    trigger: 'on-change'
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
