@@ -110,10 +110,37 @@ def mock_merge_options(o1, o2):
                 (None, None, 'el7', None, {})
             ]
         ),
+        (
+            {
+                'DISTRO': ['el6', 'fc25', 'fc26', 'el7'],
+                'SubStage':
+                [
+                    'default',
+                    {
+                        'another':
+                        {
+                            'Distro': 'el7',
+                            'Script': {'abc': 'efg'},
+                            'Stage': 'check-patch'
+                        }
+                    }
+                ]
+            },
+            ('stage', 'substage', 'distro', 'arch'),
+            [
+                (None, 'default', None, None, {}),
+                ('check-patch', 'another', 'el7', None, {'merged options': None}),
+                (None, None, 'el6', None, {}),
+                (None, None, 'fc25', None, {}),
+                (None, None, 'fc26', None, {}),
+                (None, None, 'el7', None, {})
+            ]
+        ),
     ]
 )
 def test_dfs(data_in, categories, expected):
-    out = list(_dfs(data_in, categories, mock_merge_options))
+    ignore_case = lambda x: x.lower()
+    out = list(_dfs(data_in, categories, mock_merge_options, ignore_case))
     assert out == expected
 
 

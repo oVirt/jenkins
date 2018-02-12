@@ -40,7 +40,7 @@ from six.moves import zip, xrange
 logger = logging.getLogger(__name__)
 
 
-def gen_vectors(data_in, merge_options, categories):
+def gen_vectors(data_in, merge_options, categories, normalize=None):
     """Generate list of vectors from the given data
 
     :param Mapping data_in:        Nested config data to parse.
@@ -52,15 +52,24 @@ def gen_vectors(data_in, merge_options, categories):
                                    tuple is the actual order that the
                                    categories will be ordered by in the output
                                    vectors
+    :param function normalize:     (optional) Function that normalizes every
+                                   data in the nested config.
+                                   For example, it can be used to ignore cases
+                                   in the nested config.
+                                   Defaults to the identity function.
 
     :rtype: list
     :returns: List of vectors generated from the input data
     """
     logger.info('beginning to parse config %s', data_in)
-    return _aggregate(_dfs(data_in, categories, merge_options), merge_options)
+    return _aggregate(
+        _dfs(data_in, categories, merge_options, normalize), merge_options
+    )
 
 
-def _dfs(data, categories, merge_options, seen_categories=None):
+def _dfs(
+    data, categories, merge_options, normalize=None, seen_categories=None,
+):
     """Perform a dfs on the given data and yield vectors that were found.
 
     This method extracts categories and options metadata from a given data.
@@ -72,29 +81,40 @@ def _dfs(data, categories, merge_options, seen_categories=None):
                                    treated as an option: (packages, repos, ...)
     :param function merge_options: Function that knows how to merge options
                                    field between two vectors.
+    :param function normalize:     (optional) Function that normalizes every
+                                   data in the nested config.
+                                   For example, it can be used to ignore cases
+                                   in the nested config.
+                                   Defaults to the identity function.
     :param set seen_categories:    Keep track of visited categories when
                                    deepening in the dfs tree.
     """
+    if not normalize:
+        # If unset, set normalize to be identity function
+        normalize = lambda x: x
     if not isinstance(data, Mapping):
         raise SyntaxError(
             'Config section must be Mapping not {0}'.format(type(data))
         )
-    logger.debug('parsing data: %s',data)
+    logger.debug('parsing data: %s', data)
     if not seen_categories:
         seen_categories = set()
-    options = dict((k, v) for (k, v) in iteritems(data) if k not in categories)
+    normalized_data = dict((normalize(k), v) for (k, v) in iteritems(data))
+    options = dict(
+        (k, v) for (k, v) in iteritems(normalized_data) if k not in categories
+    )
     logger.debug('options found: %s', options)
     # If we didn't find any category in the current level, than the current
     # level may include only options. In this case we yield an empty vector
     # with options (if any)
     category_found = False
     for i, category in enumerate(categories):
-        if category not in data or category in seen_categories:
+        if category not in normalized_data or category in seen_categories:
             # Skip options and visited nodes
             continue
         category_found = True
         logger.debug('category found: %s', category)
-        category_values = data[category]
+        category_values = normalized_data[category]
         # Convert edge cases to lists
         if isinstance(category_values, Mapping):
             category_values = [category_values]
@@ -110,7 +130,7 @@ def _dfs(data, categories, merge_options, seen_categories=None):
                 # category and the values are potentially nested categories
                 cur_cat_val, next_node = next(iteritems(cv))
                 next_level = _dfs(
-                    next_node, categories, merge_options,
+                    next_node, categories, merge_options, normalize,
                     seen_categories | set([category])
                 )
                 for depth_vector in _aggregate(next_level, merge_options):
