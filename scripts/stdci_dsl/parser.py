@@ -2,15 +2,17 @@
 """stdci_config.py - Read and parse stdci config and generate JobThread objects
 """
 
+from __future__ import absolute_import
 from contextlib import contextmanager
 import os
 import logging
+from six import string_types, iteritems
+from collections import Mapping, Iterable
 from itertools import product
-from six import string_types
 from yaml import safe_load
-from scripts.nested_config import gen_vectors
-from scripts.stdci_dsl.options.parser_utils import get_merged_options
-from scripts.stdci_dsl.job_thread import JobThread, STDCI_CATEGORIES
+from .options.parser_utils import get_merged_options
+from .job_thread import JobThread, STDCI_CATEGORIES
+from ..nested_config import gen_vectors
 
 
 logger = logging.getLogger(__name__)
@@ -40,7 +42,13 @@ def stdci_parse(project):
 
     return (
         JobThread(*v) for v in
-        gen_vectors(stdci_conf, get_merged_options, STDCI_CATEGORIES)
+        gen_vectors(
+            data_in=stdci_conf,
+            merge_options=get_merged_options,
+            categories=STDCI_CATEGORIES,
+            normalize_keys=remove_case_and_signs,
+            normalize_values=normalize_config_values,
+        )
     )
 
 
@@ -71,3 +79,43 @@ def stdci_load(sdir, files, flag=None):
         except IOError:
             pass
     raise ConfigurationNotFoundError('Could not find a valid config')
+
+
+def normalize_config_values(key, data):
+    """If the data is a key in the config (mapping keys), send all the keys to
+    remove_case_and_signs recursively for normalization.
+
+    :param str key: The config key where $data is the value. (currently unused)
+    :param data:    Data to normalize.
+
+    :returns: If data is a map, return the same map but with all the keys
+              (including nested keys) normalized.
+              Otherwise, return the data as is.
+    """
+    logger.debug('Normalizing data: %s', data)
+    if isinstance(data, Mapping):
+        return dict(
+            (remove_case_and_signs(k), normalize_config_values(k, v))
+            for (k, v) in iteritems(data)
+        )
+    elif isinstance(data, string_types):
+        return data
+    elif isinstance(data, Iterable):
+        return [normalize_config_values(key, d) for d in data]
+    return data
+
+
+def remove_case_and_signs(data_in):
+    """Given a string, transform it into lower case and remove whitespaces,
+    dashes and underscores.
+
+    :param str data_in: Option name or (string) value to remove case and signs
+                        from.
+
+    :rtype: str
+    :returns: String in lower case form and with signs removed
+    """
+    if not isinstance(data_in, string_types):
+        logger.debug('[%s] is string type.', data_in)
+        return data_in
+    return data_in.lower().replace(' ', '').replace('-', '').replace('_', '')

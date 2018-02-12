@@ -41,36 +41,41 @@ from six.moves import zip, xrange
 logger = logging.getLogger(__name__)
 
 
-def gen_vectors(data_in, merge_options, categories, normalize=None):
+def gen_vectors(data_in, merge_options, categories,
+                normalize_keys=None, normalize_values=None,):
     """Generate list of vectors from the given data
 
     :param Mapping data_in:        Nested config data to parse.
-    :param function merge_options: Function that knows how to merge options
-                                   (Different projects may use different merge
-                                    methods)
-    :param tuple categories:       Tuple of all availalbe categories. Note that
-                                   the order the categories appear in this
-                                   tuple is the actual order that the
-                                   categories will be ordered by in the output
-                                   vectors
-    :param function normalize:     (optional) Function that normalizes every
-                                   data in the nested config.
-                                   For example, it can be used to ignore cases
-                                   in the nested config.
-                                   Defaults to the identity function.
+    :param function merge_options: Function that knows how to merge
+                                   options (Different projects may use
+                                   different merge methods)
+    :param tuple categories:       Tuple of all availalbe categories.
+                                   Note that the order the categories
+                                   appear in this tuple is the actual
+                                   order that the categories will be
+                                   ordered by in the output vectors
+    :param func normalize_keys:    (optional) This function will be called on
+                                   every key visit. It can be used to normalize
+                                   the keys in the config.
+                                   (for example: ignore case)
+    :param func normalize_values:  (optional) This function will be
+                                   called on options that found.
+                                   It can be used to normalize options.
 
     :rtype: list
     :returns: List of vectors generated from the input data
     """
     logger.info('beginning to parse config %s', data_in)
     return _aggregate(
-        _dfs(data_in, categories, merge_options, normalize), merge_options
+        _dfs(
+            data_in, categories, merge_options, normalize_keys,
+            normalize_values
+        ), merge_options
     )
 
 
-def _dfs(
-    data, categories, merge_options, normalize=None, seen_categories=None,
-):
+def _dfs(data, categories, merge_options, normalize_keys=None,
+         normalize_values=None, seen_categories=None,):
     """Perform a dfs on the given data and yield vectors that were found.
 
     This method extracts categories and options metadata from a given data.
@@ -80,29 +85,39 @@ def _dfs(
     :param tuple categories:       All available categories to search for.
                                    Everything that is NOT a category, will be
                                    treated as an option: (packages, repos, ...)
-    :param function merge_options: Function that knows how to merge options
+    :param func merge_options:     Function that knows how to merge options
                                    field between two vectors.
-    :param function normalize:     (optional) Function that normalizes every
-                                   data in the nested config.
-                                   For example, it can be used to ignore cases
-                                   in the nested config.
-                                   Defaults to the identity function.
+    :param func normalize_keys:    (optional) This function will be called on
+                                   every key visit. It can be used to normalize
+                                   the keys in the config.
+                                   (for example: ignore case)
+    :param func normalize_values: (optional) This function will be called on
+                                   options that was found. It can be used to
+                                   normalize options.
     :param set seen_categories:    Keep track of visited categories when
                                    deepening in the dfs tree.
+
+    :rtype: Iterator
+    :returns: Iterator over vectors aggregated from the config.
     """
-    if not normalize:
-        # If unset, set normalize to be identity function
-        normalize = lambda x: x
+    # If unset, set normalize_keys/normalize_values to identity function
+    if not normalize_keys:
+        normalize_keys = _normalize_keys_identity
+    if not normalize_values:
+        normalize_values = _normalize_values_identity
+
     if not isinstance(data, Mapping):
         raise SyntaxError(
             'Config section must be Mapping not {0}'.format(type(data))
         )
+
     logger.debug('parsing data: %s', data)
     if not seen_categories:
         seen_categories = set()
-    normalized_data = dict((normalize(k), v) for (k, v) in iteritems(data))
+    data = dict((normalize_keys(k), v) for (k, v) in iteritems(data))
     options = dict(
-        (k, v) for (k, v) in iteritems(normalized_data) if k not in categories
+        (k, normalize_values(k, v))
+        for (k, v) in iteritems(data) if k not in categories
     )
     logger.debug('options found: %s', options)
     # If we didn't find any category in the current level, than the current
@@ -110,12 +125,12 @@ def _dfs(
     # with options (if any)
     category_found = False
     for i, category in enumerate(categories):
-        if category not in normalized_data or category in seen_categories:
+        if category not in data or category in seen_categories:
             # Skip options and visited nodes
             continue
         category_found = True
         logger.debug('category found: %s', category)
-        category_values = normalized_data[category]
+        category_values = data[category]
         # Convert edge cases to lists
         if isinstance(category_values, Mapping):
             category_values = [category_values]
@@ -130,9 +145,12 @@ def _dfs(
                 # cv is a Mapping where the keys are values for the level
                 # category and the values are potentially nested categories
                 cur_cat_val, next_node = next(iteritems(cv))
+                cur_cat_val = normalize_values(category, cur_cat_val)
                 next_level = _dfs(
-                    next_node, categories, merge_options, normalize,
-                    seen_categories | set([category])
+                    data=next_node, categories=categories,
+                    merge_options=merge_options, normalize_keys=normalize_keys,
+                    normalize_values=normalize_values,
+                    seen_categories=seen_categories | set([category])
                 )
                 for depth_vector in _aggregate(next_level, merge_options):
                     yield _compose_vector(
@@ -193,9 +211,9 @@ def _aggregate(vectors, merge_options):
     """Aggregate a list of given vectors: do cartesian multiplication on all
     the vectors in the list and _dedup the list.
 
+    :param Iterable vectors:       Iterable of vectors to aggregate
     :param function merge_options: Function that knows how to merge options
                                    field between two vectors.
-    :param list vectors:           A list of vectors to _aggregate
     """
     was_changed = True
     while was_changed:
@@ -296,3 +314,11 @@ def _merge(vector1, vector2, merge_options):
             else:
                 return None
     return tuple(new_vector)
+
+
+def _normalize_keys_identity(key):
+    return key
+
+
+def _normalize_values_identity(key, data):
+    return data

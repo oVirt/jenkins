@@ -49,10 +49,10 @@ def normalize(project, threads):
     """
     project = py.path.local(project)
     for thread in threads:
-        # We need to render scripts_directory here because it takes effect
+        # We need to render scriptsdirectory here because it takes effect
         # when resolving paths for option(s) configuration file(s).
         thread_options_with_scdir = _render_template(
-            thread, thread.options.get('scripts_directory', '')
+            thread, thread.options.get('scriptsdirectory', '')
         )
         thread_with_scdir = thread.with_modified(
             options=thread.options.update(thread_options_with_scdir)
@@ -434,7 +434,7 @@ def _write_to_tmpfile(string, suffix=''):
 
 def _get_path_prefix(thread, option):
     """Get path prefix with the following logic:
-    If scripts_directory was specified, then use it as prefix
+    If scriptsdirectory was specified, then use it as prefix
     If user explicitly specified the option, then set prefix to nothing ('')
     Otherwise, set prefix to automation/
 
@@ -445,9 +445,9 @@ def _get_path_prefix(thread, option):
     :rtype: str
     :returns: Path to option's configuration file(s) relative to project's root
     """
-    scripts_directory = thread.options.get('scripts_directory', None)
-    if scripts_directory:
-        return scripts_directory
+    scriptsdirectory = thread.options.get('scriptsdirectory', None)
+    if scriptsdirectory:
+        return scriptsdirectory
     if DefaultValue in thread.options[option]:
         return 'automation'
     return ''

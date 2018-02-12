@@ -19,14 +19,14 @@ def project_dir(tmpdir):
     automation = tmpdir.mkdir('automation')
     (automation/'check-patch.sh').write('code code code ...')
     (automation/'check-patch.repos').write('repo1\nrepo2\nrepo3')
-    (root/'automation.yaml').write(
-        "stage: check-patch\n"
-        "runtime_requirements: dummy_req\n"
-        "packages: [pkg1, pkg2, pkg3]\n"
-        "environment:\n"
-        "  - name: 'test'\n"
-        "    valueFrom:\n"
-        "      runtimeEnv: 'PWD'\n"
+    (root/'stdci.yaml').write(
+        "STAGE: check-patch\n"
+        "runtimer-equire_ments: dummy_req\n"
+        "Packages: [pkg1, pkg2, pkg3]\n"
+        "Environment:\n"
+        "  - NAME: 'test'\n"
+        "    value-From:\n"
+        "      runtime-Env: 'PWD'\n"
     )
     return root
 
@@ -38,7 +38,7 @@ def test_RuntimeEnvDefinition(project_dir):
     assert obj.script == 'automation/check-patch.sh'
     assert obj.yumrepos == None
     assert obj.environment == [
-        {'name': 'test', 'valueFrom': {'runtimeEnv': 'PWD'}}
+        {'name': 'test', 'valuefrom': {'runtimeenv': 'PWD'}}
     ]
     assert obj.repos == [
         RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),
@@ -66,8 +66,8 @@ def test_runner_yaml_dumper(project_dir, tmpdir):
     assert fmt == (
             "environment:\n"
             "- name: test\n"
-            "  valueFrom:\n"
-            "    runtimeEnv: PWD\n"
+            "  valuefrom:\n"
+            "    runtimeenv: PWD\n"
             "hash: d0bf2d0c60a85aa61fa9ffd039e6198c\n"
             "mounts: {}\n"
             "packages:\n"
@@ -90,24 +90,24 @@ def test_get_threads_with_globals(project_dir):
             {
                 'yumrepos': None,
                 'script': 'automation/check-patch.sh',
-                'upstream_sources': {},
+                'upstreamsources': {},
                 'repos': [
                     RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),
                     RepoConfig('repo-1f02dddd81d2931b7c82f0a857dc2431', 'repo2'),
                     RepoConfig('repo-1fb4cda750e4eac7714ee79c6bb4db28', 'repo3')
                 ],
-                'environment': [{'name': 'test', 'valueFrom': {'runtimeEnv': 'PWD'}}],
-                'runtime_requirements': 'dummy_req',
+                'environment': [{'name': 'test', 'valuefrom': {'runtimeenv': 'PWD'}}],
+                'runtimerequirements': 'dummy_req',
                 'mounts': [],
-                'release_branches': {},
+                'releasebranches': {},
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
                 'ignore_if_missing_script': True
             }
         )
     ]
     assert gopts == {
-        'release_branches': {},
-        'upstream_sources': {}
+        'releasebranches': {},
+        'upstreamsources': {}
     }
 
 
@@ -118,16 +118,16 @@ def test_get_threads(project_dir):
             {
                 'yumrepos': None,
                 'script': 'automation/check-patch.sh',
-                'upstream_sources': {},
+                'upstreamsources': {},
                 'repos': [
                     RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),
                     RepoConfig('repo-1f02dddd81d2931b7c82f0a857dc2431', 'repo2'),
                     RepoConfig('repo-1fb4cda750e4eac7714ee79c6bb4db28', 'repo3')
                 ],
-                'environment': [{'name': 'test', 'valueFrom': {'runtimeEnv': 'PWD'}}],
-                'runtime_requirements': 'dummy_req',
+                'environment': [{'name': 'test', 'valuefrom': {'runtimeenv': 'PWD'}}],
+                'runtimerequirements': 'dummy_req',
                 'mounts': [],
-                'release_branches': {},
+                'releasebranches': {},
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
                 'ignore_if_missing_script': True
             }
@@ -141,8 +141,8 @@ def test_get_threads(project_dir):
         (
             [],
             {
-                'release_branches': {'r': 'b'},
-                'upstream_sources': {'u': 's'},
+                'releasebranches': {'r': 'b'},
+                'upstreamsources': {'u': 's'},
             },
             (
                 'global_config:\n'
@@ -159,33 +159,33 @@ def test_get_threads(project_dir):
                     'check-patch', 'default', 'fc25', 'x86_64',
                     {
                         'script': 's',
-                        'release_branches': {'r': 'b'},
-                        'upstream_sources': {'u': 's'},
-                        'runtime_requirements': {'r': 'r'},
+                        'releasebranches': {'r': 'b'},
+                        'upstreamsources': {'u': 's'},
+                        'runtimerequirements': {'r': 'r'},
                     }
                 ),
                 JobThread(
                     'build-artifacts', 'default', 'fc26', 'x86_64',
                     {
                         'script': 's',
-                        'release_branches': {'r': 'b'},
-                        'upstream_sources': {'u': 's'},
-                        'runtime_requirements': {'r': 'r'},
+                        'releasebranches': {'r': 'b'},
+                        'upstreamsources': {'u': 's'},
+                        'runtimerequirements': {'r': 'r'},
                     }
                 ),
                 JobThread(
                     'check-patch', 'default', 'el7', 'x86_64',
                     {
                         'script': 's',
-                        'runtime_requirements': {'r': 'r'},
-                        'release_branches': {'r': 'b'},
-                        'upstream_sources': {'u': 's'},
+                        'runtimerequirements': {'r': 'r'},
+                        'releasebranches': {'r': 'b'},
+                        'upstreamsources': {'u': 's'},
                     }
                 )
             ],
             {
-                'release_branches': {'r': 'b'},
-                'upstream_sources': {'u': 's'},
+                'releasebranches': {'r': 'b'},
+                'upstreamsources': {'u': 's'},
             },
             (
                 'global_config:\n'

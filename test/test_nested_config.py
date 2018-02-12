@@ -4,6 +4,9 @@ import pytest
 from scripts.nested_config import (
     _dfs, _merge, _cartesian_multiplication, _dedup, _aggregate, gen_vectors
 )
+from scripts.stdci_dsl.parser import (
+    normalize_config_values, remove_case_and_signs
+)
 try:
     from unittest.mock import MagicMock, call
 except ImportError:
@@ -129,7 +132,8 @@ def mock_merge_options(o1, o2):
             ('stage', 'substage', 'distro', 'arch'),
             [
                 (None, 'default', None, None, {}),
-                ('check-patch', 'another', 'el7', None, {'merged options': None}),
+                ('check-patch', 'another', 'el7', None,
+                 {'merged options': None}),
                 (None, None, 'el6', None, {}),
                 (None, None, 'fc25', None, {}),
                 (None, None, 'fc26', None, {}),
@@ -139,8 +143,11 @@ def mock_merge_options(o1, o2):
     ]
 )
 def test_dfs(data_in, categories, expected):
-    ignore_case = lambda x: x.lower()
-    out = list(_dfs(data_in, categories, mock_merge_options, ignore_case))
+    out = list(
+        _dfs(data=data_in, merge_options=mock_merge_options,
+             categories=categories, normalize_keys=remove_case_and_signs,
+             normalize_values=normalize_config_values)
+    )
     assert out == expected
 
 

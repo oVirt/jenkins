@@ -78,13 +78,13 @@ def _default_templates_without_substage(ftype, from_=None):
 DEFAULT_VALUES = {
     'user_specified_substage':
     {
-        'release_branches': {},
-        'upstream_sources': {},
-        'runtime_requirements':
+        'releasebranches': {},
+        'upstreamsources': {},
+        'runtimerequirements':
         {
-            'support_nesting_level': 0,
-            'host_distro': 'el7',
-            'host_arch': 'x86_64'
+            'supportnestinglevel': 0,
+            'hostdistro': 'el7',
+            'hostarch': 'x86_64'
         },
         'environment': \
             _default_templates_with_substage('environment.yaml', 'fromfile'),
@@ -97,13 +97,13 @@ DEFAULT_VALUES = {
     },
     'default_substage':
     {
-        'release_branches': {},
-        'upstream_sources': {},
-        'runtime_requirements':
+        'releasebranches': {},
+        'upstreamsources': {},
+        'runtimerequirements':
         {
-            'support_nesting_level': 0,
-            'host_distro': 'el7',
-            'host_arch': 'x86_64'
+            'supportnestinglevel': 0,
+            'hostdistro': 'el7',
+            'hostarch': 'x86_64'
         },
         'environment': \
             _default_templates_without_substage('environment.yaml', 'fromfile'),

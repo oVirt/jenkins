@@ -150,7 +150,7 @@ def test_render_template(thread, templates, expected):
                         ]
                     },
                     'ignore_if_missing_script': False,
-                    'scripts_directory': 'automation'
+                    'scriptsdirectory': 'automation'
                 },
             ),
             'automation/check-patch.sh'
@@ -169,7 +169,7 @@ def test_render_template(thread, templates, expected):
                         ]
                     },
                     'ignore_if_missing_script': False,
-                    'scripts_directory': 'automation'
+                    'scriptsdirectory': 'automation'
                 },
             ),
             'automation/check-merged.sh'
@@ -215,7 +215,7 @@ def test_resolve_stdci_script(options, expected, stdci_project_dir):
                     {
                         'fromlistfile': 'check-patch.packages'
                     },
-                    'scripts_directory': 'automation'
+                    'scriptsdirectory': 'automation'
                 },
             ),
             ['p1', 'p2']
@@ -261,7 +261,7 @@ def test_resolve_stdci_list_config(options, expected, stdci_project_dir):
                     {
                         'fromfile': 'check-patch.environment.yaml'
                     },
-                    'scripts_directory': 'automation'
+                    'scriptsdirectory': 'automation'
                 },
             ),
             {'test': 'yaml cfg'}
@@ -304,19 +304,19 @@ def test_resolve_stdci_yaml_config(options, expected, stdci_project_dir):
             {'packages': ['p1'], 'repos': ['r1']}
         ),
         (
-            {'repos': ['r1'], 'release_branches': ['master', 'test']},
-            {'repos': ['r2'], 'release_branches': ['4.1']},
-            {'repos': ['r2'], 'release_branches': ['4.1']}
+            {'repos': ['r1'], 'releasebranches': ['master', 'test']},
+            {'repos': ['r2'], 'releasebranches': ['4.1']},
+            {'repos': ['r2'], 'releasebranches': ['4.1']}
         ),
         (
-            {'release_branches': 'br1', 'runtime_req': 'rq1'},
+            {'releasebranches': 'br1', 'runtime_req': 'rq1'},
             {'repos': 'r1'},
-            {'release_branches': 'br1', 'runtime_req': 'rq1', 'repos': 'r1'}
+            {'releasebranches': 'br1', 'runtime_req': 'rq1', 'repos': 'r1'}
         ),
         (
-            {'release_branches': 'br1', 'runtime_req': 'rq1'},
-            {'release_branches': 'br2', 'runtime_req': 'rq2'},
-            {'release_branches': 'br2', 'runtime_req': 'rq2'},
+            {'releasebranches': 'br1', 'runtime_req': 'rq1'},
+            {'releasebranches': 'br2', 'runtime_req': 'rq2'},
+            {'releasebranches': 'br2', 'runtime_req': 'rq2'},
         )
     ]
 )
@@ -333,7 +333,7 @@ def test_get_merged_options(options1, options2, expected):
                     None, 'custom', None, None,
                     {
                         'mounts': {'fromfile': 'path_to_file'},
-                        'scripts_directory': 'myCustomDir',
+                        'scriptsdirectory': 'myCustomDir',
                         'packages': {'fromfile': ['f1', 'f2']},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
@@ -343,7 +343,7 @@ def test_get_merged_options(options1, options2, expected):
             [
                 JobThread(None, 'custom', None, None,
                     {
-                        'scripts_directory': 'myCustomDir',
+                        'scriptsdirectory': 'myCustomDir',
                         'yumrepos':
                         {
                             DefaultValue: True,
@@ -366,17 +366,17 @@ def test_get_merged_options(options1, options2, expected):
                                 '{{ stage }}.{{ substage }}.sh',
                             ]
                         },
-                        'upstream_sources': {},
+                        'upstreamsources': {},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
-                        'runtime_requirements':
+                        'runtimerequirements':
                         {
-                            'host_arch': 'x86_64',
-                            'host_distro': 'el7',
-                            'support_nesting_level': 0
+                            'hostarch': 'x86_64',
+                            'hostdistro': 'el7',
+                            'supportnestinglevel': 0
                         },
                         'mounts': {'fromfile': 'path_to_file'},
-                        'release_branches': {},
+                        'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
                         'ignore_if_missing_script': True}
                     )
@@ -388,7 +388,7 @@ def test_get_merged_options(options1, options2, expected):
                     None, 'default', None, None,
                     {
                         'mounts': {'fromfile': 'path_to_file'},
-                        'scripts_directory': 'myCustomDir',
+                        'scriptsdirectory': 'myCustomDir',
                         'packages': {'fromfile': ['f1', 'f2']},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
@@ -398,7 +398,7 @@ def test_get_merged_options(options1, options2, expected):
             [
                 JobThread(None, 'default', None, None,
                     {
-                        'scripts_directory': 'myCustomDir',
+                        'scriptsdirectory': 'myCustomDir',
                         'yumrepos':
                         {
                             DefaultValue: True,
@@ -429,17 +429,17 @@ def test_get_merged_options(options1, options2, expected):
                                 '{{ stage }}.sh'
                             ]
                         },
-                        'upstream_sources': {},
+                        'upstreamsources': {},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
-                        'runtime_requirements':
+                        'runtimerequirements':
                         {
-                            'host_arch': 'x86_64',
-                            'host_distro': 'el7',
-                            'support_nesting_level': 0
+                            'hostarch': 'x86_64',
+                            'hostdistro': 'el7',
+                            'supportnestinglevel': 0
                         },
                         'mounts': {'fromfile': 'path_to_file'},
-                        'release_branches': {},
+                        'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
                         'ignore_if_missing_script': True
                     }
@@ -452,7 +452,7 @@ def test_get_merged_options(options1, options2, expected):
                     None, 'default', None, None,
                     {
                         'mounts': {'fromfile': 'path_to_file'},
-                        'scripts_directory': 'myCustomDir',
+                        'scriptsdirectory': 'myCustomDir',
                         'packages': {'fromfile': ['f1', 'f2']},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
@@ -465,20 +465,20 @@ def test_get_merged_options(options1, options2, expected):
                 JobThread(
                     None, 'default', None, None,
                     {
-                        'scripts_directory': 'myCustomDir',
+                        'scriptsdirectory': 'myCustomDir',
                         'yumrepos': ['y1', 'y2'],
                         'script': 'specified inline',
-                        'upstream_sources': {},
+                        'upstreamsources': {},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
-                        'runtime_requirements':
+                        'runtimerequirements':
                         {
-                            'host_arch': 'x86_64',
-                            'host_distro': 'el7',
-                            'support_nesting_level': 0
+                            'hostarch': 'x86_64',
+                            'hostdistro': 'el7',
+                            'supportnestinglevel': 0
                         },
                         'mounts': {'fromfile': 'path_to_file'},
-                        'release_branches': {},
+                        'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
                         'ignore_if_missing_script': False
                     }
@@ -497,21 +497,21 @@ def test_apply_default_options(threads, expected):
         (
             [
                 JobThread('a', 'b', 'c', 'd', {'p': 'p'}),
-                JobThread('c', 'd', 'c', 'd', {'release_branches': 'master'})
+                JobThread('c', 'd', 'c', 'd', {'releasebranches': 'master'})
             ],
-            {'release_branches': 'master'}
+            {'releasebranches': 'master'}
         ),
         (
             [
                 JobThread('a', 'b', 'c', 'd', {'p': 'p'}),
-                JobThread('c', 'd', 'c', 'd', {'upstream_sources': 'usrc'})
+                JobThread('c', 'd', 'c', 'd', {'upstreamsources': 'usrc'})
             ],
-            {'upstream_sources': 'usrc'}
+            {'upstreamsources': 'usrc'}
         ),
         (
             [
                 JobThread('a', 'b', 'c', 'd', {'p': 'p'}),
-                JobThread('c', 'd', 'c', 'd', {'runtime_requirements': 'rtr'})
+                JobThread('c', 'd', 'c', 'd', {'runtimerequirements': 'rtr'})
             ],
             {}
         ),
@@ -526,13 +526,13 @@ def test_apply_default_options(threads, expected):
             [
                 JobThread(
                     'a', 'b', 'c', 'd',
-                    {'runtime_requirements': 'rtr', 'upstream_sources': 'usrc'},
+                    {'runtimerequirements': 'rtr', 'upstreamsources': 'usrc'},
                 ),
-                JobThread('c', 'd', 'c', 'd', {'release_branches': 'rbrnch'})
+                JobThread('c', 'd', 'c', 'd', {'releasebranches': 'rbrnch'})
             ],
             {
-                'release_branches': 'rbrnch',
-                'upstream_sources': 'usrc'
+                'releasebranches': 'rbrnch',
+                'upstreamsources': 'usrc'
             }
         ),
     ]

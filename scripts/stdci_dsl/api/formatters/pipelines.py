@@ -52,7 +52,10 @@ def _pipeline_dict_formatter(threads, global_options, template=None):
     :returns: yaml config with vectors data from $vectors
     """
     data = {}
-    data['global_config'] = global_options
+    data['global_config'] = {
+        'upstream_sources': global_options['upstreamsources'],
+        'release_branches': global_options['releasebranches']
+    }
     data['jobs'] = [
         {
             'stage': thread.stage,
@@ -60,8 +63,8 @@ def _pipeline_dict_formatter(threads, global_options, template=None):
             'distro': thread.distro,
             'arch': thread.arch,
             'script': str(thread.options['script']),
-            'runtime_reqs': thread.options['runtime_requirements'],
-            'release_branches': thread.options['release_branches'],
+            'runtime_reqs': thread.options['runtimerequirements'],
+            'release_branches': thread.options['releasebranches'],
         } for thread in threads
     ]
     return safe_dump(data, default_flow_style=False)
