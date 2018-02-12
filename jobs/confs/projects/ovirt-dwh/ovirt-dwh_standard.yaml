@@ -23,6 +23,7 @@
       - { version: 4.2, distro: fcraw }
       - { version: 4.1, distro: fcraw }
       - { version: 3.6, distro: fcraw }
+      - { version: 4.2, distro: fc27 }
       - { version: 4.1, distro: fc27 }
       - { version: 3.6, distro: fc27 }
       - { version: master, distro: el6 }
