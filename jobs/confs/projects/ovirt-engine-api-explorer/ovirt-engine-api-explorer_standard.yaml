@@ -1,30 +1,28 @@
-- project:
-    name: ovirt-engine-api-explorer_build
+- project: &base-params
+    name: ovirt-engine-api-explorer_checks
     project: ovirt-engine-api-explorer
+    trigger: on-change
     version:
       - master:
           branch: master
-    stage: build-artifacts
-    trigger: 'on-change'
+      - 4.2:
+          branch: master
+    stage: check-patch
     distro:
       - el7
-      - fc25
+      - fc27
+      - fcraw
+    exclude:
+      - { version: 4.2, distro: fcraw }
     arch: x86_64
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+- project:
+    <<: *base-params
+    name: ovirt-engine-api-explorer_build
+    stage: build-artifacts
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
       - '{project}_{version}_{stage}-on-demand-{distro}-{arch}'
 
-- project:
-    name: ovirt-engine-api-explorer_checks
-    project: ovirt-engine-api-explorer
-    version:
-      - master:
-          branch: master
-    stage: check-patch
-    trigger: 'on-change'
-    distro:
-      - el7
-      - fc25
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
