@@ -94,6 +94,7 @@
     exclude:
       - { version: 4.1, arch: s390x, }
       - {               arch: s390x,   distro: el7, }
+      - {               arch: s390x,   distro: fcraw, }
       - {               arch: ppc64le, distro: fc27, }
       - {               arch: ppc64le, distro: fcraw, }
     jobs:
