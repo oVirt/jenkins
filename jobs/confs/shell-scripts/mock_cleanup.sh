@@ -119,7 +119,7 @@ for mock_conf_file in "${mock_confs[@]}"; do
             "$mock_conf_file" \
     )" || :
     [[ "$mock_root" ]] || continue
-    mounts=($(mount | awk '{print $3}' | grep "$mock_root")) || :
+    mounts=($(mount | awk '{print $3}' | grep "$mock_root" | sort -r)) || :
     if [[ "$mounts" ]]; then
         echo "Found mounted dirs inside the chroot $chroot. Trying to umount."
     fi
