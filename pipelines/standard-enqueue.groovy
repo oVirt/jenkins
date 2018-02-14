@@ -7,6 +7,9 @@ def main() {
     def siblings
     def queues_and_builds
     def chnage_desc
+    // GERRIT_TRIGGER_CI_VOTE_LABEL has to be set for cases where the enqueue
+    // job is the one to summarize all the params and report the result
+    env.GERRIT_TRIGGER_CI_VOTE_LABEL = ''
 
     try {
         if(params.GERRIT_PROJECT) {
