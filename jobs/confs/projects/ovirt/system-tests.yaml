@@ -29,6 +29,21 @@
     jobs:
       - '{project}_{version}_image-ng-system-tests'
 
+- project:
+    <<: *system-tests-common
+    name: ovirt-system-network-tests
+    suite_type:
+      - network
+    project: ovirt-system-tests
+    version:
+      - master:
+          chroot_distro: el7
+    email-to: >
+      lgoldber@redhat.com,
+      edwardh@redhat.com,
+    jobs:
+      - '{project}_{suite_type}-suite-{version}'
+
 # Hosted engine system tests
 - project:
     <<: *system-tests-common
