@@ -41,6 +41,7 @@
     email-to: >
       lgoldber@redhat.com,
       edwardh@redhat.com,
+      infra@ovirt.org
     jobs:
       - '{project}_{suite_type}-suite-{version}'
 
