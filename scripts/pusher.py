@@ -988,7 +988,7 @@ def git_rev_parse(ref):
     :rtype: str
     """
     try:
-        return git('rev-parse', ref).rstrip()
+        return git('rev-parse', "{0}^{{commit}}".format(ref)).rstrip()
     except GitProcessError as e:
         if e.returncode == 128:
             raise InvalidGitRef(

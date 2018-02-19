@@ -33,7 +33,7 @@
           use-author: true
           git-config-name: '{git-config-name}'
           git-config-email: '{git-config-email}'
-          skip-tag: true
+          skip-tag: false
           prune: true
           wipe-workspace: false
           clean:

@@ -737,6 +737,13 @@ def test_add_key_to_known_hosts(tmpdir, monkeypatch, existing, key, expected):
     assert expected == known_hosts.read()
 
 
+@pytest.fixture
+def local_repo_tag(local_repo_patch, git_at):
+    git_at(local_repo_patch)('tag', 'some-tag')
+    git_at(local_repo_patch)('tag', '-a', 'some-atag', '-m', 'some-tag')
+    return local_repo_patch
+
+
 @pytest.mark.parametrize(('ref', 'exp_idx'), [
     ('HEAD', 0),
     ('HEAD^', 1),
@@ -745,9 +752,11 @@ def test_add_key_to_known_hosts(tmpdir, monkeypatch, existing, key, expected):
     ('master', 0),
     ('master~1', 1),
     ('no/such/ref', InvalidGitRef),
+    ('some-tag', 0),
+    ('some-atag', 0),
 ])
-def test_git_rev_parse(local_repo_patch, local_log, monkeypatch, ref, exp_idx):
-    monkeypatch.chdir(local_repo_patch)
+def test_git_rev_parse(local_repo_tag, local_log, monkeypatch, ref, exp_idx):
+    monkeypatch.chdir(local_repo_tag)
     if isinstance(exp_idx, type) and issubclass(exp_idx, Exception):
         with pytest.raises(exp_idx) as e:
             git_rev_parse(ref)

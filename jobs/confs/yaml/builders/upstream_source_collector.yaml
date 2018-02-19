@@ -28,9 +28,6 @@
     name: pusher
     builders:
       - shell: |
-          # don't try to push if job was triggered manually
-          [[ "$GERRIT_EVENT_TYPE" ]] || exit 0
-
           WORKSPACE="${{WORKSPACE:-$PWD}}"
           LOGDIR="$WORKSPACE/exported-artifacts/pusher_logs"
           mkdir -p "$LOGDIR"
@@ -40,5 +37,5 @@
               --log="$LOGDIR/push_{project}.log" \
               push \
                 --if-not-exists \
-                --unless-hash="${{GERRIT_PATCHSET_REVISION:-$GERRIT_BRANCH}}" \
+                --unless-hash="${{BUILD_TAG}}" \
                 "${{GERRIT_BRANCH##*/}}"
