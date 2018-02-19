@@ -38,6 +38,8 @@
     version:
       - master:
           chroot_distro: el7
+      - 4.2:
+          chroot_distro: el7
     email-to: >
       lgoldber@redhat.com,
       edwardh@redhat.com,
