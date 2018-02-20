@@ -3,13 +3,14 @@
 """
 
 
-def test_gitrepo(gitrepo, git_at):
+def test_gitrepo(gitrepo, git_at, symlinkto):
     repo = gitrepo(
         'tst_repo',
         {
             'msg': 'First commit',
             'files': {
                 'fil1.txt': 'Text of fil1',
+                'link1': symlinkto('fil1.txt'),
                 'fil2.txt': 'Text of fil2',
                 'fil5.txt': None,
             },
@@ -20,6 +21,7 @@ def test_gitrepo(gitrepo, git_at):
                 'fil2.txt': 'Modified text of fil2',
                 'fil3.txt': 'Text of fil3',
                 'fil5.txt': 'Text of fil5',
+                'link1': symlinkto('fil5.txt'),
             },
         },
     )
@@ -32,6 +34,8 @@ def test_gitrepo(gitrepo, git_at):
     assert (repo / 'fil3.txt').read() == 'Text of fil3'
     assert (repo / 'fil5.txt').isfile()
     assert (repo / 'fil5.txt').read() == 'Text of fil5'
+    assert (repo / 'link1').check(link=1, file=1)
+    assert (repo / 'link1').read() == 'Text of fil5'
     repogit = git_at(repo)
     assert repogit('status', '--short') == ''
     assert repogit('status', '-v').splitlines()[0].endswith('On branch master')
@@ -47,6 +51,7 @@ def test_gitrepo(gitrepo, git_at):
                 'fil3.txt': 'Modified text of fil3',
                 'fil4.txt': 'Text of fil4',
                 'fil5.txt': None,
+                'link3': symlinkto('link1'),
             },
         },
     )
@@ -58,6 +63,8 @@ def test_gitrepo(gitrepo, git_at):
     assert (repo / 'fil3.txt').read() == 'Modified text of fil3'
     assert (repo / 'fil4.txt').isfile()
     assert (repo / 'fil4.txt').read() == 'Text of fil4'
+    assert (repo / 'link3').check(link=1)
+    assert (repo / 'link3').readlink() == 'link1'
     assert not (repo / 'fil5.txt').exists()
     assert repogit('status', '--short') == ''
     log = repogit('log', '--pretty=format:%s').splitlines()

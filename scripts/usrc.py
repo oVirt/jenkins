@@ -5,6 +5,7 @@ from __future__ import absolute_import, print_function
 import argparse
 import sys
 import os
+from os.path import normpath, join, dirname
 import logging
 import logging.handlers
 import yaml
@@ -14,13 +15,14 @@ from xdg.BaseDirectory import xdg_cache_home
 from time import time
 from socket import gethostbyname, gethostname
 from subprocess import Popen, CalledProcessError, STDOUT, PIPE
-from six import string_types, iteritems, viewkeys
-from six.moves import zip
-from collections import Iterable, Mapping, Set
+from six import string_types, iteritems, viewkeys, itervalues
+from six.moves import zip, reduce
+from collections import Iterable, Mapping, Set, namedtuple
 from itertools import chain, tee
 from traceback import format_exception
 from textwrap import dedent
 from pprint import pformat
+from operator import or_
 
 
 UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
@@ -92,6 +94,13 @@ def parse_args():
         help=(
             'The commit to look for changed files from, defaults to the'
             ' commit before the one given in NEW_COMMIT'
+        )
+    )
+    changed_files_parser.add_argument(
+        '--resolve-links', '-l', action='store_true', default=False,
+        help=(
+            'If specifed, will treat symlinks in \'new_commit\' that links'
+            ' to a modified files as a modfieid file.'
         )
     )
     changed_files_parser.set_defaults(handler=changed_files_main)
@@ -167,7 +176,9 @@ def update_main(args):
 
 
 def changed_files_main(args):
-    for file_name in get_modified_files(args.new_commit, args.old_commit):
+    for file_name in get_modified_files(
+        args.new_commit, args.old_commit, args.resolve_links
+    ):
         print(file_name)
 
 
@@ -422,14 +433,20 @@ def update_upstream_sources():
     return modified_sources
 
 
-def get_modified_files(new_commit=None, old_commit=None):
+def get_modified_files(new_commit=None, old_commit=None, resolve_links=None):
     """Gets the list of files modified locally or in upstreams between commits
 
-    :param str new_commit: (Optional) The commit to look for modified files in.
-                           Defaults to HEAD
-    :param str old_commit: (Optional) The older commit to compare with.
-                           Defaults to one before the one which is given in
-                           'new_commit'.
+    :param str new_commit:     (Optional) The commit to look for modified files
+                               in.
+                               Defaults to HEAD
+    :param str old_commit:     (Optional) The older commit to compare with.
+                               Defaults to one before the one which is given in
+                               'new_commit'.
+    :param bool resolve_links: (Optional) If set to True will resolve symlinks
+                               to modfied files and treat them as modified
+                               files. Symlinks are taken from 'new_commit'.
+                               Defaults to False.
+
     :rtype: Iterable
     :returns: Iterator over modified file paths
     """
@@ -441,8 +458,64 @@ def get_modified_files(new_commit=None, old_commit=None):
         'Looking for files changed between %s and %s', old_commit, new_commit
     )
     old_files = ls_all_files(old_commit)
-    new_fils = ls_all_files(new_commit)
-    return files_diff(old_files, new_fils)
+    new_files = ls_all_files(new_commit)
+    changed_files = files_diff(old_files, new_files)
+    if not resolve_links:
+        return changed_files
+    logger.info('Resolving symlinks to changed files')
+    changed_files = set(changed_files)
+    links_map = get_files_to_links_map(new_files, new_commit)
+    link_sets_to_changed_files = (
+        get_links_to_file(f, links_map) for f in changed_files
+    )
+    return iter(reduce(or_, link_sets_to_changed_files, changed_files))
+
+
+def get_links_to_file(file, links_map):
+    """Recursively get symlinks to a given file
+
+    :param str file:          Normalized path to a file to lookup in links_map
+    :param Mapping links_map: Mapping between files and links to the files
+                              as returned from get_files_to_links_map()
+
+    :rtype: set
+    :returns: A set of symlinks to file including indirect symlinks (those who
+              point indirectly through other symlinks)
+    """
+    logger.info('Recursively resolving links for file [{0}]'.format(file))
+    if file not in links_map:
+        return set()
+    links = links_map[file]
+    # Recursively get links to links to file
+    links_to_links = ( get_links_to_file(link, links_map) for link in links )
+    links_to_file = reduce(or_, links_to_links, links)
+    logger.debug(
+        'Links to file [{0}]: {1}'.format(file, pformat(links_to_file))
+    )
+    return links_to_file
+
+
+def get_files_to_links_map(files, commit=None):
+    """Gets a map of of files and a set of symlinks to them
+
+    :param Iterable files: All files in the repositoy formatted to:
+                           {filename: (file-type, hash)}
+                           as returned from ls_all_files()
+
+    :rtype: dict
+    :returns: A dict mapping files and a set of symlinks to them
+    """
+    logger.info('Generating file to links map')
+    links_map = dict(
+        (f.path, normpath(join(dirname(f.path), f.read_file())))
+        for f in itervalues(files) if f.file_type == 0o120000
+    )
+    file_to_links = dict()
+    logger.debug('Generating file to links map')
+    for link, dst in iteritems(links_map):
+        file_to_links.setdefault(dst, set()).add(link)
+    logger.debug('Full file to links map: {0}'.format(pformat(file_to_links)))
+    return file_to_links
 
 
 def commit_upstream_sources_update(updates):
@@ -624,6 +697,24 @@ def check_if_branch_exists(branch_to_check):
     return False
 
 
+class GitFile(namedtuple('_GitFileData', 'file_type file_hash')):
+    """
+    Wrapper class for git file metadata (type and hash) as returned from git.
+    It's used to bind the git_func that was used to read the upstream source
+    to the data.
+    """
+    @classmethod
+    def construct(cls, file_path, file_type, file_hash, git_func, commit):
+        file_obj = cls(file_type, file_hash)
+        file_obj.git_func = git_func
+        file_obj.path = file_path
+        file_obj.commit = commit
+        return file_obj
+
+    def read_file(self):
+        return git_read_file(self.path, self.commit, self.git_func)
+
+
 def git_ls_files(commit=None, git_func=None):
     """List the files in a given commit
 
@@ -642,9 +733,11 @@ def git_ls_files(commit=None, git_func=None):
     lines = git_func('ls-tree', '--full-tree', '-r', commit).splitlines()
     data_and_names = (line.split(u'\t') for line in lines)
     names_and_split_data = ((n, d.split(u' ')) for d, n in data_and_names)
-    names_and_tuples = \
-        ((n, (int(m, base=8), h)) for n, (m, _, h) in names_and_split_data)
-    return dict(names_and_tuples)
+    names_and_objects = (
+        (n, GitFile.construct(n, int(m, base=8), h, git_func, commit))
+        for n, (m, _, h) in names_and_split_data
+    )
+    return dict(names_and_objects)
 
 
 def git_read_file(path, commit=None, git_func=None):

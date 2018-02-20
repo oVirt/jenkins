@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 """test_usrc.py - Tests for usrc.py
 """
+import os
 import pytest
 from scripts.usrc import (
     get_upstream_sources, update_upstream_sources,
     commit_upstream_sources_update, GitProcessError, GitUpstreamSource,
     generate_update_commit_message, git_ls_files, git_read_file, ls_all_files,
-    files_diff, get_modified_files
+    files_diff, get_modified_files, get_files_to_links_map, GitFile
 )
 from textwrap import dedent
 from hashlib import md5
@@ -25,7 +26,7 @@ class TestGitProcessError(object):
 
 
 @pytest.fixture
-def upstream(gitrepo):
+def upstream(gitrepo, symlinkto):
     return gitrepo(
         'upstream',
         {
@@ -39,13 +40,16 @@ def upstream(gitrepo):
             'files': {
                 'upstream_file.txt': 'Upstream content',
                 'overriden_file.txt': 'Overridden content',
+                'link_to_file': symlinkto('upstream_file.txt'),
+                'file2': 'Just a file',
+                'file3': 'Yet another file',
             },
         },
     )
 
 
 @pytest.fixture
-def downstream(gitrepo, upstream, git_last_sha):
+def downstream(gitrepo, upstream, git_last_sha, symlinkto):
     sha = git_last_sha(upstream)
     return gitrepo(
         'downstream',
@@ -62,7 +66,9 @@ def downstream(gitrepo, upstream, git_last_sha):
                         commit: {sha}
                         branch: master
                     """
-                ).lstrip().format(upstream=str(upstream), sha=sha)
+                ).lstrip().format(upstream=str(upstream), sha=sha),
+                'link_to_upstream_link': symlinkto('link_to_file'),
+                'changing_link': symlinkto('link_to_file'),
             },
         },
     )
@@ -792,3 +798,138 @@ def test_get_modified_files(monkeypatch):
     assert files_diff.call_args == \
         call(sentinel.old_commit, sentinel.new_commit)
     assert out == sentinel.a_diff
+
+
+def test_git_file_object(monkeypatch):
+    git_func = MagicMock(side_effect=lambda x, y, z: getattr(sentinel, x))
+    git_file = GitFile.construct('some-path', 0o12345, 'hash', git_func, 'com')
+    assert git_file == (0o12345, 'hash')
+    assert git_file.git_func == git_func
+    assert git_file.path == 'some-path'
+    assert git_file.commit == 'com'
+    git_file.read_file()
+    assert git_func.called
+    assert call('cat-file', '-p', 'com:some-path') in git_func.call_args_list
+
+
+@pytest.mark.parametrize(
+    "links_map,diff,expected",
+    [
+        (
+            {
+                u'file1': set([u'link1', u'link2']),
+            },
+            [u'file1', u'abc', u'efg'],
+            set([u'file1', u'link1', u'link2', u'abc', u'efg'])
+        ),
+        (
+            {
+                u'file1': set([u'link1', u'link2']),
+                u'file2': set([u'link3']),
+                u'file3': set([u'link4']),
+            },
+            [u'file1', u'file3'],
+            set([u'file1', u'file3', u'link1', u'link2', u'link4'])
+        ),
+        (
+            {},
+            [u'file1', u'abc', u'efg'],
+            set([u'file1', u'abc', u'efg'])
+        ),
+        (
+            {
+                u'file1': set([u'link1', u'link2']),
+                u'file2': set([u'link3']),
+                u'file3': set([u'link4']),
+            },
+            [],
+            set()
+        ),
+        (
+            {},
+            [],
+            set()
+        ),
+    ]
+)
+def test_get_modified_files_resolve_links(links_map, diff, expected, monkeypatch):
+    ls_all_files = MagicMock(side_effect=lambda x: getattr(sentinel, x))
+    files_diff = MagicMock(side_effect=lambda x, y: diff)
+    get_files_to_links_map = MagicMock(side_effect=lambda x, y: links_map)
+    monkeypatch.setattr('scripts.usrc.ls_all_files', ls_all_files)
+    monkeypatch.setattr('scripts.usrc.files_diff', files_diff)
+    monkeypatch.setattr(
+        'scripts.usrc.get_files_to_links_map', get_files_to_links_map
+    )
+    out = get_modified_files('new_commit', 'old_commit', resolve_links=True)
+    assert set(out) == expected
+    assert ls_all_files.call_count == 2
+    assert call('new_commit') in ls_all_files.call_args_list
+    assert call('old_commit') in ls_all_files.call_args_list
+    assert files_diff.called
+    assert files_diff.call_args == \
+        call(sentinel.old_commit, sentinel.new_commit)
+    assert get_files_to_links_map.called
+    assert call(sentinel.new_commit, 'new_commit') in \
+        get_files_to_links_map.call_args_list
+    assert get_files_to_links_map.call_args == \
+        call(sentinel.new_commit, 'new_commit')
+
+
+def test_get_files_to_links_map(monkeypatch):
+    git_file = MagicMock(
+        path='dummy_link_path',
+        file_type=0o120000,
+        read_file=MagicMock(side_effect=lambda : 'linked_by'),
+    )
+    out = get_files_to_links_map({'filename': git_file})
+    assert git_file.read_file.called
+    assert call() in git_file.read_file.call_args_list
+    assert out == {'linked_by': set(['dummy_link_path'])}
+
+
+def test_get_modified_files_links(
+    downstream, upstream, git_last_sha, gitrepo, symlinkto, monkeypatch
+):
+    gitrepo(
+        'upstream',
+        {
+            'msg': 'updated file',
+            'files': {
+                'upstream_file.txt': 'Updated upstream file',
+                'link2': symlinkto('file2'),
+                'link4': symlinkto('upstream_file.txt')
+            }
+        }
+    )
+    sha = git_last_sha(upstream)
+    gitrepo(
+        'downstream',
+        {
+            'msg': 'updated usrc',
+            'files': {
+                'automation/upstream_sources.yaml': dedent(
+                    """
+                    ---
+                    git:
+                      - url: {upstream}
+                        commit: {sha}
+                        branch: master
+                    """
+                ).lstrip().format(upstream=str(upstream), sha=sha),
+                'link3': symlinkto('file3'),
+                'new_ds_file': 'just a changed file',
+                'changing_link': symlinkto('file3'),
+                'link4': symlinkto('nowhere'),
+                'broken_link': symlinkto('nowhere')
+
+            }
+        }
+    )
+    monkeypatch.chdir(downstream)
+    out = get_modified_files(resolve_links=True)
+    assert sorted(out) == sorted([
+        u'link4', u'link_to_upstream_link', u'upstream_file.txt', u'link3',
+        u'link2', u'new_ds_file', u'broken_link',
+        u'automation/upstream_sources.yaml', u'changing_link', u'link_to_file'
+    ])

@@ -69,19 +69,34 @@ def git_at(git):
     return _git_at
 
 
+class SymlinkTo(str):
+    pass
+
+
 @pytest.fixture
-def gitrepo(tmpdir, git, git_at):
+def symlinkto():
+    return SymlinkTo
+
+
+@pytest.fixture
+def gitrepo(tmpdir, git, git_at, symlinkto):
     def repo_maker(reponame, *commits):
         repodir = tmpdir / reponame
         repogit = git_at(repodir)
         git('init', str(repodir))
         for i, commit in enumerate(commits):
             for fname, fcontents in iteritems(commit.get('files', {})):
+                file = (repodir / fname)
                 if fcontents is None:
-                    if (repodir / fname).exists():
+                    if file.exists():
                         repogit('rm', fname)
                     continue
-                (repodir / fname).write(fcontents, ensure=True)
+                if isinstance(fcontents, SymlinkTo):
+                    if file.check(link=1):
+                        repogit('rm', fname)
+                    file.mksymlinkto(fcontents)
+                else:
+                    file.write(fcontents, ensure=True)
                 repogit('add', fname)
             msg = commit.get('msg', "Commit #{0}".format(i))
             repogit('commit', '-m', msg, '--allow-empty')
