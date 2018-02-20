@@ -39,3 +39,11 @@
       - ovirt-flexdriver
     jobs:
       - '{org}_{project}_standard-gh-jobs'
+
+- project:
+    name: oVirt-standard-pipelines-gerrit
+    gerrit-server: 'gerrit.ovirt.org'
+    project:
+      - jenkins
+    jobs:
+      - '{project}_standard-gerrit-jobs'
