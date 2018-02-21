@@ -37,8 +37,6 @@
           branch: ovirt-4.2
       - 4.1:
           branch: ovirt-4.1
-      - 3.6:
-          branch: ovirt-3.6
     arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
