@@ -577,7 +577,7 @@ def test_get_remote_url_from_ws(gitrepo, git, monkeypatch):
 @pytest.fixture
 def push_details():
     return PushDetails(
-        push_url='ssh://user@gerrit.server:29418/some_project',
+        push_url='ssh://user@gerrit.server:29418/some_project.git',
         host_key='a_host_key',
         merge_flags=[
             '--code-review', '+2', '--verified', '+1', '--label', 'custom=+1',

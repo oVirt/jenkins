@@ -635,7 +635,7 @@ def check_if_similar_patch_pushed(push_details):
     """
     checksum = get_patch_header('x-md5')
     project = \
-        re.sub('^/?(.*)(.git)?$', '\\1', urlparse(push_details.push_url).path)
+        re.sub('^/?(.*?)(.git)?$', '\\1', urlparse(push_details.push_url).path)
     project_param = "project:{project}".format(project=project)
     msg_param = 'message:{checksum}'.format(checksum=checksum)
     output = gerrit_cli(
