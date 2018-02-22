@@ -3,8 +3,6 @@
     project: ovirt-image-uploader
     trigger: on-change
     version:
-      - master:
-          branch: ovirt-image-uploader-4.0
       - 4.2:
           branch: ovirt-image-uploader-4.0
       - 4.1:
@@ -15,10 +13,7 @@
     distro:
       - el7
       - fc27
-      - fcraw
     exclude:
-      - { version: 4.2, distro: fcraw }
-      - { version: 4.1, distro: fcraw }
       - { version: 4.1, distro: fc27 }
     arch: x86_64
     jobs:
@@ -45,6 +40,5 @@
     version:
       - '4.1'
       - '4.2'
-      - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
