@@ -12,6 +12,7 @@ main() {
     mk_wokspace_dirs
     remove_packages || failed=true
     extra_packages || failed=true
+    user_configuration || failed=true
     nested_kvm || failed=true
     verify_ipv6 || failed=true
     if can_sudo systemctl; then
@@ -147,6 +148,55 @@ lago_setup() {
     fi
 }
 
+user_configuration() {
+    local failed=0
+    # ensure user is member of mock group
+    if [[ "$EUID" -ne 0 ]]; then
+        if ! groups | grep -q '\bmock\b'; then
+            log ERROR "$USER user is not part of the mock group"
+            if can_sudo usermod; then
+                if sudo -n usermod -a -G mock $USER; then
+                    log INFO "mock group membership added, agent restart required"
+                else
+                    log ERROR "Failed to set mock group membership"
+                fi
+            else
+                log ERROR "No sudo access, please add user to mock group manually!"
+            fi
+            (( ++failed ))
+        fi
+    fi
+    # ensure the number of open files in the kernel is OK
+    if [[ "$(/sbin/sysctl -n fs.file-max)" -lt "64000" ]]; then
+        if can_sudo /sbin/sysctl; then
+            log INFO "Increasing kernel open file limit"
+            if ! sudo -n /sbin/sysctl fs.file-max=64000; then
+                log ERROR "Failed to increase kernel open file limit"
+                (( ++failed ))
+            fi
+        else
+            log WARN "Kernel open file limit low. This may cause issues. Unable to fix, ignoring."
+        fi
+    fi
+    # ensure ulimint on open files for the user is OK
+    if [[ "$(ulimit -Sn)" -lt "64000" ]]; then
+        if can_sudo tee; then
+            if \
+                printf "* soft nofile 64000\n* hard nofile 96000\n" | \
+                sudo -n tee /etc/security/limits.d/10-nofile.conf
+            then
+                log INFO "Increased user open file limit. Agent restart required"
+            else
+                log ERROR "Failed to set user open file limit"
+                (( ++failed ))
+            fi
+        else
+            log WARN "User open file limit low. This may cause issues. Unable to fix, ignoring."
+        fi
+    fi
+    return $failed
+}
+
 is_nested_kvm_enabled() {
     #check if nested KVM on Intel is enabled
     local i_nested_path="/sys/module/kvm_intel/parameters/nested"
@@ -191,9 +241,9 @@ verify_ipv6() {
             local ra_conf_path="/proc/sys/net/ipv6/conf/$ifname/accept_ra"
             if [[ -f "$ra_conf_path" ]]; then
                 if [[ "$(cat $ra_conf_path)" -ne "2" ]]; then
-                    if can_sudo sysctl; then
+                    if can_sudo /sbin/sysctl; then
                         echo "setting accept_ra=2 on $ifname"
-                        sudo -n sysctl net.ipv6.conf.$ifname.accept_ra=2
+                        sudo -n /sbin/sysctl net.ipv6.conf.$ifname.accept_ra=2
                         if [[ "$(cat $ra_conf_path)" -ne "2" ]]; then
                             log ERROR "Falied to configure accept_ra to 2 on $ifname"
                             return 1
