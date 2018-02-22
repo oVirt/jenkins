@@ -20,6 +20,7 @@ main() {
     else
         log WARN "Skipping services setup - not enough sudo permissions"
     fi
+    lago_setup || failed=true
 
     # If we failed in any step, abort to avoid breaking the host
     if $failed; then
@@ -108,6 +109,42 @@ setup_os_repos() {
 mk_wokspace_dirs() {
     rm -rf "$WORKSPACE/tmp"
     mkdir -p "$WORKSPACE/"{tmp,exported-artifacts}
+}
+
+
+lago_setup() {
+    # create directory for lago cache and repos
+    if [ ! -d /var/lib/lago ]; then
+        if can_sudo install; then
+            log INFO "Creating lago directory"
+            sudo -n install -m 0644 -d /var/lib/lago || log WARN "unable to create lago directory"
+        else
+            log WARN "Lago directory missing. This may cause issues. Unable to fix, ignoring."
+        fi
+    fi
+    # open up port 8585 for lago if needed
+    local fw_service_name="ovirtlago"
+    if can_sudo firewall-cmd; then
+        #check if the service is defined in firewalld
+        if [[ ! "$(sudo -n firewall-cmd --query-service="$fw_service_name")" ]]; then
+            local failed=false
+            log INFO "Defining firewalld service for $fw_service_name"
+            sudo -n firewall-cmd --permanent --new-service="$fw_service_name" && \
+            sudo -n firewall-cmd --permanent --service="$fw_service_name" \
+                --add-port=8585/tcp && \
+            sudo -n firewall-cmd --permanent --service="$fw_service_name" \
+                --set-destination=ipv4:192.168.0.0/16 && \
+            sudo -n firewall-cmd --permanent --add-service="$fw_service_name" && \
+            sudo -n firewall-cmd --reload || failed=true
+            if $failed; then
+                log ERROR "firewalld service definition finished with errors, aborting"
+                # roll back in case of setup failure by trying to delete service definition
+                sudo -n firewall-cmd --permanent --remove-service="$fw_service_name" || failed=true
+                sudo -n firewall-cmd --remove-service="$fw_service_name" || failed=true
+                return 1
+            fi
+        fi
+    fi
 }
 
 extra_packages() {
