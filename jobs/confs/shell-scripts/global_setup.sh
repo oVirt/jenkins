@@ -13,6 +13,7 @@ main() {
     remove_packages || failed=true
     extra_packages || failed=true
     nested_kvm || failed=true
+    verify_ipv6 || failed=true
     if can_sudo systemctl; then
         docker_setup || failed=true
         setup_postfix || failed=true
@@ -179,6 +180,33 @@ nested_kvm() {
             fi
         fi
     fi
+}
+
+verify_ipv6() {
+    # check if any routes received via router advertisements are in place
+    if [[ "$(/sbin/ip -6 route list proto ra)" ]]; then
+        # create a list of interfaces with such routes to check accept_ra value
+        local iflist="$(/sbin/ip -6 route list proto ra | grep -oP '(?<=dev )(\w+)' | sort | uniq)"
+        for ifname in $iflist; do
+            local ra_conf_path="/proc/sys/net/ipv6/conf/$ifname/accept_ra"
+            if [[ -f "$ra_conf_path" ]]; then
+                if [[ "$(cat $ra_conf_path)" -ne "2" ]]; then
+                    if can_sudo sysctl; then
+                        echo "setting accept_ra=2 on $ifname"
+                        sudo -n sysctl net.ipv6.conf.$ifname.accept_ra=2
+                        if [[ "$(cat $ra_conf_path)" -ne "2" ]]; then
+                            log ERROR "Falied to configure accept_ra to 2 on $ifname"
+                            return 1
+                        fi
+                    else
+                        log WARN "RA routes detected on $ifname but accept_ra!=2"
+                        log WARN "this may cause libvirt issues. Unable to fix, ignoring."
+                    fi
+                fi
+            fi
+        done
+    fi
+    return 0
 }
 
 extra_packages() {
