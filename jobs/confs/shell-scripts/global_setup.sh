@@ -12,7 +12,7 @@ main() {
     mk_wokspace_dirs
     remove_packages || failed=true
     extra_packages || failed=true
-
+    nested_kvm || failed=true
     if can_sudo systemctl; then
         docker_setup || failed=true
         setup_postfix || failed=true
@@ -111,7 +111,6 @@ mk_wokspace_dirs() {
     mkdir -p "$WORKSPACE/"{tmp,exported-artifacts}
 }
 
-
 lago_setup() {
     # create directory for lago cache and repos
     if [ ! -d /var/lib/lago ]; then
@@ -142,6 +141,41 @@ lago_setup() {
                 sudo -n firewall-cmd --permanent --remove-service="$fw_service_name" || failed=true
                 sudo -n firewall-cmd --remove-service="$fw_service_name" || failed=true
                 return 1
+            fi
+        fi
+    fi
+}
+
+is_nested_kvm_enabled() {
+    #check if nested KVM on Intel is enabled
+    local i_nested_path="/sys/module/kvm_intel/parameters/nested"
+    [[ -f "$i_nested_path" ]] || return 1
+    [[ "$(cat $i_nested_path)" != "N" ]] || return 1
+    return 0
+}
+
+nested_kvm() {
+    #enable nested KVM on Intel if missing
+    #check if our hardware has Intel VT, skip otherwise
+    if [[ "$(cat /proc/cpuinfo | grep vmx)" ]]; then
+        #check if nested is already enabled
+        if ! is_nested_kvm_enabled; then
+            #check if sudo is available
+            if can_sudo rmmod modprobe tee; then
+                log INFO "Enabling nested KVM"
+                echo "options kvm_intel nested=y" | \
+                sudo -n tee /etc/modprobe.d/nested.conf
+                sudo -n rmmod kvm_intel
+                sudo -n modprobe kvm_intel nested=y
+                #check if the change went fine and nested is enabled
+                if is_nested_kvm_enabled; then return 0
+                else
+                    log ERROR "failed to enable nested KVM, aborting"
+                    return 1
+                fi
+            else
+                log WARN "Nested KVM missing. This may cause issues. Unable to fix, ignoring."
+                return 0
             fi
         fi
     fi
