@@ -339,6 +339,8 @@
           project: '{project}'
           org: '{org}'
           github-auth-id: '{github-auth-id}'
+          git-config-name: '{git-config-name}'
+          git-config-email: '{git-config-email}'
       - jenkins:
           branch: master
           git-server: '{git-server}'
@@ -425,6 +427,8 @@
           org: '{org}'
           branch: '{branch}'
           github-auth-id: '{github-auth-id}'
+          git-config-name: '{git-config-name}'
+          git-config-email: '{git-config-email}'
     builders:
       - trigger-builds:
           - project: '{project}_{version}_github_{stage}-pipeline'

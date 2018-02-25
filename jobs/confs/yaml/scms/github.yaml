@@ -10,7 +10,9 @@
           name: ''
           refspec: '${{REFSPEC}}'
           use-author: true
-          skip-tag: true
+          git-config-name: '{git-config-name}'
+          git-config-email: '{git-config-email}'
+          skip-tag: false
           wipe-workspace: false
           clean:
             before: true
