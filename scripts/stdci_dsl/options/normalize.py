@@ -6,14 +6,19 @@ import logging
 from tempfile import mkstemp
 from collections import Mapping, Iterable, namedtuple
 from hashlib import md5
+from fnmatch import fnmatch
+from itertools import product
 from copy import copy
-from six import string_types
+from six import string_types, iteritems, iterkeys
 from jinja2.sandbox import SandboxedEnvironment
 from yaml import safe_load
+from difflib import get_close_matches
 import py
 
 from ..parser import stdci_load, ConfigurationNotFoundError
 from ..options.defaults import DefaultValue
+
+from ...usrc import get_modified_files
 
 
 logger = logging.getLogger(__name__)
@@ -49,7 +54,11 @@ def normalize(project, threads):
     """
     project = py.path.local(project)
     for thread in threads:
-        # We need to render scriptsdirectory here because it takes effect
+        runif_cfg = thread.options.get('runif', None)
+        if runif_cfg:
+            if not _resolve_stdci_runif_conditions(project, thread, runif_cfg):
+                continue
+        # We need to render scripts_directory here because it takes effect
         # when resolving paths for option(s) configuration file(s).
         thread_options_with_scdir = _render_template(
             thread, thread.options.get('scriptsdirectory', '')
@@ -136,6 +145,142 @@ def _normalize_repos_config(project, thread):
             )
         all_repos.append(RepoConfig(name=repo_name, url=repo_url))
     return all_repos
+
+
+def _resolve_stdci_runif_conditions(project, thread, config):
+    """Parse conditional execution config and return the final decision
+
+    :param Mapping config:          Conditional execution configuration
+    :param Iterable modified_files: Iterable of modified files as returned from
+                                    get_modified_files()
+
+    :rtype: bool
+    :returns: True if conditions are satisfied, False otherwise.
+    """
+    try:
+        return any(
+            CONDITION_RESOLVERS[operator](project, thread, argument)
+            for operator, argument in iteritems(config)
+        )
+    except KeyError:
+        raise ConfigurationSyntaxError(
+            'Operator not found. Available operators: %s. Your config: %s',
+            CONDITION_RESOLVERS.keys(), config
+        )
+
+
+def _resolve_runif_not_condition(project, thread, conditions):
+    """Resolve runif conditions recoursively and return the opposite decision.
+
+    :param py.path.local project: Local path to project's root dir.
+    :param JobThread thread:      JobThread which we check conditions for.
+    :param Iterable conditions:   Iterable of conditions.
+
+    :rtype: bool
+    :returns: False if all conditions been satisfied. otherwise.
+    """
+    return not _resolve_stdci_runif_conditions(project, thread, conditions)
+
+
+def _resolve_runif_all_condition(project, thread, conditions):
+    """Resolve runif conditions recoursively. If at least one condition returns
+    with False, return False.
+
+    :param py.path.local project: Local path to project's root dir.
+    :param JobThread thread:      JobThread which we check conditions for.
+    :param Iterable conditions:   Iterable of conditions.
+
+    :rtype: bool
+    :returns: True if all conditions been satisfied. False otherwise.
+    """
+    return all(
+        _resolve_stdci_runif_conditions(project, thread, condition)
+        for condition in conditions
+    )
+
+
+def _resolve_runif_any_condition(project, thread, conditions):
+    """Resolve runif conditions recoursively. If at least one condition returns
+    with True, return True.
+
+    :param py.path.local project: Local path to project's root dir.
+    :param JobThread thread:      JobThread which we check conditions for.
+    :param Iterable conditions:   Iterable of conditions.
+
+    :rtype: bool
+    :returns: True if at least one condition has been satisfied.
+              False otherwise.
+    """
+    return any(
+        _resolve_stdci_runif_conditions(project, thread, condition)
+        for condition in conditions
+    )
+
+
+MODIFIED_FILES = {}
+
+
+def _resolve_changed_files(project, thread, conditions):
+    """Check if any modified file matches at least one condition.
+
+    :param string_types project: Path to project's root dir
+    :param list modified_files:  List of modified file names (str)
+    :param list conditions:      List of conditions to match against modified
+                                 files. Condition is Unix shell-style wildcard.
+
+    :rtype: bool
+    :returns: True if any file from the modified files matches at least one
+              condition.
+    """
+    logger.debug('Resolving conditions: %s', conditions)
+    if not isinstance(conditions, Iterable) \
+            or isinstance(conditions, Mapping):
+        raise ConfigurationSyntaxError(
+            'At: {0} run-if conditions must be a string or a list of strings.'
+            ' not {1}.'.format(conditions, type(conditions))
+        )
+    elif isinstance(conditions, string_types):
+        conditions = [conditions]
+    conditions = _verify_render_conditions(thread, conditions)
+    if logger.level <= logging.DEBUG:
+        # Since conditions can be a generator expression we need transform it
+        # into a list before printing to debug log.
+        conditions = list(conditions)
+        logger.debug("Conditions: %s", conditions)
+    # MODIFIED_FILES is global that stores per-project cache of modified files.
+    global MODIFIED_FILES
+    if project not in MODIFIED_FILES:
+        # Call get_modified_files only if cache doesn't exists
+        with py.path.local(project).as_cwd():
+            logger.debug('No cached changes for %s. Generating cache', project)
+            MODIFIED_FILES[project] = set(
+                get_modified_files(resolve_links=True)
+            )
+    logger.debug('Modified files: %s', MODIFIED_FILES[project])
+    res = any(
+        fnmatch(name, pat)
+        for (name, pat) in product(MODIFIED_FILES[project], conditions)
+    )
+    logger.debug('Result: %s', res)
+    return res
+
+
+def _verify_render_conditions(thread, conditions):
+    for condition in conditions:
+        if not isinstance(condition, string_types):
+            raise ConfigurationSyntaxError(
+                'At: {0}. Condition must be a string! Not {1}'
+                .format(condition, type(condition))
+            )
+        yield _render_template(thread, condition)
+
+
+CONDITION_RESOLVERS = {
+    'any': _resolve_runif_any_condition,
+    'all': _resolve_runif_all_condition,
+    'not': _resolve_runif_not_condition,
+    'filechanged': _resolve_changed_files,
+}
 
 
 def _resolve_stdci_script(project, thread):
@@ -388,19 +533,17 @@ def _resolve_stdci_yaml_config(project, thread, option):
         return {}
 
 
-def _render_template(thread, templates):
+def _render_template(thread, template):
     """Render given iterable of templates in a sandboxed environment.
 
     :param JobThread thread:   JobThread instance the templates refer to
     :param template:           Template we need to render.
-                               It can be a single template or an Iterable of
-                               templates
 
     :returns: Rendered template(s)
     """
     sandbox = SandboxedEnvironment()
     rendered = (
-        sandbox.from_string(templates).render(
+        sandbox.from_string(template).render(
             stage=thread.stage,
             substage=thread.substage,
             distro=thread.distro,
@@ -467,6 +610,10 @@ def _get_first_file(project, search_dir, filenames):
     if isinstance(filenames, string_types):
         filenames = [filenames]
     logger.debug('Searching files in: %s', str(search_dir))
+    if logger.level <= logging.DEBUG:
+        # Filenames might be a generator expression so in order to print it
+        # we need to transform it into a list.
+        filenames = list(filenames)
     found = next(
         (os.path.join(search_dir, f) for f in filenames
          if (project/search_dir/f).check(file=True)),

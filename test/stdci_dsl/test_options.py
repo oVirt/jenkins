@@ -1,7 +1,11 @@
 #!/bin/env python
 """test_automation_options.py - Tests module for automation_options.py"""
 
-import pytest
+try:
+    import pytest
+    from unittest.mock import MagicMock, sentinel
+except ImportError:
+    from mock import MagicMock, sentinel
 from scripts.stdci_dsl.options.globals import _get_global_options
 from scripts.stdci_dsl.options.parser_utils import get_merged_options
 from scripts.stdci_dsl.options.defaults import apply_default_options
@@ -10,7 +14,8 @@ from scripts.stdci_dsl.job_thread import JobThread
 from scripts.stdci_dsl.options.normalize import (
     _render_template, _resolve_stdci_yaml_config, _resolve_stdci_list_config,
     _resolve_stdci_script, _normalize_repos_config, _normalize_mounts_config,
-    RepoConfig, MountConfig
+    RepoConfig, MountConfig, _resolve_changed_files,
+    _resolve_stdci_runif_conditions, ConfigurationSyntaxError
 )
 
 
@@ -524,3 +529,402 @@ def test_apply_default_options(threads, expected):
 )
 def test_get_global_options_cfg(threads, expected):
     assert _get_global_options(threads) == expected
+
+
+@pytest.mark.parametrize(
+    "modified,conditions,expected",
+    [
+        (
+            ['some-file-1', 'some-file-2', 'some-file-3'],
+            ['some-*-2'],
+            True
+        ),
+        (
+            ['some-file-1', 'some-file-2', 'some-file-3'],
+            ['some-*-4'],
+            False
+        ),
+        (
+            ['some-file-1', 'some-file-2', 'some-file-3'],
+            ['some-file-3'],
+            True
+        ),
+        (
+            ['a'],
+            ['{{ stage }}'],
+            True
+        ),
+        (
+            ['something', 'b', 'something-else'],
+            ['{{ substage }}'],
+            True
+        ),
+        (
+            ['something', 'something-else'],
+            ['{{ substage }}'],
+            False
+        ),
+        (
+            ['file'],
+            [],
+            False
+        ),
+        (
+            [],
+            ['condition'],
+            False
+        ),
+        (
+            [],
+            [],
+            False
+        ),
+    ]
+)
+def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
+    monkeypatch.setattr(
+        'scripts.stdci_dsl.options.normalize.MODIFIED_FILES',
+        {'project': modified},
+    )
+    thread = JobThread('a', 'b', 'c', 'd', {})
+    out = _resolve_changed_files('project', thread, conditions)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+    "thread,modified_files,expected",
+    [
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'not': {'filechanged': ['file-*']}},
+            ),
+            ['file-1'],
+            False
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'not': {'filechanged': ['file-*']}},
+            ),
+            ['something'],
+            True
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'all': [{'filechanged': ['file-*']}]},
+            ),
+            ['file-1'],
+            True
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'all': [
+                        {'filechanged': ['file-*']},
+                        {'filechanged': ['other-file*']}
+                    ]
+                },
+            ),
+            ['file-1'],
+            False
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {
+                    'all': [
+                        {
+                            'all':
+                            [
+                                {'filechanged': ['file1']},
+                                {'filechanged': ['file2']}
+                            ]
+                        },
+                        {
+                            'any':
+                            [
+                                {'filechanged': ['file2']},
+                                {'filechanged': ['file3']}
+                            ]
+                        }
+                    ]
+                },
+            ),
+            ['file2'],
+            False
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {
+                    'all': [
+                        {
+                            'all':
+                            [
+                                {'filechanged': ['file1']},
+                                {'filechanged': ['file2']}
+                            ]
+                        },
+                        {
+                            'any':
+                            [
+                                {'filechanged': ['file2']},
+                                {'filechanged': ['file3']}
+                            ]
+                        }
+                    ]
+                },
+            ),
+            ['file1', 'file2'],
+            True
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {
+                    'any': [
+                        {
+                            'all':
+                            [
+                                {'filechanged': ['file1']},
+                                {'filechanged': ['file2']}
+                            ]
+                        },
+                        {
+                            'any':
+                            [
+                                {'filechanged': ['file2']},
+                                {'filechanged': ['file3']}
+                            ]
+                        }
+                    ]
+                },
+            ),
+            ['file1', 'file2'],
+            True
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'any': [
+                    {'all': [
+                        {'filechanged': 'file1'},
+                        {'filechanged': 'file2'},
+                        {'any': [
+                            {'filechanged': 'file2'},
+                            {'filechanged': 'file4'}]}
+                    ]},
+                    {'any': [
+                        {'filechanged': 'file5'},
+                        {'filechanged': 'file6'}
+                    ]}
+                ],
+                'filechanged': 'file2',
+                },
+            ),
+            ['file1', 'file2', 'file4', 'file5', 'file6'],
+            True
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'any': [
+                    {
+                        'all': [
+                            {'filechanged': 'file1'},
+                            {'filechanged': 'file2'},
+                            {'any': [
+                                {'filechanged': 'file2'},
+                                {'filechanged': 'file4'}]
+                            }
+                        ]
+                    },
+                    {'any': [
+                        {'filechanged': 'file5'},
+                        {'filechanged': 'file6'}]
+                    }
+                ],
+                'filechanged': 'file2'
+                },
+            ),
+            ['file3'],
+            False
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'not':
+                    {
+                        'all': [
+                            {'filechanged': 'file1'},
+                            {'filechanged': 'file2'},
+                            {'any': [
+                                {'filechanged': 'file3'},
+                                {'filechanged': 'file4'}]
+                            }
+                        ]
+                    },
+                }
+            ),
+            ['file1', 'file2', 'file3'],
+            False
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {
+                    'all': [
+                        {'filechanged': 'file1'},
+                        {'filechanged': 'file2'},
+                        {'any': [
+                            {'filechanged': 'file3'},
+                            {'filechanged': 'file4'}]
+                        }
+                    ]
+                },
+            ),
+            ['file1', 'file2', 'file3'],
+            True
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {
+                    'all': [
+                        {'filechanged': 'file1'},
+                        {'filechanged': 'file2'},
+                        {'any': [
+                            {'filechanged': 'file3'},
+                            {'filechanged': 'file4'}]
+                        }
+                    ]
+                },
+            ),
+            ['file1', 'file2'],
+            False
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'not':
+                    {'all': [
+                        {
+                            'all': [
+                                {'filechanged': 'file1'},
+                                {'filechanged': 'file2'},
+                                {'any': [
+                                    {'filechanged': 'file3'},
+                                    {'filechanged': 'file4'}]
+                                }
+                            ]
+                        },
+                        {'any': [
+                            {'filechanged': 'file5'},
+                            {'filechanged': 'file6'}]
+                        }
+                    ],
+                    'filechanged': 'file2'
+                    },
+                }
+            ),
+            ['file1'],
+            True
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'all': [
+                    {
+                        'all': [
+                            {'filechanged': 'file1'},
+                            {'filechanged': 'file2'},
+                            {'any': [
+                                {'filechanged': 'file3'},
+                                {'filechanged': 'file4'}]
+                            }
+                        ]
+                    },
+                    {'any': [
+                        {'filechanged': 'file5'},
+                        {'filechanged': 'file6'}]
+                    }
+                ],
+                'filechanged': 'file2'
+                },
+            ),
+            ['file1'],
+            False
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'all': [
+                    {'all': [
+                        {'filechanged': 'file1'},
+                        {'filechanged': 'file2'},
+                        {'any': [
+                            {'filechanged': 'file3'},
+                            {'filechanged': 'file4'}]
+                        }]
+                    },
+                    {'any': [
+                        {'filechanged': 'file5'},
+                        {'filechanged': 'file6'}]
+                    }
+                ],
+                'filechanged': 'file2'
+                },
+            ),
+            ['file1', 'file2', 'file3', 'file5'],
+            True
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd',
+                {'not':
+                    {'all': [
+                        {'all': [
+                            {'filechanged': 'file1'},
+                            {'filechanged': 'file2'},
+                            {'any': [
+                                {'filechanged': 'file3'},
+                                {'filechanged': 'file4'}]
+                            }]
+                        },
+                        {'any': [
+                            {'filechanged': 'file5'},
+                            {'filechanged': 'file6'}]
+                        }
+                    ],
+                    'filechanged': 'file2'
+                    },
+                }
+            ),
+            ['file1', 'file2', 'file3', 'file5'],
+            False
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd', {'all': []},),
+            ['file1', 'file2'],
+            True
+        ),
+        (
+            JobThread('a', 'b', 'c', 'd', {'any': []},),
+            ['file1', 'file2'],
+            False
+        ),
+    ]
+)
+def test_resolve_stdci_runif_conditions(
+    thread, modified_files, expected, monkeypatch
+):
+    monkeypatch.setattr(
+        'scripts.stdci_dsl.options.normalize.MODIFIED_FILES',
+        {'project': modified_files}
+    )
+    out = _resolve_stdci_runif_conditions('project', thread, thread.options)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+    "conditions",
+    [
+        {'a': 'b'},
+        1,
+        [{'file': 'abc'}],
+    ]
+)
+def test_resolve_changed_files_exceptions(conditions, monkeypatch):
+    monkeypatch.setattr(
+        'scripts.stdci_dsl.options.normalize.MODIFIED_FILES',
+        {'project': []}
+    )
+    thread = JobThread('a', 'b', 'c', 'd', {})
+    with pytest.raises(ConfigurationSyntaxError):
+        _resolve_changed_files('project', thread, conditions)
