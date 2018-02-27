@@ -51,7 +51,6 @@
     <<: *base-commons
     name: ovirt-engine_check-merge
     stage: check-merged
-    notification-url: 'https://ovirt-ovirt-engine.getbadges.io/api/app/webhook/66f43bb2-6b98-4aab-8d1a-7acca6704dab'
     trigger: on-change
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
