@@ -105,6 +105,8 @@
     version:
       - master:
           chroot_distro: el7
+      - 4.2:
+          chroot_distro: el7
       - 4.1:
           chroot_distro: el7
     email-to: 'infra@ovirt.org, sabose@redhat.com'
