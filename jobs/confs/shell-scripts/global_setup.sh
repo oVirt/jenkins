@@ -11,10 +11,10 @@ main() {
     setup_os_repos
     mk_wokspace_dirs
     extra_packages || failed=true
+
     if can_sudo systemctl; then
         docker_setup || failed=true
         setup_postfix || failed=true
-        start_services || failed=true
     else
         log WARN "Skipping services setup - not enough sudo permissions"
     fi
@@ -71,19 +71,15 @@ mk_wokspace_dirs() {
     mkdir -p "$WORKSPACE/"{tmp,exported-artifacts}
 }
 
-
 extra_packages() {
     # Add extra packages we need for mock_runner.sh
     if [[ -e '/usr/bin/dnf' ]]; then
         verify_packages python3-PyYAML PyYAML python3-pyxdg python2-pyxdg \
-            python-jinja2 python-paramiko createrepo python-py python3-py \
-            firewalld haveged libvirt qemu-kvm bash mock git nosync sed \
-            libselinux-utils procps-ng
+            python-jinja2 python-paramiko createrepo python-py python3-py mock
     else
-        verify_packages python34-PyYAML PyYAML python2-pyxdg \
-            python-jinja2 python2-paramiko createrepo python-py python3-py \
-            firewalld haveged libvirt qemu-kvm-ev bash mock git nosync sed \
-            libselinux-utils procps-ng
+        verify_packages python34-PyYAML PyYAML python2-pyxdg python-jinja2 \
+            python2-paramiko createrepo qemu-kvm-ev libvirt python-py \
+            python3-py mock
     fi
 }
 
@@ -102,10 +98,6 @@ setup_postfix() {
     verify_packages postfix
     sudo -n systemctl enable postfix
     sudo -n systemctl start postfix
-}
-
-start_services() {
-    sudo -n systemctl start libvirtd haveged firewalld
 }
 
 verify_packages() {
