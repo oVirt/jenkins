@@ -317,6 +317,118 @@ def test_resolve_stdci_yaml_config(options, expected, stdci_project_dir):
             {'releasebranches': 'br1', 'runtime_req': 'rq1'},
             {'releasebranches': 'br2', 'runtime_req': 'rq2'},
             {'releasebranches': 'br2', 'runtime_req': 'rq2'},
+        ),
+        (
+            {'opt': 'v', 'runif': {'any': [{'filechanged': 'f1'}, {'filechanged': 'f2'}]}},
+            {'opt': 'v', 'runif': {'all': [{'filechanged': 'f3'}, {'filechanged': 'f4'}]}},
+            {
+                'opt': 'v',
+                'runif':
+                {
+                    'all':
+                    [
+                        {'any':
+                            [
+                                {'filechanged': 'f1'},
+                                {'filechanged': 'f2'}
+                            ]
+                        },
+                        {'all':
+                            [
+                                {'filechanged': 'f3'},
+                                {'filechanged': 'f4'}
+                            ]
+                         }
+                    ]
+                }
+            }
+        ),
+        (
+            {'opt': 'v', 'runif': {'all': [{'filechanged': 'f1'}, {'filechanged': 'f2'}]}},
+            {'opt': 'v', 'runif': {'any': [{'filechanged': 'f3'}, {'filechanged': 'f4'}]}},
+            {
+                'opt': 'v',
+                'runif':
+                {
+                    'all':
+                    [
+                        {'all':
+                            [
+                                {'filechanged': 'f1'},
+                                {'filechanged': 'f2'}
+                            ]
+                        },
+                        {'any':
+                            [
+                                {'filechanged': 'f3'},
+                                {'filechanged': 'f4'}
+                            ]
+                         }
+                    ]
+                }
+            }
+        ),
+        (
+            {'opt': 'v', 'runif': {'all': [{'filechanged': 'f1'}, {'filechanged': 'f2'}]}},
+            {'opt': 'v', 'runif': {'all': [{'filechanged': 'f3'}, {'filechanged': 'f4'}]}},
+            {
+                'opt': 'v',
+                'runif':
+                {
+                    'all':
+                    [
+                        {'all':
+                            [
+                                {'filechanged': 'f1'},
+                                {'filechanged': 'f2'}
+                            ]
+                        },
+                        {'all':
+                            [
+                                {'filechanged': 'f3'},
+                                {'filechanged': 'f4'}
+                            ]
+                         }
+                    ]
+                }
+            }
+        ),
+        (
+            {'opt': 'v', 'runif': {}},
+            {'opt': 'v', 'runif':
+             {'all': [{'filechanged': 'f3'}, {'filechanged': 'f4'}]}},
+            {
+                'opt': 'v',
+                'runif':
+                {
+                    'all':
+                    [
+                        {'filechanged': 'f3'},
+                        {'filechanged': 'f4'}
+                    ]
+                 }
+            }
+        ),
+        (
+            {'opt': 'v', 'runif': {}},
+            {'opt': 'v', 'runif': {}},
+            {
+                'opt': 'v',
+                'runif': {}
+            }
+        ),
+        (
+            {'opt': 'v'},
+            {'opt': 'v', 'runif': {}},
+            {
+                'opt': 'v',
+                'runif': {}
+            }
+        ),
+        (
+            {'opt': 'v'},
+            {'opt': 'v', 'opt2': 'v2'},
+            {'opt': 'v', 'opt2': 'v2'}
         )
     ]
 )
