@@ -18,8 +18,8 @@ main() {
     local containers_flow="Dockerfiles|collect_artifacts.sh|standard-stage.yaml|cleanup_slave.sh"
     if grep -qE "(${containers_flow})" <<< "$changed_files"; then
         # docker is not supported in official el6
-        if ! grep -qE '^(Red Hat|CentOS) release 6\.' /etc/system-release; \
-            then test_docker_container
+        if is_docker_test_arch; then
+            test_docker_container
         fi
     fi
     if grep -q '^mock_configs/' <<< "$changed_files"; then
@@ -45,6 +45,11 @@ main() {
 is_jjb_test_arch() {
     [[ "$(uname -m)" == "x86_64" ]] &&
         grep -qE '^(Red Hat|CentOS) .* release 7\.' /etc/system-release
+}
+
+is_docker_test_arch() {
+    [[ "$(uname -m)" != "s390x" ]] &&
+        grep -qE '^(Red Hat|CentOS) release 6\.' /etc/system-release
 }
 
 test_job_configs() {
