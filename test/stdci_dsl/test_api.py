@@ -35,9 +35,11 @@ def test_RuntimeEnvDefinition(project_dir):
     obj = RuntimeEnvDefinition(
         str(project_dir), 'check-patch', 'default', 'el7', 'x86_64'
     )
-    assert obj.script == project_dir/'automation/check-patch.sh'
+    assert obj.script == 'automation/check-patch.sh'
     assert obj.yumrepos == None
-    assert obj.environment == [{'name': 'test', 'valueFrom': {'runtimeEnv': 'PWD'}}]
+    assert obj.environment == [
+        {'name': 'test', 'valueFrom': {'runtimeEnv': 'PWD'}}
+    ]
     assert obj.repos == [
         RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),
         RepoConfig('repo-1f02dddd81d2931b7c82f0a857dc2431', 'repo2'),
@@ -78,7 +80,7 @@ def test_runner_yaml_dumper(project_dir, tmpdir):
             "  repo-734392d7a1ac9e3cfe63184b3e48eb0c: repo1\n"
             "script: %s\n"
             "yumrepos: ''\n"
-    ) % (str(project_dir/'automation/check-patch.sh'))
+    ) % ('automation/check-patch.sh')
 
 
 def test_get_threads_with_globals(project_dir):
@@ -87,7 +89,7 @@ def test_get_threads_with_globals(project_dir):
         JobThread('check-patch', 'default', 'el7', 'x86_64',
             {
                 'yumrepos': None,
-                'script': project_dir/'automation/check-patch.sh',
+                'script': 'automation/check-patch.sh',
                 'upstream_sources': {},
                 'repos': [
                     RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),
@@ -115,7 +117,7 @@ def test_get_threads(project_dir):
         JobThread('check-patch', 'default', 'el7', 'x86_64',
             {
                 'yumrepos': None,
-                'script': project_dir/'automation/check-patch.sh',
+                'script': 'automation/check-patch.sh',
                 'upstream_sources': {},
                 'repos': [
                     RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),

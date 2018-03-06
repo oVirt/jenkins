@@ -178,7 +178,7 @@ def test_render_template(thread, templates, expected):
 )
 def test_resolve_stdci_script(options, expected, stdci_project_dir):
     out = _resolve_stdci_script(stdci_project_dir, options)
-    ex = stdci_project_dir / expected
+    ex = expected
     assert out == ex
 
 

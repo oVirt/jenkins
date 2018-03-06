@@ -1,6 +1,7 @@
 #!/bin/env python
 
 from __future__ import absolute_import
+import os
 import logging
 from tempfile import mkstemp
 from collections import Mapping, Iterable, namedtuple
@@ -40,8 +41,8 @@ def normalize(project, threads):
     This method is preparing the vectors for use by resolving path's, writing
     files and etc.
 
-    :param py.path.local project: Path to project directory
-    :param Iterable vectors:      Iterable of JobThread objects
+    :param str project:      Path to project directory
+    :param Iterable vectors: Iterable of JobThread objects
 
     :rtype: Iterator
     :return: Returns iterator over a vector objects for the requested stage
@@ -180,7 +181,7 @@ def _resolve_stdci_script(project, thread):
 
     rendered_paths = (_render_template(thread, path) for path in script_paths)
     path_prefix = _get_path_prefix(thread, 'script')
-    found_script = _get_first_file(project/path_prefix, rendered_paths)
+    found_script = _get_first_file(project, path_prefix, rendered_paths)
     if not (found_script or thread.options['ignore_if_missing_script']):
         # User specified path to script file and we couldn't resolve the path
         msg = (
@@ -242,7 +243,7 @@ def _resolve_stdci_yum_config(project, thread, option):
         _render_template(thread, path) for path in yum_config_paths
     )
     path_prefix = _get_path_prefix(thread, option)
-    found_config = _get_first_file(project/path_prefix, rendered_paths)
+    found_config = _get_first_file(project, path_prefix, rendered_paths)
     default_value = DefaultValue in yum_config
     if not (found_config or default_value):
         # User specified path to config file and we couldn't resolve the path
@@ -452,7 +453,7 @@ def _get_path_prefix(thread, option):
     return ''
 
 
-def _get_first_file(search_dir, filenames):
+def _get_first_file(project, search_dir, filenames):
     """Search the given directory for the first existing file from filenames
 
     :param py.path.local search_dir: The directory where we search the files in
@@ -462,12 +463,13 @@ def _get_first_file(search_dir, filenames):
     :return: The first existing file from 'filenames' in 'search_dir'
               None is returned if file could not be found
     """
-    search_dir = py.path.local(search_dir)
+    project = py.path.local(project)
     if isinstance(filenames, string_types):
         filenames = [filenames]
     logger.debug('Searching files in: %s', str(search_dir))
     found = next(
-        (search_dir/f for f in filenames if (search_dir/f).check(file=True)),
+        (os.path.join(search_dir, f) for f in filenames
+         if (project/search_dir/f).check(file=True)),
         None
     )
     if found is None:
