@@ -33,6 +33,7 @@ following structure (nesting is optional):
 import logging
 from numbers import Number
 from collections import Mapping
+from itertools import permutations
 from six import iteritems, string_types
 from six.moves import zip, xrange
 
@@ -210,40 +211,32 @@ def _aggregate(vectors, merge_options):
 
 
 def _cartesian_multiplication(vectors, merge_options):
-    """Do cartesian multiplication between a list of given vectors.
+    """Do cartesian multiplication between all permutations of vectors
+    eventually yielding a sorted list of merged vectors and vectors that
+    were not merged with any other vectors.
 
-    :param list vectors: All vectors to multiply.
-    :param function merge_options: Function that knows how to merge options
-                                   fields between two vectors.
+    :param Iterable vectors:   Iterable over vectors to try to merge.
+    :param func merge_options: Function that knows how to merge options
+                               fields between two vectors.
 
     :rtype: list
     :returns: New sorted list with merged (multiplied) vectors.
               Vectors that were not multiplied will remain on the list.
     """
-    multiplied_vectors = []
-    merged = False
-    # We must unroll the 'vectors' iterator into a list because we
-    # iterate over different sublists of 'vectors' while searching for matching
-    # vectors for multiplication
-    vectors_to_multiply = list(vectors)
-    num_of_vectors = len(vectors_to_multiply)
-    for i, current_vector in enumerate(vectors_to_multiply):
-        for j in xrange(i + 1, num_of_vectors):
-            merged_vector = \
-                _merge(current_vector, vectors_to_multiply[j], merge_options)
-            if merged_vector:
-                merged = True
-                multiplied_vectors.append(merged_vector)
-        if not merged:
-            # If we couldn't merge current_vector with any other vector we
-            # have to append it to multiplied_vectors to make sure we won't
-            # lose it
-            multiplied_vectors.append(current_vector)
-    # because vectors are tuples that also include mappings in the last
-    # position, and we only need to group similar vectors together (for dedupe)
-    # we use hash
-    multiplied_vectors.sort(key=lambda x: hash(x[:-1]))
-    return merged, multiplied_vectors
+    merged_vectors = []
+    vectors = [[v, False] for v in vectors]
+    for a, b in permutations(vectors, 2):
+        logger.debug('Attempting merge: %s :: %s', a[0], b[0])
+        merged = _merge(a[0], b[0], merge_options)
+        if merged:
+            logger.debug('Merged: %s', merged)
+            a[1] = b[1] = True
+            merged_vectors.append(merged)
+    any_merged = bool(merged_vectors)
+    unmerged_vectors = [v[0] for v in vectors if not v[1]]
+    merged_vectors = merged_vectors + unmerged_vectors
+    merged_vectors.sort(key=lambda v: hash(v[:-1]))
+    return any_merged, merged_vectors
 
 
 def _dedup(vectors, merge_options):
