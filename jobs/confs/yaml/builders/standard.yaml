@@ -58,6 +58,11 @@
       - inject:
           properties-content: |
             GERRIT_TRIGGER_CI_VOTE_LABEL: --label Continuous-Integration=<CODE_REVIEW>
+      - standard_stage:
+          project: '{project}'
+          distro: '{distro}'
+          arch: '{arch}'
+          action: --patch-only
       - conditional-step:
           condition-kind: shell
           on-evaluation-failure: dont-run
@@ -79,11 +84,6 @@
                     --code-review=2 \
                     --verified=1 \
                     --submit"
-      - standard_stage:
-          project: '{project}'
-          distro: '{distro}'
-          arch: '{arch}'
-          action: --patch-only
 
 - builder:
     name: poll-upstream-sources_builder
