@@ -45,7 +45,7 @@
           branch: ovirt-4.2-pre
           trigger: 'timed'
           trigger-times: '@weekly'
-      - ovirt-4.2-snapshot:
+      - 4.2:
           branch: ovirt-4.2-snapshot
           trigger: 'timed'
           trigger-times: '@daily'
@@ -57,7 +57,7 @@
           branch: ovirt-4.1-pre
           trigger: 'timed'
           trigger-times: '@weekly'
-      - ovirt-4.1-snapshot:
+      - 4.1:
           branch: ovirt-4.1-snapshot
           trigger: 'timed'
           trigger-times: '@daily'
