@@ -65,6 +65,31 @@
       - build-discarder:
           days-to-keep: 14
           artifact-num-to-keep: 60
+    parameters:
+      - string:
+          name: x_github_event
+      - string:
+          name: x_github_delivery
+      - string:
+          name: GH_EV_REPO_name
+      - string:
+          name: GH_EV_REPO_full_name
+      - string:
+          name: GH_EV_REPO_owner_name
+      - string:
+          name: GH_EV_REPO_owner_login
+      - string:
+          name: GH_EV_REF
+      - string:
+          name: GHPUSH_SHA
+      - string:
+          name: GHPUSH_PUSHER_name
+      - string:
+          name: GHPUSH_PUSHER_email
+      - string:
+          name: GH_EV_HEAD_COMMIT_id
+      - string:
+          name: GH_EV_HEAD_COMMIT_url
     triggers:
       - raw:
           xml: |
