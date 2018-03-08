@@ -10,9 +10,6 @@
     distro:
       - el7
       - fc27
-      - fcraw
-    exclude:
-      - { version: 4.2, distro: fcraw }
 
 - project:
     <<: *base-commons

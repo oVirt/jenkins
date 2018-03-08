@@ -13,7 +13,6 @@
     distro:
       - el7
       - fc27
-      - fcraw
     arch:
       - x86_64:
           node-filter: el7
@@ -22,14 +21,10 @@
       - s390x:
           node-filter: s390x
     exclude:
-      - { version: 4.2, distro: fcraw }
-      - { version: 4.1, distro: fcraw }
       - { version: 4.1, distro: fc27 }
       - { version: 4.1, arch: s390x, }
       - {               arch: s390x,   distro: el7, }
-      - {               arch: s390x,   distro: fcraw, }
       - {               arch: ppc64le, distro: fc27, }
-      - {               arch: ppc64le, distro: fcraw, }
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 

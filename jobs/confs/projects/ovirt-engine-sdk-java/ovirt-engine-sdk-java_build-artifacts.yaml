@@ -11,11 +11,7 @@
     distro:
       - el7
       - fc27
-      - fcraw
     exclude:
-      - { version: 4.2, distro: fcraw }
-      - { version: 4.1, distro: fcraw }
-      - { version: 3.6, distro: fcraw }
       - { version: 4.1, distro: fc27 }
       - { version: 3.6, distro: fc27 }
     arch: x86_64
