@@ -21,16 +21,16 @@ def main() {
 }
 
 def detect_github_event() {
-    if(!params.X_GitHub_Event) {
+    if(!params.x_github_event) {
         return
     }
-    String event = "${params.X_GitHub_Event} [${params.X_GitHub_Delivery}]"
+    String event = "${params.x_github_event} [${params.x_github_delivery}]"
     String org = params.GH_EV_REPO_owner_login
     String repo = params.GH_EV_REPO_name
     String branch = params.GH_EV_REF.tokenize('/')[-1]
     echo "Detected GitHub event: $event\nTo: $org/$repo/$branch"
     currentBuild.description = "$event\nTo: $org/$repo/$branch"
-    if(params.X_GitHub_Event == 'push') {
+    if(params.x_github_event == 'push') {
         echo "Found GitHub push event"
         String job = "${org}_${repo}_standard-on-ghpush"
         echo "Will attempt to trigger job: $job"
@@ -41,8 +41,8 @@ def detect_github_event() {
 @NonCPS
 def get_job_parametes() {
     [
-        'X_GitHub_Event',
-        'X_GitHub_Delivery',
+        'x_github_event',
+        'x_github_delivery',
         'GH_EV_REPO_name',
         'GH_EV_REPO_full_name',
         'GH_EV_REPO_owner_name',

@@ -107,11 +107,11 @@
               <regexpFilterExpression></regexpFilterExpression>
               <genericHeaderVariables>
                 <org.jenkinsci.plugins.gwt.GenericHeaderVariable>
-                  <key>X-GitHub-Event</key>
+                  <key>x-github-event</key>
                   <regexpFilter></regexpFilter>
                 </org.jenkinsci.plugins.gwt.GenericHeaderVariable>
                 <org.jenkinsci.plugins.gwt.GenericHeaderVariable>
-                  <key>X-GitHub-Delivery</key>
+                  <key>x-github-delivery</key>
                   <regexpFilter></regexpFilter>
                 </org.jenkinsci.plugins.gwt.GenericHeaderVariable>
               </genericHeaderVariables>
