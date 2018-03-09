@@ -64,7 +64,6 @@
           chroot_distro: el7
     exclude:
       - { suite_type: he-basic-ansible, version: 4.1 }
-      - { suite_type: he-basic-ansible, version: 4.2 }
     email-to: >
       didi@redhat.com,
       sbonazzo@redhat.com,
