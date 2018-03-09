@@ -16,6 +16,7 @@
       - 'centos-ovirt-4.0-el7'
       - 'centos-ovirt-4.2-el7'
       - 'centos-opstools-testing-el7'
+      - 'centos-qemu-ev-testing-el7'
       - 'centos-qemu-ev-release-el7'
       - 'centos-kvm-common-el7'
       - 'fedora-base-fc25'
