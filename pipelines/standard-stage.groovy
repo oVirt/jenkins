@@ -119,7 +119,7 @@ def get_stage_github() {
         // We run check-patch by default
         return 'check-patch'
     }
-    if(params.X_GitHub_Event == 'push') { return 'check-merged' }
+    if(params.x_github_event == 'push') { return 'check-merged' }
     return null
 }
 
@@ -141,7 +141,7 @@ def get_project() {
         get_project_from_params()
     } else if('ghprbGhRepository' in params) {
         get_project_from_github_pr()
-    } else if(params.X_GitHub_Event == 'push') {
+    } else if(params.x_github_event == 'push') {
         get_project_from_github_push()
     } else if('GERRIT_EVENT_TYPE' in params) {
         get_project_from_gerrit()
@@ -349,7 +349,7 @@ def get_std_ci_queues(Project project, Map job_properties) {
     }
 }
 
-def enqueue_change(Project project, List queues) {
+def enqueue_change(project, queues) {
     def branches = [:]
     for(queue in queues) {
         branches[queue] = mk_enqueue_change_branch(project, queue)
