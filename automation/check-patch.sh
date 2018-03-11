@@ -49,7 +49,7 @@ is_jjb_test_arch() {
 
 is_docker_test_arch() {
     [[ "$(uname -m)" != "s390x" ]] &&
-        grep -qE '^(Red Hat|CentOS) release 6\.' /etc/system-release
+        ! grep -qE '^(Red Hat|CentOS) release 6\.' /etc/system-release
 }
 
 test_job_configs() {
