@@ -386,7 +386,7 @@ can_sudo() {
     local cmd
 
     for cmd in "$@"; do
-        sudo -nl "$cmd" >& /dev/null || return 1
+        sudo -nl $cmd >& /dev/null || return 1
     done
 }
 
