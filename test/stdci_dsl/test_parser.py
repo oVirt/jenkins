@@ -1,7 +1,9 @@
 #!/bin/env python
 
 import pytest
-from scripts.stdci_dsl.parser import normalize_config_values
+from scripts.stdci_dsl.parser import (
+    normalize_config_values, normalize_config_keys
+)
 
 
 @pytest.mark.parametrize(
@@ -49,4 +51,28 @@ from scripts.stdci_dsl.parser import normalize_config_values
 )
 def test_normalize_config_values(data, expected):
     out = normalize_config_values('', data)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+    "key,expected",
+    [
+        ('distro', 'distro'),
+        ('disTros', 'distro'),
+        ('distribution', 'distro'),
+        ('diStributions', 'distro'),
+        ('OS', 'distro'),
+        ('operatingSystem', 'distro'),
+        ('operating_systems', 'distro'),
+        ('ARCH', 'arch'),
+        ('architeCture', 'arch'),
+        ('ARCHITECTURES', 'arch'),
+        ('staGe', 'stage'),
+        ('stages', 'stage'),
+        ('subStage', 'substage'),
+        ('sub_stages', 'substage'),
+    ]
+)
+def test_config_keys(key, expected):
+    out = normalize_config_keys(key)
     assert out == expected

@@ -46,7 +46,7 @@ def stdci_parse(project):
             data_in=stdci_conf,
             merge_options=get_merged_options,
             categories=STDCI_CATEGORIES,
-            normalize_keys=remove_case_and_signs,
+            normalize_keys=normalize_config_keys,
             normalize_values=normalize_config_values,
         )
     )
@@ -95,7 +95,7 @@ def normalize_config_values(key, data):
     logger.debug('Normalizing data: %s', data)
     if isinstance(data, Mapping):
         return dict(
-            (remove_case_and_signs(k), normalize_config_values(k, v))
+            (_remove_case_and_signs(k), normalize_config_values(k, v))
             for (k, v) in iteritems(data)
         )
     elif isinstance(data, string_types):
@@ -105,7 +105,24 @@ def normalize_config_values(key, data):
     return data
 
 
-def remove_case_and_signs(data_in):
+def normalize_config_keys(key):
+    """Given a key, transform it into it's normal form
+
+    :param str key: Key to normalize
+
+    :rtype: str
+    :returns: Normalize key
+    """
+    if not isinstance(key, string_types):
+        raise RuntimeError(
+            'key must be string type! not {0}.\n'
+            'Received: {1}'.format(type(key), key)
+        )
+    key = _remove_case_and_signs(key)
+    return _normalize_key_name(key)
+
+
+def _remove_case_and_signs(key):
     """Given a string, transform it into lower case and remove whitespaces,
     dashes and underscores.
 
@@ -115,7 +132,40 @@ def remove_case_and_signs(data_in):
     :rtype: str
     :returns: String in lower case form and with signs removed
     """
-    if not isinstance(data_in, string_types):
-        logger.debug('[%s] is string type.', data_in)
-        return data_in
-    return data_in.lower().replace(' ', '').replace('-', '').replace('_', '')
+    return key.lower().replace(' ', '').replace('-', '').replace('_', '')
+
+
+_KEY_NAME_TRANSLATIONS = {
+    'distro': 'distro',
+    'distros': 'distro',
+    'distribution': 'distro',
+    'distributions': 'distro',
+    'os': 'distro',
+    'operatingsystem': 'distro',
+    'operatingsystems': 'distro',
+    'arch': 'arch',
+    'archs': 'arch',
+    'architecture': 'arch',
+    'architectures': 'arch',
+    'stage': 'stage',
+    'stages': 'stage',
+    'substage': 'substage',
+    'substages': 'substage',
+}
+
+
+def _normalize_key_name(key, translations_map=None):
+    """Given key and a translations map (optional) will extract this key
+    from the given map, or return the key itself if it's not in the map.
+
+    :param str key: Key to normalize
+    :param Mapping translations_map: Map from abstract forms of different keys
+                                     to the normal value of the key.
+
+    :rtype: str
+    :returns: The given key in it's normalized form if it exists.
+              Otherwise, return the key as is.
+    """
+    if not translations_map:
+        translations_map = _KEY_NAME_TRANSLATIONS
+    return translations_map.get(key, key)

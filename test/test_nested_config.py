@@ -5,7 +5,7 @@ from scripts.nested_config import (
     _dfs, _merge, _cartesian_multiplication, _dedup, _aggregate, gen_vectors
 )
 from scripts.stdci_dsl.parser import (
-    normalize_config_values, remove_case_and_signs
+    normalize_config_values, normalize_config_keys
 )
 try:
     from unittest.mock import MagicMock, call
@@ -145,7 +145,7 @@ def mock_merge_options(o1, o2):
 def test_dfs(data_in, categories, expected):
     out = list(
         _dfs(data=data_in, merge_options=mock_merge_options,
-             categories=categories, normalize_keys=remove_case_and_signs,
+             categories=categories, normalize_keys=normalize_config_keys,
              normalize_values=normalize_config_values)
     )
     assert out == expected
