@@ -73,14 +73,25 @@ mk_wokspace_dirs() {
 
 extra_packages() {
     # Add extra packages we need for mock_runner.sh
+    # packages common for all distros
+    local package_list=(
+        git mock sed bash procps-ng createrepo
+        PyYAML python2-pyxdg python-jinja2 python-py python3-py
+    )
     if [[ -e '/usr/bin/dnf' ]]; then
-        verify_packages python3-PyYAML PyYAML python3-pyxdg python2-pyxdg \
-            python-jinja2 python-paramiko createrepo python-py python3-py mock
+        # Fedora-specific packages
+        package_list+=(python3-PyYAML python3-pyxdg python-paramiko)
+        if can_sudo dnf; then
+            package_list+=(firewalld haveged libvirt qemu-kvm nosync libselinux-utils)
+        fi
     else
-        verify_packages python34-PyYAML PyYAML python2-pyxdg python-jinja2 \
-            python2-paramiko createrepo qemu-kvm-ev libvirt python-py \
-            python3-py mock
+        # CentOS-specific packages
+        package_list+=(python34-PyYAML python2-paramiko)
+        if can_sudo yum; then
+            package_list+=(firewalld haveged libvirt qemu-kvm-ev nosync libselinux-utils)
+        fi
     fi
+    verify_packages "${package_list[@]}"
 }
 
 docker_setup () {
