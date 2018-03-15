@@ -9,7 +9,7 @@
           properties-content: |
             PROJECT: {project}
     triggers:
-      - timed: 'H 2 * * *'
+      - timed: 'H H/8 * * *'
     scm:
       - gerrit-with-proto:
           project: '{project}'
