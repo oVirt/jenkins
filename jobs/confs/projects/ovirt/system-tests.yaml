@@ -53,6 +53,7 @@
     name: ovirt-system-he-tests
     suite_type:
       - he-basic
+      - he-basic-iscsi
       - he-basic-ansible
     project: 'ovirt-system-tests'
     version:
@@ -64,6 +65,8 @@
           chroot_distro: el7
     exclude:
       - { suite_type: he-basic-ansible, version: 4.1 }
+      - { suite_type: he-basic-iscsi, version: 4.1 }
+      - { suite_type: he-basic-iscsi, version: 4.2 }
     email-to: >
       didi@redhat.com,
       sbonazzo@redhat.com,
