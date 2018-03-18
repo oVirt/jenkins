@@ -80,12 +80,7 @@ DEFAULT_VALUES = {
     {
         'releasebranches': {},
         'upstreamsources': {},
-        'runtimerequirements':
-        {
-            'supportnestinglevel': 0,
-            'hostdistro': 'el7',
-            'hostarch': 'x86_64'
-        },
+        'runtimerequirements': {},
         'environment': \
             _default_templates_with_substage('environment.yaml', 'fromfile'),
         'packages': \
@@ -99,12 +94,7 @@ DEFAULT_VALUES = {
     {
         'releasebranches': {},
         'upstreamsources': {},
-        'runtimerequirements':
-        {
-            'supportnestinglevel': 0,
-            'hostdistro': 'el7',
-            'hostarch': 'x86_64'
-        },
+        'runtimerequirements': {},
         'environment': \
             _default_templates_without_substage('environment.yaml', 'fromfile'),
         'packages': \

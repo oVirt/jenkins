@@ -481,12 +481,7 @@ def test_get_merged_options(options1, options2, expected):
                         'upstreamsources': {},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
-                        'runtimerequirements':
-                        {
-                            'hostarch': 'x86_64',
-                            'hostdistro': 'el7',
-                            'supportnestinglevel': 0
-                        },
+                        'runtimerequirements': {},
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
@@ -544,12 +539,7 @@ def test_get_merged_options(options1, options2, expected):
                         'upstreamsources': {},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
-                        'runtimerequirements':
-                        {
-                            'hostarch': 'x86_64',
-                            'hostdistro': 'el7',
-                            'supportnestinglevel': 0
-                        },
+                        'runtimerequirements': {},
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
@@ -583,12 +573,7 @@ def test_get_merged_options(options1, options2, expected):
                         'upstreamsources': {},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
-                        'runtimerequirements':
-                        {
-                            'hostarch': 'x86_64',
-                            'hostdistro': 'el7',
-                            'supportnestinglevel': 0
-                        },
+                        'runtimerequirements': {},
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},

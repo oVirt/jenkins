@@ -422,16 +422,16 @@ def get_job_dir(job) {
 @NonCPS
 def get_std_ci_node_label(job) {
     def label_conditions = []
-    if(job.runtime_reqs?.support_nesting_level >= 2) {
+    if(job.runtime_reqs?.supportnestinglevel >= 2) {
         label_conditions << 'integ-tests'
     }
-    if(job.runtime_reqs?.support_nesting_level == 1) {
+    if(job.runtime_reqs?.supportnestinglevel == 1) {
         label_conditions << 'nested'
     }
-    if(job.runtime_reqs?.host_distro =~ /^(?i)same$/) {
+    if(job.runtime_reqs?.hostdistro =~ /^(?i)same$/) {
         label_conditions << job.distro
     }
-    if(job.runtime_reqs?.host_distro =~ /^(?i)newer$/) {
+    if(job.runtime_reqs?.hostdistro =~ /^(?i)newer$/) {
         String[] host_distros = [
             'el6', 'el7', 'fc24', 'fc25', 'fc26', 'fc27', 'fc28'
         ]
