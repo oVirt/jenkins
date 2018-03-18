@@ -1,7 +1,7 @@
 ---
 arch:
   - x86_64:
-      distro: [el6, el7, fc25, fc26, fc27, fcraw]
+      distro: [el6, el7, fc26, fc27, fcraw]
   - ppc64le:
       distro: el7
   - s390x:

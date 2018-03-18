@@ -11,8 +11,6 @@
           node-filter: el7
       - el6:
           node-filter: el7
-      - fc25:
-          node-filter: fc25
       - fc26:
           node-filter: fc26
       - fc27:
