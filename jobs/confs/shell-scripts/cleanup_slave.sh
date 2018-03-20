@@ -382,6 +382,13 @@ cleanup_old_artifacts() {
         mkdir "$WORKSPACE/exported-artifacts"
 }
 
+cleanup_dev_shm() {
+    for f in /dev/shm/ost /dev/shm/yum* /dev/shm/*.rpm; do
+        echo cleanup_dev_shm: Removing "${f}"
+        safe_remove "${f}"
+    done
+}
+
 can_sudo() {
     local cmd
 
@@ -426,6 +433,7 @@ main() {
     kill_lago_processes || failed=true
     cleanup_docker || failed=true
     cleanup_old_artifacts || failed=true
+    cleanup_dev_shm || failed=true
     echo "---------------------------------------------------------------"
     sudo -n df -h || df -h || :
     if $failed; then
