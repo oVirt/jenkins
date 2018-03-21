@@ -10,6 +10,7 @@ from scripts.stdci_dsl.api import (
 )
 from scripts.stdci_dsl.api.formatters.pipelines import _pipeline_dict_formatter
 from scripts.stdci_dsl.options.normalize import RepoConfig
+from scripts.nested_config import DepthLevel
 
 
 @pytest.fixture(scope='function')
@@ -101,7 +102,8 @@ def test_get_threads_with_globals(project_dir):
                 'mounts': [],
                 'releasebranches': {},
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
-                'ignore_if_missing_script': True
+                'ignore_if_missing_script': True,
+                DepthLevel: 1
             }
         )
     ]
@@ -129,7 +131,8 @@ def test_get_threads(project_dir):
                 'mounts': [],
                 'releasebranches': {},
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
-                'ignore_if_missing_script': True
+                'ignore_if_missing_script': True,
+                DepthLevel: 1
             }
         )
     ]

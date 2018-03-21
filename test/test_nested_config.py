@@ -2,7 +2,8 @@
 
 import pytest
 from scripts.nested_config import (
-    _dfs, _merge, _cartesian_multiplication, _dedup, _aggregate, gen_vectors
+    _dfs, _merge_vectors, _cartesian_multiplication, _dedup, _aggregate,
+    gen_vectors, _merge_options_wrapper, DepthLevel,
 )
 from scripts.stdci_dsl.parser import (
     normalize_config_values, normalize_config_keys
@@ -34,18 +35,18 @@ def mock_merge_options(o1, o2):
             {'cat1': ['v1', 'v2'], 'cat2': ['v3', 'v4']},
             ['cat1', 'cat2'],
             [
-                ('v1', None, {}),
-                ('v2', None, {}),
-                (None, 'v3', {}),
-                (None, 'v4', {})
+                ('v1', None, {DepthLevel: 1}),
+                ('v2', None, {DepthLevel: 1}),
+                (None, 'v3', {DepthLevel: 1}),
+                (None, 'v4', {DepthLevel: 1})
             ]
         ),
         (
             {'cat1': 'v1', 'cat2': 'v2'},
             ['cat1', 'cat2'],
             [
-                ('v1', None, {}),
-                (None, 'v2', {})
+                ('v1', None, {DepthLevel: 1}),
+                (None, 'v2', {DepthLevel: 1})
             ]
         ),
         (
@@ -66,51 +67,25 @@ def mock_merge_options(o1, o2):
             {'cat1': ['v1'], 'repos': 'ov1'},
             ['cat1'],
             [
-                ('v1', {'repos': 'ov1'})
+                ('v1', {'repos': 'ov1', DepthLevel: 1})
             ]
         ),
         (
             {},
             ['cat1'],
             [
-                (None, {})
+                (None, {DepthLevel: 1})
             ]
         ),
         (
             {'arch': ['x', 'y', 'z'], 'distro': [1, {2: {'arch': ['y']}}]},
             ['arch', 'distro'],
             [
-                ('x', None, {}),
-                ('y', None, {}),
-                ('z', None, {}),
-                (None, '1', {}),
+                ('x', None, {DepthLevel: 1}),
+                ('y', None, {DepthLevel: 1}),
+                ('z', None, {DepthLevel: 1}),
+                (None, '1', {DepthLevel: 1}),
                 ('y', '2', {'merged options': None})
-            ]
-        ),
-        (
-            {
-                'distro': ['el6', 'fc25', 'fc26', 'el7'],
-                'substage':
-                [
-                    'default',
-                    {
-                        'another':
-                        {
-                            'distro': 'el7',
-                            'script': {'abc':'efg'},
-                            'stage': 'check-patch'
-                        }
-                    }
-                ]
-            },
-            ('stage', 'substage', 'distro', 'arch'),
-            [
-                (None, 'default', None, None, {}),
-                ('check-patch', 'another', 'el7', None, {'merged options': None}),
-                (None, None, 'el6', None, {}),
-                (None, None, 'fc25', None, {}),
-                (None, None, 'fc26', None, {}),
-                (None, None, 'el7', None, {})
             ]
         ),
         (
@@ -131,18 +106,23 @@ def mock_merge_options(o1, o2):
             },
             ('stage', 'substage', 'distro', 'arch'),
             [
-                (None, 'default', None, None, {}),
+                (None, 'default', None, None, {DepthLevel: 1}),
                 ('check-patch', 'another', 'el7', None,
                  {'merged options': None}),
-                (None, None, 'el6', None, {}),
-                (None, None, 'fc25', None, {}),
-                (None, None, 'fc26', None, {}),
-                (None, None, 'el7', None, {})
+                (None, None, 'el6', None, {DepthLevel: 1}),
+                (None, None, 'fc25', None, {DepthLevel: 1}),
+                (None, None, 'fc26', None, {DepthLevel: 1}),
+                (None, None, 'el7', None, {DepthLevel: 1})
             ]
         ),
     ]
 )
-def test_dfs(data_in, categories, expected):
+def test_dfs(data_in, categories, expected, monkeypatch):
+    def _merge_wrapper(a, b, c):
+        return mock_merge_options(b, c)
+    monkeypatch.setattr(
+        'scripts.nested_config._merge_options_wrapper', _merge_wrapper
+    )
     out = list(
         _dfs(data=data_in, merge_options=mock_merge_options,
              categories=categories, normalize_keys=normalize_config_keys,
@@ -169,16 +149,16 @@ def test_dfs_exceptions(data_in, expected):
     "list_of_vectors,expected_list,expected_change",
     [
         (
-            [('cat1', 'cat2', {}),
-             ('cat3', 'cat4', {})],
-            [('cat1', 'cat2', {}),
-             ('cat3', 'cat4', {})],
+            [('cat1', 'cat2', {DepthLevel: 0}),
+             ('cat3', 'cat4', {DepthLevel: 0})],
+            [('cat1', 'cat2', {DepthLevel: 0}),
+             ('cat3', 'cat4', {DepthLevel: 0})],
             False
         ),
         (
-            [('cat1', None, {}),
-             (None, 'cat2', {}),
-             ('cat3', None, {})],
+            [('cat1', None, {DepthLevel: 0}),
+             (None, 'cat2', {DepthLevel: 0}),
+             ('cat3', None, {DepthLevel: 0})],
             [('cat3', 'cat2', {'merged options': None}),
              ('cat3', 'cat2', {'merged options': None}),
              ('cat1', 'cat2', {'merged options': None}),
@@ -186,9 +166,9 @@ def test_dfs_exceptions(data_in, expected):
             True
         ),
         (
-            [('cat1', None, 'cat3', {}),
-             ('cat1', 'cat2', 'cat3', {}),
-             ('cat1', 'cat4', 'cat3', {})],
+            [('cat1', None, 'cat3', {DepthLevel: 0}),
+             ('cat1', 'cat2', 'cat3', {DepthLevel: 0}),
+             ('cat1', 'cat4', 'cat3', {DepthLevel: 0})],
             [('cat1', 'cat4', 'cat3', {'merged options': None}),
              ('cat1', 'cat4', 'cat3', {'merged options': None}),
              ('cat1', 'cat2', 'cat3', {'merged options': None}),
@@ -196,20 +176,20 @@ def test_dfs_exceptions(data_in, expected):
             True
         ),
         (
-            [(None, None, 'el6', None, {}),
-             (None, None, 'el7', None, {}),
-             (None, None, 'fc25', None, {}),
-             (None, None, 'fc26', None, {}),
-             (None, None, 'fcraw', None, {}),
-             (None, None, 'el7', 'ppc64le', {}),
-             (None, None, 'fc27', 's390x', {})],
-            [(None, None, 'el6', None, {}),
+            [(None, None, 'el6', None, {DepthLevel: 0}),
+             (None, None, 'el7', None, {DepthLevel: 0}),
+             (None, None, 'fc25', None, {DepthLevel: 0}),
+             (None, None, 'fc26', None, {DepthLevel: 0}),
+             (None, None, 'fcraw', None, {DepthLevel: 0}),
+             (None, None, 'el7', 'ppc64le', {DepthLevel: 0}),
+             (None, None, 'fc27', 's390x', {DepthLevel: 0})],
+            [(None, None, 'el6', None, {DepthLevel: 0}),
              (None, None, 'el7', 'ppc64le', {'merged options': None}),
              (None, None, 'el7', 'ppc64le', {'merged options': None}),
-             (None, None, 'fc27', 's390x', {}),
-             (None, None, 'fcraw', None, {}),
-             (None, None, 'fc25', None, {}),
-             (None, None, 'fc26', None, {})],
+             (None, None, 'fc27', 's390x', {DepthLevel: 0}),
+             (None, None, 'fcraw', None, {DepthLevel: 0}),
+             (None, None, 'fc25', None, {DepthLevel: 0}),
+             (None, None, 'fc26', None, {DepthLevel: 0})],
             True
         ),
         (
@@ -220,9 +200,7 @@ def test_dfs_exceptions(data_in, expected):
     ]
 )
 def test_cartesian_multiplication(
-    list_of_vectors,
-    expected_list,
-    expected_change
+    list_of_vectors, expected_list, expected_change
 ):
     was_changed, returned_vectors = \
         _cartesian_multiplication(list_of_vectors, mock_merge_options)
@@ -365,7 +343,11 @@ def test_dedup(vectors, expected):
         ),
     ]
 )
-def test_aggregate(vectors, expected):
+def test_aggregate(vectors, expected, monkeypatch):
+    _mock_merge_wrapper = MagicMock(return_value={'merged options': None})
+    monkeypatch.setattr(
+        'scripts.nested_config._merge_options_wrapper', _mock_merge_wrapper
+    )
     assert sorted(
         list(_aggregate(vectors, mock_merge_options)),
         key=lambda x: hash(x[:-1])
@@ -436,7 +418,7 @@ def test_aggregate(vectors, expected):
         (
             {'o1': ['ov1', 'ov1.2'], 'repos': 'ov2'},
             ['c1', 'c2'],
-            [(None, None, {'o1': ['ov1', 'ov1.2'], 'repos': 'ov2'}),],
+            [(None, None, {'o1': ['ov1', 'ov1.2'], 'repos': 'ov2', DepthLevel: 1}),],
         ),
         (
             {'stage': [{'check-patch': {'arch': ['x86_64', 'ppc64le'],
@@ -448,7 +430,12 @@ def test_aggregate(vectors, expected):
         ),
     ]
 )
-def test_gen_vectors(data_in, categories, expected):
+def test_gen_vectors(data_in, categories, expected, monkeypatch):
+    def _mock_merge_wrapper(a, b ,c):
+        return mock_merge_options(b, c)
+    monkeypatch.setattr(
+        'scripts.nested_config._merge_options_wrapper', _mock_merge_wrapper
+    )
     assert sorted(
         list(gen_vectors(data_in, mock_merge_options, categories)),
         key=lambda x: hash(x[:-1])
@@ -490,39 +477,75 @@ def test_gen_vectors(data_in, categories, expected):
         ),
     ]
 )
-def test_merge(vector1, vector2, expected):
-    assert _merge(vector1, vector2, mock_merge_options) == expected
-
-
-def test_merge_options_dfs_calls():
+def test_merge_vectors(vector1, vector2, expected, monkeypatch):
     mock_merge_options = MagicMock(return_value={'merged options': None})
+    monkeypatch.setattr(
+        'scripts.nested_config._merge_options_wrapper', mock_merge_options
+    )
+    assert _merge_vectors(vector1, vector2, mock_merge_options) == expected
+
+
+@pytest.mark.parametrize(
+    "first,second",
+    [
+        (
+            ('cat1', None, {DepthLevel: 0, 'first': 1}),
+            ('cat1', None, {DepthLevel: 1, 'second': 1}),
+        ),
+        (
+            ('cat1', None, {DepthLevel: 0, 'first': 1}),
+            (None, 'cat2', {DepthLevel: 0, 'second': 1}),
+        ),
+        (
+            ('cat1', None, {DepthLevel: 0, 'first': 1}),
+            ('cat1', 'cat2', {DepthLevel: 0, 'second': 1}),
+        ),
+        (
+            ('cat1', None, {DepthLevel: 0, 'first': 1}),
+            (None, 'cat2', {DepthLevel: 0, 'second': 1}),
+        ),
+        (
+            ('cat1', None, 'cat3', {DepthLevel: 0, 'first': 1}),
+            (None, 'cat2', 'cat3', {DepthLevel: 0, 'second': 1}),
+        ),
+        (
+            ('cat1', None, 'cat3', {DepthLevel: 0, 'first': 1}),
+            ('cat1.1', None, 'cat3.1', {DepthLevel: 0, 'second': 1}),
+        ),
+    ]
+)
+def test_merge_options_wrapper(first, second, monkeypatch):
+    merge_options = MagicMock(return_value='RETURNED')
+    out = _merge_options_wrapper(merge_options, first, second)
+    assert out == 'RETURNED'
+    assert merge_options.call_args == call(first[-1], second[-1])
+
+
+def test_merge_options_dfs_calls(monkeypatch):
+    mock_merge_options = MagicMock(return_value={'merged options': None})
+    monkeypatch.setattr(
+        'scripts.nested_config._merge_options_wrapper', mock_merge_options
+    )
     simple_data = {
         'packages': 'p3',
-            'stage': [
-                {'check-patch':
-                    {'packages': 'p',
-                        'distro': [
-                            {'el7': {'packages': 'pdepth'}}
-                        ]
-                    }
+        'stage': [
+            {'check-patch':
+                {'packages': 'p',
+                    'distro': [
+                        {'el7': {'packages': 'pdepth'}}
+                    ]
                 }
-            ]
+            }
+        ]
     }
-    assert list(_dfs(simple_data, ('stage', 'distro'), mock_merge_options)) == \
-        [('check-patch', 'el7', {'merged options': None})]
+    assert list(
+        _dfs(simple_data, ('stage', 'distro'), mock_merge_options)
+    ) == [('check-patch', 'el7', {'merged options': None})]
     calls = [
-        call({'packages': 'p'}, {'packages': 'pdepth'}),
-        call({'packages': 'p3'}, {'merged options': None})
+        call(
+            mock_merge_options,
+            (None, 'el7', {DepthLevel: 2, 'packages': 'p'}),
+            (None, None, {DepthLevel: 3, 'packages': 'pdepth'}))
     ]
     mock_merge_options.assert_has_calls(calls, any_order=False)
     assert mock_merge_options.call_count == 2
-
-
-def test_merge_options_merge_calls():
-    mock_merge_options = MagicMock(return_value={'merged options': None})
-    vector1 = ('cp', 'fc', {'rp': 'r'})
-    vector2 = ('cp', None, {'pg': 'p'})
-    assert _merge(vector1, vector2, mock_merge_options) == \
-        ('cp', 'fc', {'merged options': None})
-    mock_merge_options.assert_called_once_with({'rp': 'r'}, {'pg': 'p'})
-    assert mock_merge_options.call_count == 1

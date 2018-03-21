@@ -35,10 +35,12 @@ from numbers import Number
 from collections import Mapping
 from itertools import permutations
 from six import iteritems, string_types
-from six.moves import zip, xrange
+from six.moves import zip, xrange, filter
 
 
 logger = logging.getLogger(__name__)
+DepthLevel = object()
+FoundUnder = object()
 
 
 def gen_vectors(data_in, merge_options, categories,
@@ -75,7 +77,7 @@ def gen_vectors(data_in, merge_options, categories,
 
 
 def _dfs(data, categories, merge_options, normalize_keys=None,
-         normalize_values=None, seen_categories=None,):
+         normalize_values=None, seen_categories=None, depth=0):
     """Perform a dfs on the given data and yield vectors that were found.
 
     This method extracts categories and options metadata from a given data.
@@ -119,7 +121,11 @@ def _dfs(data, categories, merge_options, normalize_keys=None,
         (k, normalize_values(k, v))
         for (k, v) in iteritems(data) if k not in categories
     )
-    logger.debug('options found: %s', options)
+    # Add track for depth level where the options were found for later
+    # comparison and merge.
+    depth = depth + 1
+    options[DepthLevel] = depth
+    logger.debug('options: %s found at depth %s', options, depth)
     # If we didn't find any category in the current level, than the current
     # level may include only options. In this case we yield an empty vector
     # with options (if any)
@@ -150,13 +156,16 @@ def _dfs(data, categories, merge_options, normalize_keys=None,
                     data=next_node, categories=categories,
                     merge_options=merge_options, normalize_keys=normalize_keys,
                     normalize_values=normalize_values,
-                    seen_categories=seen_categories | set([category])
+                    seen_categories=seen_categories | set([category]),
+                    depth=depth
+                )
+                cur_vector = _compose_vector(
+                    with_categories=categories, at=i, set_=cur_cat_val,
+                    with_options=options
                 )
                 for depth_vector in _aggregate(next_level, merge_options):
-                    yield _compose_vector(
-                        from_template=depth_vector,
-                        with_options=merge_options(options, depth_vector[-1]),
-                        at=i, set_=cur_cat_val,
+                    yield _merge_vectors(
+                        cur_vector, depth_vector, merge_options
                     )
             else:
                 # cv is the value for current category, but it may be a number
@@ -169,6 +178,56 @@ def _dfs(data, categories, merge_options, normalize_keys=None,
                 )
     if not category_found:
         yield _compose_vector(with_categories=categories, with_options=options)
+
+
+def _merge_options_wrapper(merge_options, first, second):
+    """Send the vectors to merge_options with the right order.
+    Assuming that merge_options will apply second options on first, send the
+    less significant vector first. First checking the depths where the vectors
+    were found. If equal, fallback to check which vector has more categories,
+    and eventually check who has the most significant category configured.
+    Most significant category is considered the right-most category.
+
+    :param func merge_options:  Function that merges options.
+    :param tuple first:         A vector to merge.
+    :param tuple second:        A vector to merge.
+
+    :returns: The output from merge_options.
+    """
+    first_opts = first[-1]
+    second_opts = second[-1]
+    first_depth = first_opts[DepthLevel]
+    second_depth = second_opts[DepthLevel]
+    logger.debug(
+        'Vector depths (first, second) = (%s, %s)',
+        first_depth, second_depth
+    )
+    if first_depth > second_depth:
+        return merge_options(second_opts, first_opts)
+    elif second_depth > first_depth:
+        return merge_options(first_opts, second_opts)
+    # Depth level is equal
+    # Check who have more categories configured
+    first_weight = len(tuple(filter(None, first[:-1])))
+    second_weight = len(tuple(filter(None, second[:-1])))
+    logger.debug(
+        'Vector weights (first, second) = (%s, %s)',
+        first_weight, second_weight
+    )
+    if first_weight > second_weight:
+        return merge_options(second_opts, first_opts)
+    elif second_weight > first_weight:
+        return merge_options(first_opts, second_opts)
+    # Both have same amount of categories configured
+    # Check who has most significant category
+    for first_c, second_c in reversed(list(zip(first[:-1], second[:-1]))):
+        if first_c and not second_c:
+            logger.debug('First has most significant category: %s', first_c)
+            return merge_options(second_opts, first_opts)
+        if second_c and not first_c:
+            logger.debug('Second has most significant category: %s', second_c)
+            return merge_options(first_opts, second_opts)
+    return merge_options(first_opts, second_opts)
 
 
 def _compose_vector(
@@ -245,7 +304,7 @@ def _cartesian_multiplication(vectors, merge_options):
     vectors = [[v, False] for v in vectors]
     for a, b in permutations(vectors, 2):
         logger.debug('Attempting merge: %s :: %s', a[0], b[0])
-        merged = _merge(a[0], b[0], merge_options)
+        merged = _merge_vectors(a[0], b[0], merge_options)
         if merged:
             logger.debug('Merged: %s', merged)
             a[1] = b[1] = True
@@ -280,7 +339,7 @@ def _dedup(vectors, merge_options):
     yield last_v
 
 
-def _merge(vector1, vector2, merge_options):
+def _merge_vectors(vector1, vector2, merge_options):
     """Try to merge two vectors.
 
     Merging two vectors means applying fields from one vector to another if
@@ -300,20 +359,23 @@ def _merge(vector1, vector2, merge_options):
     :returns: New merged vector. None if vectors can't be merged.
     """
     new_vector = []
-    vlen = len(vector1)
-    for i, s1, s2 in zip(xrange(1, vlen + 1), vector1, vector2):
-        if i == vlen:
-            new_vector.append(merge_options(s1, s2))
+    logger.debug('Attempting merge: %s with %s', vector1, vector2)
+    for category_from_1, category_from_2 in zip(vector1[:-1], vector2[:-1]):
+        if category_from_1 is None:
+            new_vector.append(category_from_2)
+        elif category_from_2 is None:
+            new_vector.append(category_from_1)
+        elif category_from_1 == category_from_2:
+            new_vector.append(category_from_1)
         else:
-            if s1 is None and s2 is not None:
-                new_vector.append(s2)
-            elif s2 is None and s1 is not None:
-                new_vector.append(s1)
-            elif s1 == s2:
-                new_vector.append(s1)
-            else:
-                return None
-    return tuple(new_vector)
+            logger.debug('Could not merge vectors.')
+            return None
+    # Merge the options and return the new vector
+    merged_options = _merge_options_wrapper(merge_options, vector1, vector2)
+    new_vector.append(merged_options)
+    new_vector = tuple(new_vector)
+    logger.debug('Vectors were merged. New vector: %s', new_vector)
+    return new_vector
 
 
 def _normalize_keys_identity(key):
