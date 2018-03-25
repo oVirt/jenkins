@@ -33,23 +33,17 @@
           #!/usr/bin/env python
           # Try to inject CI mirrors
           import sys
-          from os import environ
+          from os import environ, path
           sys.path.append('jenkins')
           from scripts.mirror_client import (
               inject_yum_mirrors_file_by_pattern, mirrors_from_environ, setupLogging
           )
 
           setupLogging()
-          suit_dir = "${{PROJECT}}/{suite_type}-suite-{version}"
-          if 'SUITE_TYPE' in environ:
-              suit_dir = suit_dir.replace('$SUITE_TYPE', environ['SUITE_TYPE'])
-              suit_dir = suit_dir.replace('${{SUITE_TYPE}}', environ['SUITE_TYPE'])
-          if 'ENGINE_VERSION' in environ:
-              suit_dir = suit_dir.replace('$ENGINE_VERSION', environ['ENGINE_VERSION'])
-              suit_dir = suit_dir.replace('${{ENGINE_VERSION}}', environ['ENGINE_VERSION'])
+          suit_dir = path.expandvars("${{PROJECT}}/{suite_type}-suite-{version}")
           inject_yum_mirrors_file_by_pattern(
               mirrors_from_environ('CI_MIRRORS_URL'),
-              suit_dir + '/*.repo',
+              path.join(suit_dir, '*.repo'),
           )
       - shell: |
           # make sure there's no prefix or lago will fail
