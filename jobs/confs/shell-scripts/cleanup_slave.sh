@@ -3,7 +3,6 @@ echo "shell-scripts/cleanup_slave.sh"
 
 WORKSPACE="${WORKSPACE?}"
 export PATH=$PATH:/usr/sbin
-DOCKER_REPOS_WHITELIST="centos|fedora|"
 
 umount_everyhting_inside() {
     local mydir="${1?}"
@@ -327,6 +326,7 @@ cleanup_libvirt() {
 
 cleanup_docker () {
     local fail=false
+    local whitelisted_repos=(centos fedora)
 
     if ! [[ -x /bin/docker ]]; then
         log WARN "Skipping Docker cleanup - Docker not installed"
@@ -342,22 +342,9 @@ cleanup_docker () {
     fi
 
     sudo -n systemctl start docker || return 1
-    echo "CLEANUP: Stop all running containers and remove unwanted images"
-    sudo -n docker ps -q -a | xargs -r sudo -n docker rm -f
-    [[ $? -ne 0 ]] && fail=true
-    sudo -n docker images --format "{{.ID}}" | sort -u | grep -vFxf <( \
-        sudo -n docker images --format {{.Repository}}:{{.ID}} | \
-        grep -E "^docker\.io/(${DOCKER_REPOS_WHITELIST})[:/].*" | \
-        cut -d: -f2
-    ) | xargs -r sudo -n docker rmi -f
-    [[ $? -ne 0 ]] && fail=true
-
-    if ! $fail; then
-        return 0
-    fi
-    # if we've got here, something went wrong
-    echo "ERROR: Failed to clean docker images"
-    return 1
+    sudo -n "${WORKSPACE}/jenkins/scripts/docker_cleanup.py" \
+        --debug --whitelist "${whitelisted_repos[@]}" || return 1
+    return 0
 }
 
 rollback_os_repos() {

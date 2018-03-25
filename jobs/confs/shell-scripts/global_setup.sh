@@ -96,7 +96,7 @@ extra_packages() {
 
 docker_setup () {
     #Install docker engine and start the service
-    verify_packages docker
+    verify_packages docker python-docker-py
     if ! sudo -n systemctl start docker; then
         log ERROR "Failed to start docker.service"
         return 1
