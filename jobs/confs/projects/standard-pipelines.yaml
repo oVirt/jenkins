@@ -18,6 +18,7 @@
       - ovirt-ansible-manageiq
       - ovirt-ansible-repositories
       - ovirt-ansible-vm-infra
+      - ovirt-ansible-v2v-conversion-host
     jobs:
       - '{org}_{project}_standard-gh-jobs'
 
