@@ -27,6 +27,43 @@ main() {
     return 0
 }
 
+remove_packages() {
+    # Remove packages if they are installed
+    local package_list=()
+    local tool
+
+    if [[ -e '/usr/bin/dnf' ]]; then
+        # Fedora-specific packages
+        package_list+=()
+        if can_sudo dnf; then
+            tool='dnf'
+        fi
+    else
+        # CentOS-specific packages
+        package_list+=()
+        if can_sudo yum; then
+            tool='yum'
+        fi
+    fi
+    if [[ -z "$tool" ]]; then
+        log WARN "Skipping removal of packages. No permissions."
+        return
+    fi
+    local failed=0
+    for package in "${package_list[@]}"; do
+        if ! "$tool" list --disablerepo='*' "$package"; then
+            log INFO "Skipping $package: not installed"
+            continue
+        fi
+        log INFO "Removing $package"
+        if ! sudo -n "$tool" remove -y "$package"; then
+            log WARN "Could not remove $package"
+            failed=1
+        fi
+    done
+    return $failed
+}
+
 setup_os_repos() {
     local os
     local arch
