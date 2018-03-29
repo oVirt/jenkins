@@ -10,6 +10,7 @@ main() {
 
     setup_os_repos
     mk_wokspace_dirs
+    remove_packages || failed=true
     extra_packages || failed=true
 
     if can_sudo systemctl; then
@@ -29,7 +30,7 @@ main() {
 
 remove_packages() {
     # Remove packages if they are installed
-    local package_list=()
+    local package_list=(python2-paramiko)
     local tool
 
     if [[ -e '/usr/bin/dnf' ]]; then
@@ -112,18 +113,18 @@ extra_packages() {
     # Add extra packages we need for mock_runner.sh
     # packages common for all distros
     local package_list=(
-        git mock sed bash procps-ng createrepo
-        PyYAML python2-pyxdg python-jinja2 python-py python3-py
+        git mock sed bash procps-ng createrepo python-paramiko
+        PyYAML python2-pyxdg python-jinja2 python-py
     )
     if [[ -e '/usr/bin/dnf' ]]; then
         # Fedora-specific packages
-        package_list+=(python3-PyYAML python3-pyxdg python-paramiko)
+        package_list+=(python3-PyYAML python3-py python3-pyxdg)
         if can_sudo dnf; then
             package_list+=(firewalld haveged libvirt qemu-kvm nosync libselinux-utils)
         fi
     else
         # CentOS-specific packages
-        package_list+=(python34-PyYAML python2-paramiko)
+        package_list+=(python34-PyYAML)
         if can_sudo yum; then
             package_list+=(firewalld haveged libvirt qemu-kvm-ev nosync libselinux-utils)
         fi
@@ -133,12 +134,23 @@ extra_packages() {
 
 docker_setup () {
     #Install docker engine and start the service
-    verify_packages docker python-docker-py
+    log INFO "Trying to setup Docker"
+    verify_packages docker || return 1
+    log INFO "Trying to setup Docker python API"
+    if ! verify_packages python2-docker python3-docker; then
+        # We failed to install the new API version, try to install the old one
+        log WARN "Failed to install new docker API (that is ok)."
+        log INFO "Trying to install old docker API"
+        if ! verify_packages python-docker-py; then
+            log ERROR "Failed to install docker API."
+            return 1
+        fi
+    fi
+    log INFO "Starting docker service"
     if ! sudo -n systemctl start docker; then
-        log ERROR "Failed to start docker.service"
+        log ERROR "Failed to start docker service"
         return 1
     fi
-    log INFO "Docker service started"
     return 0
 }
 
@@ -152,17 +164,25 @@ verify_packages() {
     local packages=("$@")
 
     local tool='/usr/bin/dnf'
+    local tool_option='provides'
     local tool_inst_opts=(--best --allowerasing)
     if [[ ! -e "$tool" ]]; then
         tool=/bin/yum
+        # Yum has a bug where it always returns 0 if using 'provides' option
+        # so we use list instead.
+        tool_option='list'
         tool_inst_opts=()
+
     fi
     if can_sudo "$tool"; then
         sudo -n "$tool" "${tool_inst_opts[@]}" install -y "${packages[@]}"
     fi
     local failed=0
     for package in "${packages[@]}"; do
-        "$tool" provides --disablerepo='*' "$package" >& /dev/null && continue
+        "$tool" \
+            "$tool_option" \
+            --disablerepo='*' \
+            "$package" >& /dev/null && continue
         log ERROR "package '$package' is not, and could not be, installed"
         (( ++failed ))
     done
