@@ -15,7 +15,7 @@ main() {
     changed_files="$($usrc changed-files)"
 
     # These are the files which are involved with the containers flow
-    local containers_flow="Dockerfiles|collect_artifacts.sh|standard-stage.yaml|cleanup_slave.sh"
+    local containers_flow="Dockerfiles|collect_artifacts.sh|standard-stage.yaml|cleanup_slave.sh|docker_cleanup.py"
     if grep -qE "(${containers_flow})" <<< "$changed_files"; then
         # docker is not supported in official el6
         if is_docker_test_arch; then
