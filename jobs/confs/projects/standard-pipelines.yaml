@@ -46,5 +46,6 @@
     gerrit-server: 'gerrit.ovirt.org'
     project:
       - jenkins
+      - ovirt-system-tests
     jobs:
       - '{project}_standard-gerrit-jobs'
