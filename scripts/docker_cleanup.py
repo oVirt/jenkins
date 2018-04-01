@@ -125,7 +125,7 @@ def stop_all_running_containers(client):
 def _get_container_name(container):
     if hasattr(container, 'name'):
         return container.name
-    return container['Labels']['name']
+    return container['Labels'].get('name', 'unnamed')
 
 
 def _get_container_id(container):
