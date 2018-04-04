@@ -15,6 +15,7 @@
             DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
             STDCI_SCM_URL={stdci-scm-url}
             STDCI_SCM_REFSPEC={stdci-scm-refspec}
+            GERRIT_TRIGGER_CI_VOTE_LABEL=''
     triggers:
       - gerrit:
           server-name: '{gerrit-server}'
