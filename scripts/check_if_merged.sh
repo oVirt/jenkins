@@ -4,6 +4,7 @@ echo "scritps/check_if_merged.sh"
 # Check if a change pointed by GERRIT_REFSPEC is merged
 #
 GERRIT_PROJECT="${GERRIT_PROJECT:?Error GERRIT_PROJECT is unset.}"
+CLONE_DIR_NAME="${CLONE_DIR_NAME}"
 GERRIT_BRANCH="${GERRIT_BRANCH:?Error GERRIT_BRANCH is unset.}"
 GERRIT_REFSPEC="${GERRIT_REFSPEC:?Error GERRIT_REFSPEC is unset.}"
 GERRIT_NAME="${GERRIT_NAME:?Error GERRIT_NAME is unset.}"
@@ -17,7 +18,12 @@ main() {
         workspace="${WORKSPACE}"
     fi
 
-    local path_to_project="${workspace}/${GERRIT_PROJECT##*/}"
+    if [[ -z "$CLONE_DIR_NAME" ]]; then
+        local clone_dir_name="${GERRIT_PROJECT##*/}"
+    else
+        local clone_dir_name="$CLONE_DIR_NAME"
+    fi
+    local path_to_project="${workspace}/${clone_dir_name}"
     git init "$path_to_project"
     (
         cd "$path_to_project"

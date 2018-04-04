@@ -29,6 +29,7 @@
     default-scm-url-prefix: https://gerrit.ovirt.org
     stdci-scm-url: https://gerrit.ovirt.org/jenkins
     stdci-scm-refspec: refs/heads/master
+    clone-dir-name: ''
 
 - defaults:
     description: |

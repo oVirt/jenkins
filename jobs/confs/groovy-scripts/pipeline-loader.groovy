@@ -58,7 +58,8 @@ def checkout_repo(
     String repo_name,
     String refspec='refs/heads/master',
     String url=null,
-    String head=null
+    String head=null,
+    String clone_dir_name=null
 ) {
     if(url == null) {
         url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
@@ -67,7 +68,10 @@ def checkout_repo(
     if(head == null) {
         head = 'myhead'
     }
-    dir(repo_name) {
+    if(clone_dir_name == null) {
+        clone_dir_name = repo_name
+    }
+    dir(clone_dir_name) {
         checkout(
             changelog: false, poll: false, scm: [
                 $class: 'GitSCM',

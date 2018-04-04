@@ -11,6 +11,8 @@ EOC
 
 # Injected by the standard-stage template
 PROJECT="${PROJECT:?}"
+# $CLONE_DIR_NAME is injected by the standard-stage template for pipelines
+PROJECT="${CLONE_DIR_NAME:-$PROJECT}"
 WORKSPACE="${WORKSPACE:-$PWD}"
 EXPORTED_ARTIFACTS="$WORKSPACE/exported-artifacts"
 # Images tagged with this tag will be exported

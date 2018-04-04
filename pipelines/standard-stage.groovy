@@ -20,7 +20,7 @@ def loader_main(loader) {
         currentBuild.displayName += " ${project.name} [$std_ci_stage]"
 
         checkout_project(project)
-        dir(project.name) {
+        dir(project.clone_dir_name) {
             // This is a temporary workaround for KubeVirt project
             sh """
                 [[ ! -f automation/check-patch.yaml ]] && exit 0
@@ -130,6 +130,7 @@ class Project implements Serializable {
     String refspec
     String head
     String change_owner
+    String clone_dir_name
     def notify = \
         { context, status, short_msg=null, long_msg=null, url=null -> }
     def get_queue_build_args = null
@@ -165,12 +166,14 @@ def is_gerrit_change_merged() {
 }
 
 def get_project_from_gerrit() {
+    String project_name = params.GERRIT_PROJECT.tokenize('/')[-1]
     Project project = new Project(
         clone_url: "https://${params.GERRIT_NAME}/${params.GERRIT_PROJECT}",
-        name: params.GERRIT_PROJECT.tokenize('/')[-1],
+        name: project_name,
         branch: params.GERRIT_BRANCH,
         refspec: params.GERRIT_REFSPEC,
         change_owner: params.GERRIT_PATCHSET_UPLOADER_EMAIL,
+        clone_dir_name: get_clone_dir_name(project_name)
     )
     if(!is_gerrit_change_merged()) {
         // Change is not merged. Initialize whitelist checking function
@@ -191,10 +194,12 @@ def get_project_from_gerrit() {
 }
 
 def get_project_from_params() {
+    String project_name = params.STD_CI_CLONE_URL.tokenize('/')[-1] - ~/.git$/
     return new Project(
         clone_url: params.STD_CI_CLONE_URL,
-        name: params.STD_CI_CLONE_URL.tokenize('/')[-1] - ~/.git$/,
+        name: project_name,
         refspec: params.STD_CI_REFSPEC,
+        clone_dir_name: get_clone_dir_name(project_name)
     )
 }
 
@@ -239,6 +244,7 @@ def get_github_project(
         refspec: test_ref,
         head: checkout_head,
         change_owner: change_owner,
+        clone_dir_name: get_clone_dir_name(repo)
     )
     if(env.SCM_NOTIFICATION_CREDENTIALS) {
         def last_status = null
@@ -272,6 +278,11 @@ def get_github_project(
     return project
 }
 
+def get_clone_dir_name(String project_name) {
+    if(env.CLONE_DIR_NAME) return env.CLONE_DIR_NAME
+    return project_name
+}
+
 def get_generic_queue_build_args(
     String queue, String project, String branch, String sha, String url=null
 ) {
@@ -301,7 +312,13 @@ def get_generic_queue_build_args(
 }
 
 def checkout_project(Project project) {
-    checkout_repo(project.name, project.refspec, project.clone_url, project.head)
+    checkout_repo(
+        project.name,
+        project.refspec,
+        project.clone_url,
+        project.head,
+        project.clone_dir_name
+    )
 }
 
 def get_std_ci_job_properties(Project project, String std_ci_stage) {
@@ -315,7 +332,7 @@ def get_std_ci_job_properties(Project project, String std_ci_stage) {
 
             setupLogging()
             stdci_config = get_formatted_threads(
-                'pipeline_dict', '${project.name}', '${std_ci_stage}'
+                'pipeline_dict', '${project.clone_dir_name}', '${std_ci_stage}'
             )
             with open('${stdci_job_properties}', 'w') as conf:
                 conf.write(stdci_config)
@@ -504,7 +521,7 @@ def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
         // unstash 'mirrors'
         // def mirrors = "${pwd()}/mirrors.yaml"
         def mirrors = null
-        dir(project.name) {
+        dir(project.clone_dir_name) {
             project.notify(ctx, 'PENDING', 'Running test')
             // Set flag to 'true' to indicate that exception from this point
             // means the test failed and not the CI system

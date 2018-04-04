@@ -15,6 +15,7 @@
             DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
             STDCI_SCM_URL={stdci-scm-url}
             STDCI_SCM_REFSPEC={stdci-scm-refspec}
+            CLONE_DIR_NAME={clone-dir-name}
     triggers:
       - github-pull-request: &github-pull-trigger-base
           org-list:
@@ -136,6 +137,12 @@
           name: STD_CI_CLONE_URL
           description: A Git repo URL to clone the project from
       - string:
+          name: CLONE_DIR_NAME
+          default: ''
+          description: |
+            A directory name where the source will be cloned to. Leave empty
+            if you're not sure what it is.
+      - string:
           name: STD_CI_REFSPEC
           description: Refspec to the Git commit to run jobs on
           default: refs/heads/master
@@ -160,6 +167,7 @@
             DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
             STDCI_SCM_URL={stdci-scm-url}
             STDCI_SCM_REFSPEC={stdci-scm-refspec}
+            CLONE_DIR_NAME={clone-dir-name}
     triggers:
       - gerrit:
           server-name: '{gerrit-server}'
@@ -203,6 +211,7 @@
             DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
             STDCI_SCM_URL={stdci-scm-url}
             STDCI_SCM_REFSPEC={stdci-scm-refspec}
+            CLONE_DIR_NAME={clone-dir-name}
     triggers:
       - gerrit:
           server-name: '{gerrit-server}'

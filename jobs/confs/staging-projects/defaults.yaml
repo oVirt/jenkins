@@ -28,3 +28,4 @@
     stdci-scm-url: https://gerrit.ovirt.org/jenkins
     stdci-scm-refspec: refs/heads/master
     gerrit-subpath: ''
+    clone-dir-name: ''
