@@ -126,7 +126,7 @@ extra_packages() {
         # CentOS-specific packages
         package_list+=(python34-PyYAML)
         if can_sudo yum; then
-            package_list+=(firewalld haveged libvirt qemu-kvm-ev nosync libselinux-utils)
+            package_list+=(firewalld haveged libvirt qemu-kvm-rhev nosync libselinux-utils)
         fi
     fi
     verify_packages "${package_list[@]}"
@@ -164,13 +164,9 @@ verify_packages() {
     local packages=("$@")
 
     local tool='/usr/bin/dnf'
-    local tool_option='provides'
     local tool_inst_opts=(--best --allowerasing)
     if [[ ! -e "$tool" ]]; then
         tool=/bin/yum
-        # Yum has a bug where it always returns 0 if using 'provides' option
-        # so we use list instead.
-        tool_option='list'
         tool_inst_opts=()
 
     fi
@@ -179,10 +175,7 @@ verify_packages() {
     fi
     local failed=0
     for package in "${packages[@]}"; do
-        "$tool" \
-            "$tool_option" \
-            --disablerepo='*' \
-            "$package" >& /dev/null && continue
+        rpm -q --quiet --whatprovides "$package" && continue
         log ERROR "package '$package' is not, and could not be, installed"
         (( ++failed ))
     done
