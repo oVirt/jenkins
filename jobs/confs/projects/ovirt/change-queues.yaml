@@ -1,6 +1,6 @@
 - project:
     name: standard-enqueue
-    email-originator: 'oVirt Jenkins <jenkins@ovirt.org>'
+    email-originator: 'oVirt Jenkins <infra@ovirt.org>'
     email-recipients: 'infra@ovirt.org'
     email-tag: 'oVirt CI'
     project-pattern: '.*'
