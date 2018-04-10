@@ -47,5 +47,7 @@
     project:
       - jenkins
       - ovirt-system-tests
+      - infra-docs
+      - infra-ansible
     jobs:
       - '{project}_standard-gerrit-jobs'
