@@ -2,16 +2,17 @@
 
 shopt -s extglob nullglob
 
-SCRIPTS=()
+DEFAULT_SCRIPT=automation/build-artifacts.sh
 RUN_SHELL="false"
 CLEANUP="true"
-MOCK_CONF_DIR="/etc/mock"
+MOCK_CONF_DIR="$(dirname "$(command -v "$0")")"
 MOCK="mock"
 MOUNT_POINT="$PWD"
 FINAL_LOGS_DIR="exported-artifacts/mock_logs"
 TRY_PROXY="false"
 TRY_MIRRORS=""
 PACKAGES=()
+DEFAULT_MOCK_ENV=el7
 
 # Generate temp dir to be used by any method in mock_runner
 # This dir is removed recursively in `finalize`
@@ -22,19 +23,19 @@ trap finalize EXIT
 
 help() {
     cat <<EOH
-    Usage: $0 [options] [mock_env [mock_env [...]]]
+    Usage: $0 [options] [mock_env]
 
-    Will run the automation/* scripts on mock environments, by default, it will
-    run check-patch, check-merged and build-artifacts in that order, on the
-    mock environments: ${MOCKS[@]}
+    Will run the automation/* script specified in options on the mock
+    environments, given by the command line argument. By default, it will
+    run '$DEFAULT_SCRIPT' on the '$DEFAULT_MOCK_ENV' environment.
 
-    A mock environment must be passed as a ':' separated tuple of:
-        ID:MOCK_CONF
+    A mock environment can be given as a shorthand name like 'el7' or 'fc27' or
+    with a longer epression of the form 'ID:MOCK_CONF' where ID is the shorthand
+    name and MOCK_CONF is the name of a mock configuration file used to setup
+    the environment.
 
-    Where the ID is the name used for it on the requirements file (usually in
-    the style fc19, el6 or similar) and MOCK_CONF is the mock configuration
-    name as passed to the mock -r option (usually, the configuration name
-    without extension, for example fedora-23-x86_64)
+    A glob pattern can also be used to search against the known mock
+    environments.
 
     Options:
         -h|--help
@@ -73,7 +74,7 @@ help() {
 
         -C|--mock-confs-dir
             Directory where the base mock configs are located (default is
-            /etc/mock).
+            the directoy where this script resides).
 
         -a|--add-package
             Add the given package to the mock env when installing, can be
@@ -83,24 +84,16 @@ help() {
             Path to secrets file
             (default is \${xdg_home}/ci_secrets_file.yaml)
 
-    Parameters:
-        mock_env
-            Name of the mock chroot to use, if none passed all of the defaults
-            will be used: ${MOCKS[@]}
-
-            If you pass only one of the elements separated by ':' it will use
-            the first one from that contains the passed string
-
     Example:
 
-    To run the build script on all the chroots:
+    To run the build script on the default environment:
     > $0 --build-only
 
-    To run only the build artifacts script on fedoras 23 and 24
-    > $0 --build-only fc23:fedora-23-x86_64 fc24:fedora-24-x86_64
+    To run only the build artifacts script on fedora 27
+    > $0 --build-only fc27
 
     To open a shell to debug the check-merged script on el7
-    > $0 --merged-only --shell el7:epel-7-x86_64
+    > $0 --merged-only --shell el7
 
 EOH
     return 0
@@ -195,13 +188,13 @@ prepare_chroot() {
     mock_chroot="${mock_conf##*/}"
     mock_chroot="${mock_chroot%.*}"
     mock_dir="${mock_conf%/*}"
-    makedir "$LOGS_DIR/${mock_chroot}.init"
+    makedir "$LOGS_DIR/init"
     init_chroot "${mock_chroot}" "${mock_dir}" \
-        | tee -a "$LOGS_DIR/${mock_chroot}.init/stdout_stderr.log"
+        | tee -a "$LOGS_DIR/init/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
-    makedir "$LOGS_DIR/${mock_chroot}.populate_mock"
+    makedir "$LOGS_DIR/populate_mock"
     populate_mock "$mock_chroot" "$mock_dir" \
-        | tee -a "$LOGS_DIR/${mock_chroot}.populate_mock/stdout_stderr.log"
+        | tee -a "$LOGS_DIR/populate_mock/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
     mock_conf_with_mounts="$(
         gen_mock_config "$base_chroot" "$dist_label" "$script" "with_mounts" \
@@ -215,7 +208,7 @@ get_base_conf() {
     local conf_dir="${1?}"
     local chroot="${2?}"
 
-    base_conf="$MOCK_CONF_DIR/$chroot.cfg"
+    base_conf="$conf_dir/$chroot.cfg"
     if ! [[ -e "$base_conf" ]]; then
         echo "Unable to find base mock conf $base_conf" >&2
         return 1
@@ -460,14 +453,14 @@ init_chroot() {
         --old-chroot \\
         --configdir="$conf_dir" \\
         --root="$chroot" \\
-        --resultdir="$LOGS_DIR/${chroot}.init" \\
+        --resultdir="$LOGS_DIR/init" \\
         --init
 EOC
     $MOCK \
         --old-chroot \
         --configdir="$conf_dir" \
         --root="$chroot" \
-        --resultdir="$LOGS_DIR/${chroot}.init" \
+        --resultdir="$LOGS_DIR/init" \
         --init
     res=$?
     end="$(date +%s)"
@@ -506,10 +499,10 @@ populate_mock() {
         --old-chroot \
         --configdir="$conf_dir" \
         --root="$chroot" \
-        --resultdir="$LOGS_DIR/${chroot}.populate_mock" \
+        --resultdir="$LOGS_DIR/populate_mock" \
         --shell <<EOC
             set -e
-            logdir="$MOUNT_POINT/$LOGS_DIR/${chroot}.populate_mock"
+            logdir="$MOUNT_POINT/$LOGS_DIR/populate_mock"
             [[ -d \$logdir ]] \\
             || mkdir -p "\$logdir"
             # Fix that allows using yum inside the chroot on dnf enabled
@@ -541,14 +534,14 @@ scrub_chroot() {
         --old-chroot \\
         --configdir="$confdir" \\
         --root="$chroot" \\
-        --resultdir="$LOGS_DIR/${chroot}.scrub" \\
+        --resultdir="$LOGS_DIR/scrub" \\
         --scrub=chroot
 EOC
     $MOCK \
         --old-chroot \
         --configdir="$confdir" \
         --root="$chroot" \
-        --resultdir="$LOGS_DIR/${chroot}.scrub" \
+        --resultdir="$LOGS_DIR/scrub" \
         --scrub=chroot
     res=$?
     end="$(date +%s)"
@@ -582,9 +575,9 @@ inject_ci_mirrors() {
     [[ ${#target_yum_cfgs[@]} -eq 0 ]] && return 0
     "${scripts_path}"/mirror_client.py "$TRY_MIRRORS" "${target_yum_cfgs[@]}"
 
-    makedir "$LOGS_DIR/${mock_logs_dir}.yumrepos"
+    makedir "$LOGS_DIR/yumrepos"
     for file in "${target_yum_cfgs[@]}"; do
-        cp "$file" "$LOGS_DIR/${mock_logs_dir}.yumrepos/${file##*/}"
+        cp "$file" "$LOGS_DIR/yumrepos/${file##*/}"
     done
 }
 
@@ -689,7 +682,7 @@ run_shell() {
         --old-chroot \\
         --configdir="$mock_dir" \\
         --root="$mock_chroot" \\
-        --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \\
+        --resultdir="$LOGS_DIR/shell" \\
         "${mock_enable_network[@]}" \\
         --shell
 EOC
@@ -697,7 +690,7 @@ EOC
         --old-chroot \
         --configdir="$mock_dir" \
         --root="$mock_chroot" \
-        --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \
+        --resultdir="$LOGS_DIR/shell" \
         "${mock_enable_network[@]}" \
         --shell
     res=$?
@@ -710,7 +703,7 @@ EOC
 }
 
 
-run_script() {
+run_script_in_mock() {
     local mock_conf="${1?}"
     local mock_env="${2?}"
     local script="${3?}"
@@ -746,7 +739,7 @@ run_script() {
         --root="${mock_chroot}" \\
         --configdir="$mock_dir" \\
         --no-clean \\
-        --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \\
+        --resultdir="$LOGS_DIR/script" \\
         "${mock_enable_network[@]}" \\
         --shell <<EOS
             set -e
@@ -755,7 +748,7 @@ run_script() {
             rpm -qf /etc/system-release \
                 | xargs -r rpm -ql fedora-repos{,-rawhide} epel-release \
                 | grep '/etc/yum\.repos\.d/.*\.repo' | xargs -r rm -fv
-            logdir="$MOUNT_POINT/$LOGS_DIR/${mock_chroot}.${script##*/}"
+            logdir="$MOUNT_POINT/$LOGS_DIR/script"
             [[ -d "\\\$logdir" ]] \\
             || mkdir -p "\\\$logdir"
             export HOME=$MOUNT_POINT
@@ -775,19 +768,19 @@ run_script() {
             start="\\\$(date +%s)"
             res=0
             echo "========== Running the shellscript $script" \\
-                | tee -a \\\$logdir/${script##*/}.log
+                | tee -a \\\$logdir/stdout_stderr.log
             if [[ "$script" == /* ]]; then
                 script_path="$script"
             else
                 script_path="./$script"
             fi
-            "\$script_path" 2>&1 | tee -a \\\$logdir/${script##*/}.log \\
+            "\$script_path" 2>&1 | tee -a \\\$logdir/stdout_stderr.log \\
             || res=\\\${PIPESTATUS[0]}
             end="\\\$(date +%s)"
             echo "Took \\\$((end - start)) seconds" \\
-            | tee -a \\\$logdir/${script##*/}.log
+            | tee -a \\\$logdir/stdout_stderr.log
             echo "===================================" \\
-            | tee -a \\\$logdir/${script##*/}.log
+            | tee -a \\\$logdir/stdout_stderr.log
             if [[ "\\\$(find . -uid 0 -print -quit)" != '' ]]; then
                 chown -R "\$UID:\\\$runner_GID" .
             fi
@@ -799,7 +792,7 @@ EOC
         --root="${mock_chroot}" \
         --configdir="$mock_dir" \
         --no-clean \
-        --resultdir="$LOGS_DIR/${mock_chroot}.${script##*/}" \
+        --resultdir="$LOGS_DIR/script" \
         "${mock_enable_network[@]}" \
         --shell <<EOS
             set -e
@@ -808,7 +801,7 @@ EOC
             rpm -qf /etc/system-release \
                 | xargs -r rpm -ql fedora-repos{,-rawhide} epel-release \
                 | grep '/etc/yum\.repos\.d/.*\.repo' | xargs -r rm -fv
-            logdir="$MOUNT_POINT/$LOGS_DIR/${mock_chroot}.${script##*/}"
+            logdir="$MOUNT_POINT/$LOGS_DIR/script"
             [[ -d "\$logdir" ]] \\
             || mkdir -p "\$logdir"
             export HOME=$MOUNT_POINT
@@ -828,7 +821,7 @@ EOC
             start="\$(date +%s)"
             res=0
             echo "========== Running the shellscript $script" \
-                | tee -a \$logdir/${script##*/}.log
+                | tee -a \$logdir/stdout_stderr.log
             if [[ "$script" == /* ]]; then
                 script_path="$script"
             else
@@ -837,13 +830,13 @@ EOC
             # It turns out that on some scripts if the following is not all
             # in the same line, it never runs and returns with 0 (giving false
             # positives)
-            "\$script_path" 2>&1 | tee -a \$logdir/${script##*/}.log \
+            "\$script_path" 2>&1 | tee -a \$logdir/stdout_stderr.log \
             && res=\${PIPESTATUS[0]}; \
             end="\$(date +%s)"; \
             echo "Took \$((end - start)) seconds" \
-            | tee -a \$logdir/${script##*/}.log; \
+            | tee -a \$logdir/stdout_stderr.log; \
             echo "===================================" \
-            | tee -a \$logdir/${script##*/}.log; \
+            | tee -a \$logdir/stdout_stderr.log; \
             if [[ "\$(find . -uid 0 -print -quit)" != '' ]]; then \
                 chown -R "$UID:\$runner_GID" . ;\
             fi; \
@@ -854,10 +847,10 @@ EOS
 
 
 # Runs a set of scripts each on its own chroot
-run_scripts() {
+run_script() {
     local mock_env="${1?}"
     local cleanup="${2?}"
-    local scripts=("${@:3}")
+    local script="${3?}"
     local distro_id \
         mock_conf \
         packages_file \
@@ -874,29 +867,24 @@ run_scripts() {
     mock_chroot="${mock_chroot%.*}"
     mock_dir="${mock_conf%/*}"
     distro_id="${mock_env%%:*}"
-    for script in "${scripts[@]}"; do
-        exec_script="$(resolve_file "$script" "sh" "$distro_id")"
-        [[ -r "$exec_script" ]] \
-        || {
-            echo "ERROR: Script $exec_script does not exist or is not readable."
-            return 1
-        }
-        start="$(date +%s)"
-        echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        echo "@@ $(date) Running chroot for script: $exec_script"
-        echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        run_script "$mock_conf" "$mock_env" "$exec_script"
-        res=$?
-        end="$(date +%s)"
-        echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        echo "@@ $(date) $exec_script chroot finished"
-        echo "@@      took $((end - start)) seconds"
-        echo "@@      rc = $res"
-        echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        if [[ "$res" != "0" ]]; then
-            break
-        fi
-    done
+    exec_script="$(resolve_file "$script" "sh" "$distro_id")"
+    [[ -r "$exec_script" ]] \
+    || {
+        echo "ERROR: Script $exec_script does not exist or is not readable."
+        return 1
+    }
+    start="$(date +%s)"
+    echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    echo "@@ $(date) Running chroot for script: $exec_script"
+    echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    run_script_in_mock "$mock_conf" "$mock_env" "$exec_script"
+    res=$?
+    end="$(date +%s)"
+    echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    echo "@@ $(date) $exec_script chroot finished"
+    echo "@@      took $((end - start)) seconds"
+    echo "@@      rc = $res"
+    echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
     if [[ "$cleanup" == "true" ]]; then
         scrub_chroot "$mock_chroot" "$mock_dir" \
         || return 1
@@ -906,22 +894,26 @@ run_scripts() {
 
 
 finalize() {
-    rotate_logs_dir "$PWD/$FINAL_LOGS_DIR"
-    makedir "$FINAL_LOGS_DIR"
-    echo "Collecting mock logs"
-    mv -v "$LOGS_DIR"/* "$FINAL_LOGS_DIR"
+    local logs="$(find "$LOGS_DIR" -mindepth 1 -maxdepth 1)"
+    if [[ -n "$logs" ]]; then
+        rotate_logs_dir "$PWD/$FINAL_LOGS_DIR"
+        makedir "$FINAL_LOGS_DIR"
+        echo "Collecting mock logs"
+        xargs -r mv -v -t "$FINAL_LOGS_DIR" <<<"$logs"
+        echo "##########################################################"
+    fi
     rmdir "$LOGS_DIR"
     rm -rf "$MR_TEMP_DIR"
-    echo "##########################################################"
 }
 
 
 #### MAIN
 
 if ! [[ "$0" =~ ^.*/bash$ ]]; then
+    script="$DEFAULT_SCRIPT"
 
-    long_opts="shell:"
-    short_opts="s:"
+    long_opts="shell"
+    short_opts="s"
 
     long_opts+=",patch-only"
     short_opts+=",p"
@@ -983,24 +975,23 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 set -x
             ;;
             -s|--shell)
-                mock_env_regexp="$2"
-                shift 2
+                shift
                 RUN_SHELL="true"
             ;;
             -p|--patch-only)
                 shift
-                SCRIPTS=( automation/check-patch.sh )
+                script=automation/check-patch.sh
             ;;
             -m|--merged-only)
                 shift
-                SCRIPTS=( automation/check-merged.sh )
+                script=automation/check-merged.sh
             ;;
             -b|--build-only)
                 shift
-                SCRIPTS=( automation/build-artifacts.sh )
+                script=automation/build-artifacts.sh
             ;;
             -e|--execute-script)
-                SCRIPTS=( "$2" )
+                script="$2"
                 shift 2
             ;;
             -n|--no-cleanup)
@@ -1035,70 +1026,56 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
         esac
     done
 
-    if [ ! -z "$mock_env_regexp" ]; then
-        mock_env="$(resolve_mock "$mock_env_regexp" "$MOCK_CONF_DIR")" \
-        || {
-            echo "Unable to find mock env $mock_env" >&2
-            exit 1
-        }
-    fi
+    mock_env="$(resolve_mock "${1:-$DEFAULT_MOCK_ENV}" "$MOCK_CONF_DIR")" \
+    || {
+        echo "Unable to find mock env $mock_env" >&2
+        exit 1
+    }
 
 
     if [[ "$RUN_SHELL" == "true" ]]; then
         run_shell \
             "${mock_env:?}" \
-            "${SCRIPTS[0]}" \
+            "$script" \
             "$CLEANUP"
         res=$?
     else
-        if [[ -n "$1" ]]; then
-            mocks=("$@")
-        else
-            mocks=("${MOCKS[@]}")
-        fi
-        for mock_env in "${mocks[@]}"; do
-            full_mock_env="$(resolve_mock "$mock_env" "$MOCK_CONF_DIR")" \
-            || {
-                echo "Unable to find mock env $mock_env" >&2
-                exit 1
-            }
-            start="$(date +%s)"
-            echo "##########################################################"
-            echo "##########################################################"
-            echo "## $(date) Running env: $full_mock_env"
-            echo "##########################################################"
-            run_scripts "$full_mock_env" "$CLEANUP" "${SCRIPTS[@]}"
-            res="$?"
-            end="$(date +%s)"
-            echo "##########################################################"
-            echo "## $(date) Finished env: $full_mock_env"
-            echo "##      took $((end - start)) seconds"
-            echo "##      rc = $res"
-            echo "##########################################################"
-            if [[ "$res" != "0" ]]; then
-                lastlog="$( \
-                    find "$LOGS_DIR" -iname \*.log \
-                    | xargs ls -lt \
-                    | head -n1\
-                    | awk '{print $9}' \
-                )"
-                if [[ -r "$lastlog" ]]; then
-                    echo '##! ERROR vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv'
-                    echo '##! Last 20 log entries: '"$lastlog"
-                    echo '##!'
-                    tail -n 20 "$lastlog"
-                    echo '##!'
-                    echo '##! ERROR ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
-                else
-                    echo "No log files found, check command output"
-                fi
-                echo '##!########################################################'
+        start="$(date +%s)"
+        echo "##########################################################"
+        echo "##########################################################"
+        echo "## $(date) Running env: $mock_env"
+        echo "##########################################################"
+        run_script "$mock_env" "$CLEANUP" "$script"
+        res="$?"
+        end="$(date +%s)"
+        echo "##########################################################"
+        echo "## $(date) Finished env: $mock_env"
+        echo "##      took $((end - start)) seconds"
+        echo "##      rc = $res"
+        echo "##########################################################"
+        if [[ "$res" != "0" ]]; then
+            lastlog="$( \
+                find "$LOGS_DIR" -iname \*.log \
+                | xargs ls -lt \
+                | head -n1\
+                | awk '{print $9}' \
+            )"
+            if [[ -r "$lastlog" ]]; then
+                echo '##! ERROR vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv'
+                echo '##! Last 20 log entries: '"$lastlog"
+                echo '##!'
+                tail -n 20 "$lastlog"
+                echo '##!'
+                echo '##! ERROR ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
             else
-                echo "## FINISHED SUCCESSFULLY"
-                echo "##########################################################"
-                res=0
+                echo "No log files found, check command output"
             fi
-        done
+            echo '##!########################################################'
+        else
+            echo "## FINISHED SUCCESSFULLY"
+            echo "##########################################################"
+            res=0
+        fi
     fi
     exit $res
 fi
