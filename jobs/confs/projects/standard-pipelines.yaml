@@ -34,6 +34,18 @@
       - '{org}_{project}_standard-gh-jobs'
 
 - project:
+    name: jniederm-standard-piplines-github
+    github-auth-id: github-auth-token
+    org: jniederm
+    project:
+      - origin-web-common
+      - origin-web-catalog
+      - origin-web-console
+      - origin-web-console-server
+    jobs:
+      - '{org}_{project}_standard-gh-jobs'
+
+- project:
     name: oVirt-standard-pipelines-gerrit
     gerrit-server: 'gerrit.ovirt.org'
     project:
