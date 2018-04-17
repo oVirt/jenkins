@@ -324,29 +324,6 @@ cleanup_libvirt() {
     sudo -n service libvirtd restart || :
 }
 
-cleanup_docker () {
-    local fail=false
-    local whitelisted_repos=(centos fedora)
-
-    if ! [[ -x /bin/docker ]]; then
-        log WARN "Skipping Docker cleanup - Docker not installed"
-        return 0
-    fi
-    if ! can_sudo docker; then
-        log WARN "Skipping Docker cleanup - no sudo permissions to use it"
-        return 0
-    fi
-    if ! can_sudo systemctl; then
-        log WARN "Skipping Docker cleanup - no permissions to manage services"
-        return 0
-    fi
-
-    sudo -n systemctl start docker || return 1
-    sudo -n "${WORKSPACE}/jenkins/scripts/docker_cleanup.py" \
-        --debug --whitelist "${whitelisted_repos[@]}" || return 1
-    return 0
-}
-
 rollback_os_repos() {
     local failed=false
     local yum_conf
@@ -418,7 +395,6 @@ main() {
     cleanup_lago || failed=true
     cleanup_libvirt || failed=true
     kill_lago_processes || failed=true
-    cleanup_docker || failed=true
     cleanup_old_artifacts || failed=true
     cleanup_dev_shm || failed=true
     echo "---------------------------------------------------------------"
