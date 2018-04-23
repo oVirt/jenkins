@@ -163,6 +163,7 @@
           artifact-num-to-keep: 60
       - inject:
           properties-content: |
+            GERRIT_TRIGGER_CI_VOTE_LABEL=''
             SCM_NOTIFICATION_CREDENTIALS=''
             DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
             STDCI_SCM_URL={stdci-scm-url}
@@ -207,6 +208,7 @@
           artifact-num-to-keep: 60
       - inject:
           properties-content: |
+            GERRIT_TRIGGER_CI_VOTE_LABEL=''
             SCM_NOTIFICATION_CREDENTIALS=''
             DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
             STDCI_SCM_URL={stdci-scm-url}

@@ -1,5 +1,9 @@
 // standard-stage.groovy - Pipeling-based STD-CI implementation
 //
+
+import hudson.model.StringParameterValue
+import hudson.model.ParametersAction
+
 String std_ci_stage
 Project project
 def jobs
@@ -15,6 +19,7 @@ def on_load(loader){
 def loader_main(loader) {
     stage('Detecting STD-CI jobs') {
         std_ci_stage = get_stage_name()
+        set_gerrit_trigger_voting(std_ci_stage)
         project = get_project()
         check_whitelist(project)
         currentBuild.displayName += " ${project.name} [$std_ci_stage]"
@@ -106,6 +111,32 @@ def get_stage_gerrit() {
         }
     }
     return null
+}
+
+@NonCPS
+void set_gerrit_trigger_voting(String stage_name) {
+    if(stage_name != "check-patch") return;
+    modify_build_parameter(
+        "GERRIT_TRIGGER_CI_VOTE_LABEL",
+        "--label Continuous-Integration=<CODE_REVIEW>"
+    )
+}
+
+@NonCPS
+def modify_build_parameter(String key, String value) {
+    def build = currentBuild.rawBuild
+    def params_list = new ArrayList<StringParameterValue>()
+    params_list.add(new StringParameterValue(key, value))
+    def new_params_action = null
+    def old_params_action = build.getAction(ParametersAction.class)
+    if (old_params_action != null) {
+        // We need to keep old params
+        build.actions.remove(old_params_action)
+        new_params_action = old_params_action.createUpdated(params_list)
+    } else {
+        new_params_action = new ParametersAction(params_list)
+    }
+    build.actions.add(new_params_action)
 }
 
 @NonCPS
