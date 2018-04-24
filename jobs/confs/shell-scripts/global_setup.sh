@@ -16,6 +16,7 @@ main() {
     if can_sudo systemctl; then
         docker_setup || failed=true
         setup_postfix || failed=true
+        start_services || failed=true
     else
         log WARN "Skipping services setup - not enough sudo permissions"
     fi
@@ -158,6 +159,11 @@ setup_postfix() {
     verify_packages postfix
     sudo -n systemctl enable postfix
     sudo -n systemctl start postfix
+}
+
+start_services() {
+    #start important services
+    sudo -n systemctl start libvirtd haveged firewalld
 }
 
 verify_packages() {
