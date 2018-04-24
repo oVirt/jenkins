@@ -54,6 +54,8 @@
     project: '{project}'
     concurrent: true
     properties:
+        - build-discarder:
+            days-to-keep: 14
         - throttle:
             enabled: true
             option: project
