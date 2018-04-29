@@ -1,10 +1,10 @@
 ---
 arch:
   - x86_64:
-      distro: [el6, el7, fc26, fc27, fcraw]
+      distro: [el6, el7, fc26, fc27, fc28, fcraw]
   - ppc64le:
       distro: el7
   - s390x:
-      distro: fc27
+      distro: [fc27, fc28]
       script:
         fromfile: automation/check-patch-s390x.sh
