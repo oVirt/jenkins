@@ -19,6 +19,7 @@
       - ovirt-ansible-repositories
       - ovirt-ansible-vm-infra
       - ovirt-ansible-v2v-conversion-host
+      - ovirt-openshift-extensions
     jobs:
       - '{org}_{project}_standard-gh-jobs'
 
@@ -29,15 +30,6 @@
     project:
       - kubevirt
       - kubevirt-ansible
-    jobs:
-      - '{org}_{project}_standard-gh-jobs'
-
-- project:
-    name: oVirt-Kubernetes-integrations-standard-piplines-github
-    github-auth-id: github-auth-token
-    org: rgolangh
-    project:
-      - ovirt-flexdriver
     jobs:
       - '{org}_{project}_standard-gh-jobs'
 
