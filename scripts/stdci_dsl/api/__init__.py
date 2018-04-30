@@ -9,7 +9,7 @@ from six.moves import zip
 from yaml import safe_dump
 
 from .formatters.runners import get_formatter as get_runner_formatter
-from .formatters.pipelines import get_formatter as get_pipeline_formatter
+from .formatters.threads import get_formatter as get_threads_formatter
 from ..categories import apply_default_categories
 from ..options.defaults import apply_default_options
 from ..options.globals import apply_global_options, GLOBAL_OPTIONS
@@ -125,7 +125,7 @@ def get_formatted_threads(fmt, project, stage):
     :param str stage:   STDCI stage.
     """
     fmt_name, _, template = fmt.partition(':')
-    formatter = get_pipeline_formatter(fmt_name)
+    formatter = get_threads_formatter(fmt_name)
     if formatter is None:
         raise FormatterNotFoundError(
             'Could not resolve formatter name {0}.'.format(fmt_name)

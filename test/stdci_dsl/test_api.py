@@ -8,7 +8,9 @@ from scripts.stdci_dsl.api import (
     get_threads, RuntimeEnvDefinition,
     NoThreadForEnv, get_threads_with_globals
 )
-from scripts.stdci_dsl.api.formatters.pipelines import _pipeline_dict_formatter
+from scripts.stdci_dsl.api.formatters.threads import (
+    _pipeline_dict_formatter
+)
 from scripts.stdci_dsl.options.normalize import RepoConfig
 from scripts.nested_config import DepthLevel
 
