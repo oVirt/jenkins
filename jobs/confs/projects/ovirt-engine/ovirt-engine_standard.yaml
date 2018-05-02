@@ -7,10 +7,10 @@
           branch: master
       - 4.2:
           branch: ovirt-engine-4.2
+      - 4.2.3:
+          branch: ovirt-engine-4.2.3.z
       - 4.1:
           branch: ovirt-engine-4.1
-      - 4.1.10:
-          branch: ovirt-engine-4.1.10.z
       - 3.6:
           branch: ovirt-engine-3.6
       - 3.6.13:
@@ -21,13 +21,12 @@
       - fc27
     exclude:
       - { version: 4.1, distro: fc27 }
-      - { version: 4.1.10, distro: fc27 }
       - { version: 3.6, distro: fc27 }
       - { version: 3.6.13, distro: fc27 }
       - { version: master, distro: el6 }
+      - { version: 4.2.3, distro: el6 }
       - { version: 4.2, distro: el6 }
       - { version: 4.1, distro: el6 }
-      - { version: 4.1.10, distro: el6 }
     arch: x86_64
 
 - project:
