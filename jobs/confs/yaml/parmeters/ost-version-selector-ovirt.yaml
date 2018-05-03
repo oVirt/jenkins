@@ -13,8 +13,7 @@
                         border-color:#ccc;}
                         .tg td{font-family:Arial, sans-serif;font-size:14px;
                         padding:10px 5px;border-style:solid;border-width:1px;
-                        overflow:hidden;
-                        word-break:normal;border-color:#ccc;color:#333;
+                        overflow:hidden; word-break:normal;border-color:#ccc;color:#333;
                         background-color:#fff;}
                         .tg th{font-family:Arial, sans-serif;font-size:14px;
                         font-weight:normal;padding:10px 5px;border-style:solid;
@@ -43,7 +42,7 @@
                             <td class="tg-fmcx">master</td>
                           </tr>
                           <tr>
-                            <td class="tg-fmcx">4.2</td>
+                            <td class="tg-fmcx">---</td>
                             <td class="tg-fmcx">4.1</td>
                             <td class="tg-fmcx">4.2</td>
                           </tr>
