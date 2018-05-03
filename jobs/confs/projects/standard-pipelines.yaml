@@ -53,6 +53,7 @@
       - ovirt-system-tests
       - infra-docs
       - infra-ansible
+      - imgbased
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
       - ovirt-engine-yarn
