@@ -586,6 +586,7 @@ def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
             // If we got here (no exception thrown so far), the test did not
             // fail
             tfr.test_failed = false
+            invoke_pusher(project)
         }
     } finally {
         project.notify(ctx, 'PENDING', 'Collecting results')
@@ -600,6 +601,22 @@ def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
         }
         project.notify(ctx, 'PENDING', 'Cleaning up')
         run_jjb_script('mock_cleanup.sh')
+    }
+}
+
+def invoke_pusher(Project project) {
+    sshagent(['std-ci-git-push-credentials']) {
+        sh(
+            script: """
+                mkdir -p exported-artifacts
+                ${env.WORKSPACE}/jenkins/scripts/pusher.py \
+                    --log="exported-artifacts/push_${project.name}.log" \
+                    push \
+                        --if-not-exists \
+                        --unless-hash="${env.BUILD_TAG}" \
+                        "${project.branch}"
+            """
+        )
     }
 }
 
