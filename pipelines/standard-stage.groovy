@@ -451,7 +451,7 @@ def mk_std_ci_runner(project, job) {
     return {
         String ctx = get_job_name(job)
         project.notify(ctx, 'PENDING', 'Allocating runner node')
-        String node_label = get_std_ci_node_label(job)
+        String node_label = get_std_ci_node_label(project, job)
         if(node_label.empty) {
             print "This script has no special node requirements"
         } else {
@@ -468,8 +468,18 @@ def get_job_dir(job) {
 }
 
 @NonCPS
-def get_std_ci_node_label(job) {
+def get_std_ci_node_label(project, job) {
     def label_conditions = []
+    def project_specific_node = job.runtime_reqs?.projectspecificnode
+    // readYaml method converts the string 'true'/'false' into Booleans.
+    // We need to ensure we enter the condition only if the input was indeed
+    // 'true' and not just any random String.
+    if(project_specific_node in Boolean && project_specific_node) {
+        def label = get_node_label_for_project(project)
+        if(label) {
+            label_conditions << label
+        }
+    }
     if(job.runtime_reqs?.supportnestinglevel >= 2) {
         label_conditions << 'integ-tests'
     }
@@ -494,6 +504,19 @@ def get_std_ci_node_label(job) {
         label_conditions << job.arch
     }
     return label_conditions.join(' && ')
+}
+
+def get_node_label_for_project(project) {
+    switch(project.name) {
+        case ~/^lago(-.+)?$/:
+            return 'lago_templates'
+        case ~/^(stage-.+|.+-staging_standard-.+)/:
+            // Staging projects for testing only
+            return 'staging_label'
+        default:
+            // We couldn't find a specific node label for $project
+            return null
+    }
 }
 
 class TestFailedRef implements Serializable {
