@@ -11,6 +11,8 @@
             PROJECT: {project}
             GERRIT_TRIGGER_CI_VOTE_LABEL:
             STD_VERSION: {branch}
+            STDCI_GIT_CONFIG_NAME: '{git-config-name}'
+            STDCI_GIT_CONFIG_EMAIL: '{git-config-email}'
       - throttle: &standard-template-properties-throttle
           max-per-node: 1
           max-total: 30
