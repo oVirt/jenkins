@@ -5,7 +5,7 @@
       node-filter: integ-tests
       branch: master
       version:
-        - 4.1:
+        - 4.2:
             chroot_distro: el7
         - master:
             chroot_distro: el7
@@ -19,8 +19,6 @@
     suite_type: image-ng
     project: 'ovirt-system-tests'
     version:
-      - 4.1:
-          chroot_distro: el7
       - 4.2:
           chroot_distro: el7
       - master:
@@ -57,15 +55,11 @@
       - he-basic-ansible
     project: 'ovirt-system-tests'
     version:
-      - 4.1:
-          chroot_distro: el7
       - 4.2:
           chroot_distro: el7
       - master:
           chroot_distro: el7
     exclude:
-      - { suite_type: he-basic-ansible, version: 4.1 }
-      - { suite_type: he-basic-iscsi, version: 4.1 }
       - { suite_type: he-basic-iscsi, version: 4.2 }
     email-to: >
       didi@redhat.com,
@@ -108,8 +102,6 @@
       - master:
           chroot_distro: el7
       - 4.2:
-          chroot_distro: el7
-      - 4.1:
           chroot_distro: el7
     email-to: 'infra@ovirt.org, sabose@redhat.com'
     jobs:
