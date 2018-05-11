@@ -53,5 +53,10 @@
       - ovirt-system-tests
       - infra-docs
       - infra-ansible
+      - ovirt-engine-nodejs
+      - ovirt-engine-nodejs-modules
+      - ovirt-engine-yarn
+      - ovirt-engine-dashboard
+      - ovirt-js-dependencies
     jobs:
       - '{project}_standard-gerrit-jobs'
