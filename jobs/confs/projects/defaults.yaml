@@ -50,3 +50,4 @@
     wrappers:
       - default-wrapper
       - workspace-cleanup
+    trigger-schedule: '@daily'

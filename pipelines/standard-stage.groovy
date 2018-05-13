@@ -19,8 +19,8 @@ def on_load(loader){
 def loader_main(loader) {
     stage('Detecting STD-CI jobs') {
         std_ci_stage = get_stage_name()
-        set_gerrit_trigger_voting(std_ci_stage)
         project = get_project()
+        set_gerrit_trigger_voting(project, std_ci_stage)
         check_whitelist(project)
         currentBuild.displayName += " ${project.name} [$std_ci_stage]"
 
@@ -84,6 +84,9 @@ def get_stage_name() {
     if('STD_CI_STAGE' in params) {
         return params.STD_CI_STAGE
     }
+    if(env.STD_CI_STAGE) {
+        return env.STD_CI_STAGE
+    }
     def stage
     if (params.GERRIT_EVENT_TYPE){
         stage = get_stage_gerrit()
@@ -113,13 +116,25 @@ def get_stage_gerrit() {
     return null
 }
 
-@NonCPS
-void set_gerrit_trigger_voting(String stage_name) {
-    if(stage_name != "check-patch") return;
-    modify_build_parameter(
-        "GERRIT_TRIGGER_CI_VOTE_LABEL",
-        "--label Continuous-Integration=<CODE_REVIEW>"
-    )
+void set_gerrit_trigger_voting(Project project, String stage_name) {
+    if(stage_name != "check-patch") { return }
+    dir(project.clone_dir_name) {
+        if(invoke_pusher(project, 'can_merge', returnStatus: true) == 0) {
+            modify_build_parameter(
+                "GERRIT_TRIGGER_CI_VOTE_LABEL",
+                "--label Continuous-Integration=<CODE_REVIEW>" +
+                " --code-review=2" +
+                " --verified=1" +
+                " --submit"
+            )
+        }
+        else {
+            modify_build_parameter(
+                "GERRIT_TRIGGER_CI_VOTE_LABEL",
+                "--label Continuous-Integration=<CODE_REVIEW>"
+            )
+        }
+    }
 }
 
 @NonCPS
@@ -171,6 +186,8 @@ class Project implements Serializable {
 def get_project() {
     if('STD_CI_CLONE_URL' in params) {
         get_project_from_params()
+    } else if(env.STD_CI_CLONE_URL) {
+        get_project_from_env()
     } else if('ghprbGhRepository' in params) {
         get_project_from_github_pr()
     } else if(params.x_github_event == 'push') {
@@ -230,6 +247,17 @@ def get_project_from_params() {
         clone_url: params.STD_CI_CLONE_URL,
         name: project_name,
         refspec: params.STD_CI_REFSPEC,
+        clone_dir_name: get_clone_dir_name(project_name)
+    )
+}
+
+def get_project_from_env() {
+    String project_name = env.STD_CI_CLONE_URL.tokenize('/')[-1] - ~/.git$/
+    return new Project(
+        clone_url: env.STD_CI_CLONE_URL,
+        name: project_name,
+        refspec: "refs/heads/${env.STD_VERSION}",
+        branch: env.STD_VERSION,
         clone_dir_name: get_clone_dir_name(project_name)
     )
 }
@@ -441,10 +469,53 @@ def get_job_name(Map job) {
 
 def run_std_ci_jobs(project, jobs) {
     def branches = [:]
+    tag_poll_job(jobs)
     for(job in jobs) {
         branches[get_job_name(job)] = mk_std_ci_runner(project, job)
     }
     parallel branches
+}
+
+@NonCPS
+def tag_poll_job(jobs) {
+    def poll_job
+
+    // Try to find and tag the poll job. The preferences are:
+    // 1. el7/x86_64/default-substage
+    // 2. el7/default-substage
+    // 3. default-substage
+    // Otherwise, poll will not run.
+    for(job in jobs) {
+            if(job.distro == "el7" &&
+                job.arch == "x86_64" &&
+                job.stage == "poll-upstream-sources" &&
+                job.substage == "default"
+            ) {
+                // 1st preference found
+                poll_job = job
+                break
+            }
+            else if(job.distro == "el7" &&
+                     job.stage == "poll-upstream-sources" &&
+                     job.substage == "default"
+            ) {
+                // 2nd preference found, but we may still find 1st preference
+                poll_job = job
+            }
+            else if(job.stage == "poll-upstream-sources" &&
+                     job.substage == "default" &&
+                     !poll_job) {
+                // 3rd preference found, but we may still find 1st or 2nd preference
+                poll_job = job
+            }
+    }
+
+    if(poll_job) {
+        poll_job.is_poll_job = true
+        println("Job marked as poll-job: " + get_job_name(poll_job))
+        return
+    }
+    println("No suitable job for poll-upstream-sources stage was found")
 }
 
 def mk_std_ci_runner(project, job) {
@@ -545,6 +616,9 @@ def run_std_ci_on_node(project, job, stash_name) {
                     run_jjb_script('project_setup.sh')
                 }
             }
+            if(job.is_poll_job) {
+                update_project_upstream_sources(project)
+            }
             run_std_ci_in_mock(project, job, tfr)
         } finally {
             project.notify(ctx, 'PENDING', 'Collecting results')
@@ -586,7 +660,14 @@ def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
             // If we got here (no exception thrown so far), the test did not
             // fail
             tfr.test_failed = false
-            invoke_pusher(project)
+            invoke_pusher(
+                project, 'push',
+                args: [
+                    '--if-not-exists',
+                    "--unless-hash=${env.BUILD_TAG}",
+                    project.branch
+                ]
+            )
         }
     } finally {
         project.notify(ctx, 'PENDING', 'Collecting results')
@@ -604,18 +685,17 @@ def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
     }
 }
 
-def invoke_pusher(Project project) {
+def invoke_pusher(Map options=[:], Project project, String cmd) {
     sshagent(['std-ci-git-push-credentials']) {
-        sh(
+        return sh(
             script: """
-                mkdir -p exported-artifacts
+                logs_dir="exported-artifacts/pusher_logs"
+                mkdir -p "\$logs_dir"
                 ${env.WORKSPACE}/jenkins/scripts/pusher.py \
-                    --log="exported-artifacts/push_${project.name}.log" \
-                    push \
-                        --if-not-exists \
-                        --unless-hash="${env.BUILD_TAG}" \
-                        "${project.branch}"
-            """
+                    --verbose --log="\$logs_dir/pusher_${cmd}.log" \
+                    ${cmd} ${options.get('args', []).join(' ')}
+            """,
+            returnStatus: options.get('returnStatus', false)
         )
     }
 }
@@ -645,6 +725,29 @@ def collect_jobs_artifacts(jobs) {
         def job_dir = get_job_dir(job)
         dir("exported-artifacts/$job_dir") {
             unstash job_dir
+        }
+    }
+}
+
+def update_project_upstream_sources(Project project) {
+    dir(project.clone_dir_name) {
+        def ret = sh(
+            returnStatus: true,
+            script: """
+                echo "Updating upstream sources."
+                LOGDIR="exported-artifacts/usrc_update_logs"
+                mkdir -p "\$LOGDIR"
+
+                usrc="\$WORKSPACE/jenkins/scripts/usrc.py"
+                [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/scripts/usrc_local.py"
+
+                "\$usrc" --log="\$LOGDIR/update_${project.name}.log" update --commit
+                "\$usrc" --log="\$LOGDIR/get_${project.name}.log" get
+            """
+        )
+        if(ret != 0) {
+            println("Failed to update upstream sources. See logs for info.")
+            currentBuild.result = 'FAILURE'
         }
     }
 }
