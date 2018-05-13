@@ -3,56 +3,14 @@ echo "shell-scripts/jenkins_check_yaml.sh"
 
 JJB_PROJECTS_FOLDER="${JJB_PROJECTS_FOLDER:?must be defined in Jenkins instance}"
 
-generate_jobs_xml() {
-    local confs_dir="${1:?}"
-    local xmls_output_dir="${2:?}"
-
-    (
-        cd "$confs_dir"
-        jenkins-jobs \
-            --allow-empty \
-            test \
-                --recursive \
-                -o "$xmls_output_dir" \
-                "yaml:$JJB_PROJECTS_FOLDER"
-    )
-}
-
-generate_new_xmls() {
-    local new_xmls_dir="${1:?}"
-    local confs_dir="${2:?}"
-
-    generate_jobs_xml "$confs_dir" "$new_xmls_dir"
-}
+# We're just gonna assume this script runs when $PWD is the project root since
+# its essentially meant to be triggered by STDCI
+source scripts/jjb_diff.sh
 
 check_deleted_publisher_jobs() {
     local new_xmls_dir="${1:?}"
 
     python automation/check_publishers_not_deleted.py "$new_xmls_dir"
-}
-
-generate_old_xmls() {
-    local old_xmls_dir="${1:?}"
-    local confs_dir="${2:?}"
-    local project_folder="${3:?}"
-    local old_project_ws="$(mktemp -d)"
-    local old_confs_dir="$old_project_ws/jenkins/$confs_dir"
-    local branch_name=$(date +%s)
-
-    git branch $branch_name HEAD^
-    (
-        cd "$old_project_ws"
-        git clone --branch $branch_name --reference "$project_folder/.git" \
-            "file:///$project_folder" jenkins
-        cd jenkins
-        "$project_folder/scripts/usrc.py" -v get
-        if ! [[ -d "$confs_dir" ]]; then
-            echo "  No previous config"
-            exit 1
-        fi
-        # Needed for that commit where we check old dir structure vs new
-        generate_jobs_xml "$confs_dir" "$old_xmls_dir"
-    )
 }
 
 diff_old_with_new() {
@@ -86,4 +44,6 @@ main() {
     diff_old_with_new "$project_folder" "$old_xmls_dir" "$new_xmls_dir"
 }
 
-main
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

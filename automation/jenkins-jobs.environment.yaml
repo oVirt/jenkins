@@ -1,0 +1,19 @@
+- name: 'JJB_PROJECTS_FOLDER'
+  valueFrom:
+    runtimeEnv: 'JJB_PROJECTS_FOLDER'
+- name: 'JENKINS_USER'
+  valueFrom:
+    secretKeyRef:
+        name: 'jenkins_cli'
+        key: 'user'
+- name: 'JENKINS_PASSWORD'
+  valueFrom:
+    secretKeyRef:
+        name: 'jenkins_cli'
+        key: 'password'
+- name: 'JENKINS_URL'
+  valueFrom:
+    secretKeyRef:
+        name: 'jenkins_cli'
+        key: 'url'
+

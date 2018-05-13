@@ -25,14 +25,6 @@ main() {
     if grep -q '^mock_configs/' <<< "$changed_files"; then
         test_standard_ci "$@"
     fi
-    if grep -q '^jobs/' <<< "$changed_files"; then
-        # we only run jjb on el7/x86)64 so skip otherwise
-        if is_jjb_test_arch; then
-            test_job_configs "$@"
-        else
-            echo "Skipped JJB testing on this platform"
-        fi
-    fi
     if grep -q '\.py$' <<< "$changed_files"; then
         test_python_scripts "$@"
     fi

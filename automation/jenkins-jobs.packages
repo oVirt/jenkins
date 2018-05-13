@@ -1,0 +1,10 @@
+git
+PyYAML
+jenkins-job-builder
+python-pip
+python-setuptools
+python-ordereddict
+python-requests
+xdg-utils
+xdg-user-dirs
+python2-pyxdg
