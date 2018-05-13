@@ -6,7 +6,6 @@ import argparse
 import sys
 import re
 from copy import copy
-from functools import partial
 from six import iterkeys, iteritems
 try:
     from .stdci_logging import add_logging_args, setup_console_logging

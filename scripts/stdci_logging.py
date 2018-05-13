@@ -4,9 +4,13 @@
     Note: stdci_logging.py and usrc.py share the same functions definitions,
     and that's on purpose. usrc.py should be self-contained.
 """
-import argparse
 import logging
 import sys
+from copy import copy
+from itertools import chain
+from collections import Iterable, Mapping
+from traceback import format_exception
+from six import iteritems, string_types
 
 
 def add_logging_args(parser):

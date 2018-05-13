@@ -2,7 +2,6 @@
 """pusher.py - A tool for automated pushing of patches to SCMs
 """
 from __future__ import absolute_import, print_function
-import sys
 import argparse
 import logging
 import logging.handlers
@@ -10,12 +9,10 @@ import os
 import re
 import yaml
 import json
-from copy import copy
 from collections import Iterable, Mapping
 from itertools import chain
 from six import iteritems, string_types
 from six.moves.urllib.parse import urlparse
-from traceback import format_exception
 from subprocess import Popen, CalledProcessError, STDOUT, PIPE
 try:
     from .stdci_logging import add_logging_args, setup_console_logging
