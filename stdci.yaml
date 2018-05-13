@@ -8,3 +8,4 @@ arch:
       distro: [fc27, fc28]
       script:
         fromfile: automation/check-patch-s390x.sh
+      stage: check-patch
