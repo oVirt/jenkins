@@ -80,7 +80,14 @@ def checkout_repo(
                     refspec: "+${refspec}:myhead",
                     url: url
                 ]],
-                extensions: [[$class: 'CleanBeforeCheckout']],
+                extensions: [
+                    [$class: 'CleanBeforeCheckout'],
+                    [$class: 'PerBuildTag'],
+                    [$class: 'UserIdentity',
+                        email: env.GIT_AUTHOR_NAME,
+                        name: env.GIT_AUTHOR_EMAIL
+                    ],
+                ],
             ]
         )
         sh """

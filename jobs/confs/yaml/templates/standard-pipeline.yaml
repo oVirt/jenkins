@@ -16,6 +16,10 @@
             STDCI_SCM_URL={stdci-scm-url}
             STDCI_SCM_REFSPEC={stdci-scm-refspec}
             CLONE_DIR_NAME={clone-dir-name}
+            GIT_AUTHOR_NAME={git-config-name}
+            GIT_AUTHOR_EMAIL={git-config-email}
+            GIT_COMMITTER_NAME={git-config-name}
+            GIT_COMMITTER_EMAIL={git-config-email}
     triggers:
       - github-pull-request: &github-pull-trigger-base
           org-list:
@@ -132,6 +136,10 @@
             DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
             STDCI_SCM_URL={stdci-scm-url}
             STDCI_SCM_REFSPEC={stdci-scm-refspec}
+            GIT_AUTHOR_NAME={git-config-name}
+            GIT_AUTHOR_EMAIL={git-config-email}
+            GIT_COMMITTER_NAME={git-config-name}
+            GIT_COMMITTER_EMAIL={git-config-email}
     parameters:
       - string:
           name: STD_CI_CLONE_URL
@@ -169,6 +177,10 @@
             STDCI_SCM_URL={stdci-scm-url}
             STDCI_SCM_REFSPEC={stdci-scm-refspec}
             CLONE_DIR_NAME={clone-dir-name}
+            GIT_AUTHOR_NAME={git-config-name}
+            GIT_AUTHOR_EMAIL={git-config-email}
+            GIT_COMMITTER_NAME={git-config-name}
+            GIT_COMMITTER_EMAIL={git-config-email}
     triggers:
       - gerrit:
           server-name: '{gerrit-server}'
@@ -214,6 +226,10 @@
             STDCI_SCM_URL={stdci-scm-url}
             STDCI_SCM_REFSPEC={stdci-scm-refspec}
             CLONE_DIR_NAME={clone-dir-name}
+            GIT_AUTHOR_NAME={git-config-name}
+            GIT_AUTHOR_EMAIL={git-config-email}
+            GIT_COMMITTER_NAME={git-config-name}
+            GIT_COMMITTER_EMAIL={git-config-email}
     triggers:
       - gerrit:
           server-name: '{gerrit-server}'
