@@ -5,6 +5,9 @@
           project: '{project}'
           git-server: '{git-server}'
           git-proto: '{git-proto}'
+          git-config-name: '{git-config-name}'
+          git-config-email: '{git-config-email}'
+          gerrit-subpath: '{gerrit-subpath}'
 
 - scm:
     name: jenkins
