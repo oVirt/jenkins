@@ -23,6 +23,7 @@ main() {
         log WARN "Skipping services setup - not enough sudo permissions"
     fi
     lago_setup || failed=true
+    ensure_user_ssh_dir_permissions || failed=true
 
     # If we failed in any step, abort to avoid breaking the host
     if $failed; then
@@ -335,6 +336,53 @@ verify_packages() {
         (( ++failed ))
     done
     return $failed
+}
+
+ensure_user_ssh_dir_permissions() {
+    local failed=0
+
+
+    if [[ -e "$HOME/.ssh" ]]; then
+        verify_set_ownership "$HOME/.ssh" || failed=1
+        verify_set_permissions 700 "$HOME/.ssh" || failed=1
+    fi
+    if [[ -f "$HOME/.ssh/known_hosts" ]]; then
+        verify_set_ownership "$HOME/.ssh/known_hosts" || failed=1
+        verify_set_permissions 644 "$HOME/.ssh/known_hosts" || failed=1
+    fi
+    return $failed
+}
+
+verify_set_ownership() {
+    local path_to_set="${1:?Error. path must be provided}"
+    local owner="${2:-"$(id -un)"}"
+    local group="${3:-"$(id -gn)"}"
+
+    if [[ ! -O "$path_to_set" || ! -G "$path_to_set" ]]; then
+        log WARN "$path_to_set is not owned by ${owner}:${group}. Will try to fix"
+        if ! can_sudo chown; then
+            log ERROR "No permissions to fix."
+            return 1
+        fi
+        sudo -n chown "$owner":"$group" "$path_to_set" || return 1
+    fi
+}
+
+verify_set_permissions() {
+    local target_permissions="${1:?Error. file permissions must be provided (OCTAL)}"
+    local path_to_set="${2:?Error. path must be provided}"
+
+    local access="$(stat -c %a "$path_to_set")"
+    if [[ "$access" != "$target_permissions" ]]; then
+        if ! can_sudo chmod; then
+            log ERROR "Wrong access right to $path_to_set - no permissions to fix."
+            log ERROR "Access rights to $path_to_set: $access"
+            return 1
+        fi
+        sudo -n chmod "$target_permissions" "$path_to_set" || return 1
+    fi
+
+    return 0
 }
 
 can_sudo() {
