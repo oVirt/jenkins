@@ -22,3 +22,11 @@
       - stdci-staging
     jobs:
       - '{project}_standard-gerrit-jobs'
+
+- project:
+    name: standard-pipelines-gerrit-staging
+    gerrit-server: 'gerrit-staging.phx.ovirt.org'
+    project:
+      - ds-jenkins-stg
+    jobs:
+      - '{project}_standard-gerrit-jobs'

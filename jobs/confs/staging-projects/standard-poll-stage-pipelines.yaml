@@ -1,0 +1,8 @@
+---
+- project:
+    name: standard-poll-upstream-sources
+    project:
+      - ds-jenkins-stg:
+          branch: master
+    jobs:
+      - '{project}_{branch}_standard-poll-upstream-sources'
