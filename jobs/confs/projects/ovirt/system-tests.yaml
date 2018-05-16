@@ -11,22 +11,6 @@
             chroot_distro: el7
       email-to: infra@ovirt.org
 
-# type can be both image and image_ng
-# they differ in the testing used
-- project:
-    <<: *system-tests-common
-    name: ovirt-system-image-tests
-    suite_type: image-ng
-    project: 'ovirt-system-tests'
-    version:
-      - 4.2:
-          chroot_distro: el7
-      - master:
-          chroot_distro: el7
-    email-to: 'sbonazzo@redhat.com, yturgema@redhat.com'
-    jobs:
-      - '{project}_{version}_image-ng-system-tests'
-
 - project:
     <<: *system-tests-common
     name: ovirt-system-network-tests
@@ -53,21 +37,21 @@
       - he-basic
       - he-basic-iscsi
       - he-basic-ansible
+      - he-node-ng
     project: 'ovirt-system-tests'
     version:
       - 4.2:
           chroot_distro: el7
       - master:
           chroot_distro: el7
-    exclude:
-      - { suite_type: he-basic-iscsi, version: 4.2 }
     email-to: >
       didi@redhat.com,
       sbonazzo@redhat.com,
       infra@ovirt.org,
       lveyde@redhat.com,
       stirabos@redhat.com,
-      irosenzw@redhat.com
+      irosenzw@redhat.com,
+      yturgema@redhat.com
     jobs:
       - '{project}_{suite_type}-suite-{version}'
 
