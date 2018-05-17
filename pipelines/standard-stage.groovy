@@ -8,12 +8,15 @@ String std_ci_stage
 Project project
 def jobs
 def queues
+String summary_template
 
 def on_load(loader){
     // Copy methods from loader to this script
     metaClass.checkout_repo = loader.&checkout_repo
     metaClass.checkout_jenkins_repo = loader.&checkout_jenkins_repo
     metaClass.run_jjb_script = loader.&run_jjb_script
+    summary_template = readFile \
+        "${WORKSPACE}/jenkins/data/templates/build_summary.html"
 }
 
 def loader_main(loader) {
@@ -61,9 +64,10 @@ def loader_main(loader) {
 }
 
 def main() {
+    def threads_summary = [:]
     try {
         stage('Invoking jobs') {
-            run_std_ci_jobs(project, jobs)
+            run_std_ci_jobs(project, jobs, threads_summary)
         }
     } finally {
         stage('Collecting results') {
@@ -74,6 +78,9 @@ def main() {
                     artifacts: 'exported-artifacts/**'
                 junit keepLongStdio: true, allowEmptyResults: true, \
                     testResults: 'exported-artifacts/**/*xml'
+                def summary = render_build_summary(project, threads_summary)
+                writeFile([file: 'ci_build_summary.html', text: summary])
+                archiveArtifacts artifacts: 'ci_build_summary.html'
             }
         }
     }
@@ -177,6 +184,11 @@ class Project implements Serializable {
     String head
     String change_owner
     String clone_dir_name
+    String change_url = '#'
+    String change_url_disabled = 'disabled'
+    String change_url_title = 'View code'
+    String rerun_title = 'Rebuild'
+    String rerun_url
     def notify = \
         { context, status, short_msg=null, long_msg=null, url=null -> }
     def get_queue_build_args = null
@@ -221,7 +233,12 @@ def get_project_from_gerrit() {
         branch: params.GERRIT_BRANCH,
         refspec: params.GERRIT_REFSPEC,
         change_owner: params.GERRIT_PATCHSET_UPLOADER_EMAIL,
-        clone_dir_name: get_clone_dir_name(project_name)
+        clone_dir_name: get_clone_dir_name(project_name),
+        change_url: params.GERRIT_CHANGE_URL,
+        change_url_disabled: '', // Empty means NOT disabled
+        change_url_title: 'View patch',
+        rerun_title: 'Retrigger',
+        rerun_url: env.BUILD_URL + '/gerrit-trigger-retrigger-this'
     )
     if(!is_gerrit_change_merged()) {
         // Change is not merged. Initialize whitelist checking function
@@ -247,7 +264,8 @@ def get_project_from_params() {
         clone_url: params.STD_CI_CLONE_URL,
         name: project_name,
         refspec: params.STD_CI_REFSPEC,
-        clone_dir_name: get_clone_dir_name(project_name)
+        clone_dir_name: get_clone_dir_name(project_name),
+        rerun_url: env.BUILD_URL + '/rebuild'
     )
 }
 
@@ -258,7 +276,8 @@ def get_project_from_env() {
         name: project_name,
         refspec: "refs/heads/${env.STD_VERSION}",
         branch: env.STD_VERSION,
-        clone_dir_name: get_clone_dir_name(project_name)
+        clone_dir_name: get_clone_dir_name(project_name),
+        rerun_url: env.BUILD_URL + '/rebuild'
     )
 }
 
@@ -303,7 +322,11 @@ def get_github_project(
         refspec: test_ref,
         head: checkout_head,
         change_owner: change_owner,
-        clone_dir_name: get_clone_dir_name(repo)
+        clone_dir_name: get_clone_dir_name(repo),
+        change_url: params.ghprbPullLink,
+        change_url_disabled: '',
+        change_url_title: 'View PR',
+        rerun_url: env.BUILD_URL + '/rebuild'
     )
     if(env.SCM_NOTIFICATION_CREDENTIALS) {
         def last_status = null
@@ -467,13 +490,76 @@ def get_job_name(Map job) {
     return "${job.stage}.${job.substage}.${job.distro}.${job.arch}"
 }
 
-def run_std_ci_jobs(project, jobs) {
+def run_std_ci_jobs(project, jobs, threads_summary) {
     def branches = [:]
     tag_poll_job(jobs)
     for(job in jobs) {
-        branches[get_job_name(job)] = mk_std_ci_runner(project, job)
+        branches[get_job_name(job)] = mk_std_ci_runner(threads_summary, project, job)
     }
     parallel branches
+}
+
+@NonCPS
+def render_build_summary(project, threads_summary) {
+    def artifacts = currentBuild.rawBuild.getArtifacts()
+
+    def findbugs_summary_url = '#'
+    def findbugs_summary_url_disabled = 'disabled'
+    def findbugs_summary_exists = artifacts.any { it ==~ /find-bugs\/.+\.xml/ }
+    if(findbugs_summary_exists) {
+        findbugs_summary_url = env.BUILD_URL + '/findbugsResult'
+        findbugs_summary_url_disabled = ''
+    }
+
+    def junit_summary_url = '#'
+    def junit_summary_url_disabled = 'disabled'
+    def junit_summary_exists = artifacts.any {
+        it ==~ /(.+\.junit\.xml|nosetests.*)/
+    }
+    if(junit_summary_exists) {
+        junit_summary_url = env.BUILD_URL + '/testReport'
+        junit_summary_url_disabled = ''
+    }
+
+    def data = [
+        build_url: env.BUILD_URL,
+        blue_ocean_url: env.RUN_DISPLAY_URL,
+        change_url: project.change_url,
+        change_url_disabled: project.change_url_disabled,
+        change_url_title: project.change_url_title,
+        rerun_title: project.rerun_title,
+        rerun_url: project.rerun_url,
+        menu_items: [
+            [
+                title: 'Test results',
+                url: junit_summary_url,
+                disabled: junit_summary_url_disabled,
+                icon: 'pficon pficon-process-automation'
+            ],
+            [
+                title: 'Test results analizer',
+                url: env.BUILD_URL + '/test_results_analizer',
+                disabled: '',
+                icon: 'pficon pficon-cpu'
+            ],
+            [
+                title: 'Findbugs results',
+                url: findbugs_summary_url,
+                disabled: findbugs_summary_url_disabled,
+                icon: 'fa fa-bug'
+            ],
+            [
+                title: 'Full build log',
+                url: env.BUILD_URL + '/consoleText',
+                disabled: '',
+                icon: 'pficon pficon-build'
+            ],
+        ],
+        thread_blocks: threads_summary
+    ]
+
+    def engine = new groovy.text.StreamingTemplateEngine()
+    return engine.createTemplate(summary_template).make(data).toString()
 }
 
 @NonCPS
@@ -518,7 +604,7 @@ def tag_poll_job(jobs) {
     println("No suitable job for poll-upstream-sources stage was found")
 }
 
-def mk_std_ci_runner(project, job) {
+def mk_std_ci_runner(threads_summary, project, job) {
     return {
         String ctx = get_job_name(job)
         project.notify(ctx, 'PENDING', 'Allocating runner node')
@@ -529,7 +615,7 @@ def mk_std_ci_runner(project, job) {
             print "This script required nodes with label: $node_label"
         }
         node(node_label) {
-            run_std_ci_on_node(project, job, get_job_dir(job))
+            run_std_ci_on_node(threads_summary, project, job, get_job_dir(job))
         }
     }
 }
@@ -597,7 +683,7 @@ class TestFailedRef implements Serializable {
     Boolean test_failed = false
 }
 
-def run_std_ci_on_node(project, job, stash_name) {
+def run_std_ci_on_node(threads_summary, project, job, stash_name) {
     TestFailedRef tfr = new TestFailedRef()
     Boolean success = false
     String ctx = get_job_name(job)
@@ -633,10 +719,22 @@ def run_std_ci_on_node(project, job, stash_name) {
     } finally {
         if(success) {
             project.notify(ctx, 'SUCCESS', 'Test is successful')
+            threads_summary[ctx] = [
+                result: 'SUCCESS',
+                message: 'Test is successful',
+            ]
         } else if (tfr.test_failed) {
             project.notify(ctx, 'FAILURE', 'Test script failed')
+            threads_summary[ctx] = [
+                result: 'FAILURE',
+                message: 'Test script failed',
+            ]
         } else {
             project.notify(ctx, 'ERROR', 'Testing system error')
+            threads_summary[ctx] = [
+                result: 'ERROR',
+                message: 'Testing system error',
+            ]
         }
     }
 }
