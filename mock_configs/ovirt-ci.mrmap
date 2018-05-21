@@ -1,14 +1,10 @@
 el6:epel-6-x86_64
 el7:epel-7-x86_64
 el7:epel-7-ppc64le
-fc24:fedora-24-x86_64
-fc25:fedora-25-x86_64
 fc26:fedora-26-x86_64
 fc27:fedora-27-x86_64
 fc28:fedora-28-x86_64
 fcraw:fedora-rawhide-x86_64
-fc24:fedora-24-ppc64le
-fc25:fedora-25-ppc64le
 fc26:fedora-26-ppc64le
 fc26:fedora-26-s390x
 fc27:fedora-27-s390x
