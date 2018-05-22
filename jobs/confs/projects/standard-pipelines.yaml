@@ -58,5 +58,6 @@
       - ovirt-engine-yarn
       - ovirt-engine-dashboard
       - ovirt-js-dependencies
+      - ovirt-provider-ovn
     jobs:
       - '{project}_standard-gerrit-jobs'
