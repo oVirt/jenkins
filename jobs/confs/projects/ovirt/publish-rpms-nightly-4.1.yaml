@@ -155,8 +155,6 @@
 
       - copy-create-job-artifact:
           project: imgbased_4.1_build-artifacts-el7-x86_64
-      - copy-create-job-artifact:
-          project: ovirt-node-ng_ovirt-4.1-pre_build-artifacts-el7-x86_64
 
       - copy-create-job-artifact:
           project: ovirt-iso-uploader_4.1_build-artifacts-el7-x86_64
