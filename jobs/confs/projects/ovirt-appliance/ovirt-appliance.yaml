@@ -10,12 +10,6 @@
           branch: ovirt-4.2-pre
       - ovirt-4.2-snapshot:
           branch: ovirt-4.2-snapshot
-      - ovirt-4.1:
-          branch: ovirt-4.1
-      - ovirt-4.1-pre:
-          branch: ovirt-4.1-pre
-      - ovirt-4.1-snapshot:
-          branch: ovirt-4.1-snapshot
     distro:
       - el7
     arch:
@@ -47,18 +41,6 @@
           trigger-times: '@weekly'
       - 4.2:
           branch: ovirt-4.2-snapshot
-          trigger: 'timed'
-          trigger-times: '@daily'
-      - ovirt-4.1:
-          branch: ovirt-4.1
-          trigger: 'timed'
-          trigger-times: '@weekly'
-      - ovirt-4.1-pre:
-          branch: ovirt-4.1-pre
-          trigger: 'timed'
-          trigger-times: '@weekly'
-      - 4.1:
-          branch: ovirt-4.1-snapshot
           trigger: 'timed'
           trigger-times: '@daily'
     email-to: 'infra@ovirt.org, yturgema@redhat.com'
