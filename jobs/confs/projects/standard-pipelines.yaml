@@ -59,5 +59,6 @@
       - ovirt-engine-dashboard
       - ovirt-js-dependencies
       - ovirt-provider-ovn
+      - otopi
     jobs:
       - '{project}_standard-gerrit-jobs'
