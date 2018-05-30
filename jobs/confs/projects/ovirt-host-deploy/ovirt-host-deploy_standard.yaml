@@ -7,16 +7,12 @@
           branch: master
       - 4.2:
           branch: ovirt-host-deploy-1.7
-      - 4.1:
-          branch: ovirt-host-deploy-1.6
     stage:
       - check-patch
       - check-merged
     distro:
       - el7
-      - fc27
-    exclude:
-      - { version: 4.1, distro: fc27 }
+      - fc28
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -41,7 +37,6 @@
     <<: *base-params
     name: ovirt-host-deploy_build-artifacts-manual-any
     version:
-      - '4.1'
       - '4.2'
       - 'master'
     jobs:
