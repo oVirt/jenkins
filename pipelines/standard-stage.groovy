@@ -537,8 +537,8 @@ def render_build_summary(project, threads_summary) {
                 icon: 'pficon pficon-process-automation'
             ],
             [
-                title: 'Test results analizer',
-                url: env.BUILD_URL + '/test_results_analizer',
+                title: 'Test results analyzer',
+                url: env.BUILD_URL + '/test_results_analyzer',
                 disabled: '',
                 icon: 'pficon pficon-cpu'
             ],
