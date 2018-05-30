@@ -7,8 +7,6 @@
           branch: master
       - 4.2:
           branch: ovirt-4.2
-      - 4.1:
-          branch: ovirt-4.2
       - 3.6:
           branch: ovirt-4.0
     stage:
@@ -16,13 +14,11 @@
     distro:
       - el6
       - el7
-      - fc27
+      - fc28
     exclude:
-      - { version: 4.1, distro: fc27 }
-      - { version: 3.6, distro: fc27 }
+      - { version: 3.6, distro: fc28 }
       - { version: master, distro: el6 }
       - { version: 4.2, distro: el6 }
-      - { version: 4.1, distro: el6 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -47,7 +43,6 @@
     name: ovirt-setup-lib_build-artifacts-manual-any
     version:
       - '3.6'
-      - '4.1'
       - '4.2'
       - 'master'
     jobs:
