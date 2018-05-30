@@ -11,7 +11,7 @@
           branch: model_4.1
     stage: build-artifacts
     distro:
-      - fc27
+      - fc28
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
