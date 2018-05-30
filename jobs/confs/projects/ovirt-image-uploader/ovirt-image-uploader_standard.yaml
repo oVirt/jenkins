@@ -5,16 +5,12 @@
     version:
       - 4.2:
           branch: ovirt-image-uploader-4.0
-      - 4.1:
-          branch: ovirt-image-uploader-4.0
     stage:
       - check-patch
       - check-merged
     distro:
       - el7
-      - fc27
-    exclude:
-      - { version: 4.1, distro: fc27 }
+      - fc28
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -38,7 +34,6 @@
     <<: *base-params
     name: ovirt-image-uploader-artifacts-manual-any
     version:
-      - '4.1'
       - '4.2'
     jobs:
       - '{project}_any_build-artifacts-manual'
