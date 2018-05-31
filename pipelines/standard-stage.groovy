@@ -4,17 +4,32 @@
 import hudson.model.StringParameterValue
 import hudson.model.ParametersAction
 
+def project_lib
+
 String std_ci_stage
-Project project
+def project
 def jobs
 def queues
 String summary_template
 
 def on_load(loader){
     // Copy methods from loader to this script
-    metaClass.checkout_repo = loader.&checkout_repo
-    metaClass.checkout_jenkins_repo = loader.&checkout_jenkins_repo
-    metaClass.run_jjb_script = loader.&run_jjb_script
+    metaClass.run_jjb_script = { ...args ->
+        loader.metaClass.invokeMethod(loader, 'run_jjb_script', args)
+    }
+    metaClass.checkout_jenkins_repo = { ...args ->
+        loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
+    }
+    // Need to specify positional arguments explicitly due to a bug in Jenkins
+    // where ...args syntax passes only the 1st argument.
+    metaClass.checkout_repo = {
+        repo_name, refspec='heads/refs/master', url=null, head=null, clone_dir_name=null ->
+        loader.metaClass.invokeMethod(
+            loader, 'checkout_repo',
+            [repo_name, refspec, url, head, clone_dir_name])
+    }
+    project_lib = loader.load_code('libs/stdci_project.groovy', this)
+
     summary_template = readFile \
         "${WORKSPACE}/jenkins/data/templates/build_summary.html"
 }
@@ -22,12 +37,13 @@ def on_load(loader){
 def loader_main(loader) {
     stage('Detecting STD-CI jobs') {
         std_ci_stage = get_stage_name()
-        project = get_project()
+
+        project = project_lib.get_project()
         set_gerrit_trigger_voting(project, std_ci_stage)
         check_whitelist(project)
         currentBuild.displayName += " ${project.name} [$std_ci_stage]"
 
-        checkout_project(project)
+        project_lib.checkout_project(project)
         dir(project.clone_dir_name) {
             // This is a temporary workaround for KubeVirt project
             sh """
@@ -123,7 +139,7 @@ def get_stage_gerrit() {
     return null
 }
 
-void set_gerrit_trigger_voting(Project project, String stage_name) {
+void set_gerrit_trigger_voting(project, stage_name) {
     if(stage_name != "check-patch") { return }
     dir(project.clone_dir_name) {
         if(invoke_pusher(project, 'can_merge', returnStatus: true) == 0) {
@@ -176,195 +192,6 @@ def get_stage_github() {
     return null
 }
 
-class Project implements Serializable {
-    String clone_url
-    String name
-    String branch
-    String refspec
-    String head
-    String change_owner
-    String clone_dir_name
-    String change_url = '#'
-    String change_url_disabled = 'disabled'
-    String change_url_title = 'View code'
-    String rerun_title = 'Rebuild'
-    String rerun_url
-    def notify = \
-        { context, status, short_msg=null, long_msg=null, url=null -> }
-    def get_queue_build_args = null
-    def check_whitelist = { -> true }
-}
-
-def get_project() {
-    if('STD_CI_CLONE_URL' in params) {
-        get_project_from_params()
-    } else if(env.STD_CI_CLONE_URL) {
-        get_project_from_env()
-    } else if('ghprbGhRepository' in params) {
-        get_project_from_github_pr()
-    } else if(params.x_github_event == 'push') {
-        get_project_from_github_push()
-    } else if('GERRIT_EVENT_TYPE' in params) {
-        get_project_from_gerrit()
-    } else {
-        error "Cannot detect project from trigger or parameter information!"
-    }
-}
-
-def check_whitelist(Project project) {
-    if(!project.check_whitelist()){
-        currentBuild.result = 'NOT_BUILT'
-        error("User $project.change_owner is not whitelisted")
-    }
-}
-
-def is_gerrit_change_merged() {
-    // Check if the change is merged. Requires Gerrit Trigger env params!
-    def change_merged_sh = readFile("jenkins/scripts/check_if_merged.sh")
-    def is_merged = sh returnStatus: true, script: change_merged_sh
-    return is_merged == 0
-}
-
-def get_project_from_gerrit() {
-    String project_name = params.GERRIT_PROJECT.tokenize('/')[-1]
-    Project project = new Project(
-        clone_url: "https://${params.GERRIT_NAME}/${params.GERRIT_PROJECT}",
-        name: project_name,
-        branch: params.GERRIT_BRANCH,
-        refspec: params.GERRIT_REFSPEC,
-        change_owner: params.GERRIT_PATCHSET_UPLOADER_EMAIL,
-        clone_dir_name: get_clone_dir_name(project_name),
-        change_url: params.GERRIT_CHANGE_URL,
-        change_url_disabled: '', // Empty means NOT disabled
-        change_url_title: 'View patch',
-        rerun_title: 'Retrigger',
-        rerun_url: env.BUILD_URL + '/gerrit-trigger-retrigger-this'
-    )
-    if(!is_gerrit_change_merged()) {
-        // Change is not merged. Initialize whitelist checking function
-        project.check_whitelist = {
-            def whitelist_sh = readFile("jenkins/scripts/whitelist_filter.sh")
-            def is_whitelisted = sh returnStatus: true, script: whitelist_sh
-            return is_whitelisted == 0
-        }
-        return project
-    }
-    // Change is merged. Initialize queue build args getter
-    project.get_queue_build_args = { String queue ->
-        get_generic_queue_build_args(
-            queue, project.name, project.branch, project.head,
-        )
-    }
-    return project
-}
-
-def get_project_from_params() {
-    String project_name = params.STD_CI_CLONE_URL.tokenize('/')[-1] - ~/.git$/
-    return new Project(
-        clone_url: params.STD_CI_CLONE_URL,
-        name: project_name,
-        refspec: params.STD_CI_REFSPEC,
-        clone_dir_name: get_clone_dir_name(project_name),
-        rerun_url: env.BUILD_URL + '/rebuild'
-    )
-}
-
-def get_project_from_env() {
-    String project_name = env.STD_CI_CLONE_URL.tokenize('/')[-1] - ~/.git$/
-    return new Project(
-        clone_url: env.STD_CI_CLONE_URL,
-        name: project_name,
-        refspec: "refs/heads/${env.STD_VERSION}",
-        branch: env.STD_VERSION,
-        clone_dir_name: get_clone_dir_name(project_name),
-        rerun_url: env.BUILD_URL + '/rebuild'
-    )
-}
-
-def get_project_from_github_pr() {
-    return get_github_project(
-        params.ghprbGhRepository.tokenize('/')[-2],
-        params.ghprbGhRepository.tokenize('/')[-1],
-        params.ghprbTargetBranch,
-        "refs/pull/${params.ghprbPullId}/merge",
-        params.ghprbActualCommit,
-        params.ghprbTriggerAuthorLogin
-    )
-}
-
-def get_project_from_github_push() {
-    Project project = get_github_project(
-        params.GH_EV_REPO_owner_login,
-        params.GH_EV_REPO_name,
-        params.GH_EV_REF.tokenize('/')[-1],
-        params.GH_EV_REF,
-        params.GHPUSH_SHA,
-        params.GHPUSH_PUSHER_email,
-        params.GHPUSH_SHA
-    )
-    project.get_queue_build_args = { String queue ->
-        get_generic_queue_build_args(
-            queue, project.name, project.branch, project.head,
-            params.GH_EV_HEAD_COMMIT_url
-        )
-    }
-    return project
-}
-
-def get_github_project(
-    String org, String repo, String branch, String test_ref, String notify_ref,
-    String change_owner, String checkout_head = null
-) {
-    Project project = new Project(
-        clone_url: "https://github.com/$org/$repo",
-        name: repo,
-        branch: branch,
-        refspec: test_ref,
-        head: checkout_head,
-        change_owner: change_owner,
-        clone_dir_name: get_clone_dir_name(repo),
-        change_url: params.ghprbPullLink,
-        change_url_disabled: '',
-        change_url_title: 'View PR',
-        rerun_url: env.BUILD_URL + '/rebuild'
-    )
-    if(env.SCM_NOTIFICATION_CREDENTIALS) {
-        def last_status = null
-        project.notify = { context, status, short_msg=null, long_msg=null, url=null ->
-            try {
-                githubNotify(
-                    credentialsId: env.SCM_NOTIFICATION_CREDENTIALS,
-                    account: org, repo: repo, sha: notify_ref,
-                    context: context,
-                    status: status, description: short_msg, targetUrl: url
-                )
-            } catch(Exception e) {
-                // Only retry sending notification if status has changed
-                if(last_status != status) {
-                    retry(5) {
-                        // We might be blocked by GitHub rate limit so wait a while
-                        // before retrying
-                        sleep 1
-                        githubNotify(
-                            credentialsId: env.SCM_NOTIFICATION_CREDENTIALS,
-                            account: org, repo: repo, sha: notify_ref,
-                            context: context,
-                            status: status, description: short_msg, targetUrl: url
-                        )
-                    }
-                }
-            }
-            last_status = status
-        }
-    }
-    return project
-}
-
-def get_clone_dir_name(String project_name) {
-    if(env.CLONE_DIR_NAME) return env.CLONE_DIR_NAME
-    return project_name
-}
-
 def get_generic_queue_build_args(
     String queue, String project, String branch, String sha, String url=null
 ) {
@@ -393,17 +220,7 @@ def get_generic_queue_build_args(
     return build_args
 }
 
-def checkout_project(Project project) {
-    checkout_repo(
-        project.name,
-        project.refspec,
-        project.clone_url,
-        project.head,
-        project.clone_dir_name
-    )
-}
-
-def get_std_ci_job_properties(Project project, String std_ci_stage) {
+def get_std_ci_job_properties(project, String std_ci_stage) {
     def stdci_job_properties = "jobs_for_${std_ci_stage}.yaml"
     withEnv(['PYTHONPATH=jenkins']) {
         sh """\
@@ -432,7 +249,7 @@ def get_std_ci_global_options(Map job_properties) {
     return job_properties.get('global_config')
 }
 
-def get_std_ci_queues(Project project, Map job_properties) {
+def get_std_ci_queues(project, Map job_properties) {
     if(get_stage_name() != 'check-merged') {
         // Only Enqueue on actual merge/push events
         return []
@@ -462,7 +279,7 @@ def enqueue_change(project, queues) {
     }
 }
 
-def mk_enqueue_change_branch(Project project, String queue) {
+def mk_enqueue_change_branch(project, String queue) {
     return {
         String ctx = "enqueue to: $queue"
         def build_args
@@ -692,7 +509,7 @@ def run_std_ci_on_node(threads_summary, project, job, stash_name) {
             project.notify(ctx, 'PENDING', 'Setting up test environment')
             dir("exported-artifacts") { deleteDir() }
             checkout_jenkins_repo()
-            checkout_project(project)
+            project_lib.checkout_project(project)
             run_jjb_script('cleanup_slave.sh')
             run_jjb_script('global_setup.sh')
             withCredentials(
@@ -703,7 +520,7 @@ def run_std_ci_on_node(threads_summary, project, job, stash_name) {
                 }
             }
             if(job.is_poll_job) {
-                update_project_upstream_sources(project)
+                project_lib.update_project_upstream_sources(project)
             }
             run_std_ci_in_mock(project, job, tfr)
         } finally {
@@ -739,7 +556,7 @@ def run_std_ci_on_node(threads_summary, project, job, stash_name) {
     }
 }
 
-def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
+def run_std_ci_in_mock(project, def job, TestFailedRef tfr) {
     String ctx = get_job_name(job)
     try {
         run_jjb_script('mock_setup.sh')
@@ -783,7 +600,7 @@ def run_std_ci_in_mock(Project project, def job, TestFailedRef tfr) {
     }
 }
 
-def invoke_pusher(Map options=[:], Project project, String cmd) {
+def invoke_pusher(Map options=[:], project, String cmd) {
     sshagent(['std-ci-git-push-credentials']) {
         return sh(
             script: """
@@ -827,26 +644,10 @@ def collect_jobs_artifacts(jobs) {
     }
 }
 
-def update_project_upstream_sources(Project project) {
-    dir(project.clone_dir_name) {
-        def ret = sh(
-            returnStatus: true,
-            script: """
-                echo "Updating upstream sources."
-                LOGDIR="exported-artifacts/usrc_update_logs"
-                mkdir -p "\$LOGDIR"
-
-                usrc="\$WORKSPACE/jenkins/scripts/usrc.py"
-                [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/scripts/usrc_local.py"
-
-                "\$usrc" --log="\$LOGDIR/update_${project.name}.log" update --commit
-                "\$usrc" --log="\$LOGDIR/get_${project.name}.log" get
-            """
-        )
-        if(ret != 0) {
-            println("Failed to update upstream sources. See logs for info.")
-            currentBuild.result = 'FAILURE'
-        }
+def check_whitelist(project) {
+    if(!project.check_whitelist()){
+        currentBuild.result = 'NOT_BUILT'
+        error("User $project.change_owner is not whitelisted")
     }
 }
 
