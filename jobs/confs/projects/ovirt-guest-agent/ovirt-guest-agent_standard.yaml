@@ -14,9 +14,9 @@
     distro:
       - el6
       - el7
-      - fc27
+      - fc28
     exclude:
-      - { version: 4.1, distro: fc27 }
+      - { version: 4.1, distro: fc28 }
       - { version: master, distro: el6 }
       - { version: 4.2, distro: el6 }
     arch: x86_64

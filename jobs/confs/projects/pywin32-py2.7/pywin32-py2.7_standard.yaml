@@ -9,7 +9,7 @@
           branch: master
     distro:
       - el7
-      - fc27
+      - fc28
 
 - project:
     <<: *base-commons
