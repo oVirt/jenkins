@@ -19,6 +19,7 @@ main() {
         docker_setup || failed=true
         setup_postfix || failed=true
         start_services || failed=true
+        disable_dnf_makecache || failed=true
     else
         log WARN "Skipping services setup - not enough sudo permissions"
     fi
@@ -354,6 +355,22 @@ ensure_user_ssh_dir_permissions() {
         verify_set_permissions 644 "$HOME/.ssh/known_hosts" || failed=1
     fi
     return $failed
+}
+
+disable_dnf_makecache() {
+    # disable dnf-makecache on Fedora systems
+    # as it interferes with running jobs by locking dnf
+    if [ -f "/etc/systemd/system/basic.target.wants/dnf-makecache.timer" ]; then
+        log INFO "disabling dnf-makecache";
+        sudo -n systemctl disable dnf-makecache.timer
+        sudo -n systemctl stop dnf-makecache.service
+        sudo -n systemctl disable dnf-makecache.service
+        # check if the symlink still exists and failing if so
+        if [ -f "/etc/systemd/system/basic.target.wants/dnf-makecache.timer" ]; then
+            log ERROR "failed to disable dnf-makecache"
+            return 1
+        fi
+    fi
 }
 
 verify_set_ownership() {
