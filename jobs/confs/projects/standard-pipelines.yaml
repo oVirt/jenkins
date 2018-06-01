@@ -61,5 +61,6 @@
       - ovirt-js-dependencies
       - ovirt-provider-ovn
       - otopi
+      - releng-tools
     jobs:
       - '{project}_standard-gerrit-jobs'
