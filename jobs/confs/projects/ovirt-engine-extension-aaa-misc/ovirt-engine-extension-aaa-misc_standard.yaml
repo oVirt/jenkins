@@ -13,10 +13,8 @@
       - check-patch
     distro:
       - el7
-      - fc27
       - fc28
     exclude:
-      - { version: 4.1, distro: fc27 }
       - { version: 4.1, distro: fc28 }
     arch: x86_64
     jobs:
