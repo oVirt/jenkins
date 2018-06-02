@@ -20,6 +20,7 @@
       - el7
       - fc28
     exclude:
+      - { version: 4.2, distro: fc28 }
       - { version: 4.1, distro: fc28 }
       - { version: 3.6, distro: fc28 }
       - { version: 3.6.13, distro: fc28 }
