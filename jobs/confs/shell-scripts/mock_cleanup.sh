@@ -32,7 +32,7 @@ safe_umount() {
         # Try to umount
         sudo -n umount --lazy "$mount" && return 0
         # See if the mount is already not there despite failing
-        findmnt --kernel --first "$mount" > /dev/null && return 0
+        findmnt --kernel --first-only "$mount" > /dev/null || return 0
     done
     echo "ERROR:  Failed to umount $mount."
     return 1
