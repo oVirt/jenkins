@@ -49,18 +49,19 @@
     name: oVirt-standard-pipelines-gerrit
     gerrit-server: 'gerrit.ovirt.org'
     project:
-      - jenkins
-      - ovirt-system-tests
+      - fabric-ovirt
       - infra-docs
       - infra-ansible
       - imgbased
+      - jenkins
+      - otopi
+      - ovirt-engine-dashboard
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
       - ovirt-engine-yarn
-      - ovirt-engine-dashboard
       - ovirt-js-dependencies
       - ovirt-provider-ovn
-      - otopi
+      - ovirt-system-tests
       - releng-tools
     jobs:
       - '{project}_standard-gerrit-jobs'
