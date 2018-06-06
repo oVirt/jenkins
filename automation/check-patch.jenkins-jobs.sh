@@ -6,6 +6,7 @@ JJB_PROJECTS_FOLDER="${JJB_PROJECTS_FOLDER:?must be defined in Jenkins instance}
 # We're just gonna assume this script runs when $PWD is the project root since
 # its essentially meant to be triggered by STDCI
 source scripts/jjb_diff.sh
+source automation/stdci_venv.sh
 
 check_deleted_publisher_jobs() {
     local new_xmls_dir="${1:?}"
@@ -37,6 +38,8 @@ main() {
     local new_xmls_dir="$(mktemp -d new_xmls_XXX --tmpdir)"
     local old_xmls_dir="$(mktemp -d old_xmls_XXX --tmpdir)"
     local confs_dir="jobs/confs"
+
+    stdci_venv::activate "$0"
 
     generate_new_xmls "$new_xmls_dir" "$confs_dir"
     check_deleted_publisher_jobs "$new_xmls_dir"

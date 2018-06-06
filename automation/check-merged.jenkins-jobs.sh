@@ -13,6 +13,7 @@ JENKINS_URL="${JENKINS_URL:?must be provided in secrets file}"
 # We're just gonna assume this script runs when $PWD is the project root since
 # its essentially meant to be triggered by STDCI
 source scripts/jjb_diff.sh
+source automation/stdci_venv.sh
 
 main() {
     local old_jobs_cache
@@ -23,6 +24,8 @@ main() {
     old_jobs_cache="$(mktemp old_jobs_cahce.XXXXX.yml --tmpdir)"
     jobs_cache="jenkins_jobs/cache-host-jobs-${JENKINS_URL//[:\/.]/_}.yml"
     jobs_cache="$XDG_CACHE_HOME/$jobs_cache"
+
+    stdci_venv::activate "$0"
 
     mk_old_jobs_cache > "$old_jobs_cache" \
     && cp -f "$old_jobs_cache" "$jobs_cache" \

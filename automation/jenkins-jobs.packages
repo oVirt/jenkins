@@ -1,11 +1,3 @@
 git
-PyYAML
-jenkins-job-builder
 python-pip
-python-setuptools
-python-ordereddict
-python-requests
-python-six
-xdg-utils
-xdg-user-dirs
-python2-pyxdg
+python-virtualenv

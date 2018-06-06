@@ -13,4 +13,6 @@ sub-stages:
             stage: check-patch
   - jenkins-jobs:
       runif:
-        file-changed: jobs/*
+        file-changed:
+          - jobs/*
+          - automation/*.jenkins-jobs.*
