@@ -12,7 +12,7 @@
           branch: sdk_4.1
     distro:
       - el7
-      - fc27
+      - fc28
     arch:
       - x86_64:
           node-filter: el7
@@ -21,10 +21,11 @@
       - s390x:
           node-filter: s390x
     exclude:
-      - { version: 4.1, distro: fc27 }
+      - { version: 4.2, distro: fc28 }
+      - { version: 4.1, distro: fc28 }
       - { version: 4.1, arch: s390x, }
       - {               arch: s390x,   distro: el7, }
-      - {               arch: ppc64le, distro: fc27, }
+      - {               arch: ppc64le, distro: fc28, }
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 

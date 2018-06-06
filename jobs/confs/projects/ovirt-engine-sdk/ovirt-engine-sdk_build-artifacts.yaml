@@ -39,7 +39,7 @@
           branch: master
     distro:
       - el7
-      - fc27
+      - fc28
     jobs:
         - 'python-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
 
@@ -59,7 +59,7 @@
           branch: sdk_3.6
     distro:
       - el7
-      - fc27
+      - fc28
     jobs:
       - 'ovirt-engine-sdk_{version}_build-artifacts-{distro}-{arch}'
 
@@ -77,7 +77,7 @@
           branch: sdk_4.1
     distro:
       - el7
-      - fc27
+      - fc28
     jobs:
         - 'python-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'
         - 'python-ovirt-engine-sdk4_{version}_{stage}-on-demand-{distro}-{arch}'
