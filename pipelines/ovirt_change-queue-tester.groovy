@@ -1,11 +1,18 @@
 // ovirt_change-queue-tester - Change queue tests for oVirt
 //
+def project_lib
+
 def ovirt_release
+def ost_project
+
 
 def on_load(loader) {
     // Copy methods from loader to this script
-    metaClass.checkout_repo = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'checkout_repo', args)
+    metaClass.checkout_repo = {
+        repo_name, refspec='refs/heads/master', url=null, head=null,
+        clone_dir_name=null -> loader.metaClass.invokeMethod(
+            loader, 'checkout_repo',
+            [repo_name, refspec, url, head, clone_dir_name])
     }
     metaClass.checkout_jenkins_repo = { ...args ->
         loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
@@ -18,6 +25,12 @@ def on_load(loader) {
     }
 
     ovirt_release = get_queue_ovirt_release()
+
+    metaClass.load_code = { code_file, load_as=null ->
+        loader.metaClass.invokeMethod(
+            loader, 'load_code', [code_file, load_as])
+    }
+    project_lib = load_code('libs/stdci_project.groovy', this)
 }
 
 def extra_load_change_data_py(change_list_var, mirrors_var) {
@@ -51,6 +64,7 @@ def get_queue_ovirt_release() {
 }
 
 def run_ost_tests(ovirt_release) {
+    ost_project = get_ost_project()
     def ost_suit_types = get_available_ost_suit_types(ovirt_release)
     echo "Will run the following OST ($ovirt_release) " +
         "suits: ${ost_suit_types.join(', ')}"
@@ -67,7 +81,7 @@ def get_available_ost_suit_types(ovirt_release) {
         'basic', 'upgrade-from-release', 'upgrade-from-prevrelease'
     ]
     def available_suits = []
-    checkout_ost_repo()
+    project_lib.checkout_project(ost_project)
     dir('ovirt-system-tests') {
         for(suit_type in suit_types_to_use) {
             if(fileExists("automation/${suit_type}_suite_${ovirt_release}.sh"))
@@ -95,13 +109,17 @@ def mk_ost_runner(ovirt_release, suit_type, distro) {
     }
 }
 
-def checkout_ost_repo() {
-    checkout_repo('ovirt-system-tests')
+def get_ost_project() {
+    def base_scm_url = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
+    return project_lib.new_project(
+        clone_url: base_scm_url + '/ovirt-system-tests',
+        name: 'ovirt-system-tests'
+    )
 }
 
 def run_ost_on_node(ovirt_release, suit_type, distro, stash_name) {
     checkout_jenkins_repo()
-    checkout_ost_repo()
+    project_lib.checkout_project(ost_project)
     run_jjb_script('cleanup_slave.sh')
     run_jjb_script('global_setup.sh')
     run_jjb_script('mock_setup.sh')
