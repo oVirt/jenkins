@@ -47,6 +47,10 @@ from scripts.stdci_dsl.parser import (
             'v-1',
             'v-1',
         ),
+        (
+            {'releasebranches': {'k-1': 'v-1', 'k-2': 'v-2'}},
+            {'releasebranches': {'k-1': 'v-1', 'k-2': 'v-2'}},
+        ),
     ]
 )
 def test_normalize_config_values(data, expected):

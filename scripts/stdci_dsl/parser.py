@@ -93,6 +93,8 @@ def normalize_config_values(key, data):
               Otherwise, return the data as is.
     """
     logger.debug('Normalizing data: %s', data)
+    if key == 'releasebranches':
+        return data
     if isinstance(data, Mapping):
         return dict(
             (_remove_case_and_signs(k), normalize_config_values(k, v))
