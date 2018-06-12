@@ -44,13 +44,6 @@ test_job_configs() {
     sh -xe automation/jenkins_check_yaml.sh
 }
 
-test_standard_ci_repos() {
-    if find /etc/yum.repos.d/ -type f | grep -qF ''; then
-        echo "Unwanted repo files found in chroot image"
-        return 1
-    fi
-}
-
 test_standard_ci_proxy() {
     if [[ -n "$http_proxy" ]]; then
         echo "It looked like we are running in a PROXIED environment"
@@ -77,7 +70,6 @@ test_mock_genconfig() {
 }
 
 test_standard_ci() {
-    test_standard_ci_repos
     test_standard_ci_proxy
     test_mock_genconfig
 }

@@ -191,10 +191,6 @@ prepare_chroot() {
     init_chroot "${mock_chroot}" "${mock_dir}" 2>&1 \
         | tee -a "$LOGS_DIR/init/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
-    makedir "$LOGS_DIR/populate_mock"
-    populate_mock "$mock_chroot" "$mock_dir" 2>&1 \
-        | tee -a "$LOGS_DIR/populate_mock/stdout_stderr.log"
-    [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
     mock_conf_with_mounts="$(
         gen_mock_config "$base_chroot" "$dist_label" "$script" "with_mounts" \
             "${packages[@]}"
@@ -469,56 +465,6 @@ EOC
 }
 
 
-populate_mock() {
-    local chroot="${1?}"
-    local conf_dir="${2?}"
-    local start \
-        end \
-        src_mnt \
-        dst_mnt \
-        file_mount_points \
-        file_mount_point_dirs
-    start="$(date +%s)"
-    echo "========== Populating mock environment"
-    file_mount_points=()
-    file_mount_point_dirs=()
-    for mount_opt in $(get_data_from_file "$script" mounts "$dist_label"); do
-        [[ "$mount_opt" == "" ]] && continue
-        if [[ "$mount_opt" =~ ^([^:]*)(:(.*))?$ ]]; then
-            src_mnt="${BASH_REMATCH[1]}"
-            dst_mnt="${BASH_REMATCH[3]:-$src_mnt}"
-            if [[ -e "$src_mnt" && ! -d "$src_mnt" ]]; then
-                echo "Will create mount point for file: $src_mnt" >&2
-                file_mount_points+=("'$dst_mnt'")
-                file_mount_point_dirs+=("'$(dirname $dst_mnt)'")
-            fi
-        fi
-    done
-    local logs_dir="$LOGS_DIR/populate_mock"
-    mkdir -p "$logs_dir"
-    $MOCK \
-        --old-chroot \
-        --configdir="$conf_dir" \
-        --root="$chroot" \
-        --resultdir="$logs_dir" \
-        --shell <<EOC
-            set -e
-            # Fix that allows using yum inside the chroot on dnf enabled
-            # distros
-            [[ -d /etc/dnf ]] && [[ -e /etc/yum/yum.conf ]] && cat /etc/yum/yum.conf > /etc/dnf/dnf.conf
-            rm -Rfv /var/lib/rpm/__*
-            rpm --rebuilddb
-            [[ -z "${file_mount_point_dirs[@]}" ]] || mkdir -p ${file_mount_point_dirs[@]}
-            [[ -z "${file_mount_points[@]}" ]] || touch ${file_mount_points[@]}
-EOC
-    res=$?
-    end="$(date +%s)"
-    echo "Populating mock took $((end - start)) seconds"
-    echo "================================"
-    return $res
-}
-
-
 scrub_chroot() {
     local chroot="${1?}"
     local confdir="${2?}"
@@ -744,11 +690,6 @@ run_script_in_mock() {
         "${mock_enable_network[@]}" \\
         --shell <<EOS
             set -e
-            # Remove all system repos from the environment to ensure we're not
-            # using any pakcge repos we didn't specify explicitly
-            rpm -qf /etc/system-release \
-                | xargs -r rpm -ql fedora-repos{,-rawhide} epel-release \
-                | grep '/etc/yum\.repos\.d/.*\.repo' | xargs -r rm -fv
             logdir="\\\$(mktemp --tmpdir -d -t mock_logs.XXXXXXXX)"
             mkdir -p "\\\$logdir"
             export HOME=$MOUNT_POINT
@@ -795,11 +736,6 @@ EOC
         "${mock_enable_network[@]}" \
         --shell <<EOS
             set -e
-            # Remove all system repos from the environment to ensure we're not
-            # using any pakcge repos we didn't specify explicitly
-            rpm -qf /etc/system-release \
-                | xargs -r rpm -ql fedora-repos{,-rawhide} epel-release \
-                | grep '/etc/yum\.repos\.d/.*\.repo' | xargs -r rm -fv
             logdir="\$(mktemp --tmpdir -d -t mock_logs.XXXXXXXX)"
             mkdir -p "\$logdir"
             export HOME=$MOUNT_POINT
