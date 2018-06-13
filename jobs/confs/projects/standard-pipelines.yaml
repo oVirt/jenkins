@@ -55,6 +55,7 @@
       - imgbased
       - jenkins
       - otopi
+      - ovirt-appliance
       - ovirt-engine-dashboard
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
