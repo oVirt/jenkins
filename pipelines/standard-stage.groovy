@@ -1,16 +1,15 @@
 // standard-stage.groovy - Pipeling-based STD-CI implementation
 //
 
-import hudson.model.StringParameterValue
 import hudson.model.ParametersAction
 
 def project_lib
+def stdci_summary_lib
 
 String std_ci_stage
 def project
 def jobs
 def queues
-String summary_template
 
 def on_load(loader){
     // Copy methods from loader to this script
@@ -29,9 +28,7 @@ def on_load(loader){
             [repo_name, refspec, url, head, clone_dir_name])
     }
     project_lib = loader.load_code('libs/stdci_project.groovy', this)
-
-    summary_template = readFile \
-        "${WORKSPACE}/jenkins/data/templates/build_summary.html"
+    stdci_summary_lib = loader.load_code('libs/stdci_summary.groovy', this)
 }
 
 def loader_main(loader) {
@@ -94,9 +91,8 @@ def main() {
                     artifacts: 'exported-artifacts/**'
                 junit keepLongStdio: true, allowEmptyResults: true, \
                     testResults: 'exported-artifacts/**/*xml'
-                def summary = render_build_summary(project, threads_summary)
-                writeFile([file: 'ci_build_summary.html', text: summary])
-                archiveArtifacts artifacts: 'ci_build_summary.html'
+                // Generate and archive the summary
+                stdci_summary_lib.generate_summary(project, threads_summary)
             }
         }
     }
@@ -286,69 +282,6 @@ def run_std_ci_jobs(project, jobs, threads_summary) {
         branches[get_job_name(job)] = mk_std_ci_runner(threads_summary, project, job)
     }
     parallel branches
-}
-
-@NonCPS
-def render_build_summary(project, threads_summary) {
-    def artifacts = currentBuild.rawBuild.getArtifacts()
-
-    def findbugs_summary_url = '#'
-    def findbugs_summary_url_disabled = 'disabled'
-    def findbugs_summary_exists = artifacts.any { it ==~ /find-bugs\/.+\.xml/ }
-    if(findbugs_summary_exists) {
-        findbugs_summary_url = env.BUILD_URL + '/findbugsResult'
-        findbugs_summary_url_disabled = ''
-    }
-
-    def junit_summary_url = '#'
-    def junit_summary_url_disabled = 'disabled'
-    def junit_summary_exists = artifacts.any {
-        it ==~ /(.+\.junit\.xml|nosetests.*)/
-    }
-    if(junit_summary_exists) {
-        junit_summary_url = env.BUILD_URL + '/testReport'
-        junit_summary_url_disabled = ''
-    }
-
-    def data = [
-        build_url: env.BUILD_URL,
-        blue_ocean_url: env.RUN_DISPLAY_URL,
-        change_url: project.change_url,
-        change_url_disabled: project.change_url_disabled,
-        change_url_title: project.change_url_title,
-        rerun_title: project.rerun_title,
-        rerun_url: project.rerun_url,
-        menu_items: [
-            [
-                title: 'Test results',
-                url: junit_summary_url,
-                disabled: junit_summary_url_disabled,
-                icon: 'pficon pficon-process-automation'
-            ],
-            [
-                title: 'Test results analyzer',
-                url: env.BUILD_URL + '/test_results_analyzer',
-                disabled: '',
-                icon: 'pficon pficon-cpu'
-            ],
-            [
-                title: 'Findbugs results',
-                url: findbugs_summary_url,
-                disabled: findbugs_summary_url_disabled,
-                icon: 'fa fa-bug'
-            ],
-            [
-                title: 'Full build log',
-                url: env.BUILD_URL + '/consoleText',
-                disabled: '',
-                icon: 'pficon pficon-build'
-            ],
-        ],
-        thread_blocks: threads_summary
-    ]
-
-    def engine = new groovy.text.StreamingTemplateEngine()
-    return engine.createTemplate(summary_template).make(data).toString()
 }
 
 @NonCPS
