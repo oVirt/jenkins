@@ -11,12 +11,10 @@
           node-filter: el7
       - el6:
           node-filter: el7
-      - fc26:
-          node-filter: fc26
       - fc27:
-          node-filter: fc26
+          node-filter: fc27
       - fcraw:
-          node-filter: fc26
+          node-filter: fc28
     arch: x86_64
     jobs:
         - 'jenkins_{version}_{stage}-{distro}-{arch}'
