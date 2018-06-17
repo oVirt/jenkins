@@ -1,6 +1,7 @@
 // ovirt_change-queue-tester - Change queue tests for oVirt
 //
 def project_lib
+def stdci_runner_lib
 
 def ovirt_release
 def ost_project
@@ -31,6 +32,7 @@ def on_load(loader) {
             loader, 'load_code', [code_file, load_as])
     }
     project_lib = load_code('libs/stdci_project.groovy', this)
+    stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy', this)
 }
 
 def extra_load_change_data_py(change_list_var, mirrors_var) {
@@ -53,6 +55,7 @@ def deploy(change_data) {
     deploy_to_tested(ovirt_release, change_data)
 }
 
+
 @NonCPS
 def get_queue_ovirt_release() {
     def match = (env.JOB_NAME =~ /^ovirt-(.*)_change-queue-tester$/)
@@ -65,55 +68,44 @@ def get_queue_ovirt_release() {
 
 def run_ost_tests(ovirt_release) {
     ost_project = get_ost_project()
-    def ost_suit_types = get_available_ost_suit_types(ovirt_release)
+    def available_suites = get_available_ost_suites(ovirt_release)
     echo "Will run the following OST ($ovirt_release) " +
-        "suits: ${ost_suit_types.join(', ')}"
-    def branches = [:]
-    for(suit_type in ost_suit_types) {
-        branches["${suit_type}-suit"] = \
-            mk_ost_runner(ovirt_release, suit_type, 'el7')
-    }
-    parallel branches
+        "suits: ${available_suites.stage.join(', ')}"
+    stdci_runner_lib.run_std_ci_jobs(ost_project, available_suites)
 }
 
-def get_available_ost_suit_types(ovirt_release) {
+def get_available_ost_suites(ovirt_release) {
     def suit_types_to_use = [
         'basic', 'upgrade-from-release', 'upgrade-from-prevrelease'
     ]
     def available_suits = []
     project_lib.checkout_project(ost_project)
     dir('ovirt-system-tests') {
+        def script
         for(suit_type in suit_types_to_use) {
-            if(fileExists("automation/${suit_type}_suite_${ovirt_release}.sh"))
-                available_suits << suit_type
+            script = "automation/${suit_type}_suite_${ovirt_release}.sh"
+            if(fileExists(script)){
+                available_suits << [
+                    'stage': "${suit_type}-suit",
+                    'substage': 'default',
+                    'distro': 'el7',
+                    'arch': 'x86_64',
+                    'script': script,
+                    'runtime_reqs': ['supportnestinglevel': 2],
+                    'release_branches': [:],
+                ]
+            }
         }
     }
     return available_suits
-}
-
-def mk_ost_runner(ovirt_release, suit_type, distro) {
-    return {
-        def suit_dir = "$suit_type-suit-$ovirt_release-$distro"
-        // stash an empty file so we don`t get errors in no artifacts get stashed
-        writeFile file: '__no_artifacts_stashed__', text: ''
-        stash includes: '__no_artifacts_stashed__', name: suit_dir
-        try {
-            node('integ-tests') {
-                run_ost_on_node(ovirt_release, suit_type, distro, suit_dir)
-            }
-        } finally {
-            dir("exported-artifacts/$suit_dir") {
-                unstash suit_dir
-            }
-        }
-    }
 }
 
 def get_ost_project() {
     def base_scm_url = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
     return project_lib.new_project(
         clone_url: base_scm_url + '/ovirt-system-tests',
-        name: 'ovirt-system-tests'
+        name: 'ovirt-system-tests',
+        clone_dir_name: 'ovirt-system-tests'
     )
 }
 
@@ -229,6 +221,7 @@ def deploy_to_tested(version, change_data) {
     )
 }
 
+
 @NonCPS
 def get_queue_id(job_name) {
     return Jenkins.instance.queue.items.toList().find({
@@ -236,10 +229,12 @@ def get_queue_id(job_name) {
     })?.id
 }
 
+
 @NonCPS
 def is_in_queue(queue_id) {
     Jenkins.instance.queue.getItem(queue_id) != null
 }
+
 
 @NonCPS
 def get_build_from_queue(job_name, queue_id) {
@@ -250,6 +245,7 @@ def get_build_from_queue(job_name, queue_id) {
     }
     return job.builds.find({ bld -> bld.queueId == queue_id })?.id
 }
+
 
 @NonCPS
 def get_last_build(job_name) {
@@ -265,6 +261,7 @@ def get_last_build(job_name) {
         return builds.first().id
     }
 }
+
 
 @NonCPS
 def build_is_done(job_name, build_id) {
