@@ -60,6 +60,7 @@
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
       - ovirt-engine-yarn
+      - ovirt-jboss-modules-maven-plugin
       - ovirt-js-dependencies
       - ovirt-provider-ovn
       - ovirt-system-tests
