@@ -133,10 +133,9 @@ try_proxy() {
     local repo_url="$(extract_repo_url_from_mock_conf "$mock_conf_file")"
     http_proxy="$proxy" \
         timeout 5 \
-        wget \
-            -q \
+        curl \
+            --silent \
             "$repo_url" \
-            -O - \
     &>/dev/null
     return $?
 }
