@@ -261,17 +261,20 @@ verify_ipv6() {
 }
 
 extra_packages() {
-    # Add extra packages we need for mock_runner.sh
+    # Add extra packages we need for STDCI
     # packages common for all distros
     local package_list=(
         git mock sed bash procps-ng createrepo python-paramiko
-        PyYAML python2-pyxdg python-jinja2 python-py
+        PyYAML python2-pyxdg python-jinja2 python-py python-six
     )
     if [[ -e '/usr/bin/dnf' ]]; then
         # Fedora-specific packages
         package_list+=(python3-PyYAML python3-py python3-pyxdg)
         if can_sudo dnf; then
-            package_list+=(firewalld haveged libvirt qemu-kvm nosync libselinux-utils)
+            package_list+=(
+                firewalld haveged libvirt qemu-kvm nosync libselinux-utils
+                python3-six
+            )
         fi
     else
         # CentOS-specific packages
