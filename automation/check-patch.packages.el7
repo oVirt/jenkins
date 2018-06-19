@@ -7,6 +7,7 @@ pytest
 python-mock
 python-jinja2
 python-paramiko
+python-six
 PyYAML
 python34-jinja2
 python34-paramiko
