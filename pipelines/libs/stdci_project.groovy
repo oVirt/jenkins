@@ -99,6 +99,34 @@ def get_project_from_gerrit() {
     return project
 }
 
+def get_generic_queue_build_args(
+    String queue, String project, String branch, String sha, String url=null
+) {
+    def json_file = "${queue}_build_args.json"
+    withEnv(['PYTHONPATH=jenkins']) {
+        sh """\
+            #!/usr/bin/env python
+            from os import environ
+            from scripts.change_queue import JenkinsChangeQueueClient
+            from scripts.change_queue.changes import (
+                GitMergedChange, GerritMergedChange
+            )
+
+            jcqc = JenkinsChangeQueueClient('${queue}')
+            if 'GERRIT_EVENT_TYPE' in environ:
+                change = GerritMergedChange.from_jenkins_env()
+            else:
+                change = GitMergedChange(
+                    '$project', '$branch', '$sha'${url ? ", '$url'" : ""}
+                )
+            change.set_current_build_from_env()
+            jcqc.add(change).as_pipeline_build_step_json('${json_file}')
+        """.stripIndent()
+    }
+    def build_args = readJSON(file: json_file)
+    return build_args
+}
+
 def get_project_from_params() {
     String project_name = params.STD_CI_CLONE_URL.tokenize('/')[-1] - ~/.git$/
     return new Project(
