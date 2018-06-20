@@ -65,5 +65,6 @@
       - ovirt-provider-ovn
       - ovirt-system-tests
       - releng-tools
+      - repoman
     jobs:
       - '{project}_standard-gerrit-jobs'
