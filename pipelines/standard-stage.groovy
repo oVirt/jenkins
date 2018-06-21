@@ -576,10 +576,8 @@ def invoke_pusher(Map options=[:], project, String cmd) {
     sshagent(['std-ci-git-push-credentials']) {
         return sh(
             script: """
-                logs_dir="exported-artifacts/pusher_logs"
-                mkdir -p "\$logs_dir"
                 ${env.WORKSPACE}/jenkins/scripts/pusher.py \
-                    --verbose --log="\$logs_dir/pusher_${cmd}.log" \
+                    --log --verbose --debug \
                     ${cmd} ${options.get('args', []).join(' ')}
             """,
             returnStatus: options.get('returnStatus', false)
