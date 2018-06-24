@@ -5,11 +5,11 @@
     version:
       - master:
           branch: master
-      - 4.2:
+      - '4.2':
           branch: master
-      - 4.1:
+      - '4.1':
           branch: master
-      - 3.6:
+      - '3.6':
           branch: master
     stage:
       - check-patch
@@ -17,8 +17,8 @@
       - el7
       - fc27
     exclude:
-      - { version: 4.1, distro: fc27 }
-      - { version: 3.6, distro: fc27 }
+      - { version: '4.1', distro: fc27 }
+      - { version: '3.6', distro: fc27 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'

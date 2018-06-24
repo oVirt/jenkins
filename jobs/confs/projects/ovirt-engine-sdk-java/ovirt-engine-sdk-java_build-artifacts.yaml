@@ -3,7 +3,7 @@
     project: ovirt-engine-sdk-java
     trigger: on-change
     version:
-      - 3.6:
+      - '3.6':
           branch: sdk_3.6
     stage:
       - check-patch
@@ -12,9 +12,9 @@
       - el7
       - fc28
     exclude:
-      - { version: 4.2, distro: fc28 }
-      - { version: 4.1, distro: fc28 }
-      - { version: 3.6, distro: fc28 }
+      - { version: '4.2', distro: fc28 }
+      - { version: '4.1', distro: fc28 }
+      - { version: '3.6', distro: fc28 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -23,9 +23,9 @@
     <<: *basic-params
     name: java-ovirt-engine-sdk4_checks
     version:
-      - 4.1:
+      - '4.1':
           branch: sdk_4.1
-      - 4.2:
+      - '4.2':
           branch: sdk_4.2
       - master:
           branch: master
@@ -40,11 +40,11 @@
     version:
       - master:
           branch: sdk_3.6
-      - 4.2:
+      - '4.2':
           branch: sdk_3.6
-      - 4.1:
+      - '4.1':
           branch: sdk_3.6
-      - 3.6:
+      - '3.6':
           branch: sdk_3.6
     jobs:
       - 'ovirt-engine-sdk-java_{version}_build-artifacts-{distro}-{arch}'
@@ -57,9 +57,9 @@
     version:
       - master:
           branch: master
-      - 4.2:
+      - '4.2':
           branch: sdk_4.2
-      - 4.1:
+      - '4.1':
           branch: sdk_4.1
     jobs:
       - 'java-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'

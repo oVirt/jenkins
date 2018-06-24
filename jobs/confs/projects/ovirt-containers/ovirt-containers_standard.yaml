@@ -6,7 +6,7 @@
     version:
       - master:
           branch: master
-      - 4.1:
+      - '4.1':
           branch: ovirt-4.1
     distro:
       - el7:

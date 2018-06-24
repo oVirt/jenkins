@@ -5,9 +5,9 @@
     version:
       - master:
           branch: master
-      - 4.2:
+      - '4.2':
           branch: ovirt-engine-extension-logger-log4j-1.0
-      - 4.1:
+      - '4.1':
           branch: ovirt-engine-extension-logger-log4j-1.0
     stage:
       - check-patch
@@ -15,7 +15,7 @@
       - el7
       - fc28
     exclude:
-      - { version: 4.1, distro: fc28 }
+      - { version: '4.1', distro: fc28 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'

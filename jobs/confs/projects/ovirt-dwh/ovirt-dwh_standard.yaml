@@ -5,11 +5,11 @@
     version:
       - master:
           branch: master
-      - 4.2:
+      - '4.2':
           branch: ovirt-engine-dwh-4.2
-      - 4.1:
+      - '4.1':
           branch: ovirt-engine-dwh-4.1
-      - 3.6:
+      - '3.6':
           branch: ovirt-engine-dwh-3.6
     stage:
       - check-patch
@@ -19,12 +19,12 @@
       - el7
       - fc28
     exclude:
-      - { version: 4.2, distro: fc28 }
-      - { version: 4.1, distro: fc28 }
-      - { version: 3.6, distro: fc28 }
+      - { version: '4.2', distro: fc28 }
+      - { version: '4.1', distro: fc28 }
+      - { version: '3.6', distro: fc28 }
       - { version: master, distro: el6 }
-      - { version: 4.2, distro: el6 }
-      - { version: 4.1, distro: el6 }
+      - { version: '4.2', distro: el6 }
+      - { version: '4.1', distro: el6 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'

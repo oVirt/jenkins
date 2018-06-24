@@ -62,9 +62,9 @@
     <<: *ioprocess_standard_common
     name: ioprocess-4.1
     version:
-      - 4.1:
+      - '4.1':
           branch: ioprocess-0.16
-          repoversion: 4.1
+          repoversion: '4.1'
     stage:
       - build-artifacts
     distro:

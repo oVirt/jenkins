@@ -3,7 +3,7 @@
     project: ovirt-engine-sdk
     trigger: on-change
     version:
-      - 3.6:
+      - '3.6':
           branch: sdk_3.6
     stage:
       - check-merged
@@ -17,12 +17,12 @@
       - s390x:
           node-filter: s390x
     exclude:
-      - { version: 4.1, distro: fc28 }
-      - { version: 4.1, arch: s390x, }
-      - { version: 3.6, arch: s390x, }
-      - { version: 3.6, arch: ppc64le, }
-      - {               arch: s390x,   distro: el7, }
-      - {               arch: ppc64le, distro: fc28, }
+      - { version: '4.1', distro: fc28 }
+      - { version: '4.1', arch: s390x, }
+      - { version: '3.6', arch: s390x, }
+      - { version: '3.6', arch: ppc64le, }
+      - {                 arch: s390x,   distro: el7, }
+      - {                 arch: ppc64le, distro: fc28, }
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
@@ -31,9 +31,9 @@
     name: python-ovirt-engine-sdk4_checks
     project: ovirt-engine-sdk
     version:
-      - 4.1:
+      - '4.1':
           branch: sdk_4.1
-      - 4.2:
+      - '4.2':
           branch: sdk_4.2
       - master:
           branch: master
@@ -51,11 +51,11 @@
     version:
       - master:
           branch: sdk_3.6
-      - 4.2:
+      - '4.2':
           branch: sdk_3.6
-      - 4.1:
+      - '4.1':
           branch: sdk_3.6
-      - 3.6:
+      - '3.6':
           branch: sdk_3.6
     distro:
       - el7
@@ -71,9 +71,9 @@
     version:
       - master:
           branch: master
-      - 4.2:
+      - '4.2':
           branch: sdk_4.2
-      - 4.1:
+      - '4.1':
           branch: sdk_4.1
     distro:
       - el7

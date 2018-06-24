@@ -161,4 +161,4 @@
 
     publishers:
       - publish-rpms-nightly-publishers:
-          version: 4.1
+          version: '4.1'

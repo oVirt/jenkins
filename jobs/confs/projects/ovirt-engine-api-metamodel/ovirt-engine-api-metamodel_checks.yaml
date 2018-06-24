@@ -5,9 +5,9 @@
     version:
       - master:
           branch: master
-      - 4.2:
+      - '4.2':
           branch: metamodel_1.2
-      - 4.1:
+      - '4.1':
           branch: metamodel_1.1
     stage: check-patch
     distro:
