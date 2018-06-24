@@ -242,7 +242,7 @@
 - job-template: &standard-pipeline
     <<: *standard-template-basic
     name: '{project}_{version}_{stage}-pipeline'
-    project-type: workflow
+    project-type: pipeline
     dsl: !include-raw: groovy-scripts/standard-pipeline.groovy
     properties:
         - build-discarder:

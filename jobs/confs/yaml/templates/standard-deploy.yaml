@@ -1,6 +1,6 @@
 - job-template:
     name: 'deploy-to-{reponame}_{repotype}'
-    project-type: workflow
+    project-type: pipeline
     quiet-period: 0
     concurrent: true
     properties:

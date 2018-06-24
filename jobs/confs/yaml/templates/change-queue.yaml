@@ -1,6 +1,6 @@
 - job-template:
     name: '{queue-name}_change-queue'
-    project-type: workflow
+    project-type: pipeline
     quiet-period: 0
     parameters:
       - string:
@@ -23,7 +23,7 @@
 
 - job-template:
     name: '{queue-name}_change-queue-tester'
-    project-type: workflow
+    project-type: pipeline
     quiet-period: 0
     properties:
       - build-discarder:
