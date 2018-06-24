@@ -9,8 +9,8 @@
           description: 'Tarball with the sources to build'
     builders:
       - system-groovy:
-          command: !include-raw groovy-scripts/build-artifacts-manual-any_get-target-jobs.groovy
-      - shell: !include-raw shell-scripts/build-artifacts-manual_any.sh
+          command: !include-raw: groovy-scripts/build-artifacts-manual-any_get-target-jobs.groovy
+      - shell: !include-raw: shell-scripts/build-artifacts-manual_any.sh
       - trigger-builds:
           - project: '${{TARGET_JOBS}}'
             block: true
