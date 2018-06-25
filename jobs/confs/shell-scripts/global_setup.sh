@@ -15,6 +15,7 @@ main() {
     user_configuration || failed=true
     nested_kvm || failed=true
     verify_ipv6 || failed=true
+    load_ovs_module || failed=true
     if can_sudo systemctl; then
         docker_setup || failed=true
         setup_postfix || failed=true
@@ -273,15 +274,18 @@ extra_packages() {
         package_list+=(python3-PyYAML python3-py python3-pyxdg)
         if can_sudo dnf; then
             package_list+=(
-                firewalld haveged libvirt qemu-kvm nosync libselinux-utils
-                python3-six
+                firewalld haveged libvirt qemu-kvm python3-six
+                nosync libselinux-utils kmod
             )
         fi
     else
         # CentOS-specific packages
         package_list+=(python34-PyYAML)
         if can_sudo yum; then
-            package_list+=(firewalld haveged libvirt qemu-kvm-rhev nosync libselinux-utils)
+            package_list+=(
+                firewalld haveged libvirt qemu-kvm-rhev
+                nosync libselinux-utils kmod
+            )
         fi
     fi
     verify_packages "${package_list[@]}"
@@ -369,6 +373,27 @@ disable_dnf_makecache() {
         if [ -f "/etc/systemd/system/basic.target.wants/dnf-makecache.timer" ]; then
             log ERROR "failed to disable dnf-makecache"
             return 1
+        fi
+    fi
+}
+
+is_ovs_module_loaded() {
+    # check if openvswitch kernel module is loaded
+    /usr/sbin/lsmod | cut -d" " -f1 | grep openvswitch > /dev/null || return 1
+    return 0
+}
+
+load_ovs_module() {
+    # load OVS module to ensure VDSM tests are run properly
+    if can_sudo /usr/sbin/modprobe; then
+        if ! is_ovs_module_loaded; then
+            log INFO "loading OVS module"
+            sudo -n /usr/sbin/modprobe openvswitch
+            if is_ovs_module_loaded; then return 0
+            else
+                log ERROR "failed to load OVS module, aborting"
+                return 1
+            fi
         fi
     fi
 }
