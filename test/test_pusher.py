@@ -17,15 +17,10 @@ from scripts.pusher import (
     push_to_scm, get_push_details, parse_push_details_struct, PushDetails,
     get_remote_url_from_ws, get_patch_header, add_key_to_known_hosts,
     PushMapError, PushMapMatchError, PushMapSyntaxError, PushMapIOError,
-    GitProcessError, InvalidGitRef, git_rev_parse, merge_to_scm,
-    check_if_similar_patch_pushed, patch_header_is_true, get_patch_owner,
-    gerrit_user_in_group, parse_yaml_to_list, can_merge_to_scm, PatchInfoError,
+    merge_to_scm, patch_header_is_true, check_if_similar_patch_pushed,
+    get_patch_owner, gerrit_user_in_group, can_merge_to_scm, PatchInfoError,
+    parse_yaml_to_list,
 )
-
-
-class TestGitProcessError(object):
-    def test_inheritance(self):
-        assert issubclass(GitProcessError, CalledProcessError)
 
 
 class TestPushMapError(object):
@@ -742,28 +737,6 @@ def local_repo_tag(local_repo_patch, git_at):
     git_at(local_repo_patch)('tag', 'some-tag')
     git_at(local_repo_patch)('tag', '-a', 'some-atag', '-m', 'some-tag')
     return local_repo_patch
-
-
-@pytest.mark.parametrize(('ref', 'exp_idx'), [
-    ('HEAD', 0),
-    ('HEAD^', 1),
-    ('refs/heads/master', 0),
-    ('refs/remotes/origin/master', 1),
-    ('master', 0),
-    ('master~1', 1),
-    ('no/such/ref', InvalidGitRef),
-    ('some-tag', 0),
-    ('some-atag', 0),
-])
-def test_git_rev_parse(local_repo_tag, local_log, monkeypatch, ref, exp_idx):
-    monkeypatch.chdir(local_repo_tag)
-    if isinstance(exp_idx, type) and issubclass(exp_idx, Exception):
-        with pytest.raises(exp_idx) as e:
-            git_rev_parse(ref)
-        assert e.value.ref == ref
-    else:
-        out = git_rev_parse(ref)
-        assert out == local_log()[exp_idx]
 
 
 @pytest.mark.parametrize('can_merge', [True, False])

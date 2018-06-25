@@ -16,8 +16,10 @@ from six.moves.urllib.parse import urlparse
 from subprocess import Popen, CalledProcessError, STDOUT, PIPE
 try:
     from .stdci_logging import add_logging_args, setup_console_logging
+    from .git_utils import git, GitProcessError, git_rev_parse, InvalidGitRef
 except ValueError:
     from stdci_logging import add_logging_args, setup_console_logging
+    from git_utils import git, GitProcessError, git_rev_parse, InvalidGitRef
 
 
 logger = logging.getLogger(__name__)
@@ -746,43 +748,6 @@ def add_key_to_known_hosts(key):
         known_hosts.write("{0}\n".format(key))
 
 
-class GitProcessError(CalledProcessError):
-    pass
-
-
-def git(*args, **kwargs):
-    """
-    Util function to execute git commands
-
-    :param list *args:         A list of git command line args
-    :param bool append_stderr: If set to true, append STDERR to the output
-
-    Executes git commands and return output. Raise GitProcessError if Git fails
-
-    :rtype: string
-    :returns: output or error of the command
-    """
-    git_command = ['git']
-    git_command.extend(args)
-
-    stderr = (STDOUT if kwargs.get('append_stderr', False) else PIPE)
-    logger.debug("Executing command: '%s'", ' '.join(git_command))
-    process = Popen(git_command, stdout=PIPE, stderr=stderr)
-    output, error = process.communicate()
-    retcode = process.poll()
-    if error is None:
-        error = ''
-    else:
-        error = error.decode('utf-8')
-    output = output.decode('utf-8')
-    logger.debug('Git exited with status: %d', retcode, extra={'blocks': (
-        ('stderr', error), ('stdout', output)
-    )},)
-    if retcode:
-        raise GitProcessError(retcode, git_command)
-    return output
-
-
 def setupLogging(level=logging.INFO):
     """Basic logging setup for users of this script who don't what to bother
     with it
@@ -792,30 +757,6 @@ def setupLogging(level=logging.INFO):
     """
     logging.basicConfig()
     logging.getLogger().level = level
-
-
-class InvalidGitRef(Exception):
-    def __init__(self, message, ref):
-        super(InvalidGitRef, self).__init__(message)
-        self.ref = ref
-
-
-def git_rev_parse(ref):
-    """Parse a git ref and return the equivalent hash
-
-    :param str ref: A git commit reference to parse (branch name, tag, etc.)
-
-    :rtype: str
-    """
-    try:
-        return git('rev-parse', "{0}^{{commit}}".format(ref)).rstrip()
-    except GitProcessError as e:
-        if e.returncode == 128:
-            raise InvalidGitRef(
-                "Invalid Git ref given: '{0}'".format(ref), ref
-            )
-        else:
-            raise
 
 
 if __name__ == '__main__':
