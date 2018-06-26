@@ -59,6 +59,7 @@
       - ovirt-engine-dashboard
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
+      - ovirt-engine-ui-extensions
       - ovirt-engine-yarn
       - ovirt-jboss-modules-maven-plugin
       - ovirt-js-dependencies
