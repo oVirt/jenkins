@@ -117,6 +117,28 @@ mk_wokspace_dirs() {
 }
 
 lago_setup() {
+    # Allow qemu to acces VM images located at $WORKSPACE
+    local configure_qemu=true
+
+    for cmd in "usermod" "chmod"; do
+        can_sudo "$cmd" && continue
+        configure_qemu=false
+        log WARN "Can't configure qemu user, no sudo access to $cmd"
+    done
+
+    "$configure_qemu" && {
+        sudo -n usermod -a -G "$USER" qemu || {
+            log ERROR "Failed to add user qemu to group $USER"
+            return 1
+        }
+        verify_set_permissions 750 "$HOME" || {
+            log ERROR "Failed to set permissions on $HOME"
+            #Rollback
+            gpasswd -d qemu "$USER"
+            return 1
+        }
+    }
+
     # create directory for lago cache and repos
     if [ ! -d /var/lib/lago ]; then
         if can_sudo install; then
