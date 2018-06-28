@@ -55,7 +55,7 @@ def parse_args():
             'Whitelisted repositories: images from those repositories will not'
             ' be deleted'
         ),
-        nargs="+"
+        nargs="+", default=[]
     )
     add_logging_args(parser)
     return parser.parse_args()
