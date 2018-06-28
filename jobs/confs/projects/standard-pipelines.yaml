@@ -67,5 +67,6 @@
       - ovirt-system-tests
       - releng-tools
       - repoman
+      - nsis-simple-service-plugin
     jobs:
       - '{project}_standard-gerrit-jobs'
