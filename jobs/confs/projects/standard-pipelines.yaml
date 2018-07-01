@@ -34,6 +34,15 @@
       - '{org}_{project}_standard-gh-jobs'
 
 - project:
+    name: ansibleplaybookbundle-standard-pipelines-github
+    github-auth-id: github-auth-token
+    org: ansibleplaybookbundle
+    project:
+      - kubevirt-apb
+    jobs:
+      - '{org}_{project}_standard-gh-jobs'
+
+- project:
     name: jniederm-standard-piplines-github
     github-auth-id: github-auth-token
     org: jniederm
