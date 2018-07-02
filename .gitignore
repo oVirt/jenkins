@@ -14,3 +14,4 @@ mocker-*.cfg
 .idea/
 *.iml
 src/
+.pytest_cache/
