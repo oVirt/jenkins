@@ -8,6 +8,8 @@
       - inject: &standard-system-tests-properties-inject
           properties-content: |
             PROJECT: {project}
+      - build-discarder:
+            days-to-keep: 10
     triggers:
       - timed: 'H H/8 * * *'
     scm:
