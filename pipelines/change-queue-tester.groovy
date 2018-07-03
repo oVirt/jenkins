@@ -188,16 +188,12 @@ def wait_for_test_artifacts(change_data) {
 }
 
 def prepare_test_data(change_data) {
-    dir('exported-artifacts') {
-        def extra_sources = make_extra_sources(change_data.builds)
-        writeFile(file: 'extra_sources', text: extra_sources)
-
-        print "extra_sources\n-------------\n${extra_sources}"
-        def mirrors = change_data.get('mirrors', 'No mirrors configuration')
-        print "mirrors\n-------\n${mirrors}}"
-
-        stash includes: 'extra_sources', name: 'extra_sources'
-    }
+    change_data.extra_sources = make_extra_sources(change_data.builds)
+    writeFile file: 'extra_sources', text: change_data.extra_sources
+    archiveArtifacts 'extra_sources'
+    print "extra_sources\n-------------\n${change_data.extra_sources}"
+    def mirrors = change_data.get('mirrors', 'No mirrors configuration')
+    print "mirrors\n-------\n${mirrors}}"
 }
 
 def run_tests(change_data) {

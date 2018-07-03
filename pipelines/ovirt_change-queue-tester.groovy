@@ -17,9 +17,6 @@ def on_load(loader) {
     metaClass.checkout_jenkins_repo = { ...args ->
         loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
     }
-    metaClass.make_extra_sources = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'make_extra_sources', args)
-    }
     metaClass.run_jjb_script = { ...args ->
         loader.metaClass.invokeMethod(loader, 'run_jjb_script', args)
     }
@@ -69,12 +66,19 @@ def run_ost_tests(change_data, ovirt_release) {
     echo "Will run the following OST ($ovirt_release) " +
         "suits: ${ost_suit_types.join(', ')}"
     def branches = [:]
-    // Need to fallback to an empty string for mirrors to avoid edge case when
-    // writing it to a file
+    // Need to fallback to an empty strings to avoid edge case when writing it
+    // to a file
     def mirrors = change_data.get('mirrors', '')
+    def extra_sources = change_data.get('extra_sources', '')
     for(suit_type in ost_suit_types) {
         branches["${suit_type}-suit"] = \
-            mk_ost_runner(mirrors, ovirt_release, suit_type, 'el7')
+            mk_ost_runner(
+                mirrors,
+                extra_sources,
+                ovirt_release,
+                suit_type,
+                'el7'
+            )
     }
     parallel branches
 }
@@ -94,7 +98,7 @@ def get_available_ost_suit_types(ovirt_release) {
     return available_suits
 }
 
-def mk_ost_runner(mirrors, ovirt_release, suit_type, distro) {
+def mk_ost_runner(mirrors, extra_sources, ovirt_release, suit_type, distro) {
     return {
         def suit_dir = "$suit_type-suit-$ovirt_release-$distro"
         // stash an empty file so we don`t get errors in no artifacts get stashed
@@ -103,7 +107,13 @@ def mk_ost_runner(mirrors, ovirt_release, suit_type, distro) {
         try {
             node('integ-tests') {
                 run_ost_on_node(
-                    mirrors, ovirt_release, suit_type, distro, suit_dir)
+                    mirrors,
+                    extra_sources,
+                    ovirt_release,
+                    suit_type,
+                    distro,
+                    suit_dir
+                )
             }
         } finally {
             dir("exported-artifacts/$suit_dir") {
@@ -121,7 +131,9 @@ def get_ost_project() {
     )
 }
 
-def run_ost_on_node(mirrors, ovirt_release, suit_type, distro, stash_name) {
+def run_ost_on_node(
+    mirrors, extra_sources, ovirt_release, suit_type, distro, stash_name
+) {
     checkout_jenkins_repo()
     project_lib.checkout_project(ost_project)
     run_jjb_script('cleanup_slave.sh')
@@ -137,7 +149,8 @@ def run_ost_on_node(mirrors, ovirt_release, suit_type, distro, stash_name) {
             stash includes: reposync_config, name: "$stash_name-injected"
         }
         dir('ovirt-system-tests') {
-            unstash 'extra_sources'
+            def extra_sources_file = "${pwd()}/extra_sources"
+            writeFile file: extra_sources_file, text: extra_sources
             mock_runner(
                 "${suit_type}_suite_${ovirt_release}.sh",
                 distro,
@@ -226,7 +239,7 @@ def wait_for_tested_deployment(version) {
 }
 
 def deploy_to_tested(version, change_data) {
-    def extra_sources = make_extra_sources(change_data.builds)
+    def extra_sources = change_data.get('extra_sources', '')
     build(
         job: "deploy-to_ovirt-${version}_tested",
         parameters: [text(
