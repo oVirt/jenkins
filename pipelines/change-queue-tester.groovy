@@ -116,8 +116,6 @@ def get_test_changes() {
 }
 
 def load_change_data() {
-    def mirrors_file_name = 'mirrors.yaml'
-    def mirrors_file_path = "exported-artifacts/$mirrors_file_name"
     def extra_py = ''
 
     if(test_functions.metaClass.respondsTo(
@@ -150,15 +148,16 @@ def load_change_data() {
             with open('title.txt', 'w') as f:
                 f.write(cl.get_test_build_title())
 
-            with open('${mirrors_file_path}', 'w') as mf:
+            with open('mirrors.yaml', 'w') as mf:
                 yaml.safe_dump(mirrors, mf, default_flow_style=False)
         """.stripIndent()
     }
+    archiveArtifacts 'mirrors.yaml'
     return [
         builds: readJSON(file: 'builds_list.json'),
         summary: readFile('summary.txt'),
         title: readFile('title.txt'),
-        mirrors_file: mirrors_file_name,
+        mirrors: readFile('mirrors.yaml'),
     ]
 }
 
@@ -192,13 +191,12 @@ def prepare_test_data(change_data) {
     dir('exported-artifacts') {
         def extra_sources = make_extra_sources(change_data.builds)
         writeFile(file: 'extra_sources', text: extra_sources)
-        def mirrors = readFile(change_data.mirrors_file)
 
         print "extra_sources\n-------------\n${extra_sources}"
-        print "mirrors\n-------\n${mirrors}"
+        def mirrors = change_data.get('mirrors', 'No mirrors configuration')
+        print "mirrors\n-------\n${mirrors}}"
 
         stash includes: 'extra_sources', name: 'extra_sources'
-        stash includes: change_data.mirrors_file, name: 'mirrors'
     }
 }
 

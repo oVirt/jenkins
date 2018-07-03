@@ -46,7 +46,7 @@ def wait_for_artifacts(change_data) {
 }
 
 def run_tests(change_data) {
-    run_ost_tests(ovirt_release)
+    run_ost_tests(change_data, ovirt_release)
 }
 
 def deploy(change_data) {
@@ -63,15 +63,18 @@ def get_queue_ovirt_release() {
     }
 }
 
-def run_ost_tests(ovirt_release) {
+def run_ost_tests(change_data, ovirt_release) {
     ost_project = get_ost_project()
     def ost_suit_types = get_available_ost_suit_types(ovirt_release)
     echo "Will run the following OST ($ovirt_release) " +
         "suits: ${ost_suit_types.join(', ')}"
     def branches = [:]
+    // Need to fallback to an empty string for mirrors to avoid edge case when
+    // writing it to a file
+    def mirrors = change_data.get('mirrors', '')
     for(suit_type in ost_suit_types) {
         branches["${suit_type}-suit"] = \
-            mk_ost_runner(ovirt_release, suit_type, 'el7')
+            mk_ost_runner(mirrors, ovirt_release, suit_type, 'el7')
     }
     parallel branches
 }
@@ -91,7 +94,7 @@ def get_available_ost_suit_types(ovirt_release) {
     return available_suits
 }
 
-def mk_ost_runner(ovirt_release, suit_type, distro) {
+def mk_ost_runner(mirrors, ovirt_release, suit_type, distro) {
     return {
         def suit_dir = "$suit_type-suit-$ovirt_release-$distro"
         // stash an empty file so we don`t get errors in no artifacts get stashed
@@ -99,7 +102,8 @@ def mk_ost_runner(ovirt_release, suit_type, distro) {
         stash includes: '__no_artifacts_stashed__', name: suit_dir
         try {
             node('integ-tests') {
-                run_ost_on_node(ovirt_release, suit_type, distro, suit_dir)
+                run_ost_on_node(
+                    mirrors, ovirt_release, suit_type, distro, suit_dir)
             }
         } finally {
             dir("exported-artifacts/$suit_dir") {
@@ -117,7 +121,7 @@ def get_ost_project() {
     )
 }
 
-def run_ost_on_node(ovirt_release, suit_type, distro, stash_name) {
+def run_ost_on_node(mirrors, ovirt_release, suit_type, distro, stash_name) {
     checkout_jenkins_repo()
     project_lib.checkout_project(ost_project)
     run_jjb_script('cleanup_slave.sh')
@@ -126,15 +130,19 @@ def run_ost_on_node(ovirt_release, suit_type, distro, stash_name) {
     try {
         def suit_path = "ovirt-system-tests/$suit_type-suite-$ovirt_release"
         def reposync_config = "*.repo"
-        unstash 'mirrors'
-        def mirrors = "${pwd()}/mirrors.yaml"
-        inject_mirrors(suit_path, reposync_config, mirrors)
+        def mirrors_file = "${pwd()}/mirrors.yaml"
+        writeFile file: mirrors_file, text: mirrors
+        inject_mirrors(suit_path, reposync_config, mirrors_file)
         dir(suit_path) {
             stash includes: reposync_config, name: "$stash_name-injected"
         }
         dir('ovirt-system-tests') {
             unstash 'extra_sources'
-            mock_runner("${suit_type}_suite_${ovirt_release}.sh", distro, mirrors)
+            mock_runner(
+                "${suit_type}_suite_${ovirt_release}.sh",
+                distro,
+                mirrors_file
+            )
         }
     } finally {
         dir('ovirt-system-tests/exported-artifacts') {
