@@ -65,6 +65,7 @@
       - jenkins
       - otopi
       - ovirt-appliance
+      - ovirt-node-ng
       - ovirt-engine-dashboard
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
