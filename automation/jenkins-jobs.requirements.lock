@@ -2,7 +2,7 @@ certifi==2018.4.16
 chardet==3.0.4
 fasteners==0.14.1
 idna==2.7
-jenkins-job-builder==2.0.10
+jenkins-job-builder==2.0.0
 Jinja2==2.10
 MarkupSafe==1.0
 monotonic==1.5

@@ -21,17 +21,15 @@ diff_old_with_new() {
 
     changed=false
     mkdir -p "$project_folder/exported-artifacts"
-    diff --recursive -u "$old_xmls_dir" "$new_xmls_dir" \
+    diff -u "$old_xmls_dir" "$new_xmls_dir" \
     | "$project_folder/jobs/confs/shell-scripts/htmldiff.sh" \
     > "$project_folder/exported-artifacts/differences.html" \
-    && changed=true
+    || changed=true
 
     if $changed; then
         echo "WARNING: #### XML CHANGED ####"
         echo "Changed files:"
-        diff --recursive -q "$old_xmls_dir" "$new_xmls_dir" \
-            | awk '{ print $2 }' \
-            || :
+        diff -q "$old_xmls_dir" "$new_xmls_dir" | awk '{ print $2 }' || :
     fi
 }
 

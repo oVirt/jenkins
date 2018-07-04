@@ -14,7 +14,6 @@ generate_jobs_xml() {
         cd "$confs_dir"
         run_jjb test \
             --recursive \
-            --config-xml \
             -o "$xmls_output_dir" \
             "yaml:$JJB_PROJECTS_FOLDER"
     )
@@ -62,7 +61,7 @@ jjb_diff() {
 
     generate_new_xmls "$new_xmls_dir" "$confs_dir"
     generate_old_xmls "$old_xmls_dir" "$confs_dir" "$project_folder"
-    diff --recursive "$@" "$old_xmls_dir" "$new_xmls_dir"
+    diff "$@" "$old_xmls_dir" "$new_xmls_dir"
 }
 
 main() {
