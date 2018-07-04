@@ -1,6 +1,6 @@
 - job-template:
     name: 'standard-enqueue'
-    project-type: pipeline
+    project-type: workflow
     quiet-period: 0
     concurrent: false
     properties:

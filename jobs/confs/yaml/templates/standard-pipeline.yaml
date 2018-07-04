@@ -1,6 +1,6 @@
 - job-template: &standard-github-pipeline
     name: '{org}_{project}_standard-check-pr'
-    project-type: pipeline
+    project-type: workflow
     quiet-period: 0
     concurrent: true
     properties:
@@ -56,7 +56,7 @@
 
 - job-template:
     name: 'standard-webhook-trigger'
-    project-type: pipeline
+    project-type: workflow
     # This may be triggered by push events and needs to preserve order so
     # disable concurrency
     concurrent: false
@@ -150,7 +150,7 @@
 
 - job-template:
     name: standard-manual-runner
-    project-type: pipeline
+    project-type: workflow
     quiet-period: 0
     properties:
       - build-discarder:
@@ -187,7 +187,7 @@
 
 - job-template:
     name: '{project}_standard-check-patch'
-    project-type: pipeline
+    project-type: workflow
     quiet-period: 0
     concurrent: true
     properties:
@@ -236,7 +236,7 @@
 
 - job-template:
     name: '{project}_standard-on-merge'
-    project-type: pipeline
+    project-type: workflow
     quiet-period: 0
     concurrent: false
     properties:

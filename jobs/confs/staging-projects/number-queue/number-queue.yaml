@@ -55,7 +55,7 @@
 
 - job:
     name: numbers_change-queue
-    project-type: pipeline
+    project-type: workflow
     quiet-period: 0
     parameters:
       - string:
@@ -70,7 +70,7 @@
 
 - job:
     name: numbers_change-queue-tester
-    project-type: pipeline
+    project-type: workflow
     quiet-period: 0
     properties:
       - build-discarder:

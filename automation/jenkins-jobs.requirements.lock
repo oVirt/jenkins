@@ -1,11 +1,7 @@
 certifi==2018.4.16
 chardet==3.0.4
-fasteners==0.14.1
 idna==2.7
-jenkins-job-builder==2.0.0
-Jinja2==2.10
-MarkupSafe==1.0
-monotonic==1.5
+jenkins-job-builder==1.6.2
 multi-key-dict==2.0.3
 pbr==4.0.4
 python-jenkins==1.0.2
@@ -13,5 +9,4 @@ pyxdg==0.26
 PyYAML==3.12
 requests==2.19.1
 six==1.11.0
-stevedore==1.28.0
 urllib3==1.23
