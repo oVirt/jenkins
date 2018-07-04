@@ -1,4 +1,4 @@
-// groovy - Pipeline wrapper for mock_runner
+// stdci_runner.groovy - Pipeline wrapper for mock_runner
 //
 import org.jenkinsci.plugins.workflow.cps.CpsScript
 
@@ -31,13 +31,24 @@ def on_load(loader) {
     stdci_summary_lib = loader.load_code('libs/stdci_summary.groovy', this)
 }
 
-def run_std_ci_jobs(project, jobs) {
+def run_std_ci_jobs(Map named_args) {
+    run_std_ci_jobs(
+        named_args.project,
+        named_args.jobs,
+        named_args.get('mirrors', null),
+        named_args.get('extra_sources', null)
+    )
+}
+
+def run_std_ci_jobs(project, jobs, mirrors=null, extra_sources=null) {
     def branches = [:]
     def report = new PipelineReporter(this, project)
     if(jobs) {
         for(job in jobs) {
             branches[get_job_name(job)] = mk_std_ci_runner(
-                report.mk_thread_reporter(job), project, job)
+                report.mk_thread_reporter(job), project, job, mirrors,
+                extra_sources
+            )
         }
         parallel branches
     } else {
@@ -47,7 +58,7 @@ def run_std_ci_jobs(project, jobs) {
     }
 }
 
-def mk_std_ci_runner(report, project, job) {
+def mk_std_ci_runner(report, project, job, mirrors=null, extra_sources=null) {
     return {
         report.status('PENDING', 'Allocating runner node')
         String node_label = get_std_ci_node_label(project, job)
@@ -57,7 +68,7 @@ def mk_std_ci_runner(report, project, job) {
             print "This script required nodes with label: $node_label"
         }
         node(node_label) {
-            run_std_ci_on_node(report, project, job)
+            run_std_ci_on_node(report, project, job, mirrors, extra_sources)
         }
     }
 }
@@ -127,7 +138,7 @@ def get_std_ci_node_label(project, job) {
 }
 
 
-def run_std_ci_on_node(report, project, job) {
+def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
     TestFailedRef tfr = new TestFailedRef()
     Boolean success = false
     try {
@@ -149,7 +160,14 @@ def run_std_ci_on_node(report, project, job) {
             if(job.is_poll_job) {
                 project_lib.update_project_upstream_sources(project)
             }
-            run_std_ci_in_mock(project, job, report, tfr)
+            def mirrors_file
+            if(mirrors) {
+                mirrors_file = "${pwd()}/mirrors.yaml"
+                writeFile file: mirrors_file, text: mirrors
+            }
+            run_std_ci_in_mock(
+                project, job, report, tfr, mirrors_file, extra_sources
+            )
         } finally {
             report.status('PENDING', 'Collecting results')
             archiveArtifacts allowEmptyArchive: true, \
@@ -172,14 +190,17 @@ def run_std_ci_on_node(report, project, job) {
     }
 }
 
-def run_std_ci_in_mock(project, job, report, TestFailedRef tfr) {
+def run_std_ci_in_mock(
+    project, job, report, TestFailedRef tfr, mirrors=null, extra_sources=null
+) {
     try {
         run_jjb_script('mock_setup.sh')
-        // TODO: Load mirros once for whole pipeline
-        // unstash 'mirrors'
-        // def mirrors = "${pwd()}/mirrors.yaml"
-        def mirrors = null
         dir(project.clone_dir_name) {
+            if(extra_sources) {
+                def extra_sources_file = "${pwd()}/extra_sources"
+                writeFile file: extra_sources_file, text: extra_sources
+                println "extra_sources file was created: ${extra_sources_file}"
+            }
             report.status('PENDING', 'Running test')
             // Set flag to 'true' to indicate that exception from this point
             // means the test failed and not the CI system
