@@ -1,6 +1,7 @@
 // ovirt_change-queue-tester - Change queue tests for oVirt
 //
 def project_lib
+def stdci_runner_lib
 
 def ovirt_release
 def ost_project
@@ -28,6 +29,7 @@ def on_load(loader) {
             loader, 'load_code', [code_file, load_as])
     }
     project_lib = load_code('libs/stdci_project.groovy', this)
+    stdci_runner_lib = load_code('libs/stdci_runner.groovy', this)
 }
 
 def extra_load_change_data_py(change_list_var, mirrors_var) {
@@ -62,109 +64,50 @@ def get_queue_ovirt_release() {
 
 def run_ost_tests(change_data, ovirt_release) {
     ost_project = get_ost_project()
-    def ost_suit_types = get_available_ost_suit_types(ovirt_release)
+    def available_suites = get_available_ost_suites(ovirt_release)
     echo "Will run the following OST ($ovirt_release) " +
-        "suits: ${ost_suit_types.join(', ')}"
-    def branches = [:]
-    // Need to fallback to an empty strings to avoid edge case when writing it
-    // to a file
-    def mirrors = change_data.get('mirrors', '')
-    def extra_sources = change_data.get('extra_sources', '')
-    for(suit_type in ost_suit_types) {
-        branches["${suit_type}-suit"] = \
-            mk_ost_runner(
-                mirrors,
-                extra_sources,
-                ovirt_release,
-                suit_type,
-                'el7'
-            )
-    }
-    parallel branches
+        "suits: ${available_suites.stage.join(', ')}"
+    stdci_runner_lib.run_std_ci_jobs(
+        project: ost_project,
+        jobs: available_suites,
+        mirrors: change_data.mirrors,
+        extra_sources: change_data.extra_sources
+    )
 }
 
-def get_available_ost_suit_types(ovirt_release) {
+def get_available_ost_suites(ovirt_release) {
     def suit_types_to_use = [
         'basic', 'upgrade-from-release', 'upgrade-from-prevrelease'
     ]
     def available_suits = []
     project_lib.checkout_project(ost_project)
     dir('ovirt-system-tests') {
+        def script
         for(suit_type in suit_types_to_use) {
-            if(fileExists("automation/${suit_type}_suite_${ovirt_release}.sh"))
-                available_suits << suit_type
+            script = "automation/${suit_type}_suite_${ovirt_release}.sh"
+            if(fileExists(script)){
+                available_suits << [
+                    'stage': "${suit_type}-suite",
+                    'substage': 'default',
+                    'distro': 'el7',
+                    'arch': 'x86_64',
+                    'script': script,
+                    'runtime_reqs': ['supportnestinglevel': 2],
+                    'release_branches': [:],
+                    'reporting': ['style': 'stdci'],
+                ]
+            }
         }
     }
     return available_suits
-}
-
-def mk_ost_runner(mirrors, extra_sources, ovirt_release, suit_type, distro) {
-    return {
-        def suit_dir = "$suit_type-suit-$ovirt_release-$distro"
-        // stash an empty file so we don`t get errors in no artifacts get stashed
-        writeFile file: '__no_artifacts_stashed__', text: ''
-        stash includes: '__no_artifacts_stashed__', name: suit_dir
-        try {
-            node('integ-tests') {
-                run_ost_on_node(
-                    mirrors,
-                    extra_sources,
-                    ovirt_release,
-                    suit_type,
-                    distro,
-                    suit_dir
-                )
-            }
-        } finally {
-            dir("exported-artifacts/$suit_dir") {
-                unstash suit_dir
-            }
-        }
-    }
 }
 
 def get_ost_project() {
     def base_scm_url = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
     return project_lib.new_project(
         clone_url: base_scm_url + '/ovirt-system-tests',
-        name: 'ovirt-system-tests'
+        name: 'ovirt-system-tests',
     )
-}
-
-def run_ost_on_node(
-    mirrors, extra_sources, ovirt_release, suit_type, distro, stash_name
-) {
-    checkout_jenkins_repo()
-    project_lib.checkout_project(ost_project)
-    run_jjb_script('cleanup_slave.sh')
-    run_jjb_script('global_setup.sh')
-    run_jjb_script('mock_setup.sh')
-    try {
-        def suit_path = "ovirt-system-tests/$suit_type-suite-$ovirt_release"
-        def reposync_config = "*.repo"
-        def mirrors_file = "${pwd()}/mirrors.yaml"
-        writeFile file: mirrors_file, text: mirrors
-        inject_mirrors(suit_path, reposync_config, mirrors_file)
-        dir(suit_path) {
-            stash includes: reposync_config, name: "$stash_name-injected"
-        }
-        dir('ovirt-system-tests') {
-            def extra_sources_file = "${pwd()}/extra_sources"
-            writeFile file: extra_sources_file, text: extra_sources
-            mock_runner(
-                "${suit_type}_suite_${ovirt_release}.sh",
-                distro,
-                mirrors_file
-            )
-        }
-    } finally {
-        dir('ovirt-system-tests/exported-artifacts') {
-            unstash "$stash_name-injected"
-            stash includes: '**', name: stash_name
-        }
-        run_jjb_script('mock_cleanup.sh')
-    }
-    run_jjb_script('global_setup_apply.sh')
 }
 
 def inject_mirrors(path, file_pattern, mirrors=null) {
