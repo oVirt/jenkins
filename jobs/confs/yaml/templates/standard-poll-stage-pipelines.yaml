@@ -1,7 +1,7 @@
 ---
 - job-template:
     name: '{project}_{branch}_standard-poll-upstream-sources'
-    project-type: workflow
+    project-type: pipeline
     quiet-period: 0
     concurrent: false
     triggers:
@@ -28,7 +28,7 @@
 
 - job-template:
     name: '{org}_{project}_{branch}_standard-gh-poll-upstream-sources'
-    project-type: workflow
+    project-type: pipeline
     quiet-period: 0
     concurrent: false
     triggers:
