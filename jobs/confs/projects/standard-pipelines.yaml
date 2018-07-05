@@ -78,5 +78,7 @@
       - releng-tools
       - repoman
       - nsis-simple-service-plugin
+      - ovirt-engine-metrics
+      - ovirt-dwh
     jobs:
       - '{project}_standard-gerrit-jobs'
