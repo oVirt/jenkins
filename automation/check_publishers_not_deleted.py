@@ -7,7 +7,9 @@ from glob import glob
 
 os.chdir(sys.argv[1])
 
-publish_jobs = glob("*publish-rpms_nightly")
+publish_jobs = (
+    glob("*publish-rpms_nightly/config.xml") or glob("*publish-rpms_nightly")
+)
 
 for job in publish_jobs:
     tree = ET.parse(job)

@@ -57,7 +57,7 @@ mk_jobs_cache() {
         cd "$jobs_xml_dir"
         find . -type f -printf '%P\0' \
         | xargs -0 -r md5sum \
-        | sed -re "s/'/''/;s/^([0-9a-f]+)  (.+)\$/'\2': \1/"
+        | sed -re "s/\/config.xml\$//;s/'/''/;s/^([0-9a-f]+)  (.+)\$/'\2': \1/"
     ) && success=0
     rm -rf "$jobs_xml_dir"
     return $success
