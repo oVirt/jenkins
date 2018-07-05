@@ -26,6 +26,7 @@
             use-author: true
             wipe-workspace: false
             skip-tag: true
+            per-build-tag: false
             prune: true
 
 
@@ -46,4 +47,5 @@
             use-author: true
             wipe-workspace: false
             skip-tag: true
+            per-build-tag: false
             prune: true

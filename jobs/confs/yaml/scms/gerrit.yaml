@@ -34,6 +34,7 @@
           git-config-name: '{git-config-name}'
           git-config-email: '{git-config-email}'
           skip-tag: false
+          per-build-tag: true
           prune: true
           wipe-workspace: false
           clean:

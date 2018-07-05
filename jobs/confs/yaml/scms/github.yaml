@@ -13,6 +13,7 @@
           git-config-name: '{git-config-name}'
           git-config-email: '{git-config-email}'
           skip-tag: false
+          per-build-tag: true
           wipe-workspace: false
           clean:
             before: true
