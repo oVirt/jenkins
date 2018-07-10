@@ -213,10 +213,6 @@ def test_cartesian_multiplication(
     ("vectors,expected"),
     [
         (
-            [],
-            []
-        ),
-        (
             [
                 ('va', 'vb', 'vc', {'packages': 'ov', 'repos': 'o2v'}),
                 ('va', 'vb', 'vc', {'packages': 'ov', 'repos': 'o2v'}),
