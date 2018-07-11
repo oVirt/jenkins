@@ -58,6 +58,7 @@
     name: oVirt-standard-pipelines-gerrit
     gerrit-server: 'gerrit.ovirt.org'
     project:
+      - engine-db-query
       - fabric-ovirt
       - imgbased
       - infra-ansible
