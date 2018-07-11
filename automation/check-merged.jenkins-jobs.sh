@@ -111,6 +111,8 @@ run_jjb() {
     local conf_file success=1
     conf_file="$(mktemp -t .jenkinsjobsrc.XXXXX)"
     get_jjb_conf_file > "$conf_file"
+    # Telling JJB where to find the CA trust bundle if it needs to use SSL
+    REQUESTS_CA_BUNDLE=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
     jenkins-jobs \
         --allow-empty \
         --conf "$conf_file" \
