@@ -66,9 +66,6 @@
           project-prefix: ovirt-engine-wildfly-overlay_4.1_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-dwh_4.1_build-artifacts-
-          project-suffix: ""
-      - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: vdsm-jsonrpc-java_4.1_build-artifacts-
           project-suffix: ""
       - copy-create-job-artifact-engine_4.1-platforms:
@@ -153,10 +150,6 @@
 
       - copy-create-job-artifact-vdsm-4.1-platforms:
           project-prefix: ovirt-provider-ovn_4.1_build-artifacts-
-          project-suffix: ""
-
-      - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-engine-metrics_4.1_build-artifacts-
           project-suffix: ""
 
     publishers:
