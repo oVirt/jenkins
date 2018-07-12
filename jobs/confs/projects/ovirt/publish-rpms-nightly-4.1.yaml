@@ -38,9 +38,6 @@
       - copy-create-job-artifact-all_4.1-platforms:
           project-prefix: ovirt-vmconsole_4.1_build-artifacts-
           project-suffix: ''
-      - copy-create-job-artifact-all_4.1-platforms:
-          project-prefix: ovirt-imageio_4.1_build-artifacts-
-          project-suffix: ''
       - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-log-collector_4.1_build-artifacts-
           project-suffix: ''
