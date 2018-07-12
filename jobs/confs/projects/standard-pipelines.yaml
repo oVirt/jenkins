@@ -59,14 +59,16 @@
     gerrit-server: 'gerrit.ovirt.org'
     project:
       - fabric-ovirt
-      - infra-docs
-      - infra-ansible
       - imgbased
+      - infra-ansible
+      - infra-docs
       - jenkins
+      - nsis-simple-service-plugin
       - otopi
       - ovirt-appliance
-      - ovirt-node-ng
+      - ovirt-dwh
       - ovirt-engine-dashboard
+      - ovirt-engine-metrics
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
       - ovirt-engine-ui-extensions
@@ -74,12 +76,10 @@
       - ovirt-imageio
       - ovirt-jboss-modules-maven-plugin
       - ovirt-js-dependencies
+      - ovirt-node-ng
       - ovirt-provider-ovn
       - ovirt-system-tests
       - releng-tools
       - repoman
-      - nsis-simple-service-plugin
-      - ovirt-engine-metrics
-      - ovirt-dwh
     jobs:
       - '{project}_standard-gerrit-jobs'
