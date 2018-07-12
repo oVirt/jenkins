@@ -115,11 +115,11 @@ def get_stage_gerrit() {
     }
     if (params.GERRIT_EVENT_TYPE == "change-merged") { return 'check-merged' }
     if (params.GERRIT_EVENT_TYPE == "comment-added") {
-        if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci test please$/) {
+        if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci +(please +)?test( +please)?$/) {
             return 'check-patch'
-        } else if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci build please$/) {
+        } else if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci +(please +)?build( +please)?$/) {
             return 'build-artifacts'
-        } else if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci re-merge please$/) {
+        } else if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci +(please +)?re-merge( +please)?$/) {
             return 'check-merged'
         }
     }
@@ -171,7 +171,7 @@ def get_stage_github() {
     if(params.ghprbActualCommit) {
         // We assume ghprbActualCommit will always be set by the ghprb trigger,
         // so if we get here it means we got triggered by it
-        if(params.ghprbCommentBody =~ /^ci build please/) {
+        if(params.ghprbCommentBody =~ /^ci +(please +)?build( +please)?/) {
             return 'build-artifacts'
         }
         // We run check-patch by default

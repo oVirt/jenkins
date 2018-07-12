@@ -24,7 +24,7 @@
       - github-pull-request: &github-pull-trigger-base
           org-list:
             - '{org}'
-          trigger-phrase: '^ci (test|build) please.*'
+          trigger-phrase: '^ci +(please +)?(test|build)( +please)?$'
           only-trigger-phrase: false
           github-hooks: true
           permit-all: false
@@ -215,7 +215,7 @@
                 exclude-no-code-change: true
             - draft-published-event
             - comment-added-contains-event:
-                comment-contains-value: '^ci (test|build) please.*'
+                comment-contains-value: '^ci +(please +)?(test|build)( +please)?$'
           projects:
             - project-compare-type: 'PLAIN'
               project-pattern: '{gerrit-subpath}{project}'
@@ -261,7 +261,7 @@
           trigger-on:
             - change-merged-event
             - comment-added-contains-event:
-                comment-contains-value: '^ci re-merge please.*'
+                comment-contains-value: '^ci +(please +)?re-merge( +please)?$'
           projects:
             - project-compare-type: 'PLAIN'
               project-pattern: '{gerrit-subpath}{project}'
