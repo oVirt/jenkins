@@ -62,6 +62,7 @@
       - imgbased
       - infra-ansible
       - infra-docs
+      - ioprocess
       - jenkins
       - nsis-simple-service-plugin
       - otopi
