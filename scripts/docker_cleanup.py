@@ -18,10 +18,14 @@ except ImportError:
     print('Could not import docker. Is python-docker-py installed? Exiting.')
     sys.exit(0)
 
+from docker.errors import NotFound
+
 try:
-    from docker.errors import NotFound as ImageNotFoundException
-except ImportError:
+    # ImageNotFound exists on SDK >= 2.0.0. The code below is a workaround so
+    # we'll have unified code that treats the different SDK versions.
     from docker.errors import ImageNotFound as ImageNotFoundException
+except ImportError:
+    ImageNotFoundException = NotFound
 
 
 logger = logging.getLogger(__name__)
@@ -145,12 +149,17 @@ def _remove_container(client, container):
     :param container:                  A container represenation as returned by
                                        docker.containers
     """
-    if hasattr(container, 'stop'):
-        container.stop()
-        container.remove(force=True)
-        return
-    client.stop(container)
-    client.remove_container(container, force=True)
+    try:
+        if hasattr(container, 'stop'):
+            container.stop()
+            container.remove(force=True)
+            return
+        client.stop(container)
+        client.remove_container(container, force=True)
+    except NotFound:
+        logger.warning(
+            'Attempt to remove non-existent container %s. Skipping',
+            _get_container_id(container))
 
 
 def _is_repo_whitelisted(tags, whitelisted_repos):
