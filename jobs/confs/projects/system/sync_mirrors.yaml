@@ -10,6 +10,7 @@
       - 'epel-el6'
       - 'glusterfs-3.10-el7'
       - 'glusterfs-3.12-el7'
+      - 'glusterfs-4.1-el7'
       - 'centos-ovirt-common-el7'
       - 'centos-ovirt-4.0-el7'
       - 'centos-ovirt-4.2-el7'
@@ -31,4 +32,3 @@
     repo_type: yum
     jobs:
       - 'system-mk_mirrors_index-{repo_type}'
-
