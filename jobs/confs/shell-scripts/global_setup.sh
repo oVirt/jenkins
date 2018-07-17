@@ -17,10 +17,10 @@ main() {
     verify_ipv6 || failed=true
     load_ovs_module || failed=true
     if can_sudo systemctl; then
-        docker_setup || failed=true
-        setup_postfix || failed=true
         start_services || failed=true
+        setup_postfix || failed=true
         disable_dnf_makecache || failed=true
+        docker_setup || failed=true
     else
         log WARN "Skipping services setup - not enough sudo permissions"
     fi
@@ -310,7 +310,28 @@ docker_setup () {
         log ERROR "Failed to start docker service"
         return 1
     fi
+    if ! docker_ensure_iptables_chain; then
+        return 1
+    fi
     return 0
+}
+
+docker_ensure_iptables_chain() {
+    log INFO "Ensuring that the Docker iptables chain is configured"
+    if sudo iptables -L DOCKER > /dev/null; then
+        return 0
+    fi
+    log INFO "Restarting Docker to restore iptables chain"
+    if ! sudo -n systemctl restart docker; then
+        log ERROR "Failed to restart docker service"
+        return 1
+    fi
+    if sudo -n iptables -L DOCKER > /dev/null; then
+        log INFO "Docker iptables chain restored successfully"
+        return 0
+    fi
+    log ERROR "Docker iptables chain still missing"
+    return 1
 }
 
 setup_postfix() {
