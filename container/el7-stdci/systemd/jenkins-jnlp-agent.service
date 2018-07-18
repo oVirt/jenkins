@@ -1,0 +1,20 @@
+[Unit]
+Description=Start JNLP service to connect as a slave
+After=jenkins-home.service stdci-environment.service
+
+[Service]
+EnvironmentFile=/etc/stdci_env
+User=jenkins
+ExecStartPre=/usr/bin/curl ${JENKINS_URL}/jnlpJars/agent.jar \
+    -o ${JENKINS_AGENT_WORKDIR}/agent.jar
+ExecStart=/usr/bin/java -jar ${JENKINS_AGENT_WORKDIR}/agent.jar \
+    -jnlpUrl ${JENKINS_URL}/computer/${JENKINS_AGENT_NAME}/slave-agent.jnlp \
+    -secret ${JENKINS_SECRET} \
+    -workDir ${JENKINS_AGENT_WORKDIR}
+Restart=always
+RestartSec=30
+StartLimitInterval=0
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+[Unit]
+Description=Setup jenkins user
+After=stdci-environment.service
+Before=jenkins-jnlp-agent.service
+
+[Service]
+EnvironmentFile=/etc/stdci_env
+ExecStart=/usr/sbin/useradd \
+    -u ${CI_RUNTIME_UID} \
+    -G mock \
+    -d ${JENKINS_AGENT_WORKDIR} \
+    ${CI_RUNTIME_UNAME}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

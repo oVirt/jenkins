@@ -16,3 +16,8 @@ sub-stages:
         file-changed:
           - jobs/*
           - automation/*.jenkins-jobs.*
+  - build-stdci-container:
+      runif:
+        file-changed:
+          - container/*
+          - automation/*.{{ substage }}.*

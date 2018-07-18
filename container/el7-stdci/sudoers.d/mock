@@ -1,0 +1,2 @@
+Defaults:%mock !requiretty
+%mock ALL = (ALL) NOPASSWD: ALL

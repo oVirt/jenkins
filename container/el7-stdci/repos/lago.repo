@@ -1,0 +1,6 @@
+[lago]
+baseurl=http://resources.ovirt.org/repos/lago/stable/0.0/rpm/el7
+name=Lago
+enabled=1
+gpgcheck=0
+

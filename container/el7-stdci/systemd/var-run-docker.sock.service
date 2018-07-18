@@ -1,0 +1,13 @@
+[Unit]
+Description=Bind mount docker.sock
+
+[Service]
+Type=simple
+RemainAfterExit=true
+ExecStartPre=/usr/bin/touch /var/run/docker.sock
+ExecStart=/usr/bin/mount --bind /root/docker.sock /var/run/docker.sock
+ExecStop=/usr/bin/umount /var/run/docker.sock
+ExecStopPost=/usr/bin/rm /var/run/docker.sock
+
+[Install]
+WantedBy=multi-user.target

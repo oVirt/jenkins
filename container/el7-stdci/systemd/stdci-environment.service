@@ -1,0 +1,9 @@
+[Unit]
+Description=Copy environment from PID 1 to a well known location
+Before=jenkins-home.service jenkins-jnlp-agent.service
+
+[Service]
+ExecStart=/usr/sbin/export_environment /etc/stdci_env
+
+[Install]
+WantedBy=multi-user.target
