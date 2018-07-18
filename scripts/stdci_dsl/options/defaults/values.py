@@ -81,10 +81,10 @@ DEFAULT_VALUES = {
         'releasebranches': {},
         'upstreamsources': {},
         'runtimerequirements': {},
-        'environment': \
-            _default_templates_with_substage('environment.yaml', 'fromfile'),
-        'packages': \
-            _default_templates_with_substage('packages', 'fromlistfile'),
+        'environment': _default_templates_with_substage(
+            'environment.yaml', 'fromfile'),
+        'packages': _default_templates_with_substage(
+            'packages', 'fromlistfile'),
         'yumrepos': _default_templates_with_substage('yumrepos', 'fromfile'),
         'repos': _default_templates_with_substage('repos', 'fromlistfile'),
         'mounts': _default_templates_with_substage('mounts', 'fromlistfile'),
@@ -95,13 +95,15 @@ DEFAULT_VALUES = {
         'releasebranches': {},
         'upstreamsources': {},
         'runtimerequirements': {},
-        'environment': \
-            _default_templates_without_substage('environment.yaml', 'fromfile'),
-        'packages': \
-            _default_templates_without_substage('packages', 'fromlistfile'),
-        'yumrepos': _default_templates_without_substage('yumrepos', 'fromfile'),
+        'environment': _default_templates_without_substage(
+            'environment.yaml', 'fromfile'),
+        'packages': _default_templates_without_substage(
+            'packages', 'fromlistfile'),
+        'yumrepos': _default_templates_without_substage(
+            'yumrepos', 'fromfile'),
         'repos': _default_templates_without_substage('repos', 'fromlistfile'),
-        'mounts': _default_templates_without_substage('mounts', 'fromlistfile'),
+        'mounts': _default_templates_without_substage(
+            'mounts', 'fromlistfile'),
         'script': _default_templates_without_substage('sh', 'fromfile')
     }
 }

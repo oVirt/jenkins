@@ -9,10 +9,9 @@ from hashlib import md5
 from fnmatch import fnmatch
 from itertools import product
 from copy import copy
-from six import string_types, iteritems, iterkeys
+from six import string_types, iteritems
 from jinja2.sandbox import SandboxedEnvironment
 from yaml import safe_load
-from difflib import get_close_matches
 import py
 
 from ..parser import stdci_load, ConfigurationNotFoundError
@@ -363,15 +362,18 @@ def _resolve_stdci_yum_config(project, thread, option):
         return found_config
     if not isinstance(yum_config, Mapping):
         # Yum config must be specified inline or source must be specified
-        msg = \
-            "Yum config must be specified inline or source file must be provided"
+        msg = (
+            "Yum config must be specified inline or source file must be"
+            " provided"
+        )
         logger.error(msg)
         raise ConfigurationSyntaxError(msg)
 
     # validate and normalize the structure of 'fromfile' section
     yum_config_paths = yum_config.get('fromfile', None)
     if yum_config_paths is None:
-        msg = "Wrong file source for yum config. Have you misspelled 'fromfile'?"
+        msg = \
+            "Wrong file source for yum config. Have you misspelled 'fromfile'?"
         logger.error(msg)
         raise ConfigurationSyntaxError(msg)
     if not isinstance(yum_config_paths, (string_types, list)):
@@ -491,7 +493,10 @@ def _resolve_stdci_yaml_config(project, thread, option):
         )
         logger.error(msg)
         raise ConfigurationSyntaxError(msg)
-    if isinstance(yaml_config, Iterable) and not isinstance(yaml_config, Mapping):
+    if (
+        isinstance(yaml_config, Iterable)
+        and not isinstance(yaml_config, Mapping)
+    ):
         # inline specified
         return yaml_config
 

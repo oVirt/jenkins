@@ -18,7 +18,7 @@ from scripts.nested_config import DepthLevel
 @pytest.fixture(scope='function')
 def project_dir(tmpdir):
     root = tmpdir
-    secrets_file = root.join('secrets_file').write('a')
+    root.join('secrets_file').write('a')
     automation = tmpdir.mkdir('automation')
     (automation/'check-patch.sh').write('code code code ...')
     (automation/'check-patch.repos').write('repo1\nrepo2\nrepo3')
@@ -39,7 +39,7 @@ def test_RuntimeEnvDefinition(project_dir):
         str(project_dir), 'check-patch', 'default', 'el7', 'x86_64'
     )
     assert obj.script == 'automation/check-patch.sh'
-    assert obj.yumrepos == None
+    assert obj.yumrepos is None
     assert obj.environment == [
         {'name': 'test', 'valuefrom': {'runtimeenv': 'PWD'}}
     ]
@@ -67,39 +67,42 @@ def test_runner_yaml_dumper(project_dir, tmpdir):
     )
     fmt = env.format('yaml_dumper')
     assert fmt == (
-            "environment:\n"
-            "- name: test\n"
-            "  valuefrom:\n"
-            "    runtimeenv: PWD\n"
-            "hash: d0bf2d0c60a85aa61fa9ffd039e6198c\n"
-            "mounts: {}\n"
-            "packages:\n"
-            "- pkg1\n"
-            "- pkg2\n"
-            "- pkg3\n"
-            "repos:\n"
-            "  repo-1f02dddd81d2931b7c82f0a857dc2431: repo2\n"
-            "  repo-1fb4cda750e4eac7714ee79c6bb4db28: repo3\n"
-            "  repo-734392d7a1ac9e3cfe63184b3e48eb0c: repo1\n"
-            "script: %s\n"
-            "yumrepos: ''\n"
+        "environment:\n"
+        "- name: test\n"
+        "  valuefrom:\n"
+        "    runtimeenv: PWD\n"
+        "hash: d0bf2d0c60a85aa61fa9ffd039e6198c\n"
+        "mounts: {}\n"
+        "packages:\n"
+        "- pkg1\n"
+        "- pkg2\n"
+        "- pkg3\n"
+        "repos:\n"
+        "  repo-1f02dddd81d2931b7c82f0a857dc2431: repo2\n"
+        "  repo-1fb4cda750e4eac7714ee79c6bb4db28: repo3\n"
+        "  repo-734392d7a1ac9e3cfe63184b3e48eb0c: repo1\n"
+        "script: %s\n"
+        "yumrepos: ''\n"
     ) % ('automation/check-patch.sh')
 
 
 def test_get_threads_with_globals(project_dir):
     threads, gopts = get_threads_with_globals(str(project_dir), 'check-patch')
     assert list(threads) == [
-        JobThread('check-patch', 'default', 'el7', 'x86_64',
+        JobThread(
+            'check-patch', 'default', 'el7', 'x86_64',
             {
                 'yumrepos': None,
                 'script': 'automation/check-patch.sh',
                 'upstreamsources': {},
                 'repos': [
-                    RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),
-                    RepoConfig('repo-1f02dddd81d2931b7c82f0a857dc2431', 'repo2'),
-                    RepoConfig('repo-1fb4cda750e4eac7714ee79c6bb4db28', 'repo3')
+                    RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'), # noqa
+                    RepoConfig('repo-1f02dddd81d2931b7c82f0a857dc2431', 'repo2'), # noqa
+                    RepoConfig('repo-1fb4cda750e4eac7714ee79c6bb4db28', 'repo3'), # noqa
                 ],
-                'environment': [{'name': 'test', 'valuefrom': {'runtimeenv': 'PWD'}}],
+                'environment': [
+                    {'name': 'test', 'valuefrom': {'runtimeenv': 'PWD'}}
+                ],
                 'runtimerequirements': 'dummy_req',
                 'mounts': [],
                 'releasebranches': {},
@@ -118,17 +121,20 @@ def test_get_threads_with_globals(project_dir):
 def test_get_threads(project_dir):
     threads = get_threads(str(project_dir), 'check-patch')
     assert list(threads) == [
-        JobThread('check-patch', 'default', 'el7', 'x86_64',
+        JobThread(
+            'check-patch', 'default', 'el7', 'x86_64',
             {
                 'yumrepos': None,
                 'script': 'automation/check-patch.sh',
                 'upstreamsources': {},
                 'repos': [
-                    RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'),
-                    RepoConfig('repo-1f02dddd81d2931b7c82f0a857dc2431', 'repo2'),
-                    RepoConfig('repo-1fb4cda750e4eac7714ee79c6bb4db28', 'repo3')
+                    RepoConfig('repo-734392d7a1ac9e3cfe63184b3e48eb0c', 'repo1'), # noqa
+                    RepoConfig('repo-1f02dddd81d2931b7c82f0a857dc2431', 'repo2'), # noqa
+                    RepoConfig('repo-1fb4cda750e4eac7714ee79c6bb4db28', 'repo3'), # noqa
                 ],
-                'environment': [{'name': 'test', 'valuefrom': {'runtimeenv': 'PWD'}}],
+                'environment': [
+                    {'name': 'test', 'valuefrom': {'runtimeenv': 'PWD'}}
+                ],
                 'runtimerequirements': 'dummy_req',
                 'mounts': [],
                 'releasebranches': {},

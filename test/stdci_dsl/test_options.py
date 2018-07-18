@@ -1,11 +1,7 @@
 #!/bin/env python
 """test_automation_options.py - Tests module for automation_options.py"""
 
-try:
-    import pytest
-    from unittest.mock import MagicMock, sentinel
-except ImportError:
-    from mock import MagicMock, sentinel
+import pytest
 from scripts.stdci_dsl.options.globals import _get_global_options
 from scripts.stdci_dsl.options.parser_utils import get_merged_options
 from scripts.stdci_dsl.options.defaults import apply_default_options
@@ -35,7 +31,7 @@ def stdci_project_dir(tmpdir):
     "thread,expected",
     [
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            JobThread('chk-patch', 'default', 'el7', 'x86_64', {
                 'mounts': [
                     'mymount1:mymountdst1',
                     'mymount2:mymountdst2',
@@ -49,9 +45,10 @@ def stdci_project_dir(tmpdir):
             ]
         ),
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64', {
-                'mounts': ['mount1', 'mount2', 'mount3'],
-            }),
+            JobThread(
+                'chk-patch', 'default', 'el7', 'x86_64',
+                {'mounts': ['mount1', 'mount2', 'mount3'], }
+            ),
             [
                 MountConfig(src='mount1', dst='mount1'),
                 MountConfig(src='mount2', dst='mount2'),
@@ -59,7 +56,7 @@ def stdci_project_dir(tmpdir):
             ]
         ),
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64', {'mounts': []}),
+            JobThread('chk-patch', 'default', 'el7', 'x86_64', {'mounts': []}),
             []
         )
     ]
@@ -77,13 +74,13 @@ def test_normalize_mounts_config(thread, expected, stdci_project_dir):
                 'repos': [
                     'myrepo1,myrepourl1',
                     'myrepo2,myrepourl2',
-                    'myrepourl3'
+                    'myrpurl3'
                 ],
             }),
             [
                 RepoConfig('myrepo1', 'myrepourl1'),
                 RepoConfig('myrepo2', 'myrepourl2'),
-                RepoConfig('repo-4639b47b04736088069cc6cc98b9e869', 'myrepourl3')
+                RepoConfig('repo-9a8c3fa7142bda388b4ac5356fe85428', 'myrpurl3')
             ]
         ),
         (
@@ -130,7 +127,8 @@ def test_render_template(thread, templates, expected):
     "options,expected",
     [
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-patch', 'default', 'el7', 'x86_64',
                 {
                     'script':
                     {
@@ -142,7 +140,8 @@ def test_render_template(thread, templates, expected):
             'automation/check-patch.sh'
         ),
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-patch', 'default', 'el7', 'x86_64',
                 {
                     'script':
                     {
@@ -161,7 +160,8 @@ def test_render_template(thread, templates, expected):
             'automation/check-patch.sh'
         ),
         (
-            JobThread('check-merged', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-merged', 'default', 'el7', 'x86_64',
                 {
                     'script':
                     {
@@ -191,7 +191,8 @@ def test_resolve_stdci_script(options, expected, stdci_project_dir):
     "options,expected",
     [
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-patch', 'default', 'el7', 'x86_64',
                 {
                     'packages':
                     {
@@ -202,7 +203,8 @@ def test_resolve_stdci_script(options, expected, stdci_project_dir):
             ['p1', 'p2']
         ),
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-patch', 'default', 'el7', 'x86_64',
                 {
                     'packages':
                     {
@@ -214,7 +216,8 @@ def test_resolve_stdci_script(options, expected, stdci_project_dir):
             []
         ),
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-patch', 'default', 'el7', 'x86_64',
                 {
                     'packages':
                     {
@@ -237,7 +240,8 @@ def test_resolve_stdci_list_config(options, expected, stdci_project_dir):
     "options,expected",
     [
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-patch', 'default', 'el7', 'x86_64',
                 {
                     'environment':
                     {
@@ -248,7 +252,8 @@ def test_resolve_stdci_list_config(options, expected, stdci_project_dir):
             {'test': 'yaml cfg'}
         ),
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-patch', 'default', 'el7', 'x86_64',
                 {
                     'environment':
                     {
@@ -260,7 +265,8 @@ def test_resolve_stdci_list_config(options, expected, stdci_project_dir):
             {}
         ),
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-patch', 'default', 'el7', 'x86_64',
                 {
                     'environment':
                     {
@@ -272,7 +278,8 @@ def test_resolve_stdci_list_config(options, expected, stdci_project_dir):
             {'test': 'yaml cfg'}
         ),
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-patch', 'default', 'el7', 'x86_64',
                 {
                     'environment': 'inline specified'
                 },
@@ -280,7 +287,8 @@ def test_resolve_stdci_list_config(options, expected, stdci_project_dir):
             'inline specified'
         ),
         (
-            JobThread('check-patch', 'default', 'el7', 'x86_64',
+            JobThread(
+                'check-patch', 'default', 'el7', 'x86_64',
                 {
                     'environment': ['inline', 'specified']
                 },
@@ -346,7 +354,8 @@ def test_get_merged_options(options1, options2, expected):
                 ),
             ],
             [
-                JobThread(None, 'custom', None, None,
+                JobThread(
+                    None, 'custom', None, None,
                     {
                         'scriptsdirectory': 'myCustomDir',
                         'yumrepos':
@@ -354,9 +363,9 @@ def test_get_merged_options(options1, options2, expected):
                             DefaultValue: True,
                             'fromfile':
                             [
-                                '{{ stage }}.{{ substage }}.yumrepos.{{ distro }}.{{ arch }}',
-                                '{{ stage }}.{{ substage }}.yumrepos.{{ distro }}',
-                                '{{ stage }}.{{ substage }}.yumrepos.{{ arch }}',
+                                '{{ stage }}.{{ substage }}.yumrepos.{{ distro }}.{{ arch }}', # noqa
+                                '{{ stage }}.{{ substage }}.yumrepos.{{ distro }}',            # noqa
+                                '{{ stage }}.{{ substage }}.yumrepos.{{ arch }}',              # noqa
                                 '{{ stage }}.{{ substage }}.yumrepos',
                             ]
                         },
@@ -365,7 +374,7 @@ def test_get_merged_options(options1, options2, expected):
                             DefaultValue: True,
                             'fromfile':
                             [
-                                '{{ stage }}.{{ substage }}.sh.{{ distro }}.{{ arch }}',
+                                '{{ stage }}.{{ substage }}.sh.{{ distro }}.{{ arch }}', # noqa
                                 '{{ stage }}.{{ substage }}.sh.{{ distro }}',
                                 '{{ stage }}.{{ substage }}.sh.{{ arch }}',
                                 '{{ stage }}.{{ substage }}.sh',
@@ -404,9 +413,9 @@ def test_get_merged_options(options1, options2, expected):
                             DefaultValue: True,
                             'fromfile':
                             [
-                                '{{ stage }}.{{ substage }}.yumrepos.{{ distro }}.{{ arch }}',
-                                '{{ stage }}.{{ substage }}.yumrepos.{{ distro }}',
-                                '{{ stage }}.{{ substage }}.yumrepos.{{ arch }}',
+                                '{{ stage }}.{{ substage }}.yumrepos.{{ distro }}.{{ arch }}', # noqa
+                                '{{ stage }}.{{ substage }}.yumrepos.{{ distro }}',            # noqa
+                                '{{ stage }}.{{ substage }}.yumrepos.{{ arch }}',              # noqa
                                 '{{ stage }}.{{ substage }}.yumrepos',
                                 '{{ stage }}.yumrepos.{{ distro }}.{{ arch }}',
                                 '{{ stage }}.yumrepos.{{ distro }}',
@@ -419,7 +428,7 @@ def test_get_merged_options(options1, options2, expected):
                             DefaultValue: True,
                             'fromfile':
                             [
-                                '{{ stage }}.{{ substage }}.sh.{{ distro }}.{{ arch }}',
+                                '{{ stage }}.{{ substage }}.sh.{{ distro }}.{{ arch }}', # noqa
                                 '{{ stage }}.{{ substage }}.sh.{{ distro }}',
                                 '{{ stage }}.{{ substage }}.sh.{{ arch }}',
                                 '{{ stage }}.{{ substage }}.sh',
@@ -595,39 +604,43 @@ def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
     "thread,modified_files,expected",
     [
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {'not': {'filechanged': ['file-*']}},
             ),
             ['file-1'],
             False
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {'not': {'filechanged': ['file-*']}},
             ),
             ['something'],
             True
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {'all': [{'filechanged': ['file-*']}]},
             ),
             ['file-1'],
             True
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {'all': [
-                        {'filechanged': ['file-*']},
-                        {'filechanged': ['other-file*']}
-                    ]
-                },
+                    {'filechanged': ['file-*']},
+                    {'filechanged': ['other-file*']}
+                ]},
             ),
             ['file-1'],
             False
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {
                     'all': [
                         {
@@ -651,7 +664,8 @@ def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
             False
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {
                     'all': [
                         {
@@ -675,7 +689,8 @@ def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
             True
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {
                     'any': [
                         {
@@ -699,7 +714,8 @@ def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
             True
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {'any': [
                     {'all': [
                         {'filechanged': 'file1'},
@@ -712,15 +728,14 @@ def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
                         {'filechanged': 'file5'},
                         {'filechanged': 'file6'}
                     ]}
-                ],
-                'filechanged': 'file2',
-                },
+                ], 'filechanged': 'file2', },
             ),
             ['file1', 'file2', 'file4', 'file5', 'file6'],
             True
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {'any': [
                     {
                         'all': [
@@ -728,49 +743,47 @@ def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
                             {'filechanged': 'file2'},
                             {'any': [
                                 {'filechanged': 'file2'},
-                                {'filechanged': 'file4'}]
-                            }
+                                {'filechanged': 'file4'}
+                            ]}
                         ]
                     },
                     {'any': [
                         {'filechanged': 'file5'},
-                        {'filechanged': 'file6'}]
-                    }
-                ],
-                'filechanged': 'file2'
-                },
+                        {'filechanged': 'file6'}
+                    ]}
+                ], 'filechanged': 'file2'},
             ),
             ['file3'],
             False
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
-                {'not':
-                    {
-                        'all': [
-                            {'filechanged': 'file1'},
-                            {'filechanged': 'file2'},
-                            {'any': [
-                                {'filechanged': 'file3'},
-                                {'filechanged': 'file4'}]
-                            }
-                        ]
-                    },
-                }
+            JobThread(
+                'a', 'b', 'c', 'd',
+                {'not': {
+                    'all': [
+                        {'filechanged': 'file1'},
+                        {'filechanged': 'file2'},
+                        {'any': [
+                            {'filechanged': 'file3'},
+                            {'filechanged': 'file4'}
+                        ]}
+                    ]
+                }, }
             ),
             ['file1', 'file2', 'file3'],
             False
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {
                     'all': [
                         {'filechanged': 'file1'},
                         {'filechanged': 'file2'},
                         {'any': [
                             {'filechanged': 'file3'},
-                            {'filechanged': 'file4'}]
-                        }
+                            {'filechanged': 'file4'}
+                        ]}
                     ]
                 },
             ),
@@ -778,15 +791,16 @@ def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
             True
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {
                     'all': [
                         {'filechanged': 'file1'},
                         {'filechanged': 'file2'},
                         {'any': [
                             {'filechanged': 'file3'},
-                            {'filechanged': 'file4'}]
-                        }
+                            {'filechanged': 'file4'}
+                        ]}
                     ]
                 },
             ),
@@ -794,33 +808,31 @@ def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
             False
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
-                {'not':
-                    {'all': [
-                        {
-                            'all': [
-                                {'filechanged': 'file1'},
-                                {'filechanged': 'file2'},
-                                {'any': [
-                                    {'filechanged': 'file3'},
-                                    {'filechanged': 'file4'}]
-                                }
-                            ]
-                        },
-                        {'any': [
-                            {'filechanged': 'file5'},
-                            {'filechanged': 'file6'}]
-                        }
-                    ],
-                    'filechanged': 'file2'
+            JobThread(
+                'a', 'b', 'c', 'd',
+                {'not': {'all': [
+                    {
+                        'all': [
+                            {'filechanged': 'file1'},
+                            {'filechanged': 'file2'},
+                            {'any': [
+                                {'filechanged': 'file3'},
+                                {'filechanged': 'file4'}
+                            ]}
+                        ]
                     },
-                }
+                    {'any': [
+                        {'filechanged': 'file5'},
+                        {'filechanged': 'file6'}
+                    ]}
+                ], 'filechanged': 'file2'}, }
             ),
             ['file1'],
             True
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {'all': [
                     {
                         'all': [
@@ -828,62 +840,58 @@ def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
                             {'filechanged': 'file2'},
                             {'any': [
                                 {'filechanged': 'file3'},
-                                {'filechanged': 'file4'}]
-                            }
+                                {'filechanged': 'file4'}
+                            ]}
                         ]
                     },
                     {'any': [
                         {'filechanged': 'file5'},
-                        {'filechanged': 'file6'}]
-                    }
-                ],
-                'filechanged': 'file2'
-                },
+                        {'filechanged': 'file6'}
+                    ]}
+                ], 'filechanged': 'file2'},
             ),
             ['file1'],
             False
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
+            JobThread(
+                'a', 'b', 'c', 'd',
                 {'all': [
                     {'all': [
                         {'filechanged': 'file1'},
                         {'filechanged': 'file2'},
                         {'any': [
                             {'filechanged': 'file3'},
-                            {'filechanged': 'file4'}]
-                        }]
-                    },
+                            {'filechanged': 'file4'}
+                        ]}
+                    ]},
                     {'any': [
                         {'filechanged': 'file5'},
-                        {'filechanged': 'file6'}]
-                    }
-                ],
-                'filechanged': 'file2'
-                },
+                        {'filechanged': 'file6'}
+                    ]}
+                ], 'filechanged': 'file2'},
             ),
             ['file1', 'file2', 'file3', 'file5'],
             True
         ),
         (
-            JobThread('a', 'b', 'c', 'd',
-                {'not':
-                    {'all': [
+            JobThread(
+                'a', 'b', 'c', 'd',
+                {
+                    'not': {'all': [
                         {'all': [
                             {'filechanged': 'file1'},
                             {'filechanged': 'file2'},
                             {'any': [
                                 {'filechanged': 'file3'},
-                                {'filechanged': 'file4'}]
-                            }]
-                        },
+                                {'filechanged': 'file4'}
+                            ]}
+                        ]},
                         {'any': [
                             {'filechanged': 'file5'},
-                            {'filechanged': 'file6'}]
-                        }
-                    ],
-                    'filechanged': 'file2'
-                    },
+                            {'filechanged': 'file6'}
+                        ]}
+                    ], 'filechanged': 'file2'},
                 }
             ),
             ['file1', 'file2', 'file3', 'file5'],

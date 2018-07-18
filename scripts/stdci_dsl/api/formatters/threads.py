@@ -2,7 +2,6 @@
 """pipelines.py - Set of data formatters for stdci pipelines"""
 
 import logging
-from itertools import chain
 from yaml import safe_dump
 
 
