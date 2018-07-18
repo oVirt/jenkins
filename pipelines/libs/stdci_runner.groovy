@@ -1,5 +1,6 @@
 // groovy - Pipeline wrapper for mock_runner
 //
+import org.jenkinsci.plugins.workflow.cps.CpsScript
 
 def project_lib
 def stdci_summary_lib
@@ -32,11 +33,11 @@ def on_load(loader) {
 
 def run_std_ci_jobs(project, jobs) {
     def branches = [:]
-    def threads_summary = [:]
+    def report = new PipelineReporter(this, project)
     try {
         for(job in jobs) {
             branches[get_job_name(job)] = mk_std_ci_runner(
-                threads_summary, project, job)
+                report.mk_thread_reporter(job), project, job)
         }
         parallel branches
     } finally {
@@ -51,7 +52,7 @@ def run_std_ci_jobs(project, jobs) {
                 artifacts: 'exported-artifacts/**'
             junit keepLongStdio: true, allowEmptyResults: true, \
                 testResults: 'exported-artifacts/**/*xml'
-            stdci_summary_lib.generate_summary(project, threads_summary)
+            report.done()
         }
     }
 }
@@ -66,10 +67,9 @@ def collect_jobs_artifacts(jobs) {
     }
 }
 
-def mk_std_ci_runner(threads_summary, project, job) {
+def mk_std_ci_runner(report, project, job) {
     return {
-        String ctx = get_job_name(job)
-        project.notify(ctx, 'PENDING', 'Allocating runner node')
+        report.status('PENDING', 'Allocating runner node')
         String node_label = get_std_ci_node_label(project, job)
         if(node_label.empty) {
             print "This script has no special node requirements"
@@ -77,7 +77,7 @@ def mk_std_ci_runner(threads_summary, project, job) {
             print "This script required nodes with label: $node_label"
         }
         node(node_label) {
-            run_std_ci_on_node(threads_summary, project, job, get_job_dir(job))
+            run_std_ci_on_node(report, project, job, get_job_dir(job))
         }
     }
 }
@@ -139,13 +139,12 @@ def get_std_ci_node_label(project, job) {
 }
 
 
-def run_std_ci_on_node(threads_summary, project, job, stash_name) {
+def run_std_ci_on_node(report, project, job, stash_name) {
     TestFailedRef tfr = new TestFailedRef()
     Boolean success = false
-    String ctx = get_job_name(job)
     try {
         try {
-            project.notify(ctx, 'PENDING', 'Setting up test environment')
+            report.status('PENDING', 'Setting up test environment')
             dir("exported-artifacts") { deleteDir() }
             checkout_jenkins_repo()
             project_lib.checkout_project(project)
@@ -161,9 +160,9 @@ def run_std_ci_on_node(threads_summary, project, job, stash_name) {
             if(job.is_poll_job) {
                 project_lib.update_project_upstream_sources(project)
             }
-            run_std_ci_in_mock(project, job, tfr)
+            run_std_ci_in_mock(project, job, report, tfr)
         } finally {
-            project.notify(ctx, 'PENDING', 'Collecting results')
+            report.status('PENDING', 'Collecting results')
             dir("exported-artifacts") {
                 stash includes: '**', name: stash_name
             }
@@ -174,29 +173,16 @@ def run_std_ci_on_node(threads_summary, project, job, stash_name) {
         success = true
     } finally {
         if(success) {
-            project.notify(ctx, 'SUCCESS', 'Test is successful')
-            threads_summary[ctx] = [
-                result: 'SUCCESS',
-                message: 'Test is successful',
-            ]
+            report.status('SUCCESS', 'Test is successful')
         } else if (tfr.test_failed) {
-            project.notify(ctx, 'FAILURE', 'Test script failed')
-            threads_summary[ctx] = [
-                result: 'FAILURE',
-                message: 'Test script failed',
-            ]
+            report.status('FAILURE', 'Test script failed')
         } else {
-            project.notify(ctx, 'ERROR', 'Testing system error')
-            threads_summary[ctx] = [
-                result: 'ERROR',
-                message: 'Testing system error',
-            ]
+            report.status('ERROR', 'Testing system error')
         }
     }
 }
 
-def run_std_ci_in_mock(project, def job, TestFailedRef tfr) {
-    String ctx = get_job_name(job)
+def run_std_ci_in_mock(project, job, report, TestFailedRef tfr) {
     try {
         run_jjb_script('mock_setup.sh')
         // TODO: Load mirros once for whole pipeline
@@ -204,7 +190,7 @@ def run_std_ci_in_mock(project, def job, TestFailedRef tfr) {
         // def mirrors = "${pwd()}/mirrors.yaml"
         def mirrors = null
         dir(project.clone_dir_name) {
-            project.notify(ctx, 'PENDING', 'Running test')
+            report.status('PENDING', 'Running test')
             // Set flag to 'true' to indicate that exception from this point
             // means the test failed and not the CI system
             tfr.test_failed = true
@@ -224,7 +210,7 @@ def run_std_ci_in_mock(project, def job, TestFailedRef tfr) {
             )
         }
     } finally {
-        project.notify(ctx, 'PENDING', 'Collecting results')
+        report.status('PENDING', 'Collecting results')
         withCredentials([usernamePassword(
             credentialsId: 'ci-containers_intermediate-repository',
             passwordVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD',
@@ -234,7 +220,7 @@ def run_std_ci_in_mock(project, def job, TestFailedRef tfr) {
                 run_jjb_script('collect_artifacts.sh')
             }
         }
-        project.notify(ctx, 'PENDING', 'Cleaning up')
+        report.status('PENDING', 'Cleaning up')
         run_jjb_script('mock_cleanup.sh')
     }
 }
@@ -278,6 +264,58 @@ def invoke_pusher(Map options=[:], project, String cmd) {
         )
     }
 }
+
+
+class PipelineReporter extends CpsScript implements Serializable {
+    class ThreadReporter extends CpsScript implements Serializable {
+        def job
+        def pipeline_report
+
+        def ThreadReporter(parent, stdci_job) {
+            job = stdci_job
+            pipeline_report = parent
+        }
+        def status(status, message) {
+            pipeline_report.job_status(job, status, message)
+        }
+
+        // run() is an abstract method defined by CpsScript so we must define it
+        def run() {}
+    }
+
+    def stdci_summary_lib
+    def project
+    def threads_summary
+    def get_job_name
+
+    def PipelineReporter(parent, stdci_project) {
+        stdci_summary_lib = parent.stdci_summary_lib
+        get_job_name = { parent.get_job_name(it) }
+        project = stdci_project
+        threads_summary = [:]
+    }
+
+    def mk_thread_reporter(stdci_job) {
+        return new ThreadReporter(this, stdci_job)
+    }
+
+    def job_status(job, status, message) {
+        String ctx = get_job_name(job)
+        project.notify(ctx, status, message)
+        threads_summary[ctx] = [
+            result: status,
+            message: message,
+        ]
+    }
+
+    def done() {
+        stdci_summary_lib.generate_summary(project, threads_summary)
+    }
+
+    // run() is an abstract method defined by CpsScript so we must define it
+    def run() {}
+}
+
 
 
 // We need to return 'this' so the actual pipeline job can invoke functions from
