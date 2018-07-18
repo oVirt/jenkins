@@ -108,6 +108,7 @@ def test_get_threads_with_globals(project_dir):
                 'releasebranches': {},
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
                 'ignore_if_missing_script': True,
+                'reporting': {'style': 'default', },
                 DepthLevel: 1
             }
         )
@@ -140,6 +141,7 @@ def test_get_threads(project_dir):
                 'releasebranches': {},
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
                 'ignore_if_missing_script': True,
+                'reporting': {'style': 'default', },
                 DepthLevel: 1
             }
         )
@@ -173,6 +175,7 @@ def test_get_threads(project_dir):
                         'releasebranches': {'r': 'b'},
                         'upstreamsources': {'u': 's'},
                         'runtimerequirements': {'r': 'r'},
+                        'reporting': {'style': 'default'},
                     }
                 ),
                 JobThread(
@@ -182,6 +185,7 @@ def test_get_threads(project_dir):
                         'releasebranches': {'r': 'b'},
                         'upstreamsources': {'u': 's'},
                         'runtimerequirements': {'r': 'r'},
+                        'reporting': {'style': 'default'},
                     }
                 ),
                 JobThread(
@@ -191,8 +195,19 @@ def test_get_threads(project_dir):
                         'runtimerequirements': {'r': 'r'},
                         'releasebranches': {'r': 'b'},
                         'upstreamsources': {'u': 's'},
+                        'reporting': {'style': 'default'},
                     }
-                )
+                ),
+                JobThread(
+                    'check-patch', 'default', 'el7', 'x86_64',
+                    {
+                        'script': 's',
+                        'runtimerequirements': {'r': 'r'},
+                        'releasebranches': {'r': 'b'},
+                        'upstreamsources': {'u': 's'},
+                        'reporting': {'style': 'classic'},
+                    }
+                ),
             ],
             {
                 'releasebranches': {'r': 'b'},
@@ -209,6 +224,8 @@ def test_get_threads(project_dir):
                 '  distro: fc25\n'
                 '  release_branches:\n'
                 '    r: b\n'
+                '  reporting:\n'
+                '    style: default\n'
                 '  runtime_reqs:\n'
                 '    r: r\n'
                 '  script: s\n'
@@ -218,6 +235,8 @@ def test_get_threads(project_dir):
                 '  distro: fc26\n'
                 '  release_branches:\n'
                 '    r: b\n'
+                '  reporting:\n'
+                '    style: default\n'
                 '  runtime_reqs:\n'
                 '    r: r\n'
                 '  script: s\n'
@@ -227,6 +246,19 @@ def test_get_threads(project_dir):
                 '  distro: el7\n'
                 '  release_branches:\n'
                 '    r: b\n'
+                '  reporting:\n'
+                '    style: default\n'
+                '  runtime_reqs:\n'
+                '    r: r\n'
+                '  script: s\n'
+                '  stage: check-patch\n'
+                '  substage: default\n'
+                '- arch: x86_64\n'
+                '  distro: el7\n'
+                '  release_branches:\n'
+                '    r: b\n'
+                '  reporting:\n'
+                '    style: classic\n'
                 '  runtime_reqs:\n'
                 '    r: r\n'
                 '  script: s\n'

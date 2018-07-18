@@ -64,6 +64,7 @@ def _pipeline_dict_formatter(threads, global_options, template=None):
             'script': str(thread.options['script']),
             'runtime_reqs': thread.options['runtimerequirements'],
             'release_branches': thread.options['releasebranches'],
+            'reporting': thread.options['reporting'],
         } for thread in threads
     ]
     return safe_dump(data, default_flow_style=False)

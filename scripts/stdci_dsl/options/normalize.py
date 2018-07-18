@@ -16,6 +16,8 @@ import py
 
 from ..parser import stdci_load, ConfigurationNotFoundError
 from ..options.defaults import DefaultValue
+from ..options.defaults.values import DEFAULT_REPORTING
+from ..syntax_utils import remove_case_and_signs
 
 from ...usrc import get_modified_files
 
@@ -74,6 +76,7 @@ def normalize(project, threads):
         mounts = _normalize_mounts_config(project, thread)
         repos = _normalize_repos_config(project, thread)
         packages = _resolve_stdci_list_config(project, thread, 'packages')
+        reporting = _normalize_reporting_config(thread)
         normalized_options = copy(thread_with_scdir.options)
         normalized_options['script'] = script
         normalized_options['environment'] = environment
@@ -81,6 +84,7 @@ def normalize(project, threads):
         normalized_options['mounts'] = mounts
         normalized_options['repos'] = repos
         normalized_options['packages'] = packages
+        normalized_options['reporting'] = reporting
         normalized_thread = thread_with_scdir.with_modified(
             options=normalized_options
         )
@@ -144,6 +148,38 @@ def _normalize_repos_config(project, thread):
             )
         all_repos.append(RepoConfig(name=repo_name, url=repo_url))
     return all_repos
+
+
+_STYLE_VALUE_TRNASLATIONS = {
+    'default': 'default',
+    'classic': 'classic',
+    'stdci': 'stdci',
+    'standardci': 'stdci',
+    'plain': 'plain',
+    'plaintext': 'plain',
+    'blueocean': 'blueocean',
+}
+
+
+def _normalize_reporting_config(thread):
+    """Normalize the configuration in the reporting option
+
+    :param JobThread thread:      JobThread to resolve script for
+
+    :returns: Normalized reporting configuration
+    :rtype: dict
+    """
+    reporting = thread.options.get('reporting', {})
+    if not isinstance(reporting, Mapping):
+        if isinstance(reporting, string_types):
+            reporting = {'style': reporting, }
+        else:
+            reporting = {}
+    reporting['style'] = _STYLE_VALUE_TRNASLATIONS.get(
+        remove_case_and_signs(reporting.get('style', '')),
+        DEFAULT_REPORTING['style'],
+    )
+    return reporting
 
 
 def _resolve_stdci_runif_conditions(project, thread, config):

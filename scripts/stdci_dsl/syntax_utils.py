@@ -31,6 +31,9 @@ _KEY_NAME_TRANSLATIONS = {
     'stages': 'stage',
     'substage': 'substage',
     'substages': 'substage',
+    'report': 'reporting',
+    'reports': 'reporting',
+    'output': 'reporting',
 }
 
 

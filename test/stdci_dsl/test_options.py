@@ -11,7 +11,8 @@ from scripts.stdci_dsl.options.normalize import (
     _render_template, _resolve_stdci_yaml_config, _resolve_stdci_list_config,
     _resolve_stdci_script, _normalize_repos_config, _normalize_mounts_config,
     RepoConfig, MountConfig, _resolve_changed_files,
-    _resolve_stdci_runif_conditions, ConfigurationSyntaxError
+    _resolve_stdci_runif_conditions, ConfigurationSyntaxError,
+    _normalize_reporting_config
 )
 
 
@@ -63,6 +64,83 @@ def stdci_project_dir(tmpdir):
 )
 def test_normalize_mounts_config(thread, expected, stdci_project_dir):
     res = _normalize_mounts_config(str(stdci_project_dir), thread)
+    assert res == expected
+
+
+@pytest.mark.parametrize("thread,expected", [
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {}),
+        {'style': 'default', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': {},
+        }),
+        {'style': 'default', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': {'style': 'classic', },
+        }),
+        {'style': 'classic', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': {'style': 'CLASSIC', },
+        }),
+        {'style': 'classic', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': {'style': 'stdci', },
+        }),
+        {'style': 'stdci', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': {'style': 'STD CI', },
+        }),
+        {'style': 'stdci', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': {'style': 'Blue Ocean', },
+        }),
+        {'style': 'blueocean', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': {'style': 'plain', },
+        }),
+        {'style': 'plain', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': {'style': 'plain text', },
+        }),
+        {'style': 'plain', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': {'style': 'foo bar', },
+        }),
+        {'style': 'default', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': 'classic',
+        }),
+        {'style': 'classic', }
+    ),
+    (
+        JobThread('check-patch', 'default', 'el7', 'x86_64', {
+            'reporting': ['classic', ],
+        }),
+        {'style': 'default', }
+    ),
+])
+def test_normalize_reporting_config(thread, expected):
+    res = _normalize_reporting_config(thread)
     assert res == expected
 
 
@@ -350,6 +428,7 @@ def test_get_merged_options(options1, options2, expected):
                         'packages': {'fromfile': ['f1', 'f2']},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
+                        'reporting': {'style': 'default'},
                     }
                 ),
             ],
@@ -387,9 +466,11 @@ def test_get_merged_options(options1, options2, expected):
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
-                        'ignore_if_missing_script': True}
-                    )
-                ],
+                        'ignore_if_missing_script': True,
+                        'reporting': {'style': 'default'},
+                    }
+                )
+            ],
         ),
         (
             [
@@ -401,6 +482,7 @@ def test_get_merged_options(options1, options2, expected):
                         'packages': {'fromfile': ['f1', 'f2']},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
+                        'reporting': {'style': 'default'},
                     }
                 ),
             ],
@@ -445,7 +527,8 @@ def test_get_merged_options(options1, options2, expected):
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
-                        'ignore_if_missing_script': True
+                        'ignore_if_missing_script': True,
+                        'reporting': {'style': 'default'},
                     }
                )
             ],
@@ -462,6 +545,7 @@ def test_get_merged_options(options1, options2, expected):
                         'environment': {'some env req': 123},
                         'script': 'specified inline',
                         'yumrepos': ['y1', 'y2'],
+                        'reporting': {'style': 'default'},
                     }
                 ),
             ],
@@ -479,7 +563,8 @@ def test_get_merged_options(options1, options2, expected):
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
-                        'ignore_if_missing_script': False
+                        'ignore_if_missing_script': False,
+                        'reporting': {'style': 'default'},
                     }
                 )
             ]

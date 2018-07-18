@@ -75,6 +75,11 @@ def _default_templates_without_substage(ftype, from_=None):
     }
 
 
+DEFAULT_REPORTING = {
+    'style': 'default'
+}
+
+
 DEFAULT_VALUES = {
     'user_specified_substage':
     {
@@ -88,7 +93,8 @@ DEFAULT_VALUES = {
         'yumrepos': _default_templates_with_substage('yumrepos', 'fromfile'),
         'repos': _default_templates_with_substage('repos', 'fromlistfile'),
         'mounts': _default_templates_with_substage('mounts', 'fromlistfile'),
-        'script': _default_templates_with_substage('sh', 'fromfile')
+        'script': _default_templates_with_substage('sh', 'fromfile'),
+        'reporting': DEFAULT_REPORTING,
     },
     'default_substage':
     {
@@ -104,6 +110,7 @@ DEFAULT_VALUES = {
         'repos': _default_templates_without_substage('repos', 'fromlistfile'),
         'mounts': _default_templates_without_substage(
             'mounts', 'fromlistfile'),
-        'script': _default_templates_without_substage('sh', 'fromfile')
+        'script': _default_templates_without_substage('sh', 'fromfile'),
+        'reporting': DEFAULT_REPORTING,
     }
 }
