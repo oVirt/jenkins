@@ -301,11 +301,32 @@ class PipelineReporter extends CpsScript implements Serializable {
 
     def job_status(job, status, message) {
         String ctx = get_job_name(job)
-        project.notify(ctx, status, message)
+        String report_url = get_report_url(job, status)
+        project.notify(ctx, status, message, null, report_url)
         threads_summary[ctx] = [
             result: status,
             message: message,
         ]
+    }
+
+    def get_report_url(job, status) {
+        String report_style = job.reporting.style
+        switch (report_style) {
+            case 'default':
+                return null
+            case 'classic':
+                return env.BUILD_URL
+            case 'blueocean':
+                return "${env.BUILD_URL}display/redirect"
+            case 'stdci':
+                return "${env.BUILD_URL}artifact/ci_build_summary.html"
+            case 'plain':
+                return [
+                    env.BUILD_URL,
+                    "artifact/exported-artifacts/${get_job_name(job)}",
+                    "/mock_logs/script/stdout_stderr.log",
+                ].join('')
+        }
     }
 
     def done() {
