@@ -103,3 +103,19 @@
     email-to: 'infra@ovirt.org, rgolan@redhat.com'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
+
+- project:
+    <<: *system-tests-common
+    name: ovirt-system-compat-suite
+    suite_type:
+      - compat-3.6
+      - compat-4.0
+      - compat-4.1
+      - compat-4.2
+    project: 'ovirt-system-tests'
+    version:
+      - master:
+          chroot_distro: el7
+    email-to: 'infra@ovirt.org, mzamazal@redhat.com'
+    jobs:
+        - '{project}_{suite_type}-suite-{version}'
