@@ -4,9 +4,8 @@
     - choice:
         name: ENGINE_VERSION
         choices:
-          - 'master'
-          - '4.1'
           - '4.2'
+          - 'master'
         description: '<b>Target oVirt version which will be tested.</b>
                         <br><style type="text/css">
                         .tg  {border-collapse:collapse;border-spacing:0;
