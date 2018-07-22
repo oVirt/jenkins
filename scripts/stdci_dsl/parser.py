@@ -98,7 +98,10 @@ def normalize_config_values(key, data):
         return data
     if isinstance(data, Mapping):
         return dict(
-            (remove_case_and_signs(k), normalize_config_values(k, v))
+            (
+                normalize_key_name(remove_case_and_signs(k)),
+                normalize_config_values(k, v)
+            )
             for (k, v) in iteritems(data)
         )
     elif isinstance(data, string_types):
@@ -123,5 +126,3 @@ def normalize_config_keys(key):
         )
     key = remove_case_and_signs(key)
     return normalize_key_name(key)
-
-

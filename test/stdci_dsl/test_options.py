@@ -12,7 +12,7 @@ from scripts.stdci_dsl.options.normalize import (
     _resolve_stdci_script, _normalize_repos_config, _normalize_mounts_config,
     RepoConfig, MountConfig, _resolve_changed_files,
     _resolve_stdci_runif_conditions, ConfigurationSyntaxError,
-    _normalize_reporting_config
+    _normalize_reporting_config, _normalize_runtime_requirements
 )
 
 
@@ -142,6 +142,232 @@ def test_normalize_mounts_config(thread, expected, stdci_project_dir):
 def test_normalize_reporting_config(thread, expected):
     res = _normalize_reporting_config(thread)
     assert res == expected
+
+
+@pytest.mark.parametrize(
+    "thread,expected",
+    [
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {}
+            }),
+            {
+                'supportnestinglevel': 0,
+                'hostdistro': 'any',
+                'isolationlevel': 'virtual',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'hostdistro': 'default',
+                    'isolationlevel': 'default',
+                }
+            }),
+            {
+                'supportnestinglevel': 0,
+                'hostdistro': 'any',
+                'isolationlevel': 'virtual',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'supportnestinglevel': 1,
+                }
+            }),
+            {
+                'supportnestinglevel': 1,
+                'hostdistro': 'any',
+                'isolationlevel': 'virtual',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'isolationlevel': 'CONTAIneR',
+                }
+            }),
+            {
+                'hostdistro': 'any',
+                'isolationlevel': 'container',
+                'supportnestinglevel': 0,
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'hostdistro': 'SAmE',
+                }
+            }),
+            {
+                'hostdistro': 'same',
+                'isolationlevel': 'virtual',
+                'supportnestinglevel': 0
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'hostdistro': 'SAmE',
+                    'isolationlevel': 'CONTAIneR',
+                }
+            }),
+            {
+                'hostdistro': 'same',
+                'isolationlevel': 'container',
+                'supportnestinglevel': 0,
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'supportnestinglevel': 2,
+                    'isolationlevel': 'CONTAIneR',
+                }
+            }),
+            {
+                'supportnestinglevel': 2,
+                'isolationlevel': 'container',
+                'hostdistro': 'any',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'supportnestinglevel': 2,
+                    'isolationlevel': 'CONTAIneR',
+                    'hostdistro': 'better',
+                }
+            }),
+            {
+                'supportnestinglevel': 2,
+                'isolationlevel': 'container',
+                'hostdistro': 'newer',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'isolationlevel': 'CONTAIneR',
+                    'supportnestinglevel': 1,
+                    'hostdistro': 'default',
+                }
+            }),
+            {
+                'isolationlevel': 'container',
+                'supportnestinglevel': 1,
+                'hostdistro': 'any',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'isolationlevel': 'bad-value',
+                    'supportnestinglevel': 'bad-value',
+                    'hostdistro': 'bad-value',
+                }
+            }),
+            {
+                'isolationlevel': 'virtual',
+                'supportnestinglevel': 0,
+                'hostdistro': 'any',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'supportnestinglevel': 'virtual machines',
+                }
+            }),
+            {
+                'supportnestinglevel': 1,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'supportnestinglevel': 'vms',
+                }
+            }),
+            {
+                'supportnestinglevel': 1,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'supportnestinglevel': 'nested vms',
+                }
+            }),
+            {
+                'supportnestinglevel': 2,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'supportnestinglevel': 'nested virtual machines',
+                }
+            }),
+            {
+                'supportnestinglevel': 2,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'supportnestinglevel': 'vms on vms',
+                }
+            }),
+            {
+                'supportnestinglevel': 2,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'projectspecificnode': True,
+                }
+            }),
+            {
+                'supportnestinglevel': 0,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+                'projectspecificnode': True,
+            }
+        ),
+    ]
+)
+def test_normalize_runtime_requirements(thread, expected):
+    res = _normalize_runtime_requirements(thread)
+    assert res == expected
+
+
+@pytest.mark.parametrize(
+    "thread,exception",
+    [
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': 'not-a-map'
+            }),
+            ConfigurationSyntaxError
+        ),
+    ]
+)
+def test_normalize_runtime_requirements_exception(thread, exception):
+    with pytest.raises(exception):
+        _normalize_runtime_requirements(thread)
 
 
 @pytest.mark.parametrize(
@@ -462,7 +688,10 @@ def test_get_merged_options(options1, options2, expected):
                         'upstreamsources': {},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
-                        'runtimerequirements': {},
+                        'runtimerequirements': {
+                            'supportnestinglevel': 0,
+                            'hostdistro': 'any',
+                            'isolationlevel': 'virtual'},
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
@@ -523,7 +752,10 @@ def test_get_merged_options(options1, options2, expected):
                         'upstreamsources': {},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
-                        'runtimerequirements': {},
+                        'runtimerequirements': {
+                            'supportnestinglevel': 0,
+                            'hostdistro': 'any',
+                            'isolationlevel': 'virtual'},
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
@@ -559,7 +791,10 @@ def test_get_merged_options(options1, options2, expected):
                         'upstreamsources': {},
                         'repos': ['r1', 'r2'],
                         'environment': {'some env req': 123},
-                        'runtimerequirements': {},
+                        'runtimerequirements': {
+                            'supportnestinglevel': 0,
+                            'hostdistro': 'any',
+                            'isolationlevel': 'virtual'},
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},

@@ -16,7 +16,9 @@ import py
 
 from ..parser import stdci_load, ConfigurationNotFoundError
 from ..options.defaults import DefaultValue
-from ..options.defaults.values import DEFAULT_REPORTING
+from ..options.defaults.values import (
+    DEFAULT_REPORTING, DEFAULT_RUNTIME_REQUIREMENTS
+)
 from ..syntax_utils import remove_case_and_signs
 
 from ...usrc import get_modified_files
@@ -77,6 +79,7 @@ def normalize(project, threads):
         repos = _normalize_repos_config(project, thread)
         packages = _resolve_stdci_list_config(project, thread, 'packages')
         reporting = _normalize_reporting_config(thread)
+        runtime_requirements = _normalize_runtime_requirements(thread)
         normalized_options = copy(thread_with_scdir.options)
         normalized_options['script'] = script
         normalized_options['environment'] = environment
@@ -85,6 +88,7 @@ def normalize(project, threads):
         normalized_options['repos'] = repos
         normalized_options['packages'] = packages
         normalized_options['reporting'] = reporting
+        normalized_options['runtimerequirements'] = runtime_requirements
         normalized_thread = thread_with_scdir.with_modified(
             options=normalized_options
         )
@@ -148,6 +152,67 @@ def _normalize_repos_config(project, thread):
             )
         all_repos.append(RepoConfig(name=repo_name, url=repo_url))
     return all_repos
+
+
+_RUNTIME_REQUIREMENTS_TRANSLATONS = {
+    'isolationlevel': {
+        'container': 'container',
+        'containarized': 'container',
+        'virtual': 'virtual',
+        'vm': 'virtual',
+        'virtualmachine': 'virtual',
+        'physical': 'physical',
+        'bm': 'physical',
+        'baremetal': 'physical',
+    },
+    'hostdistro': {
+        'same': 'same',
+        'newer': 'newer',
+        'better': 'newer',
+    },
+    'supportnestinglevel': {
+        '0': 0,
+        '1': 1,
+        'vm': 1,
+        'vms': 1,
+        'virtualmachine': 1,
+        'virtualmachines': 1,
+        '2': 2,
+        'nestedvm': 2,
+        'nestedvms': 2,
+        'nestedvirtualmachine': 2,
+        'nestedvirtualmachines': 2,
+        'vmonvm': 2,
+        'vmsonvms': 2,
+        'virtualmachineonvirtualmachine': 2,
+        'virtualmachinesonvirtualmachines': 2,
+    },
+}
+
+
+def _normalize_runtime_requirements(thread):
+    """Normalize the configuratiom in the runtime requirements option
+
+    :param job_thread.JobThread thread: JobThread to resolve script for
+
+    :returns: Normalized runtime requirements configuration
+    :rtype: dict
+    """
+    rtr = thread.options['runtimerequirements']
+    if not isinstance(rtr, Mapping):
+        raise ConfigurationSyntaxError(
+            'Runtime requirements must be a map. Not {0}'.format(type(rtr))
+        )
+
+    normalized = {}
+    for config, translations in iteritems(_RUNTIME_REQUIREMENTS_TRANSLATONS):
+        normalized[config] = translations.get(
+            remove_case_and_signs(str(rtr.get(config, ''))),
+            DEFAULT_RUNTIME_REQUIREMENTS[config]
+        )
+    if 'projectspecificnode' in rtr:
+        normalized['projectspecificnode'] = rtr['projectspecificnode']
+    return normalized
 
 
 _STYLE_VALUE_TRNASLATIONS = {

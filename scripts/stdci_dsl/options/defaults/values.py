@@ -80,12 +80,19 @@ DEFAULT_REPORTING = {
 }
 
 
+DEFAULT_RUNTIME_REQUIREMENTS = {
+    'supportnestinglevel': 0,
+    'hostdistro': 'any',
+    'isolationlevel': 'virtual',
+}
+
+
 DEFAULT_VALUES = {
     'user_specified_substage':
     {
         'releasebranches': {},
         'upstreamsources': {},
-        'runtimerequirements': {},
+        'runtimerequirements': DEFAULT_RUNTIME_REQUIREMENTS,
         'environment': _default_templates_with_substage(
             'environment.yaml', 'fromfile'),
         'packages': _default_templates_with_substage(
@@ -100,7 +107,7 @@ DEFAULT_VALUES = {
     {
         'releasebranches': {},
         'upstreamsources': {},
-        'runtimerequirements': {},
+        'runtimerequirements': DEFAULT_RUNTIME_REQUIREMENTS,
         'environment': _default_templates_without_substage(
             'environment.yaml', 'fromfile'),
         'packages': _default_templates_without_substage(

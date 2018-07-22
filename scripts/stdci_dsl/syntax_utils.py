@@ -34,6 +34,22 @@ _KEY_NAME_TRANSLATIONS = {
     'report': 'reporting',
     'reports': 'reporting',
     'output': 'reporting',
+    'hostdistro': 'hostdistro',
+    'hostdistribution': 'hostdistro',
+    'hostoperatingsystem': 'hostdistro',
+    'hostos': 'hostdistro',
+    'isolationlevel': 'isolationlevel',
+    'isolation': 'isolationlevel',
+    'minimalisolation': 'isolationlevel',
+    'minimalisolationlevel': 'isolationlevel',
+    'minisolation': 'isolationlevel',
+    'minisolationlevel': 'isolationlevel',
+    'supportnestinglevel': 'supportnestinglevel',
+    'nestinglevel': 'supportnestinglevel',
+    'nesting': 'supportnestinglevel',
+    'nest': 'supportnestinglevel',
+    'beabletorun': 'supportnestinglevel',
+    'abletorun': 'supportnestinglevel',
 }
 
 

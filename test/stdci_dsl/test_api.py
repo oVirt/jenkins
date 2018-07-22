@@ -24,7 +24,6 @@ def project_dir(tmpdir):
     (automation/'check-patch.repos').write('repo1\nrepo2\nrepo3')
     (root/'stdci.yaml').write(
         "STAGE: check-patch\n"
-        "runtimer-equire_ments: dummy_req\n"
         "Packages: [pkg1, pkg2, pkg3]\n"
         "Environment:\n"
         "  - NAME: 'test'\n"
@@ -103,7 +102,11 @@ def test_get_threads_with_globals(project_dir):
                 'environment': [
                     {'name': 'test', 'valuefrom': {'runtimeenv': 'PWD'}}
                 ],
-                'runtimerequirements': 'dummy_req',
+                'runtimerequirements': {
+                    'supportnestinglevel': 0,
+                    'hostdistro': 'any',
+                    'isolationlevel': 'virtual',
+                },
                 'mounts': [],
                 'releasebranches': {},
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
@@ -136,7 +139,11 @@ def test_get_threads(project_dir):
                 'environment': [
                     {'name': 'test', 'valuefrom': {'runtimeenv': 'PWD'}}
                 ],
-                'runtimerequirements': 'dummy_req',
+                'runtimerequirements': {
+                    'supportnestinglevel': 0,
+                    'hostdistro': 'any',
+                    'isolationlevel': 'virtual',
+                },
                 'mounts': [],
                 'releasebranches': {},
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
