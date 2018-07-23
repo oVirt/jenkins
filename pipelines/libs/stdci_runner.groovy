@@ -41,28 +41,8 @@ def run_std_ci_jobs(project, jobs) {
         }
         parallel branches
     } finally {
-        // Collect results
-        println "+====================+"
-        println "| Collecting results |"
-        println "+====================+"
         node() {
-            dir("exported-artifacts") { deleteDir() }
-            collect_jobs_artifacts(jobs)
-            archiveArtifacts allowEmptyArchive: true, \
-                artifacts: 'exported-artifacts/**'
-            junit keepLongStdio: true, allowEmptyResults: true, \
-                testResults: 'exported-artifacts/**/*xml'
             report.done()
-        }
-    }
-}
-
-def collect_jobs_artifacts(jobs) {
-    for (ji = 0; ji < jobs.size(); ++ji) {
-        def job = jobs[ji]
-        def job_dir = get_job_dir(job)
-        dir("exported-artifacts/$job_dir") {
-            unstash job_dir
         }
     }
 }
@@ -77,7 +57,7 @@ def mk_std_ci_runner(report, project, job) {
             print "This script required nodes with label: $node_label"
         }
         node(node_label) {
-            run_std_ci_on_node(report, project, job, get_job_dir(job))
+            run_std_ci_on_node(report, project, job)
         }
     }
 }
@@ -139,13 +119,14 @@ def get_std_ci_node_label(project, job) {
 }
 
 
-def run_std_ci_on_node(report, project, job, stash_name) {
+def run_std_ci_on_node(report, project, job) {
     TestFailedRef tfr = new TestFailedRef()
     Boolean success = false
     try {
         try {
             report.status('PENDING', 'Setting up test environment')
-            dir("exported-artifacts") { deleteDir() }
+            // Clear al left-over artifacts from previous builds
+            dir(get_job_dir(job)) { deleteDir() }
             checkout_jenkins_repo()
             project_lib.checkout_project(project)
             run_jjb_script('cleanup_slave.sh')
@@ -163,9 +144,10 @@ def run_std_ci_on_node(report, project, job, stash_name) {
             run_std_ci_in_mock(project, job, report, tfr)
         } finally {
             report.status('PENDING', 'Collecting results')
-            dir("exported-artifacts") {
-                stash includes: '**', name: stash_name
-            }
+            archiveArtifacts allowEmptyArchive: true, \
+                artifacts: "${get_job_dir(job)}/**"
+            junit keepLongStdio: true, allowEmptyResults: true, \
+                testResults: "${get_job_dir(job)}/**/*xml"
         }
         // The only way we can get to these lines is if nothing threw any
         // exceptions so far. This means the job was successful.
@@ -216,7 +198,10 @@ def run_std_ci_in_mock(project, job, report, TestFailedRef tfr) {
             passwordVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD',
             usernameVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME'
         )]) {
-            withEnv(["PROJECT=${project.name}"]) {
+            withEnv([
+                "PROJECT=${project.name}",
+                "EXPORTED_ARTIFACTS=${env.WORKSPACE}/${get_job_dir(job)}",
+            ]) {
                 run_jjb_script('collect_artifacts.sh')
             }
         }
@@ -287,10 +272,12 @@ class PipelineReporter extends CpsScript implements Serializable {
     def project
     def threads_summary
     def get_job_name
+    def get_job_dir
 
     def PipelineReporter(parent, stdci_project) {
         stdci_summary_lib = parent.stdci_summary_lib
         get_job_name = { parent.get_job_name(it) }
+        get_job_dir = { parent.get_job_dir(it) }
         project = stdci_project
         threads_summary = [:]
     }
@@ -323,7 +310,7 @@ class PipelineReporter extends CpsScript implements Serializable {
             case 'plain':
                 return [
                     env.BUILD_URL,
-                    "artifact/exported-artifacts/${get_job_name(job)}",
+                    "artifact/${get_job_dir(job)}",
                     "/mock_logs/script/stdout_stderr.log",
                 ].join('')
         }

@@ -14,7 +14,7 @@ PROJECT="${PROJECT:?}"
 # $CLONE_DIR_NAME is injected by the standard-stage template for pipelines
 PROJECT="${CLONE_DIR_NAME:-$PROJECT}"
 WORKSPACE="${WORKSPACE:-$PWD}"
-EXPORTED_ARTIFACTS="$WORKSPACE/exported-artifacts"
+EXPORTED_ARTIFACTS="${EXPORTED_ARTIFACTS:-$WORKSPACE/exported-artifacts}"
 # Images tagged with this tag will be exported
 CONTAINER_IMAGES_EXPORT_TAG="exported-artifacts"
 # If the credentials are not set (provided by Jenkins), exit with error
