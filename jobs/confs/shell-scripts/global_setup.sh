@@ -11,6 +11,7 @@ main() {
     setup_os_repos
     mk_wokspace_dirs
     remove_packages || failed=true
+    release_rpms || failed=true
     extra_packages || failed=true
     user_configuration || failed=true
     nested_kvm || failed=true
@@ -285,6 +286,15 @@ verify_ipv6() {
         done
     fi
     return 0
+}
+
+release_rpms() {
+    # Install release RPMs needed for proper signature verification
+    if [[ ! -e '/usr/bin/dnf' ]]; then
+        if can_sudo yum ; then
+             verify_packages centos-release-qemu-ev epel-release
+        fi
+    fi
 }
 
 extra_packages() {
