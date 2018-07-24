@@ -6,11 +6,11 @@ sub-stages:
             distro: [el6, el7, fc27, fc28, fcraw]
         - ppc64le:
             distro: el7
-        - s390x:
-            distro: [fc27, fc28]
-            script:
-              fromfile: automation/check-patch-s390x.sh
-            stage: check-patch
+#       - s390x:
+#           distro: [fc27, fc28]
+#           script:
+#             fromfile: automation/check-patch-s390x.sh
+#           stage: check-patch
   - jenkins-jobs:
       runif:
         file-changed:
