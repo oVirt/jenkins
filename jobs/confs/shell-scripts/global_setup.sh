@@ -209,6 +209,9 @@ is_nested_kvm_enabled() {
 }
 
 nested_kvm() {
+    # Writing to local container file has no effect so this whole function is
+    # useless in a cotnainer.
+    [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]] && return 0
     #enable nested KVM on Intel if missing
     #check if our hardware has Intel VT, skip otherwise
     if [[ "$(cat /proc/cpuinfo | grep vmx)" ]]; then
@@ -292,6 +295,7 @@ extra_packages() {
 }
 
 docker_setup () {
+    [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]] && return 0
     #Install docker engine and start the service
     log INFO "Trying to setup Docker"
     verify_packages docker || return 1

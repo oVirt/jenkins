@@ -211,6 +211,9 @@ is_docker_using_devicemapper() {
 }
 
 cleanup_loop_devices() {
+    # Too risky to run it from a container... untill we have a proper solution
+    # for containers, don't run it if we're in a container slave.
+    [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]] && return 0
     if ! can_sudo dmsetup || ! can_sudo losetup; then
         log WARN "Skipping loop device cleanup - no sudo for dmsetup/losetup"
         return 0
