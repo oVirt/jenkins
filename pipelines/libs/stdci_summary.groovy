@@ -2,6 +2,7 @@
 //
 
 import hudson.model.StringParameterValue
+import org.jenkinsci.plugins.workflow.steps.MissingContextVariableException
 
 def default_template
 
@@ -71,20 +72,35 @@ def render_summary(project, threads_summary, summary_template) {
                 icon: 'pficon pficon-build'
             ],
         ],
-        thread_blocks: threads_summary
+        all_done: !(threads_summary.any { thread, status -> status.result == 'PENDING'}),
+        thread_blocks: threads_summary,
     ]
 
     def engine = new groovy.text.StreamingTemplateEngine()
     return engine.createTemplate(summary_template).make(data).toString()
 }
 
-def generate_summary(project, threads_summary, summary_template=null) {
+def generate_summary(
+    project, threads_summary, summary_template=null, allocate_node=false
+) {
     if(!summary_template) {
         summary_template = default_template
     }
     def summary = render_summary(project, threads_summary, summary_template)
-    writeFile([file: 'ci_build_summary.html', text: summary])
-    archiveArtifacts artifacts: 'ci_build_summary.html'
+    def summary_file = 'ci_build_summary.html'
+    try {
+        writeFile([file: summary_file, text: summary])
+        archiveArtifacts artifacts: summary_file
+    } catch(MissingContextVariableException) {
+        if(allocate_node) {
+            node() {
+                writeFile([file: summary_file, text: summary])
+                archiveArtifacts artifacts: summary_file
+            }
+        } else {
+            print "STDCI report generation skipped because not on a node"
+        }
+    }
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from

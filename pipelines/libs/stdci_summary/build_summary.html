@@ -4,6 +4,9 @@
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.46.2/css/patternfly.css">
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.46.2/css/patternfly-additions.css">
+        <% if(!all_done) { %>
+            <meta http-equiv="refresh" content="10">
+        <% } %>
     </head>
     <body>
 
@@ -79,16 +82,31 @@
         </nav> <!--/.navbar-->
 
         <div class="container">
+            <% if(!thread_blocks) { %>
+                <p></p>
+                <div class="alert alert-info">
+                    <span class="pficon pficon-info"></span>
+                    <strong>No STDCI threads started by this job.</strong>
+                    <p><strong>Note:</strong>For post-merge runs, only
+                    <em>check-merged</em> threads get invoked. To get
+                    <em>build-artifacts</em> threads to run, you need to
+                    configure the branch as a release branch.<p>
+                </div>
+            <% } %>
             <div id="pf-list-standard" class="list-group list-view-pf list-view-pf-view">
 
                 <%
                    thread_blocks.each { thread ->
+                       def is_done = true
                        if(thread.value.result == 'SUCCESS') {
                            icon_class = 'pficon pficon-ok list-view-pf-icon-md list-view-pf-icon-success'
                        } else if(thread.value.result == 'FAILURE') {
                            icon_class = 'pficon pficon-error-circle-o list-view-pf-icon-md list-view-pf-icon-danger'
-                       } else {
+                       } else if(thread.value.result == 'ERROR') {
                            icon_class = 'pficon pficon-warning-triangle-o list-view-pf-icon-md list-view-pf-icon-warning'
+                       } else {
+                           icon_class = 'pficon pficon-in-progress list-view-pf-icon-md list-view-pf-icon-info'
+                           is_done = false
                        }
                 %>
                 <div class="list-group-item list-view-pf-stacked">
@@ -106,18 +124,20 @@
                                 </div>
                             </div>
                             <div class="list-view-pf-additional-info">
-                                <div class="list-view-pf-additional-info-item">
-                                    <span class="fa fa-list"></span>
-                                    <a href="${build_url}/artifact/${thread.key}/mock_logs/script/stdout_stderr.log">
-                                        Log
-                                    </a>
-                                </div>
-                                <div class="list-view-pf-additional-info-item">
-                                    <span class="pficon pficon-bundle"></span>
-                                    <a href="${build_url}/artifact/${thread.key}">
-                                        Artifacts
-                                    </a>
-                                </div>
+                                <% if(is_done) { %>
+                                    <div class="list-view-pf-additional-info-item">
+                                        <span class="fa fa-list"></span>
+                                        <a href="${build_url}/artifact/${thread.key}/mock_logs/script/stdout_stderr.log">
+                                            Log
+                                        </a>
+                                    </div>
+                                    <div class="list-view-pf-additional-info-item">
+                                        <span class="pficon pficon-bundle"></span>
+                                        <a href="${build_url}/artifact/${thread.key}">
+                                            Artifacts
+                                        </a>
+                                    </div>
+                                <% } %>
                             </div>
                         </div>
                     </div>

@@ -34,15 +34,15 @@ def on_load(loader) {
 def run_std_ci_jobs(project, jobs) {
     def branches = [:]
     def report = new PipelineReporter(this, project)
-    try {
+    if(jobs) {
         for(job in jobs) {
             branches[get_job_name(job)] = mk_std_ci_runner(
                 report.mk_thread_reporter(job), project, job)
         }
         parallel branches
-    } finally {
+    } else {
         node() {
-            report.done()
+            report.no_jobs()
         }
     }
 }
@@ -288,12 +288,18 @@ class PipelineReporter extends CpsScript implements Serializable {
 
     def job_status(job, status, message) {
         String ctx = get_job_name(job)
-        String report_url = get_report_url(job, status)
-        project.notify(ctx, status, message, null, report_url)
         threads_summary[ctx] = [
             result: status,
             message: message,
         ]
+        // if we link to the STDCI summary, allocate node to generate it if we
+        // don't have one already
+        def allocate_node = (job.reporting.style == 'stdci')
+        stdci_summary_lib.generate_summary(project, threads_summary, null, allocate_node)
+        // Only notify the project after we generate the report so that if the
+        // report is linked to it, the link is valid.
+        String report_url = get_report_url(job, status)
+        project.notify(ctx, status, message, null, report_url)
     }
 
     def get_report_url(job, status) {
@@ -316,8 +322,8 @@ class PipelineReporter extends CpsScript implements Serializable {
         }
     }
 
-    def done() {
-        stdci_summary_lib.generate_summary(project, threads_summary)
+    def no_jobs() {
+        stdci_summary_lib.generate_summary(project, [:])
     }
 
     // run() is an abstract method defined by CpsScript so we must define it
