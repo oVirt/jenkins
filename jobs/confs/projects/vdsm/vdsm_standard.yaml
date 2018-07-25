@@ -81,8 +81,8 @@
     arch:
       - ppc64le:
           node-filter: ppc64le
-      - s390x:
-          node-filter: s390x
+      #- s390x:
+      #    node-filter: s390x
     exclude:
       - { version: '4.1', arch: s390x, }
       - {                 arch: s390x,   distro: el7, }
