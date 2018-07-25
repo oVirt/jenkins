@@ -1,4 +1,4 @@
 - trigger:
     name: poll-upstream-sources_stage
     triggers:
-      - timed: '@daily'
+      - timed: '@midnight'
