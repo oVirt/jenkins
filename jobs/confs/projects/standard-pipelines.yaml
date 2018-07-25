@@ -79,6 +79,7 @@
       - ovirt-jboss-modules-maven-plugin
       - ovirt-js-dependencies
       - ovirt-node-ng
+      - ovirt-node-ng-image
       - ovirt-provider-ovn
       - ovirt-system-tests
       - releng-tools
