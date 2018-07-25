@@ -92,7 +92,15 @@ def get_std_ci_node_label(project, job) {
             label_conditions << label
         }
     }
-    if(job.runtime_reqs?.supportnestinglevel >= 2) {
+    if(
+        job.runtime_reqs?.supportnestinglevel >= 2 &&
+        job.runtime_reqs?.isolationlevel == 'container'
+    ) {
+        label_conditions << 'integ-tests-container'
+    } else if(
+        job.runtime_reqs?.supportnestinglevel >= 2 ||
+        job.runtime_reqs?.isolationlevel == 'physical'
+    ) {
         label_conditions << 'integ-tests'
     }
     if(job.runtime_reqs?.supportnestinglevel == 1) {
