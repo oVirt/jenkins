@@ -14,8 +14,10 @@
       - x86_64
       - ppc64le:
           node-filter: ppc64le
-      - s390x:
-          node-filter: s390x
+      # Temporarly disabled:
+      # https://lists.ovirt.org/archives/list/devel@ovirt.org/message/DRIZMHAYBKIPEBHZTWEBOXZ2PMSP33N4/
+      #- s390x:
+      #node-filter: s390x
     exclude:
       - { version: '4.1', distro: fc28 }
       - { version: '4.1', arch: s390x, }
