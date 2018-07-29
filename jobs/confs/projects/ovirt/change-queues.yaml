@@ -11,7 +11,6 @@
     name: ovirt_change-queueus
     queue-name:
       - ovirt-master
-      - ovirt-4.1
       - ovirt-4.2
     deploy-user: deploy-ovirt-experimental
     deploy-host: resources.ovirt.org
