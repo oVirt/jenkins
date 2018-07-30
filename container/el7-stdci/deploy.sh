@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 main(){
-    enable_docker_sock_service
+    enable_docker_service
     enable_environment_service
     enable_jenkins_home_service
     enable_jnlp_slave
@@ -22,6 +22,10 @@ enable_jenkins_home_service() {
 
 enable_jnlp_slave() {
     systemctl enable jenkins-jnlp-agent.service
+}
+
+enable_docker_service() {
+    systemctl enable docker
 }
 
 main "$@"

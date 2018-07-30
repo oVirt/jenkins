@@ -295,7 +295,6 @@ extra_packages() {
 }
 
 docker_setup () {
-    [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]] && return 0
     #Install docker engine and start the service
     log INFO "Trying to setup Docker"
     verify_packages docker || return 1

@@ -10,7 +10,7 @@ RUN \
     yum install -y epel-release centos-release-qemu-ev &&\
     yum install -y git mock sed bash procps-ng createrepo python-paramiko \
         PyYAML python2-pyxdg python-jinja2 python-py python34-PyYAML \
-        lago-${lago_version}
+        docker lago-${lago_version}
 COPY sbin/export_environment.sh /usr/sbin/export_environment
 COPY systemd/* /etc/systemd/system/
 COPY sudoers.d/* /etc/sudoers.d/

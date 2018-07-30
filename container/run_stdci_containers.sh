@@ -32,7 +32,6 @@ main() {
             -e "JENKINS_AGENT_NAME=$container_name"
             -e "JENKINS_SECRET=$secret"
             -e "CI_RUNTIME_UNAME=$RUNTIME_USERNAME"
-            -v '/var/run/docker.sock:/root/docker.sock'
         )
 
         docker run "${base_cmd[@]}" "${extras[@]}" "$STDCI_IMAGE_NAME"
@@ -51,6 +50,7 @@ prep_slave_slot() {
     cmd+=( "$(prep_runtime_user_home "$slave_home")" )
     cmd+=( "$(prep_lago_dirs "$slave_home")" )
     cmd+=( "$(prep_mock_dirs "$slave_home")" )
+    cmd+=( "$(prep_docker_dirs "$slave_home")" )
 
     printf "%s " "${cmd[@]}"
 }
@@ -101,6 +101,19 @@ prep_runtime_user_home() {
         -v "$real_runtime_user_home":"$real_runtime_user_home"
         -e "JENKINS_AGENT_WORKDIR=$real_runtime_user_home"
         -e "CI_RUNTIME_UID=$runtime_uid"
+    )
+    printf "%s " "${cmd[@]}"
+}
+
+prep_docker_dirs() {
+    local slave_home="${1:?}"
+    local docker_home="${slave_home}/var/lib/docker"
+
+    mkdir -p "$docker_home"
+    local cmd real_docker_home
+    real_docker_home="$(realpath "$docker_home")"
+    cmd=(
+        -v "$real_docker_home:/var/lib/docker"
     )
     printf "%s " "${cmd[@]}"
 }

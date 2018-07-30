@@ -38,7 +38,6 @@ filter_secret_data() {
 }
 
 cleanup_docker () {
-    [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]] && return 0
     local whitelisted_repos=(centos fedora)
 
     if ! [[ -x /bin/docker ]]; then
