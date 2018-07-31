@@ -71,9 +71,8 @@ prep_lago_dirs() {
 
 prep_mock_dirs() {
     local slave_home="${1:?}"
-    local mock_dir="${slave_home}/mock"
-    local mock_cache="${mock_dir}/cache"
-    local mock_lib="${mock_dir}/lib"
+    local mock_cache="${slave_home}/var/cache/mock"
+    local mock_lib="${slave_home}/var/lib/mock"
 
     mkdir -p "$mock_lib" "$mock_cache"
     local real_mock_lib; real_mock_lib="$(realpath "$mock_lib")"
