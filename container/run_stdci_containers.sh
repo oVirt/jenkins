@@ -99,9 +99,8 @@ prep_slave_slot() {
 prep_lago_dirs() {
     local slave_home="${1:?}"
     local lago_home="${slave_home}/var/lib/lago"
-    local lago_subnets_dir="${lago_home}/subnets"
 
-    mkdir -p "$lago_subnets_dir"
+    mkdir -p "$lago_home"
     local real_lago_home; real_lago_home="$(realpath "$lago_home")"
 
     local -a cmd; cmd=(
