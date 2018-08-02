@@ -5,6 +5,7 @@
           name: SUITE_TYPE
           choices:
             - basic
+            - basic-fc
             - upgrade-from-release
             - upgrade-from-prevrelease
             - he-basic
