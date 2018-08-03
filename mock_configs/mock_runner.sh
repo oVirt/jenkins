@@ -17,7 +17,7 @@ DEFAULT_MOCK_ENV=el7
 # Generate temp dir to be used by any method in mock_runner
 # This dir is removed recursively in `finalize`
 readonly MR_TEMP_DIR=$(mktemp --tmpdir -d "tmp.mock_runner.XXX")
-readonly LOGS_DIR="$(mktemp -d -p "." -t mock_logs.XXXXXXXX)"
+readonly LOGS_DIR="$(mktemp --tmpdir -d -t mock_logs.XXXXXXXX)"
 trap finalize EXIT
 
 
@@ -188,11 +188,11 @@ prepare_chroot() {
     mock_chroot="${mock_chroot%.*}"
     mock_dir="${mock_conf%/*}"
     makedir "$LOGS_DIR/init"
-    init_chroot "${mock_chroot}" "${mock_dir}" \
+    init_chroot "${mock_chroot}" "${mock_dir}" 2>&1 \
         | tee -a "$LOGS_DIR/init/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
     makedir "$LOGS_DIR/populate_mock"
-    populate_mock "$mock_chroot" "$mock_dir" \
+    populate_mock "$mock_chroot" "$mock_dir" 2>&1 \
         | tee -a "$LOGS_DIR/populate_mock/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
     mock_conf_with_mounts="$(
@@ -494,21 +494,20 @@ populate_mock() {
             fi
         fi
     done
+    local logs_dir="$LOGS_DIR/populate_mock"
+    mkdir -p "$logs_dir"
     $MOCK \
         --old-chroot \
         --configdir="$conf_dir" \
         --root="$chroot" \
-        --resultdir="$LOGS_DIR/populate_mock" \
+        --resultdir="$logs_dir" \
         --shell <<EOC
             set -e
-            logdir="$MOUNT_POINT/$LOGS_DIR/populate_mock"
-            [[ -d \$logdir ]] \\
-            || mkdir -p "\$logdir"
             # Fix that allows using yum inside the chroot on dnf enabled
             # distros
             [[ -d /etc/dnf ]] && [[ -e /etc/yum/yum.conf ]] && cat /etc/yum/yum.conf > /etc/dnf/dnf.conf
-            rm -Rf /var/lib/rpm/__* &>\$logdir/rpmbuild.log
-            rpm --rebuilddb &>>\$logdir/rpmbuild.log
+            rm -Rfv /var/lib/rpm/__*
+            rpm --rebuilddb
             [[ -z "${file_mount_point_dirs[@]}" ]] || mkdir -p ${file_mount_point_dirs[@]}
             [[ -z "${file_mount_points[@]}" ]] || touch ${file_mount_points[@]}
 EOC
@@ -732,13 +731,16 @@ run_script_in_mock() {
     echo "Using base mock conf $MOCK_CONF_DIR/${base_chroot}.cfg" >&2
     prepare_chroot "$base_chroot" "${mock_env%%:*}" "$script" \
     || return 1
+    local logs_dir="$LOGS_DIR/script"
+    local logs_xfr_dir="$(mktemp --tmpdir=. -u -d -t mock_logs.XXXXXXXX)"
+    mkdir -p "$logs_dir"
     cat <<EOC
     $MOCK \\
         --old-chroot \\
         --root="${mock_chroot}" \\
         --configdir="$mock_dir" \\
         --no-clean \\
-        --resultdir="$LOGS_DIR/script" \\
+        --resultdir="$logs_dir" \\
         "${mock_enable_network[@]}" \\
         --shell <<EOS
             set -e
@@ -747,9 +749,8 @@ run_script_in_mock() {
             rpm -qf /etc/system-release \
                 | xargs -r rpm -ql fedora-repos{,-rawhide} epel-release \
                 | grep '/etc/yum\.repos\.d/.*\.repo' | xargs -r rm -fv
-            logdir="$MOUNT_POINT/$LOGS_DIR/script"
-            [[ -d "\\\$logdir" ]] \\
-            || mkdir -p "\\\$logdir"
+            logdir="\\\$(mktemp --tmpdir -d -t mock_logs.XXXXXXXX)"
+            mkdir -p "\\\$logdir"
             export HOME=$MOUNT_POINT
             cd
             chmod +x $script
@@ -760,26 +761,25 @@ run_script_in_mock() {
                 runner_GROUP=mockbuild
             fi
             if ! getent group "\\\$runner_GID" &>/dev/null; then
-                groupadd \\
-                    --gid "\\\$runner_GID" \\
-                    "\\\$runner_GROUP"
+                groupadd --gid "\\\$runner_GID" "\\\$runner_GROUP"
             fi
-            start="\\\$(date +%s)"
-            res=0
-            echo "========== Running the shellscript $script" \\
-                | tee -a \\\$logdir/stdout_stderr.log
             if [[ "$script" == /* ]]; then
                 script_path="$script"
             else
                 script_path="./$script"
             fi
-            "\$script_path" 2>&1 | tee -a \\\$logdir/stdout_stderr.log \\
-            || res=\\\${PIPESTATUS[0]}
-            end="\\\$(date +%s)"
-            echo "Took \\\$((end - start)) seconds" \\
-            | tee -a \\\$logdir/stdout_stderr.log
-            echo "===================================" \\
-            | tee -a \\\$logdir/stdout_stderr.log
+            (
+                echo "========== Running the shellscript $script"
+                start="\\\$(date +%s)"
+                "\\\$script_path"
+                res=\\\$?
+                end="\\\$(date +%s)"
+                echo "Took \\\$((end - start)) seconds"
+                echo "==================================="
+                exit \\\$res
+            ) 2>&1 | tee \\\$logdir/stdout_stderr.log
+            res=\\\${PIPESTATUS[0]}
+            mv "\\\$logdir" "$logs_xfr_dir"
             if [[ "\\\$(find . -uid 0 -print -quit)" != '' ]]; then
                 chown -R "\$UID:\\\$runner_GID" .
             fi
@@ -791,7 +791,7 @@ EOC
         --root="${mock_chroot}" \
         --configdir="$mock_dir" \
         --no-clean \
-        --resultdir="$LOGS_DIR/script" \
+        --resultdir="$logs_dir" \
         "${mock_enable_network[@]}" \
         --shell <<EOS
             set -e
@@ -800,9 +800,8 @@ EOC
             rpm -qf /etc/system-release \
                 | xargs -r rpm -ql fedora-repos{,-rawhide} epel-release \
                 | grep '/etc/yum\.repos\.d/.*\.repo' | xargs -r rm -fv
-            logdir="$MOUNT_POINT/$LOGS_DIR/script"
-            [[ -d "\$logdir" ]] \\
-            || mkdir -p "\$logdir"
+            logdir="\$(mktemp --tmpdir -d -t mock_logs.XXXXXXXX)"
+            mkdir -p "\$logdir"
             export HOME=$MOUNT_POINT
             cd
             chmod +x $script
@@ -813,35 +812,34 @@ EOC
                 runner_GROUP=mockbuild
             fi
             if ! getent group "\$runner_GID" &>/dev/null; then
-                groupadd \
-                    --gid "\$runner_GID" \
-                    "\$runner_GROUP"
+                groupadd --gid "\$runner_GID" "\$runner_GROUP"
             fi
-            start="\$(date +%s)"
-            res=0
-            echo "========== Running the shellscript $script" \
-                | tee -a \$logdir/stdout_stderr.log
             if [[ "$script" == /* ]]; then
                 script_path="$script"
             else
                 script_path="./$script"
             fi
-            # It turns out that on some scripts if the following is not all
-            # in the same line, it never runs and returns with 0 (giving false
-            # positives)
-            "\$script_path" 2>&1 | tee -a \$logdir/stdout_stderr.log \
-            && res=\${PIPESTATUS[0]}; \
-            end="\$(date +%s)"; \
-            echo "Took \$((end - start)) seconds" \
-            | tee -a \$logdir/stdout_stderr.log; \
-            echo "===================================" \
-            | tee -a \$logdir/stdout_stderr.log; \
-            if [[ "\$(find . -uid 0 -print -quit)" != '' ]]; then \
-                chown -R "$UID:\$runner_GID" . ;\
-            fi; \
+            (
+                echo "========== Running the shellscript $script"
+                start="\$(date +%s)"
+                "\$script_path"
+                res=\$?
+                end="\$(date +%s)"
+                echo "Took \$((end - start)) seconds"
+                echo "==================================="
+                exit \$res
+            ) 2>&1 | tee \$logdir/stdout_stderr.log
+            res=\${PIPESTATUS[0]}
+            mv "\$logdir" "$logs_xfr_dir"
+            if [[ "\$(find . -uid 0 -print -quit)" != '' ]]; then
+                chown -R "$UID:\$runner_GID" .
+            fi
             exit \$res
 EOS
-    return $?
+    local res=$?
+    mv "$logs_xfr_dir"/* "$logs_dir" || :
+    rmdir "$logs_xfr_dir"
+    return $res
 }
 
 
@@ -898,6 +896,7 @@ finalize() {
         rotate_logs_dir "$PWD/$FINAL_LOGS_DIR"
         makedir "$FINAL_LOGS_DIR"
         echo "Collecting mock logs"
+        sync
         xargs -r mv -v -t "$FINAL_LOGS_DIR" <<<"$logs"
         echo "##########################################################"
     fi
