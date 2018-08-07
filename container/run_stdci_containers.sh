@@ -6,17 +6,25 @@
 #                           under $STDCI_DATA_DIR and mounts it in the
 #                           container.
 
-STDCI_DATA_DIR="/var/lib/stdci"
-STDCI_IMAGE_NAME="stdci:current-slave-image"
-RUNTIME_USERNAME=jenkins
+readonly STDCI_DATA_DIR="/var/lib/stdci"
+readonly SHARED_DATA_DIR="${STDCI_DATA_DIR}/shared"
+readonly STDCI_IMAGE_NAME="stdci:current-slave-image"
+readonly RUNTIME_USERNAME=jenkins
 
 main() {
     local command="${1:?}"
     local command_args=("${@:2}")
 
-    mkdir -p "$STDCI_DATA_DIR"
-
+    prep_shared_data_dir
     cmd_$command "${command_args[@]}"
+}
+
+prep_shared_data_dir() {
+    local runtime_uid="$(id -u "$RUNTIME_USERNAME")"
+    local runtime_gid="$(id -g "$RUNTIME_USERNAME")"
+
+    mkdir -p "${SHARED_DATA_DIR}"
+    chown "$runtime_uid":"$runtime_gid" "${SHARED_DATA_DIR}"
 }
 
 cmd_deploy_all() {
@@ -46,6 +54,7 @@ cmd_deploy_slot() {
     local container_name="$(get_container_name "$slot_id")"
     base_cmd=(
         --privileged "--name=$container_name" -d
+        -v "$SHARED_DATA_DIR":"$SHARED_DATA_DIR"
         -e "STDCI_SLAVE_CONTAINER_NAME=$container_name"
         -e "JENKINS_URL=$jenkins_server"
         -e "JENKINS_AGENT_NAME=$container_name"
