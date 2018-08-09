@@ -65,5 +65,7 @@
             system testing. You will need to create some
             'build-artifacts' jobs if you want changes to be submitted
             to change queues, take part in the system tests and be
-            deployed to the nightly snapshot repositories.
+            deployed to the nightly snapshot repositories. If your project uses
+            STDCI V2 and you have release branches configured, you may disregard
+            this message.
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
