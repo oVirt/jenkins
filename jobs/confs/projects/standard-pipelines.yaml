@@ -13,10 +13,12 @@
       - ovirt-ansible-cluster-upgrade
       - ovirt-ansible-disaster-recovery
       - ovirt-ansible-engine-setup
+      - ovirt-ansible-hosted-engine-setup
       - ovirt-ansible-image-template
       - ovirt-ansible-infra
       - ovirt-ansible-manageiq
       - ovirt-ansible-repositories
+      - ovirt-ansible-shutdown-env
       - ovirt-ansible-vm-infra
       - ovirt-ansible-v2v-conversion-host
       - ovirt-openshift-extensions
