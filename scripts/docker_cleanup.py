@@ -160,6 +160,11 @@ def _remove_container(client, container):
         logger.warning(
             'Attempt to remove non-existent container %s. Skipping',
             _get_container_id(container))
+    except docker.errors.APIError:
+        logger.warning(
+        'removal of container %s  is already in progress',
+        _get_container_id(container)
+        )
 
 
 def _is_repo_whitelisted(tags, whitelisted_repos):
