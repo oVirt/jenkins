@@ -32,6 +32,7 @@ main() {
         test_rpmbuild "$@"
     fi
     test_secrets_and_credentials
+    test_mock_runner_fd_leak
 }
 
 is_jjb_test_arch() {
@@ -127,6 +128,21 @@ test_secrets_and_credentials() {
     [[ "${test_secret_password}" = "JenkinsPassword" ]] || return 1
     [[ "${test_secret_specified}" = "OVIRT_CI" ]] || return 1
     return 0
+}
+
+test_mock_runner_fd_leak() {
+    # Verify that mock_runner doesn't leack it's stdin to user's script
+    # If we reached timeout, it means that stdin is empty
+    # If $A is empty it means that stdin is empty
+    local res A
+    read -t 2 A && timeout 2s cat > /dev/null
+    res=$?
+    if (( res == 0 || res == 142 )); then
+        echo "ERROR: There is a file descriptor leakage!"
+        return 1
+    else
+        return 0
+    fi
 }
 
 main "$@"

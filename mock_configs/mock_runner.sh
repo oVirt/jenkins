@@ -771,7 +771,7 @@ run_script_in_mock() {
             (
                 echo "========== Running the shellscript $script"
                 start="\\\$(date +%s)"
-                "\\\$script_path"
+                "\\\$script_path" < /dev/null
                 res=\\\$?
                 end="\\\$(date +%s)"
                 echo "Took \\\$((end - start)) seconds"
@@ -822,7 +822,7 @@ EOC
             (
                 echo "========== Running the shellscript $script"
                 start="\$(date +%s)"
-                "\$script_path"
+                "\$script_path" < /dev/null
                 res=\$?
                 end="\$(date +%s)"
                 echo "Took \$((end - start)) seconds"
