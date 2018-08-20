@@ -46,6 +46,7 @@ def loader_main(loader) {
         currentBuild.displayName += " ${project.name} [$std_ci_stage]"
 
         project_lib.checkout_project(project)
+        set_gerrit_automerge(project, std_ci_stage)
         dir(project.clone_dir_name) {
             // This is a temporary workaround for KubeVirt project
             sh """
@@ -125,7 +126,15 @@ def get_stage_gerrit() {
     return null
 }
 
-void set_gerrit_trigger_voting(project, stage_name) {
+def set_gerrit_trigger_voting(project, stage_name) {
+    if(stage_name != "check-patch") { return }
+    modify_build_parameter(
+        "GERRIT_TRIGGER_CI_VOTE_LABEL",
+        "--label Continuous-Integration=<CODE_REVIEW>"
+    )
+}
+
+def set_gerrit_automerge(project, stage_name) {
     if(stage_name != "check-patch") { return }
     dir(project.clone_dir_name) {
         if(stdci_runner_lib.invoke_pusher(project, 'can_merge', returnStatus: true) == 0) {
@@ -135,12 +144,6 @@ void set_gerrit_trigger_voting(project, stage_name) {
                 " --code-review=2" +
                 " --verified=1" +
                 " --submit"
-            )
-        }
-        else {
-            modify_build_parameter(
-                "GERRIT_TRIGGER_CI_VOTE_LABEL",
-                "--label Continuous-Integration=<CODE_REVIEW>"
             )
         }
     }
