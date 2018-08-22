@@ -82,7 +82,6 @@
     name: ovirt-system-hc-tests
     suite_type: hc-basic
     project: 'ovirt-system-tests'
-    node-filter: 'ovirt-srv05.phx.ovirt.org'
     version:
       - master:
           chroot_distro: el7
