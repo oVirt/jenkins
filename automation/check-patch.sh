@@ -35,11 +35,6 @@ main() {
     test_mock_runner_fd_leak
 }
 
-is_jjb_test_arch() {
-    [[ "$(uname -m)" == "x86_64" ]] &&
-        grep -qE '^(Red Hat|CentOS) .* release 7\.' /etc/system-release
-}
-
 is_docker_test_arch() {
     [[ "$(uname -m)" != "s390x" ]] &&
         ! grep -qE '^(Red Hat|CentOS) release 6\.' /etc/system-release
@@ -60,6 +55,14 @@ test_standard_ci_proxy() {
     if [[ -n "$http_proxy" ]]; then
         echo "It looked like we are running in a PROXIED environment"
         echo "http_proxy='$http_proxy'"
+
+        if [[ "$no_proxy" == *localhost* ]]; then
+            echo "It seems that no_proxy is properly set to '$no_proxy'"
+        else
+            echo "It seems that no_proxy is not set, local connections"
+            echo "will probably fail"
+            return 1
+        fi
     fi
 }
 
