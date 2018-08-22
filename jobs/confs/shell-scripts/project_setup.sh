@@ -38,7 +38,7 @@ filter_secret_data() {
 }
 
 cleanup_docker () {
-    local whitelisted_repos=(centos fedora)
+    local whitelisted_repos=( ${CACHED_DOCKER_REPOS:-centos fedora} )
 
     if ! [[ -x /bin/docker ]]; then
         log WARN "Skipping Docker cleanup - Docker not installed"
