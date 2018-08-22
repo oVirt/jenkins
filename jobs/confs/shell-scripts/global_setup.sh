@@ -292,7 +292,7 @@ release_rpms() {
     # Install release RPMs needed for proper signature verification
     if [[ ! -e '/usr/bin/dnf' ]]; then
         if can_sudo yum ; then
-             verify_packages centos-release-qemu-ev epel-release
+             verify_packages centos-release-virt-common epel-release
         fi
     fi
 }
