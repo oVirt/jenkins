@@ -289,11 +289,14 @@ verify_ipv6() {
 }
 
 release_rpms() {
+    source /etc/os-release
+    if [[ "${ID:-}" != centos ]]; then
+        # we only try to install release RPMs on CentOS
+        return
+    fi
     # Install release RPMs needed for proper signature verification
-    if [[ ! -e '/usr/bin/dnf' ]]; then
-        if can_sudo yum ; then
-             verify_packages centos-release-virt-common epel-release
-        fi
+    if can_sudo yum ; then
+         verify_packages centos-release-virt-common epel-release
     fi
 }
 
