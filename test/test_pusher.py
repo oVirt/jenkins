@@ -287,6 +287,18 @@ def test_push_gerrit(
     assert local_log() == remote_log('refs/for/not_master')
 
 
+def test_push_gerrit_direct(
+    monkeypatch, gerrit_push_map, local_log, remote_log, local_repo_patch,
+    mock_check_pushed
+):
+    assert local_log() != remote_log()
+    monkeypatch.chdir(str(local_repo_patch))
+    push_to_scm('master', gerrit_push_map, direct=True)
+    assert local_log() == remote_log()
+    push_to_scm('not_master', gerrit_push_map, direct=True)
+    assert local_log() == remote_log('not_master')
+
+
 @pytest.mark.parametrize(
     ('patch_exists', 'if_not_exists', 'should_check', 'should_push'), [
         (False, False, False, True),

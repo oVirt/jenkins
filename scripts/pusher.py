@@ -287,7 +287,7 @@ def is_header_true_main(args):
         return 100
 
 
-def push_to_scm(dst_branch, push_map, if_not_exists=True, unless_hash=None):
+def push_to_scm(dst_branch, push_map, direct=False, if_not_exists=True, unless_hash=None):
     """Push commits to the specified remote branch
 
     :param str dst_branch:    The target remote branch to push changes into.
@@ -296,6 +296,8 @@ def push_to_scm(dst_branch, push_map, if_not_exists=True, unless_hash=None):
     :param str push_map:      The path to a file containing information about
                               remote SCM servers that is needed to push changes
                               to them.
+    :param bool direct:       If set to True, bypass review and directly merge
+                              the patch.
     :param str if_not_exists: If set to 'True' (the default), check remote for
                               a similar patch before pushing, and don't push if
                               it exists.
@@ -313,7 +315,10 @@ def push_to_scm(dst_branch, push_map, if_not_exists=True, unless_hash=None):
     if if_not_exists and check_if_similar_patch_pushed(push_details):
         logger.info('Found similar patch in SCM server, not pushing')
         return
-    dest_to_push_to = 'HEAD:refs/for/{0}'.format(dst_branch)
+    if direct:
+        dest_to_push_to = 'HEAD:refs/heads/{0}'.format(dst_branch)
+    else:
+        dest_to_push_to = 'HEAD:refs/for/{0}'.format(dst_branch)
     logger.info("Push to: '%s' at '%s'", push_details.push_url, dest_to_push_to)
     git('push', push_details.push_url, dest_to_push_to)
 
