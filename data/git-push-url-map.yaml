@@ -13,3 +13,21 @@
     maintainers: jenkins
     maintainer_groups:
       - \6-maintainers
+
+- ^(https|(git\+)?ssh)://(.*@)?gerrit.ovirt.org(:29418)?/((.*?)(\.git)?)$:
+    push_url: 'ssh://jenkins@gerrit.ovirt.org:29418/\5'
+    host_key:
+      "[gerrit.ovirt.org]:29418,[107.22.212.69]:29418 ssh-rsa \
+      AAAAB3NzaC1yc2EAAAABIwAAAQEAqgWNlffhqbOWzOyMoKLyCx94AqoK\
+      jVIp6PCyuD92zOhxUwB+glOgwdiRntUE7zkufgXOjsxQxxEpP+AGG3Fd\
+      MQ4B4PxbRv1cOrP0AEHMGLBe6FS9dGa0Jbotpcxls2ywaxMMK0m/KvV1\
+      o1LUBmxMiFhAMfEr5Net39qFnmdW8g6XEHpnZ+bSGim83elmY0pcsHBC\
+      7vt11BzanTTL9cIeG3M/JjnXksLW1Xtvu9Wl3M+zK0FQyfMaqUUnA0os\
+      yJu+1kGgtb6cdmFL0ijKXE/ap1VU/pUcZiJgJuXwnAAvLNO0//3V8U27\
+      ktP8aZJaLRNceWiEpSxHGUFh1sXtFgTvGQ=="
+    merge_flags:
+      --code-review: +2
+      --verified: +1
+    maintainers: jenkins
+    maintainer_groups:
+      - \6-maintainers
