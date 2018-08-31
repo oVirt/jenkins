@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -xe
 # mirror_mgr.sh - Atomic mirror management script
 #
 # This script comtains various tools for managing oVirt CI package
