@@ -46,7 +46,6 @@
           chroot_distro: el7
     email-to: >
       didi@redhat.com,
-      sbonazzo@redhat.com,
       infra@ovirt.org,
       lveyde@redhat.com,
       stirabos@redhat.com,
