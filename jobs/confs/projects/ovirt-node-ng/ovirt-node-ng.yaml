@@ -28,8 +28,6 @@
     name: ovirt-node-ng_build-nightly
     project: ovirt-node-ng
     version:
-      - master:
-          branch: master
       - ovirt-4.2:
           branch: ovirt-4.2
       - '4.2':
@@ -39,17 +37,12 @@
     stage: build-artifacts
     distro:
       - el7
-      - fc28
     trigger: 'timed'
     trigger-times: 'H H(5-8) * * *'
     arch:
       - x86_64
     node-filter: el7
     email-to: 'infra@ovirt.org, yturgema@redhat.com'
-    exclude:
-      - { version: '4.2', distro: fc28 }
-      - { version: 'ovirt-4.2', distro: fc28 }
-      - { version: 'ovirt-4.2-pre', distro: fc28 }
     jobs:
         - '{project}_{version}_build-artifacts-{distro}-{arch}{_big_artifacts}'
 
