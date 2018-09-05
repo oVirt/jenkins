@@ -80,6 +80,14 @@ help() {
             Add the given package to the mock env when installing, can be
             specified more than once
 
+        -t|--timeout-duration
+            Set timeout duration to the running script.
+            DURATION is a floating point number with an optional suffix:
+                's' for seconds (the default),
+                'm' for minutes,
+                'h' for hours or
+                'd' for days.
+
         --secrets-file
             Path to secrets file
             (default is \${xdg_home}/ci_secrets_file.yaml)
@@ -682,7 +690,6 @@ run_script_in_mock() {
     mkdir -p "$logs_dir"
     local mock_shell_cmd
     read -r -d '' mock_shell_cmd <<EOF
-        set -e
         logdir="\$(mktemp --tmpdir -d -t mock_logs.XXXXXXXX)"
         mkdir -p "\$logdir"
         export HOME=$MOUNT_POINT
@@ -705,10 +712,21 @@ run_script_in_mock() {
         (
             echo "========== Running the shellscript $script"
             start="\$(date +%s)"
-            "\$script_path" < /dev/null
+            if [[ "$TIMEOUT_DURATION" ]]; then
+                # _STDCI_TIMEOUT_CMD should be configured in mock_config
+                _STDCI_TIMEOUT_CMD="\${_STDCI_TIMEOUT_CMD:-timeout --kill-after 5m}"
+                echo "Timeout set to script: $TIMEOUT_DURATION"
+                \${_STDCI_TIMEOUT_CMD} "$TIMEOUT_DURATION" "\$script_path" < /dev/null
+            else
+                "\$script_path" < /dev/null
+            fi
             res=\$?
             end="\$(date +%s)"
-            echo "Took \$((end - start)) seconds"
+            if [[ \$res -eq 124 && "$TIMEOUT_DURATION" ]]; then
+                echo "Timed out after \$((end - start)) seconds"
+            else
+                echo "Took \$((end - start)) seconds"
+            fi
             echo "==================================="
             exit \$res
         ) 2>&1 | tee \$logdir/stdout_stderr.log
@@ -848,6 +866,9 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
 
     long_opts+=",secrets-file:"
 
+    long_opts+=",timeout-duration:"
+    short_opts+=",t:"
+
     # Parse options
     args="$( \
         getopt \
@@ -914,6 +935,10 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
             ;;
             --secrets-file)
                 SECRETS_FILE="$2"
+                shift 2
+            ;;
+            -t|--timeout-duration)
+                TIMEOUT_DURATION="$2"
                 shift 2
             ;;
             --)
