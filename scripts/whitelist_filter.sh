@@ -6,12 +6,16 @@ echo "scripts/whitelist_filter.sh"
 
 # Check whitelist
 
-WHITELIST_REPO="https://gerrit.ovirt.org/jenkins-whitelist"
+if [[ -z "$GERRIT_WHITELIST_REPO" ]]; then
+    echo "Whitelist for Grrit contributors not defined for this"
+    echo "instance, everyone can make CI run!"
+    exit 0
+fi
 
 git init jenkins-whitelist
-echo "Fetching whitelist repo from ${WHITELIST_REPO}..."
+echo "Fetching whitelist repo from ${GERRIT_WHITELIST_REPO}..."
 cd jenkins-whitelist
-git fetch "$WHITELIST_REPO" +refs/heads/master:myhead
+git fetch "$GERRIT_WHITELIST_REPO" +refs/heads/master:myhead
 
 if [[ -z "$GERRIT_PATCHSET_UPLOADER_EMAIL" ]]; then
     echo "This script is designed to verify gerrit events only."
