@@ -3,13 +3,15 @@
 from __future__ import absolute_import
 import os
 import logging
+import re
 from tempfile import mkstemp
+from datetime import timedelta
 from collections import Mapping, Iterable, namedtuple
 from hashlib import md5
 from fnmatch import fnmatch
 from itertools import product
 from copy import copy
-from six import string_types, iteritems
+from six import string_types, iteritems, iterkeys
 from jinja2.sandbox import SandboxedEnvironment
 from yaml import safe_load
 import py
@@ -79,6 +81,7 @@ def normalize(project, threads):
         repos = _normalize_repos_config(project, thread)
         packages = _resolve_stdci_list_config(project, thread, 'packages')
         reporting = _normalize_reporting_config(thread)
+        timeout = _normalize_timeout(thread)
         runtime_requirements = _normalize_runtime_requirements(thread)
         normalized_options = copy(thread_with_scdir.options)
         normalized_options['script'] = script
@@ -213,6 +216,71 @@ def _normalize_runtime_requirements(thread):
     if 'projectspecificnode' in rtr:
         normalized['projectspecificnode'] = rtr['projectspecificnode']
     return normalized
+
+
+_TIMEOUT_UNIT_TRANSLATIONS = {
+    'seconds': 's',
+    'second': 's',
+    'sec': 's',
+    'minutes': 'm',
+    'minute': 'm',
+    'hours': 'h',
+    'hour': 'h',
+    'min': 'm',
+    'h': 'h',
+    'm': 'm',
+    's': 's',
+}
+
+
+def _normalize_timeout(thread):
+    """Convert the specified timeout time to seconds
+
+    :param JobThread thread: JobThread to resolve timeout for
+
+    :rtype: The timeout time in seconds
+    """
+    timeout_cfg = thread.options.get('timeout', 'unlimited')
+    timeout_str = remove_case_and_signs(timeout_cfg)
+    timeout_str = re.sub('(\s+)', '', timeout_str)
+
+    if timeout_str in ('unlimited', 'never', 'no', ''):
+        return 'unlimited'
+
+    def _is_not_empty(str_in):
+        if not str_in or str_in == ' ':
+            return False
+        return True
+
+    units = iterkeys(_TIMEOUT_UNIT_TRANSLATIONS)
+    units_rgx = r'([0-9]+)({0})$'.format('|'.join(units))
+    try:
+        timeout, unit = filter(  # Remove padding added by the split function
+            _is_not_empty,
+            re.split(units_rgx, timeout_str, maxsplit=2))
+        logger.debug('Timeout config found: {0}{1}'.format(timeout, unit))
+    except ValueError:
+        raise ConfigurationSyntaxError(
+            'Error reding timeout. Check your configuration')
+    unit_translation = _TIMEOUT_UNIT_TRANSLATIONS[unit]
+    if unit_translation == 's':
+        return int(timeout)
+    elif unit_translation == 'm':
+        time = timedelta(minutes=int(timeout))
+    else:
+        time = timedelta(hours=int(timeout))
+    try:
+        # The [:-2] trims the suffix .0 as returned from total_seconds()
+        return int(time.total_seconds())
+    except AttributeError:
+        # We're probably running on python <= 2.6.6
+        def td_total_seconds(td):
+            """Total seconds in the duration."""
+            return (
+                td.microseconds + 0.0 +
+                (td.seconds + td.days * 24 * 3600) * 10 ** 6
+            ) / 10 ** 6
+        return int(td_total_seconds(time))
 
 
 _STYLE_VALUE_TRNASLATIONS = {

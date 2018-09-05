@@ -113,6 +113,7 @@ def test_get_threads_with_globals(project_dir):
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
                 'ignore_if_missing_script': True,
                 'reporting': {'style': 'default', },
+                'timeout': '3h',
                 DepthLevel: 1
             }
         )
@@ -150,6 +151,7 @@ def test_get_threads(project_dir):
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
                 'ignore_if_missing_script': True,
                 'reporting': {'style': 'default', },
+                'timeout': '3h',
                 DepthLevel: 1
             }
         )
@@ -184,6 +186,7 @@ def test_get_threads(project_dir):
                         'upstreamsources': {'u': 's'},
                         'runtimerequirements': {'r': 'r'},
                         'reporting': {'style': 'default'},
+                        'timeout': '3h',
                     }
                 ),
                 JobThread(
@@ -194,6 +197,7 @@ def test_get_threads(project_dir):
                         'upstreamsources': {'u': 's'},
                         'runtimerequirements': {'r': 'r'},
                         'reporting': {'style': 'default'},
+                        'timeout': '3h',
                     }
                 ),
                 JobThread(
@@ -204,6 +208,7 @@ def test_get_threads(project_dir):
                         'releasebranches': {'r': 'b'},
                         'upstreamsources': {'u': 's'},
                         'reporting': {'style': 'default'},
+                        'timeout': '4h',
                     }
                 ),
                 JobThread(
@@ -214,6 +219,7 @@ def test_get_threads(project_dir):
                         'releasebranches': {'r': 'b'},
                         'upstreamsources': {'u': 's'},
                         'reporting': {'style': 'classic'},
+                        'timeout': '3h',
                     }
                 ),
             ],
@@ -239,6 +245,7 @@ def test_get_threads(project_dir):
                 '  script: s\n'
                 '  stage: check-patch\n'
                 '  substage: default\n'
+                '  timeout: 3h\n'
                 '- arch: x86_64\n'
                 '  distro: fc26\n'
                 '  release_branches:\n'
@@ -250,6 +257,7 @@ def test_get_threads(project_dir):
                 '  script: s\n'
                 '  stage: build-artifacts\n'
                 '  substage: default\n'
+                '  timeout: 3h\n'
                 '- arch: x86_64\n'
                 '  distro: el7\n'
                 '  release_branches:\n'
@@ -261,6 +269,7 @@ def test_get_threads(project_dir):
                 '  script: s\n'
                 '  stage: check-patch\n'
                 '  substage: default\n'
+                '  timeout: 4h\n'
                 '- arch: x86_64\n'
                 '  distro: el7\n'
                 '  release_branches:\n'
@@ -272,6 +281,7 @@ def test_get_threads(project_dir):
                 '  script: s\n'
                 '  stage: check-patch\n'
                 '  substage: default\n'
+                '  timeout: 3h\n'
             )
         ),
     ]
@@ -280,6 +290,7 @@ def test_pipeline_formatter(threads, global_cfg, expected):
     threads_it = iter(threads)
     out = _pipeline_dict_formatter(threads_it, global_cfg)
     assert out == expected
+
 
 @pytest.mark.parametrize(
     "threads,global_cfg,expected",

@@ -12,7 +12,8 @@ from scripts.stdci_dsl.options.normalize import (
     _resolve_stdci_script, _normalize_repos_config, _normalize_mounts_config,
     RepoConfig, MountConfig, _resolve_changed_files,
     _resolve_stdci_runif_conditions, ConfigurationSyntaxError,
-    _normalize_reporting_config, _normalize_runtime_requirements
+    _normalize_reporting_config, _normalize_runtime_requirements,
+    _normalize_timeout
 )
 
 
@@ -697,6 +698,7 @@ def test_get_merged_options(options1, options2, expected):
                         'packages': {'fromfile': ['f1', 'f2']},
                         'ignore_if_missing_script': True,
                         'reporting': {'style': 'default'},
+                        'timeout': '3h',
                     }
                 )
             ],
@@ -761,6 +763,7 @@ def test_get_merged_options(options1, options2, expected):
                         'packages': {'fromfile': ['f1', 'f2']},
                         'ignore_if_missing_script': True,
                         'reporting': {'style': 'default'},
+                        'timeout': '3h',
                     }
                )
             ],
@@ -800,6 +803,7 @@ def test_get_merged_options(options1, options2, expected):
                         'packages': {'fromfile': ['f1', 'f2']},
                         'ignore_if_missing_script': False,
                         'reporting': {'style': 'default'},
+                        'timeout': '3h',
                     }
                 )
             ]
@@ -1256,3 +1260,52 @@ def test_resolve_changed_files_exceptions(conditions, monkeypatch):
     thread = JobThread('a', 'b', 'c', 'd', {})
     with pytest.raises(ConfigurationSyntaxError):
         _resolve_changed_files('project', thread, conditions)
+
+
+@pytest.mark.parametrize(
+    'timeout_input,expected_output',
+    [
+        ('1 h', 3600),
+        ('1h', 3600),
+        ('1 hour', 3600),
+        ('1hour', 3600),
+        ('1 hours', 3600),
+        ('1hours', 3600),
+        ('2 m', 120),
+        ('2-m', 120),
+        ('2min', 120),
+        ('2_min', 120),
+        ('2minutes', 120),
+        ('2 minutes', 120),
+        ('2minute', 120),
+        ('2 minutes', 120),
+        ('3-seconds', 3),
+        ('3seconds', 3),
+        ('3sec', 3),
+        ('3-sec', 3),
+        ('3s', 3),
+        ('3 s', 3),
+        ('unlimited', 'unlimited'),
+        ('no', 'unlimited'),
+        ('nEvEr', 'unlimited'),
+    ]
+)
+def test_normalize_timeout(timeout_input, expected_output):
+    jt = JobThread('st', 'sbst', 'dst', 'ar', {'timeout': timeout_input})
+    output = _normalize_timeout(jt)
+    print(type(output))
+    assert output == expected_output
+
+
+@pytest.mark.parametrize(
+    'timeout_input,exception',
+    [
+        ('2', ConfigurationSyntaxError),
+        ('sec', ConfigurationSyntaxError),
+        ('3-', ConfigurationSyntaxError),
+    ]
+)
+def test_normalize_timeout_exception(timeout_input, exception):
+    jt = JobThread('st', 'sbst', 'dst', 'ar', {'timeout': timeout_input})
+    with pytest.raises(exception):
+        _normalize_timeout(jt)

@@ -102,6 +102,7 @@ DEFAULT_VALUES = {
         'mounts': _default_templates_with_substage('mounts', 'fromlistfile'),
         'script': _default_templates_with_substage('sh', 'fromfile'),
         'reporting': DEFAULT_REPORTING,
+        'timeout': '3h',
     },
     'default_substage':
     {
@@ -119,5 +120,6 @@ DEFAULT_VALUES = {
             'mounts', 'fromlistfile'),
         'script': _default_templates_without_substage('sh', 'fromfile'),
         'reporting': DEFAULT_REPORTING,
+        'timeout': '3h',
     }
 }
