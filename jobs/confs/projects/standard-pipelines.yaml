@@ -35,6 +35,7 @@
       - kubevirt-ansible
       - kubernetes-device-plugins
       - containerized-data-importer
+      - ovs-cni
     jobs:
       - '{org}_{project}_standard-gh-jobs'
 
