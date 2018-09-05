@@ -680,53 +680,46 @@ run_script_in_mock() {
     local logs_dir="$LOGS_DIR/script"
     local logs_xfr_dir="$(mktemp --tmpdir=. -u -d -t mock_logs.XXXXXXXX)"
     mkdir -p "$logs_dir"
-    cat <<EOC
-    $MOCK \\
-        --old-chroot \\
-        --root="${mock_chroot}" \\
-        --configdir="$mock_dir" \\
-        --no-clean \\
-        --resultdir="$logs_dir" \\
-        "${mock_enable_network[@]}" \\
-        --shell <<EOS
-            set -e
-            logdir="\\\$(mktemp --tmpdir -d -t mock_logs.XXXXXXXX)"
-            mkdir -p "\\\$logdir"
-            export HOME=$MOUNT_POINT
-            cd
-            chmod +x $script
-            runner_GID="$(id -g)"
-            runner_GROUP="$(id -n -g)"
-            # mock group is called mockbuild inside the chroot
-            if [[ \\\$runner_GROUP == "mock" ]]; then
-                runner_GROUP=mockbuild
-            fi
-            if ! getent group "\\\$runner_GID" &>/dev/null; then
-                groupadd --gid "\\\$runner_GID" "\\\$runner_GROUP"
-            fi
-            if [[ "$script" == /* ]]; then
-                script_path="$script"
-            else
-                script_path="./$script"
-            fi
-            (
-                echo "========== Running the shellscript $script"
-                start="\\\$(date +%s)"
-                "\\\$script_path" < /dev/null
-                res=\\\$?
-                end="\\\$(date +%s)"
-                echo "Took \\\$((end - start)) seconds"
-                echo "==================================="
-                exit \\\$res
-            ) 2>&1 | tee \\\$logdir/stdout_stderr.log
-            res=\\\${PIPESTATUS[0]}
-            mv "\\\$logdir" "$logs_xfr_dir"
-            if [[ "\\\$(find . -uid 0 -print -quit)" != '' ]]; then
-                chown -R "\$UID:\\\$runner_GID" .
-            fi
-            exit \\\$res
-EOS
-EOC
+    local mock_shell_cmd
+    read -r -d '' mock_shell_cmd <<EOF
+        set -e
+        logdir="\$(mktemp --tmpdir -d -t mock_logs.XXXXXXXX)"
+        mkdir -p "\$logdir"
+        export HOME=$MOUNT_POINT
+        cd
+        chmod +x $script
+        runner_GID="$(id -g)"
+        runner_GROUP="$(id -n -g)"
+        # mock group is called mockbuild inside the chroot
+        if [[ \$runner_GROUP == "mock" ]]; then
+            runner_GROUP=mockbuild
+        fi
+        if ! getent group "\$runner_GID" &>/dev/null; then
+            groupadd --gid "\$runner_GID" "\$runner_GROUP"
+        fi
+        if [[ "$script" == /* ]]; then
+            script_path="$script"
+        else
+            script_path="./$script"
+        fi
+        (
+            echo "========== Running the shellscript $script"
+            start="\$(date +%s)"
+            "\$script_path" < /dev/null
+            res=\$?
+            end="\$(date +%s)"
+            echo "Took \$((end - start)) seconds"
+            echo "==================================="
+            exit \$res
+        ) 2>&1 | tee \$logdir/stdout_stderr.log
+        res=\${PIPESTATUS[0]}
+        mv "\$logdir" "$logs_xfr_dir"
+        if [[ "\$(find . -uid 0 -print -quit)" != '' ]]; then
+            chown -R "$UID:\$runner_GID" .
+        fi
+        exit \$res
+EOF
+    cat <<EOF
     $MOCK \
         --old-chroot \
         --root="${mock_chroot}" \
@@ -734,50 +727,21 @@ EOC
         --no-clean \
         --resultdir="$logs_dir" \
         "${mock_enable_network[@]}" \
-        --shell <<EOS
-            set -e
-            logdir="\$(mktemp --tmpdir -d -t mock_logs.XXXXXXXX)"
-            mkdir -p "\$logdir"
-            export HOME=$MOUNT_POINT
-            cd
-            chmod +x $script
-            runner_GID="$(id -g)"
-            runner_GROUP="$(id -n -g)"
-            # mock group is called mockbuild inside the chroot
-            if [[ \$runner_GROUP == "mock" ]]; then
-                runner_GROUP=mockbuild
-            fi
-            if ! getent group "\$runner_GID" &>/dev/null; then
-                groupadd --gid "\$runner_GID" "\$runner_GROUP"
-            fi
-            if [[ "$script" == /* ]]; then
-                script_path="$script"
-            else
-                script_path="./$script"
-            fi
-            (
-                echo "========== Running the shellscript $script"
-                start="\$(date +%s)"
-                "\$script_path" < /dev/null
-                res=\$?
-                end="\$(date +%s)"
-                echo "Took \$((end - start)) seconds"
-                echo "==================================="
-                exit \$res
-            ) 2>&1 | tee \$logdir/stdout_stderr.log
-            res=\${PIPESTATUS[0]}
-            mv "\$logdir" "$logs_xfr_dir"
-            if [[ "\$(find . -uid 0 -print -quit)" != '' ]]; then
-                chown -R "$UID:\$runner_GID" .
-            fi
-            exit \$res
-EOS
+        --shell <<< "$mock_shell_cmd"
+EOF
+    $MOCK \
+        --old-chroot \
+        --root="${mock_chroot}" \
+        --configdir="$mock_dir" \
+        --no-clean \
+        --resultdir="$logs_dir" \
+        "${mock_enable_network[@]}" \
+        --shell <<< "$mock_shell_cmd"
     local res=$?
     mv "$logs_xfr_dir"/* "$logs_dir" || :
     rmdir "$logs_xfr_dir"
     return $res
 }
-
 
 # Runs a set of scripts each on its own chroot
 run_script() {
