@@ -95,6 +95,7 @@ def get_available_ost_suites(ovirt_release) {
                     'runtime_reqs': ['supportnestinglevel': 2],
                     'release_branches': [:],
                     'reporting': ['style': 'stdci'],
+                    'timeout': '3h'
                 ]
             }
         }

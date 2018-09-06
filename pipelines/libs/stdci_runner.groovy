@@ -205,7 +205,7 @@ def run_std_ci_in_mock(
             // Set flag to 'true' to indicate that exception from this point
             // means the test failed and not the CI system
             tfr.test_failed = true
-            mock_runner(job.script, job.distro, job.arch, mirrors)
+            mock_runner(job.script, job.distro, job.arch, job.timeout, mirrors)
             // If we got here (no exception thrown so far), the test did not
             // fail
             tfr.test_failed = false
@@ -237,7 +237,7 @@ def run_std_ci_in_mock(
     }
 }
 
-def mock_runner(script, distro, arch, mirrors=null) {
+def mock_runner(script, distro, arch, timeout, mirrors=null) {
     if(mirrors == null) {
         mirrors = env.CI_MIRRORS_URL
     }
@@ -245,13 +245,14 @@ def mock_runner(script, distro, arch, mirrors=null) {
     if(mirrors != null) {
         mirrors_arg = "--try-mirrors '$mirrors'"
     }
+    def timeoutcmd = timeout != "unlimited" ? "--timeout-duration ${timeout}" : ""
     sh """
         ../jenkins/mock_configs/mock_runner.sh \\
             --execute-script "$script" \\
             --mock-confs-dir ../jenkins/mock_configs \\
             --secrets-file "$WORKSPACE/std_ci_secrets.yaml" \\
             --try-proxy \\
-            --timeout-duration 3h \\
+            ${timeoutcmd} \\
             $mirrors_arg \
             "${distro}.*${arch}"
     """
