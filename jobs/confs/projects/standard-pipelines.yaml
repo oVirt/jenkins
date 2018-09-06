@@ -30,6 +30,7 @@
     github-auth-id: github-auth-token
     org: kubevirt
     project:
+      - client-python
       - kubevirt
       - kubevirt-ansible
       - kubernetes-device-plugins
