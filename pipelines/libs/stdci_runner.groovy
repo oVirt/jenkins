@@ -153,8 +153,27 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
             withCredentials(
                 [file(credentialsId: 'ci_secrets_file', variable: 'CI_SECRETS_FILE')]
             ) {
-                withEnv(["PROJECT=$project.name", "STD_VERSION=$project.branch"]) {
-                    run_jjb_script('project_setup.sh')
+                try {
+                    withEnv(["PROJECT=$project.name", "STD_VERSION=$project.branch"]) {
+                        run_jjb_script('project_setup.sh')
+                    }
+                } catch(AbortException) {
+                    // A temporary solution to debug and follow up with
+                    // https://ovirt-jira.atlassian.net/browse/OVIRT-2504
+                    emailext(
+                        subject: "[JENKINS] Failed to setup proejct ${env.JOB_NAME}",
+                        body: [
+                            "Failed to run project_setup.sh for:",
+                            "${currentBuild.displayName}.",
+                            "It probably means that docker_cleanup.py failed.",
+                            "This step doesn't fail the job, but we do collect",
+                            "data about such failures to find the root cause.",
+                            "Infra owner, ensure that we're not running out of",
+                            "disk space on ${env.NODE_NAME}.",
+                        ].join("\n"),
+                        to: 'infra@ovirt.org',
+                        mimeType: 'text/plain'
+                    )
                 }
             }
             if(job.is_poll_job) {
