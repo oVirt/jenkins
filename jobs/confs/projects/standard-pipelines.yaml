@@ -82,6 +82,7 @@
       - ovirt-engine-nodejs-modules
       - ovirt-engine-ui-extensions
       - ovirt-engine-wildfly
+      - ovirt-engine-wildfly-overlay
       - ovirt-engine-yarn
       - ovirt-imageio
       - ovirt-jboss-modules-maven-plugin
