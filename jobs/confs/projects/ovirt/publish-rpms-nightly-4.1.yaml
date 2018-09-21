@@ -57,9 +57,6 @@
           project-prefix: ovirt-engine-extension-logger-log4j_4.1_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_4.1-platforms:
-          project-prefix: ovirt-engine-wildfly_4.1_build-artifacts-
-          project-suffix: ''
-      - copy-create-job-artifact-engine_4.1-platforms:
           project-prefix: ovirt-engine-wildfly-overlay_4.1_build-artifacts-
           project-suffix: ''
       - copy-create-job-artifact-engine_4.1-platforms:
