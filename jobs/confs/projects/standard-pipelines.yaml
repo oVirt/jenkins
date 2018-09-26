@@ -87,6 +87,7 @@
       - ovirt-imageio
       - ovirt-jboss-modules-maven-plugin
       - ovirt-js-dependencies
+      - ovirt-lldp-labeler
       - ovirt-node-ng
       - ovirt-node-ng-image
       - ovirt-provider-ovn
