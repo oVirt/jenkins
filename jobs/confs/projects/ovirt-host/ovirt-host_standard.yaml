@@ -7,16 +7,9 @@
           branch: master
       - '4.2':
           branch: ovirt-4.2
-      - '4.1':
-          branch: ovirt-4.1
-      - '3.6':
-          branch: ovirt-3.6
     distro:
       - el7
       - fc28
-    exclude:
-      - { version: '4.1', distro: fc28 }
-      - { version: '3.6', distro: fc28 }
 
 - project:
     <<: *base-commons
@@ -36,8 +29,6 @@
           branch: master
       - '4.2':
           branch: ovirt-4.2
-      - '4.1':
-          branch: ovirt-4.1
     distro:
       - el7
       - fc28
@@ -48,7 +39,6 @@
       - s390x:
           node-filter: s390x
     exclude:
-      - { version: '4.1', arch: s390x, }
       - {                 arch: s390x,   distro: el7, }
       - {                 arch: ppc64le, distro: fc28, }
     jobs:
@@ -72,8 +62,6 @@
           branch: master
       - '4.2':
           branch: ovirt-4.2
-      - '4.1':
-          branch: ovirt-4.1
     distro:
       - el7
       - fc28
@@ -84,7 +72,6 @@
       - s390x:
           node-filter: s390x
     exclude:
-      - { version: '4.1', arch: s390x, }
       - {                 arch: s390x,   distro: el7, }
       - {                 arch: ppc64le, distro: fc28, }
     jobs:
