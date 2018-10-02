@@ -22,6 +22,7 @@
       - ovirt-ansible-vm-infra
       - ovirt-ansible-v2v-conversion-host
       - ovirt-openshift-extensions
+      - ovirt-web-ui
     jobs:
       - '{org}_{project}_standard-gh-jobs'
 
