@@ -346,6 +346,13 @@ EOC
     return 0
 }
 
+prepare_ci_toolbox() {
+    local toolbox_dir="${MR_TEMP_DIR}/ci_toolbox"
+    local toolbox_dir_orig="$MOCK_CONF_DIR/../scripts/ci_toolbox/"
+    [[ -d "$toolbox_dir" ]] && rm -rf "$toolbox_dir"
+    cp -rpL "$toolbox_dir_orig" "$toolbox_dir"
+    echo "$toolbox_dir"
+}
 
 get_mount_conf() {
     local dist_label="${1?}"
@@ -356,12 +363,15 @@ get_mount_conf() {
     local mount_opt
     local src_mnt
     local dst_mnt
+    local ci_tbx_dir="$(prepare_ci_toolbox)"
 
     echo "config_opts['plugin_conf']['bind_mount_enable']=True"
     echo "config_opts['chroothome'] = '$MOUNT_POINT'"
     echo "config_opts['plugin_conf']['bind_mount_opts']['dirs']=["
     echo "    # Mount the local dir to $MOUNT_POINT"
     echo "    [os.path.realpath(os.curdir), u'$MOUNT_POINT'],"
+    echo "    # Mount ci toolbox"
+    echo "    [u'$ci_tbx_dir', u'/var/lib/ci_toolbox'],"
 
     upstream_src_folder="${PWD%/}._upstream"
     upstream_dst_folder="${MOUNT_POINT%/}._upstream"

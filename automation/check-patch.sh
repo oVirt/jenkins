@@ -33,6 +33,7 @@ main() {
     test_secrets_and_credentials
     test_mock_runner_mounts
     test_mock_runner_fd_leak
+    test_ci_toolbox
 }
 
 is_docker_test_arch() {
@@ -153,6 +154,29 @@ test_mock_runner_fd_leak() {
     else
         return 0
     fi
+}
+
+test_ci_toolbox() {
+    # Ensure that ci_toolbox is mounted and the tools there are usable
+    local toolbox=/var/lib/ci_toolbox
+    local out
+
+    (
+        set +x
+        for tool in dummy.sh linked_dummy.sh; do
+            echo -n "Checking toolbox script: $tool:"
+            if ! [[ -x "$toolbox/$tool" ]]; then
+                echo " FAILED - not executable"
+                exit 1
+            fi
+            out="$("$toolbox/$tool")"
+            if ! [[ $out == "$toolbox/$tool" ]]; then
+                echo " FAILED - wrong returned location: $out"
+                exit 1
+            fi
+            echo " SUCCESS"
+        done
+    )
 }
 
 main "$@"
