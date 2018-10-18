@@ -126,23 +126,17 @@ cleanup_logs() {
 }
 
 cleanup_journal() {
-    if ! can_sudo systemctl service; then
+    if ! can_sudo systemctl journalctl; then
         log WARN "Skipping journal cleanup - no sudo permissions"
         return 0
     fi
-    local dir
     echo "Cleaning up journal logs (if any)"
-    if ! sudo service systemd-journald status &>/dev/null; then
+    if ! sudo -n systemctl status systemd-journald &>/dev/null; then
         echo "  journald not running, skipping"
         return 0
     fi
-    # Flush logs
-    sudo systemctl kill --kill-who=main --signal=SIGUSR1 systemd-journald.service
-    for dir in /var/log/journal/*; do
-        safe_remove "$dir"
-    done
-    # force log reattach
-    sudo service systemd-journald restart
+    # Vacuum journal
+    sudo -n journalctl --vacuum-time=14d --vacuum-size=512M
 }
 
 cleanup_workspaces() {
