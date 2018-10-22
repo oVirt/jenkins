@@ -94,7 +94,7 @@ class PatchInfoError(Exception):
 def main():
     args = parse_args()
     try:
-        setup_console_logging(args, logger)
+        setup_console_logging(args)
         retval = args.handler(args)
         if retval is None:
             return 0
