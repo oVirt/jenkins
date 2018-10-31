@@ -1,17 +1,19 @@
 [Unit]
-Description=Setup jenkins user
-After=stdci-environment.service
-Before=jenkins-jnlp-agent.service
+Description=Setup jenkins runtime environment
+Requires=ci-environment.service home-jenkins.mount
+After=ci-environment.service home-jenkins.mount
 
 [Service]
-EnvironmentFile=/etc/stdci_env
+Type=oneshot
+EnvironmentFile=/etc/ci-container.environment
 ExecStart=/usr/sbin/useradd \
-    -u ${CI_RUNTIME_UID} \
     -G mock \
     -d ${JENKINS_AGENT_WORKDIR} \
     ${CI_RUNTIME_UNAME}
-Restart=on-failure
-RestartSec=5
+ExecStartPost=/usr/bin/chmod +x /agent.jar
+ExecStartPost=/usr/bin/mv /agent.jar ${JENKINS_AGENT_WORKDIR}/agent.jar
+ExecStartPost=/usr/bin/chown -R ${CI_RUNTIME_UNAME}:${CI_RUNTIME_UNAME} \
+    ${JENKINS_AGENT_WORKDIR}
 
 [Install]
 WantedBy=multi-user.target

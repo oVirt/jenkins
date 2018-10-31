@@ -1,4 +1,4 @@
-FROM openshift/jenkins-slave-base-centos7:v3.11
+FROM centos:7
 ENV container docker
 RUN ( \
     cd /lib/systemd/system/sysinit.target.wants/; \
@@ -10,6 +10,7 @@ RUN ( \
     rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
     rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
     rm -f /lib/systemd/system/basic.target.wants/*; \
-    rm -f /lib/systemd/system/anaconda.target.wants/*;
+    rm -f /lib/systemd/system/anaconda.target.wants/*; \
+    touch /etc/sysconfig/network
 VOLUME [ "/sys/fs/cgroup" ]
 CMD ["/usr/sbin/init"]

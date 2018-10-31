@@ -1,0 +1,13 @@
+[Unit]
+Description=Mount sahred cache dir
+Requires=mk-shared-slot.service
+After=mk-shared-slot.service
+
+[Mount]
+EnvironmentFile=/etc/ci-container.environment
+What=${CONTAINER_SLOTS}/shared
+Where=/var/lib/sharedslt
+Options=bind
+
+[Install]
+WantedBy=multi-user.target

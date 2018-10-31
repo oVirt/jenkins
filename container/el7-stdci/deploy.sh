@@ -1,11 +1,19 @@
 #!/bin/bash -ex
 
 main(){
+    enable_lock_on_slot_service
     enable_firewalld_service
     enable_docker_service
     enable_environment_service
     enable_jenkins_home_service
     enable_jnlp_slave
+    enable_mounts
+}
+
+enable_mounts() {
+    systemctl enable home-jenkins.mount var-cache-mock.mount \
+        var-lib-sharedslt.mount var-lib-lago.mount var-lib-mock.mount \
+        var-lib-docker.mount
 }
 
 enable_firewalld_service() {
@@ -25,7 +33,12 @@ enable_docker_sock_service() {
 
 enable_environment_service() {
     chmod u+x /usr/sbin/export_environment
-    systemctl enable stdci-environment.service
+    systemctl enable ci-environment.service
+}
+
+enable_lock_on_slot_service() {
+    chmod u+x /usr/sbin/lock_on_slot
+    systemctl enable lock-on-slot.service
 }
 
 enable_jenkins_home_service() {

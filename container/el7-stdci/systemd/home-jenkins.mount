@@ -1,0 +1,12 @@
+[Unit]
+Description=Mount mock cache dir
+Requires=mk-shared-slot.service
+After=mk-shared-slot.service
+
+[Mount]
+What=/slt/home/jenkins
+Where=/home/jenkins
+Options=bind
+
+[Install]
+WantedBy=multi-user.target
