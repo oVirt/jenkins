@@ -1,0 +1,84 @@
+---
+apiVersion: v1
+kind: Template
+metadata:
+  name: jenkins-pod-slave
+objects:
+  - apiVersion: v1
+    kind: Pod
+    metadata:
+      generateName: ${SLAVE_NAME}
+      namespace: ${PROJECT_NAME}
+      labels:
+        integ-tests-container: ""
+    spec:
+      containers:
+        - name: jnlp
+          image: ${IMAGE}
+          command: ['/usr/sbin/init']
+          workingDir: /home/jenkins
+          tty: true
+          livenessProbe:
+            exec:
+              command: ['systemctl', 'status', 'multi-user.target']
+            initialDelaySeconds: 120
+            periodSeconds: 7200
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "16Gi"
+            limits:
+              memory: "16Gi"
+          env:
+            - name: JENKINS_AGENT_WORKDIR
+              value: /home/jenkins
+            - name: CI_RUNTIME_UNAME
+              value: jenkins
+            - name: STDCI_SLAVE_CONTAINER_NAME
+              value: im_a_container
+            - name: CONTAINER_SLOTS
+              value: ${SLAVE_CACHE}
+          volumeMounts:
+            - mountPath: /sys
+              name: sysfs
+            - mountPath: ${SLAVE_CACHE}
+              name: slave-cache
+            - mountPath: /dev/shm
+              name: dshm
+      serviceAccount: ${SLAVE_SVC_ACCOUNT}
+      nodeSelector:
+        type: bare-metal
+      volumes:
+        - name: sysfs
+          hostPath:
+            path: /sys
+            type: Directory
+        - name: slave-cache
+          hostPath:
+            path: ${SLAVE_CACHE}
+            type: DirectoryOrCreate
+        - name: dshm
+          emptyDir:
+            medium: Memory
+
+parameters:
+  - name: PROJECT_NAME
+    description: The project where the pod will be created
+    required: true
+
+  - name: SLAVE_NAME
+    description: The name of the slave pods
+    value: jenkins-slave
+
+  - name: IMAGE
+    description: Container image for the jenkins slave
+    value: docker.io/ovirtci/stdci:production
+
+  - name: SLAVE_SVC_ACCOUNT
+    description: The service account that will be used by the pod slaves.
+    value: jenkins-slave
+
+  - name: SLAVE_CACHE
+    description: The directory to use for the slave cache
+    value: /var/lib/stdci

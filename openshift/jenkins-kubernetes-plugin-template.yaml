@@ -1,0 +1,81 @@
+---
+apiVersion: v1
+kind: Template
+metadata:
+  name: jenkins-kubernetes-plugin
+objects:
+  - apiVersion: v1
+    kind: Project
+    metadata:
+      name: ${PROJECT_NAME}
+    annotations:
+      openshift.io/description: ${PROJECT_DESCRIPTION}
+      openshift.io/display-name: ${PROJECT_DISPLAYNAME}
+
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: ${MASTER_SVC_ACCOUNT}
+      namespace: ${PROJECT_NAME}
+
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: ${SLAVE_SVC_ACCOUNT}
+      namespace: ${PROJECT_NAME}
+
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: ${MASTER_ROLE}
+      namespace: ${PROJECT_NAME}
+    rules:
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+      - apiGroups: [""]
+        resources: ["pods/exec"]
+        verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+      - apiGroups: [""]
+        resources: ["pods/log"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: [""]
+        resources: ["secrets"]
+        verbs: ["get"]
+
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      name: jenkins-master-role-binding
+      namespace: ${PROJECT_NAME}
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: ${MASTER_ROLE}
+    subjects:
+      - kind: ServiceAccount
+        name: ${MASTER_SVC_ACCOUNT}
+        namespace: ${PROJECT_NAME}
+
+parameters:
+  - name: PROJECT_NAME
+    description: The project where the objects will be created
+    required: true
+
+  - name: PROJECT_DESCRIPTION
+    description: Project's description
+
+  - name: PROJECT_DISPLAYNAME
+    description: Project's display name
+
+  - name: MASTER_SVC_ACCOUNT
+    description: The service account that will be used by Jenkins k8s plugin.
+    value: jenkins-master
+
+  - name: SLAVE_SVC_ACCOUNT
+    description: The service account that will be used by the pod slaves.
+    value: jenkins-slave
+
+  - name: MASTER_ROLE
+    description: The name of the master's RBAC role.
+    value: jenkins-master-rbac
