@@ -117,3 +117,16 @@
     email-to: 'infra@ovirt.org, mzamazal@redhat.com'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
+
+- project:
+    <<: *system-tests-common
+    name: openshift-on-ovirt-suite
+    suite_type: openshift-on-ovirt
+    project: 'ovirt-system-tests'
+    version:
+      - 4.2:
+          chroot_distro: el7
+    email-to: 'infra@ovirt.org, rgolan@redhat.com'
+    jobs:
+        - '{project}_{suite_type}-suite-{version}'
+
