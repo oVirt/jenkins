@@ -30,6 +30,7 @@
           permit-all: false
           auto-close-on-fail: false
           allow-whitelist-orgs-as-admins: true
+          cancel-builds-on-update: '{abort-on-update}'
           auth-id: '{github-auth-id}'
           status-context: standard-ci
           triggered-status: 'Queued for testing'

@@ -27,8 +27,11 @@
       - '{org}_{project}_standard-gh-jobs'
 
 - project:
-    name: KubeVirt-standard-pipelines-github
+    # The projects in this list will abort previous builds when a PR is updated
+    # Register your project here if you run kubevirtci
+    name: kubevirt-standard-pipelines-github-aborting
     github-auth-id: github-auth-token
+    abort-on-update: true
     org: kubevirt
     project:
       - client-python

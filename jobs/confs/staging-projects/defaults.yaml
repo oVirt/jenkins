@@ -30,3 +30,4 @@
     gerrit-subpath: ''
     clone-dir-name: ''
     trigger-schedule: '@daily'
+    abort-on-update: ''

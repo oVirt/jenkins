@@ -10,6 +10,16 @@
     org: oVirt
     project:
       - stage-gh-stdci1
+    jobs:
+      - '{org}_{project}_standard-gh-jobs'
+
+- project:
+    # The projects in this list will abort previous builds when a PR is updated
+    name: oVirt-standard-pipelines-github-aborting
+    github-auth-id: github-auth-token
+    abort-on-update: true
+    org: oVirt
+    project:
       - stage-gh-stdci2
     jobs:
       - '{org}_{project}_standard-gh-jobs'
