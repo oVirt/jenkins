@@ -3,7 +3,7 @@
 """
 
 
-def test_gitrepo(gitrepo, git_at, symlinkto):
+def test_gitrepo(gitrepo, git_at, git_config_at, symlinkto):
     repo = gitrepo(
         'tst_repo',
         {
@@ -42,6 +42,9 @@ def test_gitrepo(gitrepo, git_at, symlinkto):
     log = repogit('log', '--pretty=format:%s').splitlines()
     assert len(log) == 2
     assert log == ['Second commit', 'First commit']
+    git_config = git_config_at(repo)
+    assert git_config('--get', 'user.name') != ''
+    assert git_config('--get', 'user.email') != ''
     # Test adding commits to existing repo during test
     gitrepo(
         'tst_repo',

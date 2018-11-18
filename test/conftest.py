@@ -69,6 +69,18 @@ def git_at(git):
     return _git_at
 
 
+@pytest.fixture
+def git_config_at(git):
+    def _git_config_at(path):
+        return partial(
+            git,
+            'config',
+            '--file={0}'.format(path / '.git' / 'config')
+        )
+
+    return _git_config_at
+
+
 class SymlinkTo(str):
     pass
 
@@ -79,11 +91,14 @@ def symlinkto():
 
 
 @pytest.fixture
-def gitrepo(tmpdir, git, git_at, symlinkto):
+def gitrepo(tmpdir, git, git_at, git_config_at, symlinkto):
     def repo_maker(reponame, *commits):
         repodir = tmpdir / reponame
         repogit = git_at(repodir)
         git('init', str(repodir))
+        repoconfig = git_config_at(repodir)
+        repoconfig('user.name', 'test user')
+        repoconfig('user.email', 'test@example.com')
         for i, commit in enumerate(commits):
             for fname, fcontents in iteritems(commit.get('files', {})):
                 file = (repodir / fname)
