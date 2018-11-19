@@ -25,7 +25,6 @@
     email-to: >
       lgoldber@redhat.com,
       edwardh@redhat.com,
-      infra@ovirt.org
     jobs:
       - '{project}_{suite_type}-suite-{version}'
 
@@ -46,7 +45,6 @@
           chroot_distro: el7
     email-to: >
       didi@redhat.com,
-      infra@ovirt.org,
       lveyde@redhat.com,
       stirabos@redhat.com,
       irosenzw@redhat.com,
@@ -86,7 +84,7 @@
           chroot_distro: el7
       - 4.2:
           chroot_distro: el7
-    email-to: 'infra@ovirt.org, sabose@redhat.com'
+    email-to: 'sabose@redhat.com'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
 
@@ -98,7 +96,7 @@
     version:
       - master:
           chroot_distro: el7
-    email-to: 'infra@ovirt.org, rgolan@redhat.com'
+    email-to: 'rgolan@redhat.com'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
 
@@ -114,7 +112,7 @@
     version:
       - master:
           chroot_distro: el7
-    email-to: 'infra@ovirt.org, mzamazal@redhat.com'
+    email-to: 'mzamazal@redhat.com'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
 
@@ -126,7 +124,7 @@
     version:
       - 4.2:
           chroot_distro: el7
-    email-to: 'infra@ovirt.org, rgolan@redhat.com'
+    email-to: 'rgolan@redhat.com'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
 
