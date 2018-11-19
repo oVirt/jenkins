@@ -15,7 +15,5 @@
             - ansible
             - performance
             - network
-            - compat-3.6
-            - compat-4.0
             - compat-4.1
             - compat-4.2
