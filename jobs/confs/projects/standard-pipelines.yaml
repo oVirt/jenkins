@@ -96,6 +96,7 @@
       - ovirt-system-tests
       - releng-tools
       - repoman
+      - vdsm
     jobs:
       - '{project}_standard-gerrit-jobs'
 
