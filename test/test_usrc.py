@@ -58,6 +58,8 @@ def downstream(gitrepo, upstream, git_last_sha, symlinkto):
             'files': {
                 'downstream_file.txt': 'Downstream content',
                 'overriden_file.txt': 'Overriding content',
+                'temp/downstream_file.txt': 'Downstream content',
+                'temp/overriden_file.txt': 'Overriding content',
                 'automation/upstream_sources.yaml': dedent(
                     """
                     ---
@@ -249,15 +251,37 @@ class TestGitUpstreamSource(object):
         assert (downstream / 'overriden_file.txt').read() == \
             'Overridden content'
 
+    def test_get_dest_dir(self, upstream, downstream, git_last_sha):
+        gus = GitUpstreamSource(
+            str(upstream), 'master', git_last_sha(upstream), 'no', 'temp'
+        )
+        assert not (downstream / 'temp' / 'upstream_file.txt').exists()
+        gus.get(str(downstream))
+        assert not (downstream / 'upstream_file.txt').isfile()
+        assert (downstream / 'downstream_file.txt').isfile()
+        assert (downstream / 'downstream_file.txt').read() == \
+            'Downstream content'
+        assert (downstream / 'overriden_file.txt').isfile()
+        assert (downstream / 'overriden_file.txt').read() == \
+            'Overriding content'
+        assert (downstream / 'temp' / 'upstream_file.txt').isfile()
+        assert (downstream / 'temp' / 'upstream_file.txt').read() == \
+            'Upstream content'
+        assert (downstream / 'temp' / 'overriden_file.txt').isfile()
+        assert (downstream / 'temp' / 'overriden_file.txt').read() == \
+            'Overridden content'
+
     def test_update(self, gitrepo, upstream, git_last_sha):
         url, branch, commit = str(upstream), 'master', git_last_sha(upstream)
-        gus = GitUpstreamSource(url, branch, commit)
+        files_dest_dir = 'temp'
+        gus = GitUpstreamSource(url, branch, commit, 'no', files_dest_dir)
         gus_id = id(gus)
         updated = gus.updated()
         assert id(gus) == gus_id
         assert gus.url == url
         assert gus.branch == branch
         assert gus.commit == commit
+        assert gus.files_dest_dir == files_dest_dir
         assert updated == gus
         assert id(updated) == id(gus)
         gitrepo('upstream', {
@@ -273,11 +297,13 @@ class TestGitUpstreamSource(object):
         assert gus.url == url
         assert gus.branch == branch
         assert gus.commit == commit
+        assert gus.files_dest_dir == files_dest_dir
         assert updated != gus
         assert id(updated) != id(gus)
         assert updated.url == url
         assert updated.branch == branch
         assert updated.commit == new_commit
+        assert updated.files_dest_dir == files_dest_dir
 
     def test_commit_details(self, upstream, git_last_sha, git_at):
         url, branch, commit = str(upstream), 'master', git_last_sha(upstream)
@@ -338,7 +364,6 @@ def test_get_upstream_sources(monkeypatch, downstream):
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
     assert (downstream / 'overriden_file.txt').isfile()
     assert (downstream / 'overriden_file.txt').read() == 'Overriding content'
-
 
 @pytest.fixture
 def updated_upstream(gitrepo, upstream, downstream):

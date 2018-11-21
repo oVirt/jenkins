@@ -185,8 +185,9 @@ def changed_files_main(args):
 class GitUpstreamSource(object):
     """A class representing Git-based upstream source dependencies
     """
-    def __init__(self, url, branch, commit, automerge='no'):
+    def __init__(self, url, branch, commit, automerge='no', files_dest_dir=''):
         self.url, self.branch, self.commit = url, branch, commit
+        self.files_dest_dir = files_dest_dir
         if isinstance(automerge, string_types):
             if automerge.lower() in ('yes', 'true'):
                 self.automerge = 'yes'
@@ -221,6 +222,7 @@ class GitUpstreamSource(object):
             struct['branch'],
             struct['commit'],
             struct.get('automerge', 'no'),
+            struct.get('files_dest_dir', ''),
         )
 
     def to_yaml_struct(self):
@@ -232,6 +234,8 @@ class GitUpstreamSource(object):
         struct = dict(url=self.url, branch=self.branch, commit=self.commit)
         if self.automerge != 'no':
             struct['automerge'] = self.automerge
+        if self.files_dest_dir != '':
+            struct['files_dest_dir'] = self.files_dest_dir
         return struct
 
     def get(self, dst_path):
@@ -242,6 +246,12 @@ class GitUpstreamSource(object):
         # TODO: check if git_commit is already available locally and skip
         #       fetching
         self._fetch()
+        if (self.files_dest_dir != ''):
+            dst_path = os.path.join(dst_path, self.files_dest_dir)
+            try:
+                os.makedirs(dst_path)
+            except OSError as e:
+                pass
         self._cache_git(
             '--work-tree=' + dst_path,
             'checkout', self.commit, '-f',
@@ -273,7 +283,8 @@ class GitUpstreamSource(object):
             self.branch, self.url
         )
         return self.__class__(
-            self.url, self.branch, latest_commit, self.automerge
+            self.url, self.branch, latest_commit, self.automerge,
+            self.files_dest_dir
         )
 
     def _fetch(self):
