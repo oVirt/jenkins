@@ -1,20 +1,25 @@
 [Unit]
 Description=Start JNLP service to connect as a slave
-Requires=mk-shared-slot.service jenkins-home.service ci-environment.service
-After=mk-shared-slot.service jenkins-home.service ci-environment.service
-Requires=local-fs.target
-After=local-fs.target
+Requires=mk-shared-slot.service ci-environment.service lock-on-slot.service
+Requires=var-cache-mock.mount var-lib-docker.mount var-lib-lago.mount
+Requires=var-lib-mock.mount var-lib-sharedslt.mount local-fs.target
+After=mk-shared-slot.service ci-environment.service lock-on-slot.service
+After=var-cache-mock.mount var-lib-docker.mount var-lib-lago.mount
+After=var-lib-mock.mount var-lib-sharedslt.mount local-fs.target
 
 [Service]
 EnvironmentFile=/etc/ci-container.environment
 User=jenkins
 ExecStart=/usr/bin/java -jar "${JENKINS_AGENT_WORKDIR}/agent.jar" \
+    -noReconnect \
     -jnlpUrl "${JENKINS_URL}/computer/${JENKINS_AGENT_NAME}/slave-agent.jnlp" \
     -secret "${JENKINS_SECRET}" \
     -workDir "${JENKINS_AGENT_WORKDIR}"
 Restart=always
 RestartSec=5
-StartLimitInterval=0
+StartLimitBurst=6
+StartLimitInterval=3600
+StartLimitAction=poweroff-force
 
 [Install]
 WantedBy=multi-user.target

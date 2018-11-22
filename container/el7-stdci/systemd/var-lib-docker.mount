@@ -2,6 +2,8 @@
 Description=Mount docker dirs
 Requires=mk-shared-slot.service
 After=mk-shared-slot.service
+RequiredBy=docker.service
+Before=docker.service
 
 [Mount]
 What=/slt/var/lib/docker
