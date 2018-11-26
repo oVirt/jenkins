@@ -52,6 +52,8 @@
     version:
       - master:
           branch: master
+      - 4.3:
+          branch: ovirt-4.3
     stage: build-artifacts
     distro:
       - el7
