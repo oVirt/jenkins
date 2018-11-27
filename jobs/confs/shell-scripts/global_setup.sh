@@ -306,6 +306,7 @@ extra_packages() {
     local package_list=(
         git mock sed bash procps-ng createrepo python-paramiko
         PyYAML python2-pyxdg python-jinja2 python-py python-six
+        distribution-gpg-keys
     )
     if [[ -e '/usr/bin/dnf' ]]; then
         # Fedora-specific packages
