@@ -35,7 +35,7 @@ def main():
     args = parse_args()
     setup_console_logging(args, logger)
     client = _get_client(args)
-    stop_all_running_containers(client)
+    remove_containers(client)
     whitelisted_repos = _get_whitelisted_repos(args)
     safe_image_cleanup(client, whitelisted_repos)
     logger.info('Docker image cleanup is done.')
@@ -110,17 +110,18 @@ def safe_image_cleanup(client, whitelisted_repos):
             parent_to_child_map.pop(parent)
 
 
-def stop_all_running_containers(client):
-    """Stop all running containers.
+def remove_containers(client):
+    """Remove all contaienrs
 
     :param docker.DockerClient client: A client for communicating with a Docker
                                        server.
     """
-    logger.info('Stopping and removing all running containers')
+    logger.info('Stopping and removing all containers')
     try:
-        containers = client.containers.list()
+        containers = client.containers.list(all=True)
     except AttributeError:
-        containers = client.containers()
+        containers = client.containers(all=True)
+    logger.info('list of containers: {}'.format(containers))
     for container in containers:
         logger.debug(
             'Stopping and removing name=%s, id=%s',
