@@ -38,6 +38,7 @@ def main():
     remove_containers(client)
     whitelisted_repos = _get_whitelisted_repos(args)
     safe_image_cleanup(client, whitelisted_repos)
+    remove_volumes(client)
     logger.info('Docker image cleanup is done.')
 
 
@@ -128,6 +129,52 @@ def remove_containers(client):
             _get_container_name(container), _get_container_id(container)
         )
         _remove_container(client, container)
+
+
+def get_volumes(client):
+    """Return an iterator over volume names
+
+    :param docker.DockerClient client: A client for communicating with a Docker
+                                       server.
+
+    :rtype: Iterable
+    :returns: Iterable over list of volumes. Empty list if no volumes exist
+    """
+    if hasattr(client.volumes, 'list'):
+        return ( v.name for v in client.volumes.list() )
+    try:
+        return ( v['Name'] for v in client.volumes()['Volumes'] if v )
+    except TypeError:
+        return []
+
+
+def remove_volumes(client, volumes=None):
+    """Given a list of volumes, remove them all
+
+    :param docker.DockerClient client: A client for communicating with a Docker
+                                       server.
+    :param Iterable volumes:           (optional) Iterable of volume names.
+                                       If not provided, will call get_volumes()
+    """
+    if volumes is None:
+        volumes = get_volumes(client)
+    for volume in volumes:
+        remove_volume(client, volume)
+
+
+def remove_volume(client, volume_name):
+    """Given a volume name, remove it
+
+    :param str volume_name: the name of the volume to remove
+    """
+    logger.info('Removing volume: {}'.format(volume_name))
+    try:
+        if hasattr(client, 'remove_volume'):
+            client.remove_volume(volume_name)  # no support for force remove
+        else:
+            client.volumes.get(volume_name).remove(force=True)
+    except NotFound:
+        logger.info('Volume ({}) was already removed'.format(volume_name))
 
 
 def _get_container_name(container):
