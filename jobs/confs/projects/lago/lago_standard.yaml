@@ -6,7 +6,6 @@
         - master:
             branch: master
       distro:
-        - fc27
         - fc28
         - el7
       trigger: 'on-change'
