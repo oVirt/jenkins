@@ -40,3 +40,10 @@
             create images of the vms.<br>
             The archive with the images can be found in
             exported-artifacts.</h3>"
+      - choice:
+          name: COVERAGE
+          choices:
+            - 'no'
+            - 'yes'
+          description:
+            "<h3>Enables coverage reports available in suite</h3>"

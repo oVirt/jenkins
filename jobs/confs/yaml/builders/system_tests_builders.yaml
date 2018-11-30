@@ -10,6 +10,9 @@
           if [[ ${{CREATE_IMAGES}} = "yes" ]]; then
               touch ${{PROJECT}}/CREATE_IMAGES.marker
           fi
+          if [[ ${{COVERAGE}} = "yes" ]]; then
+              touch ${{PROJECT}}/COVERAGE.marker
+          fi
       - shell: |
           #!/bin/bash -ex
           ## check which version of lago to use, and append to .repos
