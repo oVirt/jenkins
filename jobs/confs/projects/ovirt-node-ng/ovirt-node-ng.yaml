@@ -42,7 +42,7 @@
     arch:
       - x86_64
     node-filter: el7
-    email-to: 'infra@ovirt.org, yturgema@redhat.com'
+    email-to: 'yturgema@redhat.com'
     jobs:
         - '{project}_{version}_build-artifacts-{distro}-{arch}{_big_artifacts}'
 
@@ -63,6 +63,6 @@
     arch:
       - x86_64
     node-filter: el7
-    email-to: 'infra@ovirt.org, yturgema@redhat.com'
+    email-to: 'yturgema@redhat.com'
     jobs:
         - '{project}_{version}_build-artifacts-{distro}-{arch}{_big_artifacts}'
