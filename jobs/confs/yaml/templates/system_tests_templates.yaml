@@ -11,7 +11,7 @@
       - build-discarder:
             days-to-keep: 10
     triggers:
-      - timed: 'H H/12 * * *'
+      - timed: '@midnight'
     scm:
       - gerrit-with-proto:
           project: '{project}'
