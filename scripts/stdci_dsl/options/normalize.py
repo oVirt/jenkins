@@ -190,6 +190,16 @@ _RUNTIME_REQUIREMENTS_TRANSLATONS = {
         'virtualmachineonvirtualmachine': 2,
         'virtualmachinesonvirtualmachines': 2,
     },
+    'sriovnic': {
+        1: True,
+        '1': True,
+        'true': True,
+        True: True,
+        0: False,
+        '0': False,
+        'false': False,
+        False: False,
+    }
 }
 
 

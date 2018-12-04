@@ -156,6 +156,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 0,
                 'hostdistro': 'any',
                 'isolationlevel': 'virtual',
+                'sriovnic': False,
             }
         ),
         (
@@ -169,6 +170,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 0,
                 'hostdistro': 'any',
                 'isolationlevel': 'virtual',
+                'sriovnic': False,
             }
         ),
         (
@@ -181,6 +183,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 1,
                 'hostdistro': 'any',
                 'isolationlevel': 'virtual',
+                'sriovnic': False,
             }
         ),
         (
@@ -193,6 +196,7 @@ def test_normalize_reporting_config(thread, expected):
                 'hostdistro': 'any',
                 'isolationlevel': 'container',
                 'supportnestinglevel': 0,
+                'sriovnic': False,
             }
         ),
         (
@@ -204,7 +208,8 @@ def test_normalize_reporting_config(thread, expected):
             {
                 'hostdistro': 'same',
                 'isolationlevel': 'virtual',
-                'supportnestinglevel': 0
+                'supportnestinglevel': 0,
+                'sriovnic': False,
             }
         ),
         (
@@ -218,6 +223,7 @@ def test_normalize_reporting_config(thread, expected):
                 'hostdistro': 'same',
                 'isolationlevel': 'container',
                 'supportnestinglevel': 0,
+                'sriovnic': False,
             }
         ),
         (
@@ -231,6 +237,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 2,
                 'isolationlevel': 'container',
                 'hostdistro': 'any',
+                'sriovnic': False,
             }
         ),
         (
@@ -245,6 +252,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 2,
                 'isolationlevel': 'container',
                 'hostdistro': 'newer',
+                'sriovnic': False,
             }
         ),
         (
@@ -259,6 +267,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'container',
                 'supportnestinglevel': 1,
                 'hostdistro': 'any',
+                'sriovnic': False,
             }
         ),
         (
@@ -273,6 +282,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'virtual',
                 'supportnestinglevel': 0,
                 'hostdistro': 'any',
+                'sriovnic': False,
             }
         ),
         (
@@ -285,6 +295,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 1,
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
+                'sriovnic': False,
             }
         ),
         (
@@ -297,6 +308,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 1,
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
+                'sriovnic': False,
             }
         ),
         (
@@ -309,6 +321,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 2,
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
+                'sriovnic': False,
             }
         ),
         (
@@ -321,6 +334,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 2,
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
+                'sriovnic': False,
             }
         ),
         (
@@ -333,6 +347,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 2,
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
+                'sriovnic': False,
             }
         ),
         (
@@ -346,6 +361,20 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
                 'projectspecificnode': True,
+                'sriovnic': False,
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'sriovnic': True,
+                }
+            }),
+            {
+                'supportnestinglevel': 0,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+                'sriovnic': True,
             }
         ),
     ]
@@ -692,7 +721,9 @@ def test_get_merged_options(options1, options2, expected):
                         'runtimerequirements': {
                             'supportnestinglevel': 0,
                             'hostdistro': 'any',
-                            'isolationlevel': 'virtual'},
+                            'isolationlevel': 'virtual',
+                            'sriovnic': False,
+                        },
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
@@ -757,7 +788,9 @@ def test_get_merged_options(options1, options2, expected):
                         'runtimerequirements': {
                             'supportnestinglevel': 0,
                             'hostdistro': 'any',
-                            'isolationlevel': 'virtual'},
+                            'isolationlevel': 'virtual',
+                            'sriovnic': False,
+                        },
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},
@@ -797,7 +830,9 @@ def test_get_merged_options(options1, options2, expected):
                         'runtimerequirements': {
                             'supportnestinglevel': 0,
                             'hostdistro': 'any',
-                            'isolationlevel': 'virtual'},
+                            'isolationlevel': 'virtual',
+                            'sriovnic': False,
+                        },
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
                         'packages': {'fromfile': ['f1', 'f2']},

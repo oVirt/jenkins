@@ -84,6 +84,7 @@ DEFAULT_RUNTIME_REQUIREMENTS = {
     'supportnestinglevel': 0,
     'hostdistro': 'any',
     'isolationlevel': 'virtual',
+    'sriovnic': False,
 }
 
 
