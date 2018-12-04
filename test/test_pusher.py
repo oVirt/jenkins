@@ -244,19 +244,6 @@ def local_repo_patch(gitrepo, local_repo):
 
 
 @pytest.fixture
-def gerrit_push_map(tmpdir):
-    _push_map = tmpdir / 'git-push-url-map.yaml'
-    _push_map.write(dedent(
-        """
-        ---
-        - ^(/.*):
-            push_url: \\1
-        """
-    ).lstrip().format())
-    return str(_push_map)
-
-
-@pytest.fixture
 def mock_check_pushed(monkeypatch):
     _mock_check_pushed = MagicMock()
 

@@ -24,6 +24,11 @@ from textwrap import dedent
 from pprint import pformat
 from operator import or_
 from functools import cmp_to_key
+try:
+    from pusher import DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
+except ImportError:
+    from .pusher import DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
+
 
 UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
 UPSTREAM_SOURCES_PATH = os.path.join('automation', UPSTREAM_SOURCES_FILE)
@@ -31,6 +36,10 @@ CACHE_NAME = 'usrc'
 POLICIES = ('tagged', 'latest')
 TagObject = namedtuple('TagObject', ['commit', 'annotated', 'name'])
 logger = logging.getLogger(__name__)
+
+
+class UnkownDestFormatError(Exception):
+    pass
 
 
 def main():
@@ -60,6 +69,13 @@ def parse_args():
         ),
     )
     get_parser.set_defaults(handler=get_main)
+    get_parser.add_argument(
+        '--push-map', default=DEFAULT_PUSH_MAP,
+        help=(
+            'Path to a push map YAML file that specifies details about how'
+            ' to connect to the remote SCM servers and push changes.'
+        ),
+    )
     update_parser = subparsers.add_parser(
         'update', help='Update upstream source versions',
         description=(
@@ -167,7 +183,7 @@ def setup_console_logging(args, logger=None):
 
 
 def get_main(args):
-    get_upstream_sources()
+    get_upstream_sources(args.push_map)
 
 
 def update_main(args):
@@ -185,17 +201,26 @@ def changed_files_main(args):
 
 class GitUpstreamSource(object):
     """A class representing Git-based upstream source dependencies
+
+    :params : dest_format - list, destination format, currently supported
+                            'files', 'branch' or both
+    :params : update_policy - the latest or tagged policy to be updated.
+    :params : tag_filter - used to filter to specific tags you like.
+    :params : annotated_tag_only - used to pick only annotated tags.
     """
     def __init__(
-        self, url, branch, commit, automerge='no', files_dest_dir='',
-        update_policy=None, tag_filter=None, annotated_tag_only=None,
+        self, url, branch, commit, automerge='no', dest_format=None,
+        files_dest_dir='', update_policy=None, tag_filter=None,
+        annotated_tag_only=None
     ):
-        """
-        :params : update_policy - the latest or tagged policy to be updated.
-        :params : tag_filter - used to filter to specific tags you like.
-        :params : annotated_tag_only - used to pick only annotated tags.
-        """
         self.url, self.branch, self.commit = url, branch, commit
+        if dest_format is None:
+            self.dest_format=['files']
+        else:
+            if isinstance(dest_format, string_types):
+                self.dest_format = [dest_format.lower()]
+            else:
+                self.dest_format = [e.lower() for e in dest_format]
         self.files_dest_dir = files_dest_dir
         if update_policy:
             self.update_policy = update_policy
@@ -240,6 +265,7 @@ class GitUpstreamSource(object):
             struct['branch'],
             struct['commit'],
             struct.get('automerge', 'no'),
+            struct.get('dest_format', ['files']),
             struct.get('files_dest_dir', ''),
             struct.get('update_policy', ('latest')),
             struct.get('tag_filter', None),
@@ -255,6 +281,8 @@ class GitUpstreamSource(object):
         struct = dict(url=self.url, branch=self.branch, commit=self.commit)
         if self.automerge != 'no':
             struct['automerge'] = self.automerge
+        if self.dest_format != ['files']:
+            struct['dest_format'] = self.dest_format
         if self.files_dest_dir != '':
             struct['files_dest_dir'] = self.files_dest_dir
         if self.update_policy != ('latest'):
@@ -265,15 +293,10 @@ class GitUpstreamSource(object):
             struct['annotated_tag_only'] = self.annotated_tag_only
         return struct
 
-    def get(self, dst_path):
+    def _get_as_files(self, dst_path):
         """Get the upstream source into the given path
-
-        :param str dst_path: The path to get source into
         """
-        # TODO: check if git_commit is already available locally and skip
-        #       fetching
-        self._fetch()
-        if (self.files_dest_dir != ''):
+        if self.files_dest_dir != '':
             dst_path = os.path.join(dst_path, self.files_dest_dir)
             try:
                 os.makedirs(dst_path)
@@ -283,6 +306,47 @@ class GitUpstreamSource(object):
             '--work-tree=' + dst_path,
             'checkout', self.commit, '-f',
         )
+
+    def _push_to_branch(self, push_map):
+        """Get the upstream source to branch
+        """
+        dst_branch = '_upstream_' + self.branch + '_' + self.commit[0:7]
+        push_details = read_push_details(push_map)
+        logger.info("Would push to: '%s'", push_details.push_url)
+        if push_details.host_key:
+            add_key_to_known_hosts(push_details.host_key)
+        self._cache_git(
+            'push', push_details.push_url,
+            '{0}:refs/heads/{1}'.format(self.commit, dst_branch)
+        )
+
+    def get(self, dst_path, push_map):
+        """Get the upstream sources
+
+        Currently supported are pulling upstream sources as files into a given
+        path or pushing them into remote branch.
+
+        :param str dst_path: The path to get source into
+        :param str push_map: The path to a file containing information about
+                             remote SCM servers that is needed to push changes
+                             to them.
+        """
+        # TODO: check if git_commit is already available locally and skip
+        #       fetching
+        self._fetch()
+        unsupported_formats = []
+        for dest_format in set(self.dest_format):
+            if dest_format == 'files':
+                self._get_as_files(dst_path)
+            elif dest_format == 'branch':
+                self._push_to_branch(push_map)
+            else:
+                unsupported_formats.append(dest_format)
+        if unsupported_formats:
+            raise UnkownDestFormatError(
+                "Unknown destination formats {}.".format(
+                    ", ".join(unsupported_formats)))
+
 
     def updated(self):
         """Look for the most up-to-date commit or tag of the upstream source
@@ -305,7 +369,7 @@ class GitUpstreamSource(object):
                 )
                 return self.__class__(
                     self.url, self.branch, latest_commit, self.automerge,
-                    self.files_dest_dir, self.update_policy,
+                    self.dest_format, self.files_dest_dir, self.update_policy,
                     self.tag_filter, self.annotated_tag_only
                 )
         return self
@@ -543,14 +607,17 @@ def save_upstream_sources(upstream_sources):
         yaml.dump(sources_doc, stream, default_flow_style=False)
 
 
-def get_upstream_sources():
+def get_upstream_sources(push_map):
     """Download the US sources listed in upstream_sources.yaml
+
+    :param str push_map: The path to a file containing information about remote
+                         SCM servers that is needed to push changes to them.
     """
     upstream_sources = load_upstream_sources()
     dst_path = os.getcwd()
 
     for usrc in upstream_sources:
-        usrc.get(dst_path)
+        usrc.get(dst_path, push_map)
 
     # the below code will 'prefer' ds changes over us ones
     git(

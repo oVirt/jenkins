@@ -4,6 +4,7 @@
 from __future__ import absolute_import, print_function
 import sys
 import pytest
+from textwrap import dedent
 from six import iteritems
 from collections import namedtuple
 from functools import partial
@@ -26,6 +27,19 @@ except ImportError:
                 cmd = popenargs[0]
             raise CalledProcessError(retcode, cmd)
         return output
+
+
+@pytest.fixture
+def gerrit_push_map(tmpdir):
+    _push_map = tmpdir / 'git-push-url-map.yaml'
+    _push_map.write(dedent(
+        """
+        ---
+        - ^(/.*):
+            push_url: \\1
+        """
+    ).lstrip())
+    return str(_push_map)
 
 
 @pytest.fixture

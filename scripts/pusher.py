@@ -15,11 +15,11 @@ from six import iteritems, string_types
 from six.moves.urllib.parse import urlparse
 from subprocess import Popen, CalledProcessError, STDOUT, PIPE
 try:
-    from .stdci_logging import add_logging_args, setup_console_logging
-    from .git_utils import git, GitProcessError, git_rev_parse, InvalidGitRef
-except ValueError:
     from stdci_logging import add_logging_args, setup_console_logging
     from git_utils import git, GitProcessError, git_rev_parse, InvalidGitRef
+except ImportError:
+    from .stdci_logging import add_logging_args, setup_console_logging
+    from .git_utils import git, GitProcessError, git_rev_parse, InvalidGitRef
 
 
 logger = logging.getLogger(__name__)

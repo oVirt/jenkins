@@ -8,6 +8,7 @@ from scripts.usrc import (
     commit_upstream_sources_update, GitProcessError, GitUpstreamSource,
     generate_update_commit_message, git_ls_files, git_read_file, ls_all_files,
     files_diff, get_modified_files, get_files_to_links_map, GitFile,
+    UnkownDestFormatError,
 )
 from textwrap import dedent
 from hashlib import md5
@@ -47,6 +48,16 @@ def upstream(gitrepo, symlinkto):
                 'file3': 'Yet another file',
             },
         },
+    )
+
+
+@pytest.fixture
+def downstream_remote(gitrepo):
+    return gitrepo(
+        'downstream_remote',
+        {
+            'msg': 'First DS remote commit',
+        }
     )
 
 
@@ -165,7 +176,7 @@ class TestGitUpstreamSource(object):
             dict(url='some/url', branch='br1', commit='some_sha'),
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                automerge='no',
+                automerge='no', dest_format=['files'], files_dest_dir='',
             ),
         ),
         (
@@ -296,6 +307,36 @@ class TestGitUpstreamSource(object):
                 url='some/url', branch='br1', commit='some_sha',
                 update_policy=('latest'),
                 annotated_tag_only='yes'
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format=['files', 'branch'],
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format=['files', 'branch'],
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format=['branch'],
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format=['branch'],
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format='branch',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format=['branch'],
             ),
         ),
     ])
@@ -452,6 +493,36 @@ class TestGitUpstreamSource(object):
                 url='some/url', branch='br1', commit='some_sha'
             ),
         ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format=['files', 'branch'],
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format=['files', 'branch'],
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format=['branch'],
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format=['branch'],
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format='branch',
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                dest_format=['branch'],
+            ),
+        ),
     ])
     def test_to_yaml_struct(self, init_args, expected):
         gus = GitUpstreamSource(**init_args)
@@ -502,24 +573,14 @@ class TestGitUpstreamSource(object):
         out = gus.updated().commit
         assert out == git_rev_parse(expected)
 
-    def test_get(self, upstream, downstream, git_last_sha):
+    def test_get_dest_dir(
+            self, upstream, downstream, git_last_sha, gerrit_push_map):
         gus = GitUpstreamSource(
-            str(upstream), 'master', git_last_sha(upstream)
-        )
-        assert not (downstream / 'upstream_file.txt').exists()
-        gus.get(str(downstream))
-        assert (downstream / 'upstream_file.txt').isfile()
-        assert (downstream / 'upstream_file.txt').read() == 'Upstream content'
-        assert (downstream / 'overriden_file.txt').isfile()
-        assert (downstream / 'overriden_file.txt').read() == \
-            'Overridden content'
-
-    def test_get_dest_dir(self, upstream, downstream, git_last_sha):
-        gus = GitUpstreamSource(
-            str(upstream), 'master', git_last_sha(upstream), 'no', 'temp'
+            str(upstream), 'master', git_last_sha(upstream), 'no',
+            ['files'], 'temp'
         )
         assert not (downstream / 'temp' / 'upstream_file.txt').exists()
-        gus.get(str(downstream))
+        gus.get(str(downstream), gerrit_push_map)
         assert not (downstream / 'upstream_file.txt').isfile()
         assert (downstream / 'downstream_file.txt').isfile()
         assert (downstream / 'downstream_file.txt').read() == \
@@ -534,16 +595,92 @@ class TestGitUpstreamSource(object):
         assert (downstream / 'temp' / 'overriden_file.txt').read() == \
             'Overridden content'
 
+    def test_get_as_files(self, upstream, downstream, git_last_sha, gerrit_push_map):
+        gus = GitUpstreamSource(
+            str(upstream), 'master', git_last_sha(upstream), dest_format=['files']
+        )
+        assert not (downstream / 'upstream_file.txt').exists()
+        gus.get(str(downstream), gerrit_push_map)
+        assert (downstream / 'upstream_file.txt').isfile()
+        assert (downstream / 'upstream_file.txt').read() == 'Upstream content'
+        assert (downstream / 'overriden_file.txt').isfile()
+        assert (downstream / 'overriden_file.txt').read() == \
+            'Overridden content'
+
+    def test_push_to_branch(
+        self, monkeypatch, upstream, downstream, downstream_remote,
+        git_at, git_last_sha, gerrit_push_map
+        ):
+        gus = GitUpstreamSource(
+            str(upstream), 'master', git_last_sha(upstream), 'no', ['branch']
+        )
+        dst_branch = '_upstream_' + gus.branch + '_' + gus.commit[0:7]
+        gus._fetch()
+        git = git_at(downstream)
+        git('remote', 'add', 'origin', str(downstream_remote))
+        git('remote', 'add', 'upstream', str(upstream))
+        upstream_head = \
+            git('ls-remote', '--heads', 'upstream', 'master').split()[0]
+        origin_pre = git('ls-remote', '--heads', 'origin', dst_branch)
+        # Check dst_branch does not exist on downstream_remote pre push
+        assert origin_pre == ''
+        monkeypatch.chdir(str(downstream))
+        gus._push_to_branch(gerrit_push_map)
+        origin_post = git('ls-remote', '--heads', 'origin', dst_branch)
+        assert origin_post != ''
+        origin_post_commit = origin_post.split()[0]
+        # Check dst_branch on downstream_remote points to the same commit
+        # as upstream branch
+        assert upstream_head == origin_post_commit
+
+
+    @pytest.mark.parametrize(
+        'dest_format,get_as_files_expected,push_to_branch_expected', [
+            (['files'], True, False),
+            (['files', 'branch'], True, True),
+            (['branch'], False, True)
+    ])
+    def test_get(
+        self, upstream, git_last_sha, gerrit_push_map, dest_format,
+        get_as_files_expected, push_to_branch_expected
+        ):
+        get_as_files = MagicMock()
+        push_to_branch = MagicMock()
+        gus = GitUpstreamSource(
+            str(upstream), 'master', git_last_sha(upstream),
+            dest_format=dest_format
+        )
+        gus._get_as_files = get_as_files
+        gus._push_to_branch = push_to_branch
+        gus.get(str(upstream), gerrit_push_map)
+        assert get_as_files.called == get_as_files_expected
+        assert push_to_branch.called == push_to_branch_expected
+
+
+    def test_get_unknown_dest_exception(
+        self, upstream, git_last_sha, gerrit_push_map):
+        gus = GitUpstreamSource(
+            str(upstream), 'master', git_last_sha(upstream),
+            dest_format=['unknown_dest']
+        )
+        with pytest.raises(UnkownDestFormatError):
+            gus.get(str(upstream), gerrit_push_map)
+
+
     def test_update(self, gitrepo, upstream, git_last_sha):
         url, branch, commit = str(upstream), 'master', git_last_sha(upstream)
+        dest_format = ['files']
         files_dest_dir = 'temp'
-        gus = GitUpstreamSource(url, branch, commit, 'no', files_dest_dir)
+        gus = GitUpstreamSource(
+                url, branch, commit, 'no', dest_format, files_dest_dir
+        )
         gus_id = id(gus)
         updated = gus.updated()
         assert id(gus) == gus_id
         assert gus.url == url
         assert gus.branch == branch
         assert gus.commit == commit
+        assert gus.dest_format == dest_format
         assert gus.files_dest_dir == files_dest_dir
         assert updated == gus
         assert id(updated) == id(gus)
@@ -560,12 +697,14 @@ class TestGitUpstreamSource(object):
         assert gus.url == url
         assert gus.branch == branch
         assert gus.commit == commit
+        assert gus.dest_format == dest_format
         assert gus.files_dest_dir == files_dest_dir
         assert updated != gus
         assert id(updated) != id(gus)
         assert updated.url == url
         assert updated.branch == branch
         assert updated.commit == new_commit
+        assert gus.dest_format == dest_format
         assert updated.files_dest_dir == files_dest_dir
 
     def test_commit_details(self, upstream, git_last_sha, git_at):
@@ -617,10 +756,10 @@ class TestGitUpstreamSource(object):
         assert out == sentinel.some_files
 
 
-def test_get_upstream_sources(monkeypatch, downstream):
+def test_get_upstream_sources(monkeypatch, gerrit_push_map, downstream):
     monkeypatch.chdir(downstream)
     assert not (downstream / 'upstream_file.txt').exists()
-    get_upstream_sources()
+    get_upstream_sources(gerrit_push_map)
     assert (downstream / 'upstream_file.txt').isfile()
     assert (downstream / 'upstream_file.txt').read() == 'Upstream content'
     assert (downstream / 'downstream_file.txt').isfile()
@@ -652,7 +791,7 @@ def updated_upstream(gitrepo, upstream, downstream):
 
 
 def test_update_upstream_sources(
-    monkeypatch, updated_upstream, downstream, git_status
+    monkeypatch, gerrit_push_map, updated_upstream, downstream, git_status
 ):
     monkeypatch.chdir(downstream)
     # Verify that downstream in unmodified
@@ -666,7 +805,7 @@ def test_update_upstream_sources(
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
     assert git_status(downstream) == ' M automation/upstream_sources.yaml'
-    get_upstream_sources()
+    get_upstream_sources(gerrit_push_map)
     assert (downstream / 'upstream_file.txt').isfile()
     assert (downstream / 'upstream_file.txt').read() == 'Updated US content'
     assert (downstream / 'downstream_file.txt').isfile()
@@ -676,7 +815,7 @@ def test_update_upstream_sources(
 
 
 def test_no_update_upstream_sources(
-    monkeypatch, upstream, downstream, git_status
+    monkeypatch, gerrit_push_map, upstream, downstream, git_status
 ):
     monkeypatch.chdir(downstream)
     # Verify that downstream in unmodified
@@ -690,7 +829,7 @@ def test_no_update_upstream_sources(
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
     assert git_status(downstream) == ''
-    get_upstream_sources()
+    get_upstream_sources(gerrit_push_map)
     assert (downstream / 'upstream_file.txt').isfile()
     assert (downstream / 'upstream_file.txt').read() == 'Upstream content'
     assert (downstream / 'downstream_file.txt').isfile()
