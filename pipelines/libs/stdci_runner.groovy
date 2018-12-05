@@ -134,6 +134,10 @@ def get_std_ci_node_label(project, job) {
     if (job.arch != "x86_64") {
         label_conditions << job.arch
     }
+    // check true explicitly to avoid true-ish conditions
+    if(job.runtime_reqs?.sriovnic == true) {
+        label_conditions << 'hardware-sriov_nic'
+    }
     return label_conditions.join(' && ')
 }
 
