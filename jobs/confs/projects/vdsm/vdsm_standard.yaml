@@ -4,8 +4,6 @@
       project: vdsm
       trigger: on-change
       version:
-        - master:
-            branch: master
         - '4.2':
             branch: ovirt-4.2
         - '4.1':
@@ -27,8 +25,6 @@
     name: vdsm_build-artifacts_x86_64
     stage: build-artifacts
     version:
-      - master:
-          branch: master
       - '4.2':
           branch: ovirt-4.2
       - '4.1':
@@ -43,8 +39,6 @@
     name: vdsm_build-artifacts-manual_x86_64
     stage: build-artifacts-manual
     version:
-      - master:
-          branch: master
       - '4.2':
           branch: ovirt-4.2
       - '4.1':
@@ -60,7 +54,6 @@
     version:
       - '4.1'
       - '4.2'
-      - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
 
@@ -69,8 +62,6 @@
     name: vdsm_build-artifacts_altarch
     stage: build-artifacts
     version:
-      - master:
-          branch: master
       - '4.2':
           branch: ovirt-4.2
       - '4.1':
