@@ -1,0 +1,5 @@
+python-pip
+python-virtualenv
+python34
+libvirt-client
+openssh-clients

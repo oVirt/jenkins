@@ -28,7 +28,7 @@ stdci_venv::activate() {
     venv_python="$(cat "$python_file")"
     if [[ -z "$venv_python" ]]; then
         venv_python="$(type -p python)"
-    elif [[ ! -x "$venv_python" ]]; then
+    elif ! type -p "$venv_python" > /dev/null; then
         echo "WARNING: Define python interpreter '$venv_python' is not"
         echo "         executable. Will fallback to system default"
         venv_python="$(type -p python)"
@@ -37,7 +37,7 @@ stdci_venv::activate() {
     stdci_venv::_rm_old
 
     venv_sha="$(
-        (echo "venv_python"; cat "$lock_file") | sha256sum | cut -d\  -f1
+        (echo "$venv_python"; cat "$lock_file") | sha256sum | cut -d\  -f1
     )"
     venv_path="$STDCI_VENV_CACHE_PATH/$venv_sha"
     stdci_venv::_ensure_exists "$lock_file" "$venv_python" "$venv_path" \
