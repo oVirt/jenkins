@@ -23,12 +23,13 @@ from traceback import format_exception
 from textwrap import dedent
 from pprint import pformat
 from operator import or_
-
+from functools import cmp_to_key
 
 UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
 UPSTREAM_SOURCES_PATH = os.path.join('automation', UPSTREAM_SOURCES_FILE)
 CACHE_NAME = 'usrc'
-
+POLICIES = ('tagged', 'latest')
+TagObject = namedtuple('TagObject', ['commit', 'annotated', 'name'])
 logger = logging.getLogger(__name__)
 
 
@@ -152,12 +153,12 @@ def setup_console_logging(args, logger=None):
         pass
     elif args.log == sys.stderr:
         stderr_handler.setFormatter(ExceptionSpreader(
-            '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
+            '%(asctime)s:%(levelname)s:%(name)s:%(message)s:%(funcName)s'
         ))
     else:
         file_handler = logging.handlers.WatchedFileHandler(args.log)
         file_handler.setFormatter(ExceptionSpreader(
-            '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
+            '%(asctime)s:%(levelname)s:%(name)s:%(message)s:%(funcName)s'
         ))
         file_handler.setLevel(1)  # Set lowest possible level
         stderr_handler.setLevel(level)
@@ -185,9 +186,26 @@ def changed_files_main(args):
 class GitUpstreamSource(object):
     """A class representing Git-based upstream source dependencies
     """
-    def __init__(self, url, branch, commit, automerge='no', files_dest_dir=''):
+    def __init__(
+        self, url, branch, commit, automerge='no', files_dest_dir='',
+        update_policy=None, tag_filter=None, annotated_tag_only=None,
+    ):
+        """
+        :params : update_policy - the latest or tagged policy to be updated.
+        :params : tag_filter - used to filter to specific tags you like.
+        :params : annotated_tag_only - used to pick only annotated tags.
+        """
         self.url, self.branch, self.commit = url, branch, commit
         self.files_dest_dir = files_dest_dir
+        if update_policy:
+            self.update_policy = update_policy
+        else:
+            self.update_policy = ('latest')
+        self.tag_filter = tag_filter
+        if annotated_tag_only == 'yes':
+            self.annotated_tag_only = annotated_tag_only
+        else:
+            self.annotated_tag_only = 'no'
         if isinstance(automerge, string_types):
             if automerge.lower() in ('yes', 'true'):
                 self.automerge = 'yes'
@@ -223,6 +241,9 @@ class GitUpstreamSource(object):
             struct['commit'],
             struct.get('automerge', 'no'),
             struct.get('files_dest_dir', ''),
+            struct.get('update_policy', ('latest')),
+            struct.get('tag_filter', None),
+            struct.get('annotated_tag_only', 'no'),
         )
 
     def to_yaml_struct(self):
@@ -236,6 +257,12 @@ class GitUpstreamSource(object):
             struct['automerge'] = self.automerge
         if self.files_dest_dir != '':
             struct['files_dest_dir'] = self.files_dest_dir
+        if self.update_policy != ('latest'):
+            struct['update_policy'] = self.update_policy
+        if self.tag_filter is not None:
+            struct['tag_filter'] = self.tag_filter
+        if self.annotated_tag_only != 'no':
+            struct['annotated_tag_only'] = self.annotated_tag_only
         return struct
 
     def get(self, dst_path):
@@ -258,14 +285,37 @@ class GitUpstreamSource(object):
         )
 
     def updated(self):
-        """Look for the most up-to-date commit of the upstream source
+        """Look for the most up-to-date commit or tag of the upstream source
+           depending on the user request.
 
         :returns: A new GitUpstreamSource instance representing the updated
-            source. If self is already pointing to the most updated commit,
-            returns self
+            source. If self is already pointing to the most updated commit
+            or tag, returns self
         :rtype: GitUpstreamSource
         """
         self._fetch()
+        for policy in POLICIES:
+            if policy not in self.update_policy:
+                continue
+            latest_commit = getattr(self, "_update_policy_" + policy)()
+            if latest_commit != self.commit:
+                logger.info(
+                    "Latest {0} commit updated for branch {1} in repo"
+                    "{2}".format(policy, self.branch, self.url)
+                )
+                return self.__class__(
+                    self.url, self.branch, latest_commit, self.automerge,
+                    self.files_dest_dir, self.update_policy,
+                    self.tag_filter, self.annotated_tag_only
+                )
+        return self
+
+    def _update_policy_latest(self):
+        """Look for the most up-to-date commit of the upstream source
+
+        :returns: latest commit in the upstream source branch.
+        :rtype: str
+        """
         latest_commit = self._cache_git(
             'rev-parse', 'refs/remotes/origin/{0}'.format(self.branch)
         ).strip()
@@ -276,16 +326,73 @@ class GitUpstreamSource(object):
             # We need to do this so we don't get strange unicode flags in YAML
             # we produce form Python2
             latest_commit = latest_commit.encode('ascii', 'ignore')
-        if latest_commit == self.commit:
-            return self
-        logger.info(
-            "Latest commit updated for branch '%s' in repo '%s'",
-            self.branch, self.url
+        return latest_commit
+
+    def _update_policy_tagged(self):
+        """Look for latest tagged of the upstream source
+
+        :returns:   returns the latest tagged commit or self
+                    if it is same or newer commit.
+        :rtype: str
+        """
+        tags = self._get_tags()
+        # Filtering non-annotated tags if specified.
+        if self.annotated_tag_only:
+            tags = (tag for tag in tags if 'tag' == tag.annotated)
+        # Filtering tagged commits for branch
+        tags = (tag for tag in tags if self._tag_in_branch(tag))
+        # Getting latest tagged commit.
+        latest_tag = max(tags, key=cmp_to_key(self._commit_cmp))
+        # Checking wether the tag is older than the current commit.
+        if self._commit_cmp(latest_tag.commit, self.commit) <= 0:
+                return self.commit
+        return latest_tag.commit
+
+    def _get_tags(self):
+        """Create a tagged gen expression to iterate over.
+
+        :returns: returns a gen expr containing the tagged objects.
+        :rtype  : gen expr
+        """
+        tag_output = yaml.safe_load(
+            git(
+                'for-each-ref',
+                'refs/tags/' + (self.tag_filter if self.tag_filter else ""),
+                '--format',
+                '- {"commit": "%(objectname)",'
+                '"annotated": "%(objecttype)", "name": "%(refname:short)"}'
+            ).encode('ascii', 'ignore')
         )
-        return self.__class__(
-            self.url, self.branch, latest_commit, self.automerge,
-            self.files_dest_dir
-        )
+        tags = (TagObject(**tag) for tag in tag_output)
+        # Converting commit sha of tagged commit.
+        return (TagObject(self._rev_parse(c), a, n) for c, a, n in tags)
+
+    def _tag_in_branch(self, tag):
+        """checks wether a tag is in branch meaning they have ancestor commit.
+
+        returns : Returns True/False if tag is in branch.
+        rtype   : bool
+        """
+        return \
+            self._merge_base(tag.commit, 'origin/' + self.branch) == tag.commit
+
+    def _commit_cmp(self, a, b):
+        """Check if tag_a is newer or older than tag_b.
+
+        :param a: TagStruct object or commit.
+        :param b: TagStruct object or commit.
+        :returns: 1 if tag_a is newer,
+            0 if they are pointing on same commit,
+            -1 if tag_a is older than tag_b.
+        rtype: int
+        """
+        commit_a = getattr(a, 'commit', a)
+        commit_b = getattr(b, 'commit', b)
+        if commit_a == commit_b:
+            return 0
+        elif self._merge_base(commit_a, commit_b) == commit_a:
+            return -1
+        return 1
 
     def _fetch(self):
         """Fetch the remote branch into the local cache
@@ -295,6 +402,32 @@ class GitUpstreamSource(object):
             'fetch', '--tags', self.url,
             '+{0}:refs/remotes/origin/{0}'.format(self.branch)
         )
+
+    def _merge_base(self, object_a, object_b):
+        """Returns the ancestor commit between 2 commits.
+
+        :returns : returns the older commit.
+        :rtype: str
+        """
+        if not isinstance(object_a, str):
+            object_a = object_a.encode('ascii', 'ignore').rstrip()
+        if not isinstance(object_b, str):
+            object_b = object_b.encode('ascii', 'ignore').rstrip()
+        return self._cache_git(
+            'merge-base', object_a, object_b).rstrip()
+
+    def _rev_parse(self, ref):
+        """
+        Returns a commit sha from a given reference.
+
+        :params  : self - class instance.
+        :params  : ref - reference to parse.
+        :returns : returns sha of a given ref.
+        :rtype   : str
+        """
+        return self._cache_git(
+            'rev-parse', "{0}^{{commit}}".format(ref)
+        ).rstrip()
 
     @property
     def commit_title(self):

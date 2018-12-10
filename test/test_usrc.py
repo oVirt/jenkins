@@ -7,7 +7,7 @@ from scripts.usrc import (
     get_upstream_sources, update_upstream_sources,
     commit_upstream_sources_update, GitProcessError, GitUpstreamSource,
     generate_update_commit_message, git_ls_files, git_read_file, ls_all_files,
-    files_diff, get_modified_files, get_files_to_links_map, GitFile
+    files_diff, get_modified_files, get_files_to_links_map, GitFile,
 )
 from textwrap import dedent
 from hashlib import md5
@@ -18,7 +18,9 @@ try:
     from unittest.mock import MagicMock, call, sentinel
 except ImportError:
     from mock import MagicMock, call, sentinel
-
+from functools import cmp_to_key
+from scripts.git_utils import git_rev_parse
+from scripts import usrc
 
 class TestGitProcessError(object):
     def test_inheritance(self):
@@ -75,6 +77,87 @@ def downstream(gitrepo, upstream, git_last_sha, symlinkto):
         },
     )
 
+
+@pytest.fixture
+def upstream_scenarios_for_tests(
+        gitrepo, git_last_sha, git_tag, git_branch, git_at
+    ):
+    """
+    This is a demonstration of the git repo commits:
+    Both commit nodes E and D are childrens of commit node C.
+    B commit points to sample_git_branch, A, C , E commits points to master,
+    and D commit points to another_git_branch.
+    A commit points to a_tag, B commit points to b_tag,
+    C commits points to c_tag.
+
+    a_tag <------A
+               / |
+    b_tag <---B  |
+                 |
+    c_tag <------C
+                 | \
+                 |  \
+                 E   D---> d_tag
+
+           E = HEAD = E^0         - master
+           C = E^   = E~1 = c_tag - master
+           A = E^^1 = A~2 = a_tag - master
+           D = HEAD = D^0 = d_tag - another_git_branch
+           B = HEAD = B^0 = b_tag - sample_git_branch
+    """
+    repo = gitrepo(
+        'upstream',
+        {
+            'msg': 'First commit',
+            'files': {
+                'a.txt': 'A content'
+            },
+        },
+
+    )
+    with git_branch('upstream', 'sample_git_branch'):
+        gitrepo(
+            'upstream',
+            {
+                'msg': 'Second commit',
+                'files': {
+                    'b.txt': 'B content',
+                    }
+            },
+        )
+    with git_branch('upstream', 'master'):
+        git_tag('upstream', 'a_tag', 'a tag')
+        gitrepo('upstream', {
+            'msg': 'Third commit',
+            'files': {
+                'c.txt': 'C content',
+            }
+        })
+        git_tag('upstream', 'c_tag', 'newer annotated tag')
+
+    with git_branch('upstream', 'sample_git_branch'):
+        git_tag('upstream', 'b_tag', 'pointing to commit b')
+
+    with git_branch('upstream', 'another_git_branch'):
+        gitrepo(
+            'upstream',
+            {
+                'msg': 'Fourth commit',
+                'files': {
+                    'd.txt': 'D content',
+                }
+            }
+        )
+        git_tag('upstream', 'd_tag', 'pointing to commit d')
+
+    with git_branch('upstream', 'master'):
+        gitrepo('upstream', {
+            'msg': 'Fifth commit',
+            'files': {
+                'e.txt': 'E content',
+            }
+        })
+    return repo
 
 class TestGitUpstreamSource(object):
     @pytest.mark.parametrize('struct,expected', [
@@ -155,6 +238,66 @@ class TestGitUpstreamSource(object):
                 automerge='no',
             ),
         ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('latest'), tag_filter='tag*',
+                annotated_tag_only='yes'
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('latest'), tag_filter='tag*',
+                annotated_tag_only='yes'
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('tagged'), tag_filter=None,
+                annotated_tag_only='yes'
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('tagged'), tag_filter=None,
+                annotated_tag_only='yes'
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('tagged', 'latest'),
+                annotated_tag_only=None
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('tagged', 'latest'),
+                annotated_tag_only='no'
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=False,
+                annotated_tag_only='no'
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('latest'),
+                annotated_tag_only='no'
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=False,
+                annotated_tag_only='yes'
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('latest'),
+                annotated_tag_only='yes'
+            ),
+        ),
     ])
     def test_from_yaml_struct(self, struct, expected):
         out = GitUpstreamSource.from_yaml_struct(struct)
@@ -233,11 +376,131 @@ class TestGitUpstreamSource(object):
                 url='some/url', branch='br1', commit='some_sha',
             ),
         ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=False
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha'
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=['latest', 'tagged']
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=['latest', 'tagged']
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=['tagged']
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=['tagged']
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                tag_filter=None
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha'
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                tag_filter='some_tag'
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                tag_filter='some_tag'
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                annotated_tag_only='yes'
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                annotated_tag_only='yes'
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                annotated_tag_only=None
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                annotated_tag_only='no'
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha'
+            ),
+        ),
     ])
     def test_to_yaml_struct(self, init_args, expected):
         gus = GitUpstreamSource(**init_args)
         out = gus.to_yaml_struct()
         assert out == expected
+
+    @pytest.mark.parametrize('struct,expected', [
+            (
+                ('master', 'master~2', ('tagged')),
+                ('master~1')
+            ),
+            (
+                ('master', 'master~2', ('tagged', 'latest')),
+                ('master~1')
+            ),
+            (
+                ('master', 'master~2', ('latest')),
+                ('master')
+            ),
+            (
+                ('sample_git_branch', 'sample_git_branch^1', ('tagged')),
+                ('sample_git_branch')
+            ),
+            (
+                ('another_git_branch', 'another_git_branch~2', ('tagged')),
+                ('another_git_branch')
+            ),
+            (
+                ('another_git_branch', 'another_git_branch~1',
+                    ('tagged', 'latest')),
+                ('another_git_branch')
+            ),
+        ]
+    )
+    def test_tag_updated(
+        self, struct, expected,
+        upstream_scenarios_for_tests, git_branch, monkeypatch
+    ):
+        monkeypatch.setattr(usrc, 'xdg_cache_home', '/tmp/test_tag_updated/')
+        monkeypatch.chdir(upstream_scenarios_for_tests)
+        url = str(upstream_scenarios_for_tests)
+        branch, commit, update_policy = struct
+        commit = git_rev_parse(commit)
+        gus = GitUpstreamSource(
+            url=url, branch=branch, commit=commit,
+            update_policy=update_policy
+        )
+        out = gus.updated().commit
+        assert out == git_rev_parse(expected)
 
     def test_get(self, upstream, downstream, git_last_sha):
         gus = GitUpstreamSource(
