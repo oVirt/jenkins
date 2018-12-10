@@ -4,6 +4,7 @@ import org.jenkinsci.plugins.workflow.cps.CpsScript
 
 def project_lib
 def stdci_summary_lib
+def node_lib
 
 class TestFailedRef implements Serializable {
     // Flag used to indicate that the actual test failed and not something else
@@ -29,6 +30,7 @@ def on_load(loader) {
     }
     project_lib = loader.project_lib
     stdci_summary_lib = loader.load_code('libs/stdci_summary.groovy', this)
+    node_lib = loader.load_code('libs/stdci_node.groovy', this)
 }
 
 def run_std_ci_jobs(Map named_args) {
@@ -143,12 +145,13 @@ def get_std_ci_node_label(project, job) {
     return label_conditions.join(' && ')
 }
 
-
 def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
     TestFailedRef tfr = new TestFailedRef()
     Boolean success = false
     try {
         try {
+            def node = node_lib.get_current_pipeline_node_details()
+            print("Running on node: $node.name ($node.labels)")
             report.status('PENDING', 'Setting up test environment')
             // Clear al left-over artifacts from previous builds
             dir(get_job_dir(job)) { deleteDir() }
