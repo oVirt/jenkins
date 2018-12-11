@@ -11,6 +11,18 @@ sub-stages:
             script:
               fromfile: automation/check-patch-s390x.sh
             stage: check-patch
+      runif:
+        file-changed:
+          - jobs/confs/shell-scripts/collect_artifacts.sh
+          - jobs/confs/yaml/templates/standard-stage.yaml
+          - jobs/confs/shell-scripts/cleanup_slave.sh
+          - jobs/confs/shell-scripts/global_setup*
+          - scripts/docker_cleanup.py
+          - date/Dockerfiles/*
+          - mock_configs/*
+          - scripts/*.py
+          - test/*.py
+          - date/dummy.spec
   - jenkins-jobs:
       runif:
         file-changed:
