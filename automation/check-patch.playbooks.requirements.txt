@@ -1,0 +1,4 @@
+ansible
+pytest
+sh
+openshift

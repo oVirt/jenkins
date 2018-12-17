@@ -1,0 +1,6 @@
+---
+- name: Trigger deployment
+  connection: local
+  delegate_to: 127.0.0.1
+  command:
+    "{{ oc_bin|default('oc') }} rollout latest dc/{{master_name}}"

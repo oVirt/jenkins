@@ -1,0 +1,150 @@
+---
+- name: Validate role arguments
+  assert:
+    that:
+      - 'openshift_project is defined'
+      - 'master_name is defined'
+      - 'jenkins_image is defined'
+
+- name: OpenShift jenkins pod creation
+  connection: local
+  delegate_to: 127.0.0.1
+  block:
+    - name: Create service account
+      k8s:
+        state: present
+        definition:
+          kind: ServiceAccount
+          apiVersion: v1
+          metadata:
+            name: "{{master_name}}"
+            namespace: "{{openshift_project}}"
+            annotations:
+              serviceaccounts.openshift.io/oauth-redirectreference.jenkins: '
+                {
+                  "kind":"OAuthRedirectReference",
+                  "apiVersion":"v1",
+                  "reference":{
+                    "kind":"Route",
+                    "name":"{{master_name}}"
+                  }
+                }
+              '
+
+    - name: Create role binding
+      k8s:
+        state: present
+        definition:
+          kind: RoleBinding
+          apiVersion: 'rbac.authorization.k8s.io/v1'
+          metadata:
+            name: "{{master_name}}_edit"
+            namespace: "{{openshift_project}}"
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: edit
+          subjects:
+          - kind: ServiceAccount
+            name: "{{master_name}}"
+
+    - name: Create deployment config
+      notify:
+        - Trigger deployment
+      k8s:
+        state: present
+        definition:
+          kind: DeploymentConfig
+          apiVersion: v1
+          metadata:
+            name: "{{master_name}}"
+            namespace: "{{openshift_project}}"
+          spec:
+            template:
+              metadata:
+                labels:
+                  name: "{{master_name}}"
+              spec:
+                serviceAccountName: "{{master_name}}"
+                serviceAccount: "{{master_name}}"
+                containers:
+                - image: " "
+                  name: "jenkins-master"
+                  ports:
+                  - containerPort: 8080
+                    protocol: TCP
+                  - containerPort: 50000
+                    protocol: TCP
+                  env:
+                    - name: OPENSHIFT_ENABLE_OAUTH
+                      value: "True"
+            replicas: 1
+            strategy:
+              type: Recreate
+            revisionHistoryLimit: 5
+            triggers:
+              - imageChangeParams:
+                  containerNames:
+                    - jenkins-master
+                  from:
+                    kind: ImageStreamTag
+                    name: "{{jenkins_image}}"
+                type: ImageChange
+
+    - name: Create UI service
+      k8s:
+        state: present
+        definition:
+          kind: Service
+          apiVersion: v1
+          metadata:
+            name: "{{master_name}}-ui"
+            namespace: "{{openshift_project}}"
+          spec:
+            ports:
+              - name: ui
+                port: 80
+                protocol: TCP
+                targetPort: 8080
+            selector:
+              name: "{{master_name}}"
+
+    - name: Create JNLP service
+      k8s:
+        state: present
+        definition:
+          kind: Service
+          apiVersion: v1
+          metadata:
+            name: "{{master_name}}-jnlp"
+            namespace: "{{openshift_project}}"
+          spec:
+            ports:
+              - name: jnlp
+                port: 50000
+                protocol: TCP
+                targetPort: 50000
+            selector:
+              name: "{{master_name}}"
+
+    - name: Create route
+      k8s:
+        state: present
+        definition:
+          apiVersion: route.openshift.io/v1
+          kind: Route
+          metadata:
+            creationTimestamp: null
+            name: "{{master_name}}"
+            namespace: "{{openshift_project}}"
+          spec:
+            host: ""
+            port:
+              targetPort: ui
+            to:
+              kind: Service
+              name: "{{master_name}}-ui"
+              weight: null
+            tls:
+              termination: edge
+              insecureEdgeTerminationPolicy: Redirect

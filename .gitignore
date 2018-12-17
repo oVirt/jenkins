@@ -15,3 +15,5 @@ mocker-*.cfg
 *.iml
 src/
 .pytest_cache/
+.kube/
+*.retry

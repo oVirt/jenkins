@@ -23,6 +23,7 @@ sub-stages:
           - scripts/*.py
           - test/*.py
           - date/dummy.spec
+          - conftest.py
   - jenkins-jobs:
       runif:
         file-changed:
@@ -41,6 +42,11 @@ sub-stages:
           - automation/*.{{ substage }}.*
       runtime-requirements:
         host-os: same
+  - playbooks:
+      runif:
+        file-changed:
+          - playbooks/*
+          - automation/*.{{ substage }}.*
   - el7-loader-node:
       runif:
         file-changed:

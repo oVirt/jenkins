@@ -1,0 +1,51 @@
+# master_deploy.yaml - Build a container image for Jenkins masters and
+#                      create deployments of that image in OpenShift
+#
+# Usage:
+#     ansible-playbook playbooks/master_deploy.yaml -i $INVENTORY
+#
+# Where $INVENTORY is an invertory file listing the names of the Jenkins
+# masters we want to install or configure. An example for such an inventory
+# file can be found at:
+#
+#     playbooks/inventories/example_master.yaml
+#
+# Prerquisites for running:
+# * You need to have `oc` installed and logged in to OpenShift and set to use
+#   the namespace you want to have things installed in.
+# * You need to install Ansible as instructed in the README.md file
+#
+# Example - setting up the `example-master` instance:
+#
+#     ansible-playbook playbooks/master_deploy.yaml \
+#       -i playbooks/inventories/example_master.yaml -v
+#
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  tags: build
+  tasks:
+    - import_role:
+        name: jenkins_master_image
+      vars:
+        return_image_as: 'jenkins_imagestream_tag'
+
+- hosts: jenkins_masters
+  gather_facts: no
+  tags: deploy
+  vars:
+    jenkins_imagestream_tag:
+      "{{ hostvars['127.0.0.1']['jenkins_imagestream_tag'] }}"
+  tasks:
+    - name: Detect OpenShift project
+      set_fact:
+        openshift_project:
+          "{{ lookup('pipe', oc_bin | default('oc') + ' project -q') }}"
+
+    - import_role:
+        name: jenkins_master_pod
+      vars:
+        openshift_project: "{{ openshift_project }}"
+        master_name: "{{ inventory_hostname }}"
+        jenkins_image: "{{ jenkins_imagestream_tag }}"

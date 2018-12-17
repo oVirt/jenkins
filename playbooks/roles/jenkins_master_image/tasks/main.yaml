@@ -1,0 +1,34 @@
+---
+- name: OpenShift Jenkins image build
+  connection: local
+  delegate_to: 127.0.0.1
+  block:
+    - name: Obtain base image
+      openshift_imported_image:
+        source_image: "{{jenkins_base_image}}"
+        dest_imagestream: "{{jenkins_base_imagestream}}"
+      register: base_image
+
+    - debug:
+        msg: "{{ lookup('tree_checksum', jenkins_image_source) }}"
+
+    - name: Detect image version
+      set_fact:
+        jenkins_image_version: "{{ '%.7s-%.7s'|format(
+          base_image.container_sha,
+          lookup('tree_checksum', jenkins_image_source)) }}"
+
+    - name: Build master image
+      openshift_build:
+        name: "{{ jenkins_imagestream }}-{{ jenkins_image_version }}"
+        strategy: source
+        from_dir: "{{ jenkins_image_source }}"
+        image_stream: "{{ jenkins_base_imagestream }}"
+        binary: True
+        to: "{{ jenkins_imagestream }}:{{ jenkins_image_version }}"
+        start_build: 'on-change'
+
+    - name: "Return image name in '{{ return_image_as }}'"
+      set_fact:
+        "{{ return_image_as }}":
+          "{{ jenkins_imagestream }}:{{ jenkins_image_version }}"
