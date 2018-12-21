@@ -3,13 +3,13 @@
     project: ovirt-engine-sdk
     trigger: on-change
     version:
-      - '3.6':
+      - 'master':
           branch: sdk_3.6
     stage:
       - check-merged
       - check-patch
     distro:
-      - el6
+      - el7
     arch:
       - x86_64
       - ppc64le:
@@ -19,10 +19,6 @@
       #- s390x:
       #node-filter: s390x
     exclude:
-      - { version: '4.1', distro: fc28 }
-      - { version: '4.1', arch: s390x, }
-      - { version: '3.6', arch: s390x, }
-      - { version: '3.6', arch: ppc64le, }
       - {                 arch: s390x,   distro: el7, }
       - {                 arch: ppc64le, distro: fc28, }
     jobs:
@@ -33,8 +29,6 @@
     name: python-ovirt-engine-sdk4_checks
     project: ovirt-engine-sdk
     version:
-      - '4.1':
-          branch: sdk_4.1
       - '4.2':
           branch: sdk_4.2
       - master:
@@ -55,10 +49,6 @@
           branch: sdk_3.6
       - '4.2':
           branch: sdk_3.6
-      - '4.1':
-          branch: sdk_3.6
-      - '3.6':
-          branch: sdk_3.6
     distro:
       - el7
       - fc28
@@ -75,12 +65,9 @@
           branch: master
       - '4.2':
           branch: sdk_4.2
-      - '4.1':
-          branch: sdk_4.1
     distro:
       - el7
       - fc28
     jobs:
         - 'python-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'
         - 'python-ovirt-engine-sdk4_{version}_{stage}-on-demand-{distro}-{arch}'
-
