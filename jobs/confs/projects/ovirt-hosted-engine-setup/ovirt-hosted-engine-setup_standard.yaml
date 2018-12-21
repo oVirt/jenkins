@@ -7,10 +7,6 @@
           branch: master
       - '4.2':
           branch: ovirt-hosted-engine-setup-2.2
-      - '4.1':
-          branch: ovirt-hosted-engine-setup-2.1
-      - '3.6':
-          branch: ovirt-hosted-engine-setup-1.3
     stage:
       - check-patch
       - check-merged
@@ -19,8 +15,6 @@
       - fc28
     exclude:
       - { version: '4.2', distro: fc28 }
-      - { version: '4.1', distro: fc28 }
-      - { version: '3.6', distro: fc28 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -44,8 +38,6 @@
     <<: *base-params
     name: ovirt-hosted-engine_build-artifacts-manual-any
     version:
-      - '3.6'
-      - '4.1'
       - '4.2'
       - 'master'
     jobs:
