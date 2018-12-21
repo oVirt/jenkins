@@ -9,14 +9,11 @@
           branch: ovirt-4.3
       - '4.2':
           branch: ovirt-4.2
-      - '3.6':
-          branch: ovirt-3.6
     distro:
       - el7
       - fc28
     exclude:
       - { version: '4.2', distro: fc28 }
-      - { version: '3.6', distro: fc28 }
 
 - project:
     <<: *base-commons
