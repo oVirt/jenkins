@@ -7,11 +7,9 @@
           branch: master
       - '4.2':
           branch: model_4.2
-      - '4.1':
-          branch: model_4.1
     stage: check-patch
     distro:
-      - fc27
+      - fc28
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
