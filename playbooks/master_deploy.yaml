@@ -14,6 +14,9 @@
 # * You need to have `oc` installed and logged in to OpenShift and set to use
 #   the namespace you want to have things installed in.
 # * You need to install Ansible as instructed in the README.md file
+# * You need to have 4G persistent volumes ready for use in your OpenShift
+#   cluster or a dynamic storage provisioner that can create them. You will need
+#   one volume for each master that you create.
 #
 # Example - setting up the `example-master` instance:
 #

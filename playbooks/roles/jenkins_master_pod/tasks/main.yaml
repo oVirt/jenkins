@@ -48,6 +48,22 @@
           - kind: ServiceAccount
             name: "{{master_name}}"
 
+    - name: Create persistent volume claim
+      k8s:
+        state: present
+        definition:
+          apiVersion: "v1"
+          kind: "PersistentVolumeClaim"
+          metadata:
+            name: "{{master_name}}"
+            namespace: "{{openshift_project}}"
+          spec:
+            accessModes:
+              - "ReadWriteOnce"
+            resources:
+              requests:
+                storage: "4Gi"
+
     - name: Create deployment config
       notify:
         - Trigger deployment
@@ -68,16 +84,23 @@
                 serviceAccountName: "{{master_name}}"
                 serviceAccount: "{{master_name}}"
                 containers:
-                - image: " "
-                  name: "jenkins-master"
-                  ports:
-                  - containerPort: 8080
-                    protocol: TCP
-                  - containerPort: 50000
-                    protocol: TCP
-                  env:
-                    - name: OPENSHIFT_ENABLE_OAUTH
-                      value: "True"
+                  - image: " "
+                    name: "jenkins-master"
+                    ports:
+                      - containerPort: 8080
+                        protocol: TCP
+                      - containerPort: 50000
+                        protocol: TCP
+                    env:
+                      - name: OPENSHIFT_ENABLE_OAUTH
+                        value: "True"
+                    volumeMounts:
+                      - name: "{{master_name}}"
+                        mountPath: "/var/lib/jenkins"
+                volumes:
+                  - name: "{{master_name}}"
+                    persistentVolumeClaim:
+                      claimName: "{{master_name}}"
             replicas: 1
             strategy:
               type: Recreate
