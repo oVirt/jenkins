@@ -27,6 +27,7 @@ class Project implements Serializable {
     String change_url_title = 'View code'
     String rerun_title = 'Rebuild'
     String rerun_url
+    String org
     def notify = \
         { context, status, short_msg=null, long_msg=null, url=null -> }
     def get_queue_build_args = null
@@ -187,6 +188,7 @@ def get_github_project(
     Project project = new Project(
             clone_url: "https://github.com/$org/$repo",
             name: repo,
+            org: org,
             branch: branch,
             refspec: test_ref,
             head: checkout_head,
