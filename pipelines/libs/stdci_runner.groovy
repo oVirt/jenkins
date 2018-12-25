@@ -109,9 +109,13 @@ def get_std_ci_node_label(project, job) {
         job.runtime_reqs?.supportnestinglevel >= 2 &&
         job.runtime_reqs?.isolationlevel == 'container'
     ) {
-        // check true explicitly to avoid true-ish conditions
-        if(job.runtime_reqs?.sriovnic == true) {
-            label_conditions << 'integ-tests-container_sriov-nic'
+        if (project?.org == 'kubevirt') {
+            // check true explicitly to avoid true-ish conditions
+            if(job.runtime_reqs?.sriovnic == true) {
+                label_conditions << 'integ-tests-container_sriov-nic'
+            } else {
+                label_conditions << 'integ-tests-container_fast'
+            }
         } else {
             label_conditions << 'integ-tests-container'
         }
