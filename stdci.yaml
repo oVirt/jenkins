@@ -41,3 +41,8 @@ sub-stages:
           - automation/*.{{ substage }}.*
       runtime-requirements:
         host-os: same
+  - el7-loader-node:
+      runif:
+        file-changed:
+          - openshift/containers/el7-loader-node/*
+          - automation/verify-build-containers.*
