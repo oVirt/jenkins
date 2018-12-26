@@ -64,28 +64,36 @@
               requests:
                 storage: "4Gi"
 
-    - name: Create deployment config
-      notify:
-        - Trigger deployment
+    - name: Create deployment
       k8s:
         state: present
         definition:
-          kind: DeploymentConfig
-          apiVersion: v1
+          kind: Deployment
+          apiVersion: apps/v1
           metadata:
             name: "{{master_name}}"
             namespace: "{{openshift_project}}"
           spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                name: "{{master_name}}"
+            strategy:
+              type: Recreate
+            revisionHistoryLimit: 5
             template:
               metadata:
                 labels:
                   name: "{{master_name}}"
+                annotations:
+                  alpha.image.policy.openshift.io/resolve-names: '*'
               spec:
                 serviceAccountName: "{{master_name}}"
                 serviceAccount: "{{master_name}}"
                 containers:
-                  - image: " "
-                    name: "jenkins-master"
+                  - name: "jenkins-master"
+                    image: "{{jenkins_image}}"
+                    imagePullPolicy: Always
                     ports:
                       - containerPort: 8080
                         protocol: TCP
@@ -101,18 +109,6 @@
                   - name: "{{master_name}}"
                     persistentVolumeClaim:
                       claimName: "{{master_name}}"
-            replicas: 1
-            strategy:
-              type: Recreate
-            revisionHistoryLimit: 5
-            triggers:
-              - imageChangeParams:
-                  containerNames:
-                    - jenkins-master
-                  from:
-                    kind: ImageStreamTag
-                    name: "{{jenkins_image}}"
-                type: ImageChange
 
     - name: Create UI service
       k8s:
