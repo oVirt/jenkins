@@ -64,52 +64,6 @@
               requests:
                 storage: "4Gi"
 
-    - name: Create deployment
-      k8s:
-        state: present
-        definition:
-          kind: Deployment
-          apiVersion: apps/v1
-          metadata:
-            name: "{{master_name}}"
-            namespace: "{{openshift_project}}"
-          spec:
-            replicas: 1
-            selector:
-              matchLabels:
-                name: "{{master_name}}"
-            strategy:
-              type: Recreate
-            revisionHistoryLimit: 5
-            template:
-              metadata:
-                labels:
-                  name: "{{master_name}}"
-                annotations:
-                  alpha.image.policy.openshift.io/resolve-names: '*'
-              spec:
-                serviceAccountName: "{{master_name}}"
-                serviceAccount: "{{master_name}}"
-                containers:
-                  - name: "jenkins-master"
-                    image: "{{jenkins_image}}"
-                    imagePullPolicy: Always
-                    ports:
-                      - containerPort: 8080
-                        protocol: TCP
-                      - containerPort: 50000
-                        protocol: TCP
-                    env:
-                      - name: OPENSHIFT_ENABLE_OAUTH
-                        value: "True"
-                    volumeMounts:
-                      - name: "{{master_name}}"
-                        mountPath: "/var/lib/jenkins"
-                volumes:
-                  - name: "{{master_name}}"
-                    persistentVolumeClaim:
-                      claimName: "{{master_name}}"
-
     - name: Create UI service
       k8s:
         state: present
@@ -167,3 +121,53 @@
             tls:
               termination: edge
               insecureEdgeTerminationPolicy: Redirect
+
+    - name: Create deployment
+      k8s:
+        state: present
+        definition:
+          kind: Deployment
+          apiVersion: apps/v1
+          metadata:
+            name: "{{master_name}}"
+            namespace: "{{openshift_project}}"
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                name: "{{master_name}}"
+            strategy:
+              type: Recreate
+            revisionHistoryLimit: 5
+            template:
+              metadata:
+                labels:
+                  name: "{{master_name}}"
+                annotations:
+                  alpha.image.policy.openshift.io/resolve-names: '*'
+              spec:
+                serviceAccountName: "{{master_name}}"
+                serviceAccount: "{{master_name}}"
+                containers:
+                  - name: "jenkins-master"
+                    image: "{{jenkins_image}}"
+                    imagePullPolicy: Always
+                    ports:
+                      - containerPort: 8080
+                        protocol: TCP
+                      - containerPort: 50000
+                        protocol: TCP
+                    env:
+                      - name: OPENSHIFT_ENABLE_OAUTH
+                        value: "True"
+                      - name: JENKINS_SERVICE_NAME
+                        value: "{{master_name}}-ui"
+                      - name: JNLP_SERVICE_NAME
+                        value: "{{master_name}}-jnlp"
+                    volumeMounts:
+                      - name: "{{master_name}}"
+                        mountPath: "/var/lib/jenkins"
+                volumes:
+                  - name: "{{master_name}}"
+                    persistentVolumeClaim:
+                      claimName: "{{master_name}}"
