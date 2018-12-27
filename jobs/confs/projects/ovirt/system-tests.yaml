@@ -43,6 +43,8 @@
           chroot_distro: el7
       - master:
           chroot_distro: el7
+    exclude:
+      - {suite_type: he-basic-ansible, version: master}
     email-to: >
       didi@redhat.com,
       lveyde@redhat.com,
