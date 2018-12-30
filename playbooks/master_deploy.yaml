@@ -29,6 +29,12 @@
   gather_facts: no
   tags: build
   tasks:
+    - name: Detect OpenShift project
+      tags: always
+      set_fact:
+        openshift_project:
+          "{{ lookup('pipe', oc_bin | default('oc') + ' project -q') }}"
+
     - import_role:
         name: jenkins_master_image
       vars:
@@ -40,15 +46,11 @@
   vars:
     jenkins_imagestream_tag:
       "{{ hostvars['127.0.0.1']['jenkins_imagestream_tag'] }}"
+    openshift_project:
+      "{{ hostvars['127.0.0.1']['openshift_project'] }}"
   tasks:
-    - name: Detect OpenShift project
-      set_fact:
-        openshift_project:
-          "{{ lookup('pipe', oc_bin | default('oc') + ' project -q') }}"
-
     - import_role:
         name: jenkins_master_pod
       vars:
-        openshift_project: "{{ openshift_project }}"
         master_name: "{{ inventory_hostname }}"
         jenkins_image: "{{ jenkins_imagestream_tag }}"
