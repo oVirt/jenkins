@@ -1,0 +1,39 @@
+---
+- name: Validate role arguments
+  assert:
+    that:
+      - 'name is defined'
+      - 'namespace is defined'
+
+- name: "Create service account: {{name}}"
+  k8s:
+    state: present
+    definition:
+      kind: ServiceAccount
+      apiVersion: v1
+      metadata:
+        name: "{{name}}"
+        namespace: "{{namespace}}"
+
+- name: Set service account priviledges
+  when: privileged | default(False)
+  tags: admin
+  block:
+  - name: Get service account priviledges
+    k8s_facts:
+        api_version: security.openshift.io/v1
+        kind: SecurityContextConstraints
+        name: privileged
+    register: _scc
+
+  - name: Add service account privileges
+    when: |-
+      'system:serviceaccount:' + namespace + ':' + name not in
+      _scc.resources[0].users
+    k8s:
+      state: present
+      definition: |-
+        {{ _scc.resources[0] | combine({'users':
+          _scc.resources[0].users +
+          [ 'system:serviceaccount:' + namespace + ':' + name ]
+        })}}

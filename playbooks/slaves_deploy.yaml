@@ -1,0 +1,60 @@
+# slaves_deploy.yaml - Build slave images and create ConfigMap objects
+#                      so that those images could be used by Jenkins
+#                      masters running in the same namespace
+#
+# Usage:
+#     ansible-playbook playbooks/slaves_deploy.yaml.yaml \
+#       -i playbooks/inventories/stdci_slaves.yaml
+#
+# `stdci_slaves.yaml` is an invertory file listing the types and pod
+# configurations of the Jenkins slaves we want to configure.
+#
+# Prerequisites for running:
+# * You need to have `oc` installed and logged in to OpenShift and set to use
+#   the namespace you want to have things installed in.
+# * You need to install Ansible as instructed in the README.md file
+# * The user account you're using with OpenShift must have permissions
+#   to read and modify SecurityContextConstraints. You can optionally
+#   skip settings that require these permissions by using tags (See below)
+#
+# Using tags to partially run the playbook:
+#
+# The tasks in this playbook that require special permissions in
+# OpenShift are tagged with the `admin` tag in a way that allows using
+# Ansible`s `--tags` or `--skip-tags` to run different parts of the
+# playbook.
+#
+# For running only tasks that do not require special permissions:
+#
+#     ansible-playbook playbooks/slaves_deploy.yaml.yaml \
+#       -i playbooks/inventories/stdci_slaves.yaml --skip-tags=admin
+#
+# For running only the tasks that require special permissions:
+#
+#     ansible-playbook playbooks/slaves_deploy.yaml.yaml \
+#       -i playbooks/inventories/stdci_slaves.yaml --tags=admin
+#
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  tags: build
+  tasks:
+    - name: Detect OpenShift project
+      tags: always
+      set_fact:
+        openshift_project:
+          "{{ lookup('pipe', oc_bin | default('oc') + ' project -q') }}"
+
+    - include_role:
+        name: jenkins_slave_serviceaccount
+      tags: accounts-setup
+      vars:
+        name: "{{ item.name }}"
+        namespace: "{{openshift_project}}"
+        privileged: "{{ item.privileged }}"
+      loop:
+        - name: jenkins-slave-privileged
+          privileged: True
+        - name: jenkins-slave
+          privileged: False

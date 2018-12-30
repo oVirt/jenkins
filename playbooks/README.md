@@ -27,6 +27,7 @@ inventories/       | Contains Ansible inventory files
 roles/             | Contains Ansible roles used in the playbooks
 README.md          | You're reading it right now
 master_deploy.yaml | Deploys jenkins masters into OpenShift
+slaves_deploy.yaml | Sets up container slaves in OpenShift
 
 Installing Ansible and Python prerequisites
 -------------------------------------------
