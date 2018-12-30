@@ -58,3 +58,14 @@
           privileged: True
         - name: jenkins-slave
           privileged: False
+
+- hosts: stdci_slave_types
+  connection: local
+  gather_facts: no
+  tags: link
+  vars:
+    openshift_project:
+      "{{ hostvars['127.0.0.1']['openshift_project'] }}"
+  tasks:
+    - import_role:
+        name: jenkins_slave_config

@@ -1,0 +1,82 @@
+<org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+  <inheritFrom></inheritFrom>
+  <name>{{ podspec.metadata.generateName }}</name>
+  <namespace>{{ podspec.metadata.namespace|default(openshift_project) }}</namespace>
+  <privileged>false</privileged>
+  <capOnlyOnAlivePods>false</capOnlyOnAlivePods>
+  <alwaysPullImage>false</alwaysPullImage>
+  <instanceCap>2147483647</instanceCap>
+  <slaveConnectTimeout>{{
+    podspec.metadata.labels.jenkins_connect_timeout|default(100)
+  }}</slaveConnectTimeout>
+  <idleMinutes>{{
+    podspec.metadata.labels.jenkins_idle_minutes|default(0)
+  }}</idleMinutes>
+  <activeDeadlineSeconds>{{
+    podspec.metadata.labels.jenkins_active_deadline_seconds|default(0)
+  }}</activeDeadlineSeconds>
+  <label>{{
+    podspec.metadata.labels.jenkins_label|default("")
+  }}</label>
+  <serviceAccount>{{ podspec.spec.serviceAccount }}</serviceAccount>
+  <nodeSelector></nodeSelector>
+  {% if podspec.metadata.labels.jenkins_exclusive|default(True): %}
+    <nodeUsageMode>EXCLUSIVE</nodeUsageMode>
+  {% endif %}
+  <customWorkspaceVolumeEnabled>false</customWorkspaceVolumeEnabled>
+  <workspaceVolume class="org.csanchez.jenkins.plugins.kubernetes.volumes.workspace.EmptyDirWorkspaceVolume">
+    <memory>false</memory>
+  </workspaceVolume>
+  <volumes/>
+  <containers>
+    {% for container in podspec.spec.containers: -%}
+      <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+        <name>{{ container.name }}</name>
+        <image>{{ container.image }}</image>
+        <privileged>{{
+          'securityContext' in container
+          and 'privileged' in container.securityContext
+          and container.securityContext.privileged
+          | ternary('true', 'false')
+        }}</privileged>
+        <alwaysPullImage>{{
+          container.imagePullPolicy|default('ifNotPresent') == 'Always'
+          | ternary('true', 'false')
+        }}</alwaysPullImage>
+        <workingDir>{{
+          container.workingDir|default('/home/jenkins')
+        }}</workingDir>
+        <command></command>
+        <args></args>
+        <ttyEnabled>{{ container.tty|ternary('true', 'false') }}</ttyEnabled>
+        <resourceRequestCpu></resourceRequestCpu>
+        <resourceRequestMemory></resourceRequestMemory>
+        <resourceLimitCpu></resourceLimitCpu>
+        <resourceLimitMemory></resourceLimitMemory>
+        <envVars/>
+        <ports/>
+        <livenessProbe>
+          <execArgs></execArgs>
+          <timeoutSeconds>0</timeoutSeconds>
+          <initialDelaySeconds>0</initialDelaySeconds>
+          <failureThreshold>0</failureThreshold>
+          <periodSeconds>0</periodSeconds>
+          <successThreshold>0</successThreshold>
+        </livenessProbe>
+      </org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+    {% endfor -%}
+  </containers>
+  <envVars/>
+  <annotations/>
+  <imagePullSecrets/>
+  <nodeProperties/>
+  <yaml>{{
+    podspec
+    | combine({ 'apiVersion': 'v1', 'kind': 'Pod' })
+    | to_yaml
+    | escape
+  }}</yaml>
+  <podRetention
+  class="org.csanchez.jenkins.plugins.kubernetes.pod.retention.Never"/>
+</org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+

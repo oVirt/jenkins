@@ -1,0 +1,42 @@
+---
+- name: Validate role arguments
+  assert:
+    that:
+      - 'openshift_project is defined'
+      - 'podspec is defined'
+      - 'podspec is mapping'
+      - 'podspec.metadata is mapping'
+      - 'podspec.metadata.generateName is string'
+      - |-
+        podspec.metadata.generateName is
+        match('^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$')
+      - 'podspec.spec is mapping'
+      - 'podspec.spec.containers is sequence'
+      - 'podspec.spec.containers|length >= 1'
+      - |-
+        podspec.spec.containers
+        |selectattr('name', 'eq', 'jnlp')
+        |list
+        |length == 1
+      - 'podspec.spec.serviceAccount is string'
+
+- name: OpenShift jenkins slave configuarion
+  connection: local
+  delegate_to: 127.0.0.1
+  block:
+    - name: Create sync plugin config map
+      k8s:
+        state: present
+        definition:
+          kind: ConfigMap
+          apiVersion: v1
+          metadata:
+            name: "{{ podspec.metadata.generateName }}"
+            namespace: "{{ openshift_project }}"
+            labels:
+              role: jenkins-slave
+          data:
+            slave-pod: "{{ lookup('template', 'slave-pod-template.xml.j2') }}"
+
+
+

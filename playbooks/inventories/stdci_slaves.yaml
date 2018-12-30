@@ -1,0 +1,64 @@
+---
+all:
+  children:
+    stdci_slave_types:
+      hosts:
+        integ-test-container:
+          podspec:
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              generateName: integ-test-container
+              labels:
+                jenkins_label: integ-tests-container
+                jenkins_exclusive: True
+            spec:
+              containers:
+                - name: jnlp
+                  env:
+                    - name: JENKINS_AGENT_WORKDIR
+                      value: /home/jenkins
+                    - name: CI_RUNTIME_UNAME
+                      value: jenkins
+                    - name: STDCI_SLAVE_CONTAINER_NAME
+                      value: im_a_container
+                    - name: CONTAINER_SLOTS
+                      value: /var/lib/stdci
+                  image: docker.io/ovirtci/stdci:production
+                  command: ['/usr/sbin/init']
+                  livenessProbe:
+                    exec:
+                      command: ['systemctl', 'status', 'multi-user.target']
+                    initialDelaySeconds: 120
+                    periodSeconds: 7200
+                  resources:
+                    limits:
+                      memory: 1Gi
+                    requests:
+                      memory: 1Gi
+                  securityContext:
+                    privileged: true
+                  volumeMounts:
+                    - mountPath: /sys
+                      name: sysfs
+                    - mountPath: /var/lib/stdci
+                      name: slave-cache
+                    - mountPath: /dev/shm
+                      name: dshm
+                  workingDir: /home/jenkins
+                  tty: true
+              nodeSelector:
+                type: bare-metal
+              serviceAccount: jenkins-slave-privileged
+              volumes:
+                - hostPath:
+                    path: /sys
+                    type: Directory
+                  name: sysfs
+                - hostPath:
+                    path: /var/lib/stdci
+                    type: DirectoryOrCreate
+                  name: slave-cache
+                - emptyDir:
+                    medium: Memory
+                  name: dshm
