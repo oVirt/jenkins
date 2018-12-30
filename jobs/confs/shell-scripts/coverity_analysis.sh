@@ -44,6 +44,6 @@ tar czvf ovirt-engine-cov.tgz cov-int
 curl \
     --form project=ovirt-engine \
     --form token=YqBYeyDp2jPuC_uVz0Hdog \
-    --form email=iheim@redhat.com \
+    --form email=dfediuck@redhat.com \
     --form file=@ovirt-engine-cov.tgz \
     https://scan.coverity.com/builds?project=ovirt-engine
