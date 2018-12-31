@@ -37,4 +37,9 @@ verify_el7_loader_node() {
     "
 }
 
+verify_el7_runner_node() {
+    # Just a placeholder for now...
+    return
+}
+
 main "$@"
