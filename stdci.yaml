@@ -44,7 +44,7 @@ sub-stages:
   - el7-loader-node:
       runif:
         file-changed:
-          - openshift/containers/el7-loader-node/*
+          - container/el7-loader-node/*
           - automation/verify-build-containers.*
   - el7-runner-node:
       runif:
