@@ -1,64 +1,126 @@
 ---
 all:
+  vars:
+    podspec: &slave_podspec_base
+      apiVersion: v1
+      kind: Pod
+      spec: &slave_podspec_spec_base
+        containers:
+          - &slave_jnlp_container_base
+            name: jnlp
+            env:
+              - name: JENKINS_AGENT_WORKDIR
+                value: /home/jenkins
+              - name: CI_RUNTIME_UNAME
+                value: jenkins
+              - name: STDCI_SLAVE_CONTAINER_NAME
+                value: im_a_container
+              - name: CONTAINER_SLOTS
+                value: /var/lib/stdci
+            image: "\
+              docker.io/ovirtinfra/el7-runner-node:\
+              119292329acad2e35570a2d23495f7c09275b1ab\
+              "
+            command: ['/usr/sbin/init']
+            livenessProbe:
+              exec:
+                command: ['systemctl', 'status', 'multi-user.target']
+              initialDelaySeconds: 120
+              periodSeconds: 7200
+            resources:
+              limits:
+                memory: 16Gi
+              requests:
+                memory: 16Gi
+            securityContext:
+              privileged: true
+            volumeMounts:
+              - mountPath: /var/lib/stdci
+                name: slave-cache
+              - mountPath: /dev/shm
+                name: dshm
+            workingDir: /home/jenkins
+            tty: true
+        nodeSelector:
+          model: r430
+        serviceAccount: jenkins-slave-privileged
+        volumes:
+          - hostPath:
+              path: /var/lib/stdci
+              type: DirectoryOrCreate
+            name: slave-cache
+          - emptyDir:
+              medium: Memory
+            name: dshm
+
   children:
     stdci_slave_types:
       hosts:
+        integ-test-container_fast:
+          podspec:
+            <<: *slave_podspec_base
+            metadata:
+              generateName: integ-test-container.fast
+              labels:
+                jenkins_label: integ-tests-container_fast
+                jenkins_exclusive: True
+
         integ-test-container:
           podspec:
-            apiVersion: v1
-            kind: Pod
+            <<: *slave_podspec_base
             metadata:
-              generateName: integ-test-container
+              generateName: integ-tests-container
               labels:
                 jenkins_label: integ-tests-container
                 jenkins_exclusive: True
             spec:
+              <<: *slave_podspec_spec_base
               containers:
-                - name: jnlp
-                  env:
-                    - name: JENKINS_AGENT_WORKDIR
-                      value: /home/jenkins
-                    - name: CI_RUNTIME_UNAME
-                      value: jenkins
-                    - name: STDCI_SLAVE_CONTAINER_NAME
-                      value: im_a_container
-                    - name: CONTAINER_SLOTS
-                      value: /var/lib/stdci
-                  image: docker.io/ovirtci/stdci:production
-                  command: ['/usr/sbin/init']
-                  livenessProbe:
-                    exec:
-                      command: ['systemctl', 'status', 'multi-user.target']
-                    initialDelaySeconds: 120
-                    periodSeconds: 7200
+                - <<: *slave_jnlp_container_base
                   resources:
                     limits:
-                      memory: 1Gi
+                      memory: 32Gi
                     requests:
-                      memory: 1Gi
-                  securityContext:
-                    privileged: true
-                  volumeMounts:
-                    - mountPath: /sys
-                      name: sysfs
-                    - mountPath: /var/lib/stdci
-                      name: slave-cache
-                    - mountPath: /dev/shm
-                      name: dshm
-                  workingDir: /home/jenkins
-                  tty: true
+                      memory: 32Gi
+              nodeSelector:
+                model: r620
+
+        integ-test-container_sriov-nic:
+          podspec:
+            <<: *slave_podspec_base
+            metadata:
+              generateName: integ-test-container.sriov-nic
+              labels:
+                jenkins_label: integ-tests-container_sriov-nic
+                jenkins_exclusive: True
+            spec:
+              <<: *slave_podspec_spec_base
               nodeSelector:
                 type: bare-metal
-              serviceAccount: jenkins-slave-privileged
-              volumes:
-                - hostPath:
-                    path: /sys
-                    type: Directory
-                  name: sysfs
-                - hostPath:
-                    path: /var/lib/stdci
-                    type: DirectoryOrCreate
-                  name: slave-cache
-                - emptyDir:
-                    medium: Memory
-                  name: dshm
+                hardwareSupport: sriov-nic
+
+        jenkins-loader-node:
+          podspec:
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              generateName: jenkins-loader-node
+              labels:
+                jenkins_label: loader-container
+                jenkins_exclusive: True
+            spec:
+              containers:
+                - name: jnlp
+                  image: "\
+                    docker.io/ovirtinfra/el7-loader-node:\
+                    44fb5ecf4f19d330e7ea28c36a841f265351d16b\
+                    "
+                  tty: true
+                  resources:
+                    limits:
+                      memory: 500Mi
+                    requests:
+                      memory: 500Mi
+              nodeSelector:
+                type: vm
+              serviceAccount: jenkins-slave
