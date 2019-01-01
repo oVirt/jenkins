@@ -1,0 +1,32 @@
+[Unit]
+Description=Remount sysfs as RW
+Before=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mount -t sysfs -o remount,rw,nosuid,nodev,noexec,relatime,seclabel sysfs /sys
+
+[Install]
+WantedBy=local-fs.target
+
+
+# When running the container in Openshift "sysfs" is mounted "ro",
+# which disallow Libvirt to create networks.
+#
+# Bind mount "/sys" from the host isn't recommended, since objects under
+# "/sys/class/net", which aren't part of the container network namespace
+# are visible.
+#
+# Mount unit can't be used (hence /etc/fstab can't be used also), since
+# systemd refuses to create it if the mount point is "/sys".
+# For more info:
+# - https://github.com/systemd/systemd/blob/master/src/core/mount.c#L1581
+# - https://github.com/systemd/systemd/blob/0c17c0043383f31170b8e3c1abd491f9e03c8ec7/src/core/mount-setup.c#L121
+# - https://github.com/systemd/systemd/blob/0c17c0043383f31170b8e3c1abd491f9e03c8ec7/src/core/mount-setup.c#L61
+#
+# Using "local-fs.target" will ensure that the remount is executed before
+# any service that is "WantedBy" multi-user.target.
+#
+# "DefaultDependencies=no" is required in order to avoid ordering cycle
+# (see systemd,service(5) for more info).
