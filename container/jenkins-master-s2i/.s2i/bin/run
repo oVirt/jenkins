@@ -1,0 +1,30 @@
+#!/bin/bash
+# Custom s2i run script - this script injects out own logic to the startup of
+# the Jenkins container
+#
+source /usr/local/bin/jenkins-common.sh
+
+CONF_DIR="/opt/openshift/configuration"
+ADMIN_DIR="$CONF_DIR/users/admin_1483071441932292699"
+
+echo HELLO FROM CUSTOM RUN SCRIPT
+generate_passwd_file
+
+if
+    [[ -e "$HOME/.ssh/id_rsa" ]] \
+    && [[ -e "$HOME/.ssh/id_rsa.pub" ]] \
+    && [[ -e "${JENKINS_HOME}/configured" ]]
+then
+    echo Found an existing SSH key pair
+else
+    echo Generating admin SSH key pair
+    rm -f "$HOME/.ssh/id_rsa"{,.pub}
+    ssh-keygen -b 4096 -t rsa -N '' -C 'jenkins-admin' -f "$HOME/.ssh/id_rsa"
+    read ID_RSA_PUB < "$HOME/.ssh/id_rsa.pub"
+    export ID_RSA_PUB
+    echo Setting public key to admin user
+    DOLLAR='$' envsubst < "$ADMIN_DIR/config.xml.in" > "$ADMIN_DIR/config.xml"
+fi
+
+# Run the original s2i run script from the image
+source /usr/libexec/s2i/run
