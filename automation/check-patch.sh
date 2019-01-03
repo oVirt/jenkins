@@ -17,7 +17,6 @@ main() {
     # These are the files which are involved with the containers flow
     local containers_flow="Dockerfiles|collect_artifacts.sh|standard-stage.yaml|cleanup_slave.sh|docker_cleanup.py"
     if grep -qE "(${containers_flow})" <<< "$changed_files"; then
-        # docker is not supported in official el6
         if is_docker_test_arch; then
             test_docker_container
         fi
@@ -36,8 +35,7 @@ main() {
 }
 
 is_docker_test_arch() {
-    [[ "$(uname -m)" != "s390x" ]] &&
-        ! grep -qE '^(Red Hat|CentOS) release 6\.' /etc/system-release
+    [[ "$(uname -m)" != "s390x" ]]
 }
 
 test_job_configs() {
@@ -60,10 +58,6 @@ test_standard_ci_proxy() {
 }
 
 test_mock_genconfig() {
-    # skip this test on el6 because we're no longer using it on the
-    # Jenkins slaves
-    grep -qE '^(Red Hat|CentOS) .*release 6\.' /etc/system-release && \
-        return
     for mock_cfg in mock_configs/*.cfg; do
         mock_configs/mock_genconfig --base "$mock_cfg" --name 'foo'
     done
