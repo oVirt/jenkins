@@ -1,6 +1,5 @@
 [Unit]
 Description=Mount lago dirs
-RequiredBy=jenkins-jnlp-agent.service
 Before=jenkins-jnlp-agent.service
 Requires=mk-shared-slot.service
 After=mk-shared-slot.service
@@ -12,3 +11,4 @@ Options=bind
 
 [Install]
 WantedBy=multi-user.target
+RequiredBy=jenkins-jnlp-agent.service
