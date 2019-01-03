@@ -8,7 +8,7 @@ echo "shell-scripts/mock_install.sh"
 #     has been cloned
 #
 # distro
-#     Distribution it should create the rpms for (usually el6, el7, fcXX)
+#     Distribution it should create the rpms for (usually, elX, fcXX)
 #
 # arch
 #     Architecture to build the packages for
