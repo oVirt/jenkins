@@ -54,3 +54,4 @@
       vars:
         master_name: "{{ inventory_hostname }}"
         jenkins_image: "{{ jenkins_imagestream_tag }}"
+        return_pod_as: 'ansible_oc_pod'

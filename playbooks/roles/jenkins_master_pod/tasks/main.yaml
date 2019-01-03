@@ -143,6 +143,15 @@
               metadata:
                 labels:
                   name: "{{master_name}}"
+                  image_registry: "{{ jenkins_image|regex_replace(
+                      '^(([^/:]+)/)?([^/:]+)(:([^/:]+))?$', '\\2'
+                    ) }}"
+                  image_name: "{{ jenkins_image|regex_replace(
+                      '^(([^/:]+)/)?([^/:]+)(:([^/:]+))?$', '\\3'
+                    ) }}"
+                  image_tag: "{{ jenkins_image|regex_replace(
+                      '^(([^/:]+)/)?([^/:]+)(:([^/:]+))?$', '\\5'
+                    ) }}"
                 annotations:
                   alpha.image.policy.openshift.io/resolve-names: '*'
               spec:
@@ -171,3 +180,22 @@
                   - name: "{{master_name}}"
                     persistentVolumeClaim:
                       claimName: "{{master_name}}"
+
+    - name: "Wait for pod to get created"
+      k8s_wait:
+        kind: Pod
+        namespace: "{{openshift_project}}"
+        label_selectors:
+          - "name={{ master_name }}"
+          - "image_registry={{ jenkins_image|regex_replace(
+              '^(([^/:]+)/)?([^/:]+)(:([^/:]+))?$', '\\2'
+            ) }}"
+          - "image_name={{ jenkins_image|regex_replace(
+              '^(([^/:]+)/)?([^/:]+)(:([^/:]+))?$', '\\3'
+            ) }}"
+          - "image_tag={{ jenkins_image|regex_replace(
+              '^(([^/:]+)/)?([^/:]+)(:([^/:]+))?$', '\\5'
+            ) }}"
+        field_selectors:
+          - "status.phase=Running"
+      register: "{{ return_pod_as }}"
