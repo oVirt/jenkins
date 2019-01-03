@@ -20,7 +20,7 @@ except ImportError:
 from scripts.mirror_client import (
     inject_yum_mirrors, inject_yum_mirrors_str, mirrors_from_http,
     mirrors_from_file, mirrors_from_uri, mirrors_from_environ,
-    ovirt_tested_as_mirrors
+    ovirt_tested_as_mirrors, none_value_by_repo_name
 )
 
 
@@ -72,19 +72,19 @@ def expected_repos_cfg():
         [plain_mirrored_repo]
         name = A plain mirrored repo
         baseurl = http://mirror.com/yum/repo
-        proxy = _none_
+        proxy = None
 
         [list_mirrored_repo]
         name = A mirrored repo with an (upstream) mirror list
         failovermethod = priority
         baseurl = http://mirror.com/yum/list_repo
-        proxy = _none_
+        proxy = None
 
         [metalink_mirrored_repo]
         name = A mirrored repo with a metalink configuration
         failovermethod = priority
         baseurl = http://mirror.com/yum/metalink_repo
-        proxy = _none_
+        proxy = None
 
         [unmirrored_repo]
         name = A non-mirrored repo
@@ -194,6 +194,20 @@ def test_inject_yum_mirrors(
     )
     my_out_fil.seek(0)
     assert expected_repos_proxied_cfg == my_out_fil.read()
+
+
+@pytest.mark.parametrize('repo_name, expected', [
+    ('centos-base-el7', '_none_'),
+    ('fedora-base-fc27', '_none_'),
+    ('fedora-base-fc28', '_none_'),
+    ('fedora-base-fc29', 'None'),
+    ('fedora-base-fc30', 'None'),
+    ('no-suffix', 'None'),
+    ('bad-suffix-fc', 'None'),
+])
+def test_none_value_by_repo_name(repo_name, expected):
+    out = none_value_by_repo_name(repo_name)
+    assert out == expected
 
 
 def test_inject_yum_mirrors_str(

@@ -4,12 +4,14 @@
 from six.moves import StringIO, range
 from six.moves.configparser import RawConfigParser
 from six.moves.urllib.parse import urlparse
+from six import MAXSIZE
 import requests
 from requests.exceptions import ConnectionError, Timeout
 from os import environ
 import glob
 import logging
 import yaml
+import re
 from collections import Mapping
 from time import sleep
 import argparse
@@ -41,13 +43,15 @@ def parse_args():
     )
     parser.add_argument(
         "-p", "--proxy", action='store_true', default=False,
-        help="If not specified, proxy will be set to _none_."
+        help="If not specified, proxy will be set to None."
     )
     args = parser.parse_args()
     return args.mirrors, args.configs, args.proxy
 
 
-def inject_yum_mirrors(mirrors, yum_cfg, out_cfg, allow_proxy=False):
+def inject_yum_mirrors(
+    mirrors, yum_cfg, out_cfg, allow_proxy=False, none_value=None
+):
     """Inject yum mirrors into the given yum configuration
 
     :param Mapping mirrors:  A mapping of mirror names to URLs
@@ -55,6 +59,11 @@ def inject_yum_mirrors(mirrors, yum_cfg, out_cfg, allow_proxy=False):
     :param file out_cfg:     File object to write adjusted configuration into
     :param bool allow_proxy: Wether to allow accessing the mirrors via HTTP
                              proxies (defaults to False)
+    :param str none_value:   Specify what is the value to set to the 'proxy'
+                             configuration option for disabling proxy use. This
+                             is '_none_' for older (< fc29) distros, and 'None'
+                             for newer ones. If None (the default) is passed,
+                             the value will be decided by the repo name suffix
 
     yum_cfg can be read-only, out_cfg should not be the same as yum_cfg.
 
@@ -65,32 +74,63 @@ def inject_yum_mirrors(mirrors, yum_cfg, out_cfg, allow_proxy=False):
     for section in cfg.sections():
         if section not in mirrors:
             continue
+        if none_value is None:
+            none_value_str = none_value_by_repo_name(section)
+        else:
+            none_value_str = str(none_value)
         cfg.set(section, 'baseurl', mirrors[section])
         cfg.remove_option(section, 'mirrorlist')
         cfg.remove_option(section, 'metalink')
         if not allow_proxy:
-            cfg.set(section, 'proxy', '_none_')
+            cfg.set(section, 'proxy', none_value_str)
     cfg.write(out_cfg)
 
 
-def inject_yum_mirrors_str(mirrors, yum_cfg_str, allow_proxy=False):
+def none_value_by_repo_name(repo_name):
+    """Auto-detect the no-proxy value from the repo name
+
+    :param str repo_name: The name of the repo as appears in square brackets in
+                          the yum configuration file
+
+    :rtype: str
+    :returns: If the name of the repo ends witha distro suffix for a distro
+              older then fc29, returns '_none_', otherwise returns 'None'
+    """
+    m = re.search('-(?P<distro>fc|el)(?P<version>[0-9]+)$', repo_name)
+    if not m:
+        return 'None'
+    newer_distros = {'fc': 29}
+    if newer_distros.get(m.group('distro'), MAXSIZE) <= int(m.group('version')):
+        return 'None'
+    else:
+        return '_none_'
+
+
+def inject_yum_mirrors_str(
+    mirrors, yum_cfg_str, allow_proxy=False, none_value=None
+):
     """Inject yum mirrors into the given yum configuration string
 
     :param Mapping mirrors:  A mapping of mirror names to URLs
     :param str yum_cfg:      YUM configuration string to adjust
     :param bool allow_proxy: Wether to allow accessing the mirrors via HTTP
                              proxies (defaults to False)
-
+    :param str none_value:   Specify the 'no-proxy' value - see docstring for
+                             inject_yum_mirrors for full explanation
     :rtype: str
     :returns: A string of the adjusted configuration
     """
     out_cfg = StringIO()
-    inject_yum_mirrors(mirrors, StringIO(yum_cfg_str), out_cfg, allow_proxy)
+    inject_yum_mirrors(
+        mirrors, StringIO(yum_cfg_str), out_cfg, allow_proxy, none_value
+    )
     out_cfg.seek(0)
     return out_cfg.read()
 
 
-def inject_yum_mirrors_file(mirrors, file_name, allow_proxy=False):
+def inject_yum_mirrors_file(
+    mirrors, file_name, allow_proxy=False, none_value=None
+):
     """Inject yum mirrors into the given yum configuration file
 
     :param Mapping mirrors:  A mapping of mirror names to URLs
@@ -98,17 +138,19 @@ def inject_yum_mirrors_file(mirrors, file_name, allow_proxy=False):
     :param bool allow_proxy: Wether to allow accessing the mirrors via HTTP
                              proxies (defaults to False)
 
+    :param str none_value:   Specify the 'no-proxy' value - see docstring for
+                             inject_yum_mirrors for full explanation
     :returns: None
     """
     with open(file_name, 'r') as rf:
         with open(file_name, 'r+') as wf:
-            inject_yum_mirrors(mirrors, rf, wf, allow_proxy)
+            inject_yum_mirrors(mirrors, rf, wf, allow_proxy, none_value)
             wf.truncate()
     logger.info('Injected mirrors into: {0}'.format(file_name))
 
 
 def inject_yum_mirrors_file_by_pattern(
-    mirrors, file_pattern, allow_proxy=False
+    mirrors, file_pattern, allow_proxy=False, none_value=None
 ):
     """Inject yum mirrors into the given yum configuration file
 
@@ -116,16 +158,19 @@ def inject_yum_mirrors_file_by_pattern(
     :param str file_pattern: YUM configuration file glob pattern to adjust
     :param bool allow_proxy: Wether to allow accessing the mirrors via HTTP
                              proxies (defaults to False)
+    :param str none_value:   Specify the 'no-proxy' value - see docstring for
+                             inject_yum_mirrors for full explanation
     :returns: None
     """
     for file_name in glob.glob(file_pattern):
-        inject_yum_mirrors_file(mirrors, file_name, allow_proxy)
+        inject_yum_mirrors_file(mirrors, file_name, allow_proxy, none_value)
 
 
 def mirrors_from_http(
     url='http://mirrors.phx.ovirt.org/repos/yum/all_latest.json',
     json_varname='latest_ci_repos',
     allow_proxy=False,
+    none_value=None
 ):
     """Load mirrors from given URL
 

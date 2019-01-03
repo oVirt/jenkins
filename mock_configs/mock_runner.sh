@@ -389,6 +389,7 @@ gen_mirrors_conf() {
     echo "    config_opts['yum.conf'] = inject_yum_mirrors_str("
     echo "        mirrors_from_uri('$mirrors_url'),"
     echo "        config_opts['yum.conf'],"
+    echo "        locals().get('none_value', 'None'),"
     echo "    )"
     echo "finally:"
     echo "    sys.path.pop()"
