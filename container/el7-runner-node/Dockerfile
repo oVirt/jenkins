@@ -8,4 +8,5 @@ RUN systemctl enable \
     var-cache-mock.mount \
     var-lib-mock.mount \
     var-lib-lago.mount \
-    remount-sys.service
+    remount-sys.service \
+    && sed -Ei 's,(^mock.*$),\1jenkins,g' /etc/group
