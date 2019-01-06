@@ -169,13 +169,3 @@
           branch: '{branch}'
           files: 'specs/{subproject}/.*'
           gerrit-server: '{gerrit-server}'
-
-- job-template:
-    <<: *releng-template
-    name: 'jasperreports-server_{version}_create-rpms-el6-{arch}_merged'
-    triggers:
-      - 'on-patch-merged-with-files':
-          project: '{project}'
-          branch: '{branch}'
-          files: 'specs/{subproject}/.*'
-          gerrit-server: '{gerrit-server}'
