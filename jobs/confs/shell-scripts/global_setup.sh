@@ -346,6 +346,7 @@ docker_setup () {
     fi
     log INFO "Starting docker service"
     if ! sudo -n systemctl start docker; then
+        sudo -n systemctl status docker || :
         log ERROR "Failed to start docker service"
         return 1
     fi
