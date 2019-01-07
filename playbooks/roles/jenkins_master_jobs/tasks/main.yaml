@@ -1,0 +1,6 @@
+---
+- name: Gather plugin information
+  jenkins_ssh_cli_facts:
+    gather_subset: '!all,plugins'
+  connection: oc
+  register: plugins_list

@@ -54,4 +54,14 @@
       vars:
         master_name: "{{ inventory_hostname }}"
         jenkins_image: "{{ jenkins_imagestream_tag }}"
-        return_pod_as: 'ansible_oc_pod'
+        return_pod_as: 'jenkins_master_pod'
+
+    - name: Allow connecting to pod
+      set_fact:
+        ansible_oc_pod: "{{ jenkins_master_pod.resources[0].metadata.name }}"
+        ansible_oc_namespace: "{{ jenkins_master_pod.resources[0].metadata.namespace }}"
+
+    - name: Deploy Jenkins jobs
+      tags: jobs
+      import_role:
+        name: jenkins_master_jobs
