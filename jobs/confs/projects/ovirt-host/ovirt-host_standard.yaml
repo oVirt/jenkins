@@ -36,7 +36,10 @@
     arch:
       - ppc64le:
           node-filter: ppc64le
+      - s390x:
+          node-filter: s390x
     exclude:
+      - {                 arch: s390x,   distro: el7, }
       - {                 arch: ppc64le, distro: fc28, }
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -66,7 +69,10 @@
     arch:
       - ppc64le:
           node-filter: ppc64le
+      - s390x:
+          node-filter: s390x
     exclude:
+      - {                 arch: s390x,   distro: el7, }
       - {                 arch: ppc64le, distro: fc28, }
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
