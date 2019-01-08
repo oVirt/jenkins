@@ -1,0 +1,3 @@
+---
+jenkins_jobs_yaml_source: "{{lookup('env', 'PWD')}}/jobs/confs"
+jenkins_jobs_xml_dest: "/var/lib/jenkins/jobs"

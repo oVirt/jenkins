@@ -1,0 +1,10 @@
+- name: Reload jenkins configuration
+  command:
+    argv: [
+      'ssh',
+      '-o', 'StrictHostKeyChecking=no',
+      '-o', 'UserKnownHostsFile=/dev/null',
+      'admin@localhost', '-p', '2222',
+      'reload-configuration'
+    ]
+  connection: oc

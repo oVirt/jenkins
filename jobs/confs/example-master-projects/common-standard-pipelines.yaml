@@ -1,0 +1,5 @@
+- project:
+    name: standard-pipelines
+    jobs:
+      - standard-manual-runner
+      - standard-webhook-trigger

@@ -2,3 +2,6 @@ ansible
 pytest
 sh
 openshift
+jenkins-job-builder
+pyxdg
+lxml

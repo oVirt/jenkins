@@ -1,6 +1,40 @@
 ---
+- name: Validate role arguments
+  assert:
+    that:
+      - 'master_name is defined'
+
 - name: Gather plugin information
   jenkins_ssh_cli_facts:
     gather_subset: '!all,plugins'
   connection: oc
   register: plugins_list
+
+- name: Get jobs xml
+  set_fact:
+    jobs_list: "{{ query(
+      'jjb_jobs_xml',
+      master_name + '-projects:yaml',
+      chdir=jenkins_jobs_yaml_source,
+      recursive=True,
+      allow_empty_variables=True,
+      plugin_info=plugins_list.jenkins_facts.jenkins_plugins
+    ) }}"
+
+- name: Create job directories
+  file:
+    state: directory
+    path: "{{ jenkins_jobs_xml_dest + '/' + item }}"
+  connection: oc
+  loop: "{{ jobs_list | list }}"
+
+- name: Upload job XML
+  template:
+    src: job.xml.j2
+    dest: "{{
+      jenkins_jobs_xml_dest + '/' + item + '/config.xml'
+    }}"
+  connection: oc
+  loop: "{{ jobs_list | list }}"
+  notify:
+    - Reload jenkins configuration
