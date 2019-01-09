@@ -314,7 +314,7 @@ extra_packages() {
         if can_sudo dnf; then
             package_list+=(
                 firewalld haveged libvirt qemu-kvm python3-six
-                nosync libselinux-utils kmod
+                nosync libselinux-utils kmod yum
             )
         fi
     else
