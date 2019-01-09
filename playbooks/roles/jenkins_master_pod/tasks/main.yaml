@@ -199,3 +199,4 @@
         field_selectors:
           - "status.phase=Running"
       register: "{{ return_pod_as }}"
+      tags: always
