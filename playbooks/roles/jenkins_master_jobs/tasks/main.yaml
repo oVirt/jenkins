@@ -21,6 +21,13 @@
       plugin_info=plugins_list.jenkins_facts.jenkins_plugins
     ) }}"
 
+- name: Read jobs cache file
+  slurp:
+    src: "{{ jenkins_jobs_cache_dest }}"
+  register: slurp_jobs_cache
+  connection: oc
+  failed_when: False
+
 - name: Create job directories
   file:
     state: directory
@@ -29,6 +36,14 @@
   loop: "{{ jobs_list | list }}"
 
 - name: Upload job XML
+  vars:
+    # Need to base64-decode the job cache content because the `slurp` module
+    # encodes it in transit
+    jobs_cache: "{{
+      slurp_jobs_cache.content|b64decode|from_yaml
+      if 'content' in slurp_jobs_cache
+      else []
+    }}"
   template:
     src: job.xml.j2
     dest: "{{
@@ -36,5 +51,14 @@
     }}"
   connection: oc
   loop: "{{ jobs_list | list }}"
+  when: |-
+    item not in jobs_cache
+    or jobs_list[item]|hash('sha1') != jobs_cache[item]
   notify:
     - Reload jenkins configuration
+
+- name: Upload job cache
+  template:
+    src: jobs_cache.yaml.j2
+    dest: "{{ jenkins_jobs_cache_dest }}"
+  connection: oc

@@ -1,3 +1,4 @@
 ---
 jenkins_jobs_yaml_source: "{{lookup('env', 'PWD')}}/jobs/confs"
 jenkins_jobs_xml_dest: "/var/lib/jenkins/jobs"
+jenkins_jobs_cache_dest: "/var/lib/jenkins/_jobs_cache.yaml"

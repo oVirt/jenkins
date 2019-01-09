@@ -1,0 +1,4 @@
+---
+{% for job, xml in jobs_list|dictsort -%}
+{{ job }}: {{ xml|hash('sha1') }}
+{% endfor %}
