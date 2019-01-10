@@ -193,7 +193,6 @@
     properties:
       - build-discarder:
           days-to-keep: 14
-          artifact-num-to-keep: 60
       - inject:
           properties-content: |
             GERRIT_TRIGGER_CI_VOTE_LABEL=''
@@ -242,7 +241,6 @@
     properties:
       - build-discarder:
           days-to-keep: 14
-          artifact-num-to-keep: 60
       - inject:
           properties-content: |
             GERRIT_TRIGGER_CI_VOTE_LABEL=''
