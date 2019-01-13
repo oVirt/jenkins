@@ -1,0 +1,11 @@
+---
+- name: Reload Jenkins CASC
+  command:
+    argv: [
+      'ssh',
+      '-o', 'StrictHostKeyChecking=no',
+      '-o', 'UserKnownHostsFile=/dev/null',
+      'admin@localhost', '-p', '2222',
+      'reload-jcasc-configuration'
+    ]
+  connection: oc

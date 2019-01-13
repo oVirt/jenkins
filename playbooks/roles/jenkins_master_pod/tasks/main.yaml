@@ -173,6 +173,10 @@
                         value: "{{master_name}}-ui"
                       - name: JNLP_SERVICE_NAME
                         value: "{{master_name}}-jnlp"
+                      - name: CASC_JENKINS_CONFIG
+                        value: "/var/lib/jenkins/casc_configs"
+                      - name: OVERRIDE_PV_PLUGINS_WITH_IMAGE_PLUGINS
+                        value: "True"
                     volumeMounts:
                       - name: "{{master_name}}"
                         mountPath: "/var/lib/jenkins"

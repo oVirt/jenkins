@@ -62,6 +62,13 @@
         ansible_oc_namespace: "{{ jenkins_master_pod.resources[0].metadata.namespace }}"
       tags: always
 
+    - name: Deploy Jenkins Configuration
+      tags: config
+      import_role:
+        name: jenkins_master_config
+      vars:
+        master_name: "{{ inventory_hostname }}"
+
     - name: Deploy Jenkins jobs
       tags: jobs
       import_role:

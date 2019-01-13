@@ -1,0 +1,35 @@
+---
+jenkins:
+  globalNodeProperties:
+  - envVars:
+      env:
+      - key: "CACHED_DOCKER_REPOS"
+        value: >-
+          centos fedora kubevirt/cdi-controller kubevirt/cdi-controller
+          kubevirt/cdi-importer kubevirt/cdi-importer kubevirt/kubevirt-operator
+          kubevirt/kubevirt-operator kubevirt/virt-launcher
+          kubevirt/virt-launcher kubevirt/builder-cache kubevirt/builder-cache
+          kubevirt/cdi-apiserver kubevirt/cdi-apiserver kubevirt/cdi-uploadproxy
+          kubevirt/cdi-uploadproxy kubevirt/cirros-registry-disk-demo
+          kubevirt/cirros-registry-disk-demo kubevirt/disks-images-provider
+          kubevirt/example-hook-sidecar kubevirt/haproxy
+          kubevirt/iscsi-demo-target-tgtd kubevirt/iscsi-demo-target-tgtd
+          kubevirt/libvirt kubevirt/libvirt kubevirt/libvirt-kubevirt
+          kubevirt/libvirt-kubevirt kubevirt/subresource-access-test
+          kubevirt/subresource-access-test kubevirt/virt-api kubevirt/virt-api
+          kubevirt/virt-controller kubevirt/virt-controller
+          kubevirt/virt-handler kubevirt/virt-handler kubevirt/vm-killer
+          kubevirt/vm-killer kubevirt/winrmcli kubevirt/winrmcli
+          kubevirtci/gocli kubevirtci/gocli kubevirtci/os-3.10.0
+      - key: "CI_FILTERED_SECRETS"
+        value: "${WORKSPACE}/ci_secrets.yaml"
+      - key: "CI_MIRRORS_URL"
+        value: "http://mirrors.phx.ovirt.org/repos/yum/all_latest.json"
+      - key: "DOCKER_REGISTRY"
+        value: "docker.io"
+      - key: "GERRIT_WHITELIST_REPO"
+        value: "https://gerrit.ovirt.org/jenkins-whitelist"
+      - key: "INTERMEDIATE_CONTAINER_IMAGES_REPO"
+        value: "docker.io/ovirtinfra/"
+      - key: "JJB_PROJECTS_FOLDER"
+        value: "{{ master_name }}-projects"

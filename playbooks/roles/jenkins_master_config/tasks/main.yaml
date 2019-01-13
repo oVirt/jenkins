@@ -1,0 +1,20 @@
+---
+- name: Validate role arguments
+  assert:
+    that:
+      - 'master_name is defined'
+
+- name: Create CASC directory
+  file:
+    state: directory
+    path: "{{ jenkins_casc_dest }}"
+  connection: oc
+
+- name: Upload CASC YAML
+  template:
+    src: "{{ item }}"
+    dest: "{{ jenkins_casc_dest + '/' + (item|basename|splitext)[0] }}"
+  connection: oc
+  loop: "{{ query('fileglob', role_path + '/templates/*.yaml.j2') }}"
+  notify:
+    - Reload Jenkins CASC
