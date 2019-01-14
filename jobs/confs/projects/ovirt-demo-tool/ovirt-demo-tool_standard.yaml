@@ -6,6 +6,8 @@
     version:
       - '4.2':
           branch: '4.2'
+      - '4.3':
+          branch: '4.3'
       - master:
           branch: master
     distro: el7
