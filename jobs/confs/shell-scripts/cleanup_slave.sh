@@ -57,7 +57,7 @@ cleanup_var() {
     local res=0
     local dir
     echo "Cleaning up /var/tmp"
-    for dir in /var/tmp/*; do
+    for dir in /var/tmp/* /var/lib/ovirt-*; do
         safe_remove "$dir" \
         || {
             echo "    Error cleaning up $dir, skipping"
