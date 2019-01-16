@@ -54,7 +54,7 @@ def run_std_ci_jobs(project, jobs, mirrors=null, extra_sources=null) {
         }
         parallel branches
     } else {
-        node() {
+        node('loader-container') {
             report.no_jobs()
         }
     }

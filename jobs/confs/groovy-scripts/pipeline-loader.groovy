@@ -4,12 +4,10 @@
 def pipeline
 
 timestamps { ansiColor('xterm') {
-    node() {
+    node('loader-container') {
         stage('loading code') {
             dir("exported-artifacts") { deleteDir() }
             checkout_jenkins_repo()
-            run_jjb_script('cleanup_slave.sh')
-            run_jjb_script('global_setup.sh')
             dir('jenkins') {
                 def pipeline_file = get_pipeline_for_job(env.JOB_NAME)
                 if(pipeline_file == null) {
@@ -27,7 +25,6 @@ timestamps { ansiColor('xterm') {
         } else {
             pipeline.main()
         }
-        run_jjb_script('global_setup_apply.sh')
     }
     if(
         pipeline.metaClass.respondsTo(pipeline, 'loader_main') &&

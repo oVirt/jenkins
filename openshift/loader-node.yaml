@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: jenkins-loader-node
+  namespace: jenkins-ovirt-org
+  labels:
+    podType: "loader-node"
+spec:
+  containers:
+    - name: jnlp
+      image: ${IMAGE}
+      tty: true
+      resources:
+        limits:
+          memory: 500Mi
+        requests:
+          memory: 500Mi
+  nodeSelector:
+    type: vm
+    exp: true
+  serviceAccount: jenkins-slave
+
+parameters:
+  - name: IMAGE
+    description: Container image for the loader node
+    value: >-
+      docker.io/ovirtinfra/
+      el7-loader-node:44fb5ecf4f19d330e7ea28c36a841f265351d16b

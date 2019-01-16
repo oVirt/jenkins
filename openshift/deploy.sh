@@ -52,7 +52,8 @@ main() {
 
     local template="${0%/*}/jenkins-kubernetes-plugin-template.yaml"
     local manifest="$(mktemp)"
-    local pod_template="${0%/*}/pod-slave.yaml"
+    local runner_pod_template="${0%/*}/pod-slave.yaml"
+    local loader_pod_tempalte="${0%/*}/loader-node.yaml"
     local pod_manifest="$(mktemp)"
     local namespace="$1"
     local jenkins_slave_svc_acc="$2"
@@ -76,8 +77,9 @@ main() {
         -n "$namespace" \
         || die "Failed to add SCC to the jenkins slave svc account"
 
-    _oc_process "$pod_template" "$pod_manifest" || exit 1
-    echo "Pod manifest can be found in $pod_manifest"
+    _oc_process "$runner_pod_template" "$pod_manifest" || exit 1
+    _oc_process "$loader_pod_tempalte" "$pod_manifest" || exit 1
+    echo "Pod manifests can be found in $pod_manifest"
 }
 
 
