@@ -107,9 +107,10 @@
           apiVersion: route.openshift.io/v1
           kind: Route
           metadata:
-            creationTimestamp: null
             name: "{{master_name}}"
             namespace: "{{openshift_project}}"
+            annotations:
+              "kubernetes.io/tls-acme": "true"
           spec:
             host: ""
             port:
@@ -117,7 +118,6 @@
             to:
               kind: Service
               name: "{{master_name}}-ui"
-              weight: null
             tls:
               termination: edge
               insecureEdgeTerminationPolicy: Redirect
