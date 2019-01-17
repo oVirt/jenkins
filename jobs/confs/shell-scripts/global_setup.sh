@@ -333,7 +333,11 @@ extra_packages() {
 docker_setup () {
     #Install docker engine and start the service
     log INFO "Trying to setup Docker"
-    verify_packages docker || return 1
+
+    if ! [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]]; then
+        verify_packages docker || return 1
+    fi
+
     log INFO "Trying to setup Docker python API"
     if ! verify_packages python2-docker python3-docker; then
         # We failed to install the new API version, try to install the old one
