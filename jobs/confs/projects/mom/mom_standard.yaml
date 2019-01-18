@@ -7,8 +7,6 @@
           branch: master
       - '4.2':
           branch: master
-      - '4.1':
-          branch: master
     stage:
       - check-patch
     distro:
@@ -16,7 +14,6 @@
       - fc28
     exclude:
       - { version: '4.2', distro: fc28 }
-      - { version: '4.1', distro: fc28 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -41,7 +38,6 @@
     name: mom_build-artifacts-manual-any
     version:
       - '4.2'
-      - '4.1'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
