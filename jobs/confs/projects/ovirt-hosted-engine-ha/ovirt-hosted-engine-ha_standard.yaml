@@ -7,8 +7,6 @@
           branch: master
       - '4.2':
           branch: v2.2.z
-      - '4.1':
-          branch: v2.1.z
     stage:
       - check-patch
       - check-merged
@@ -17,7 +15,6 @@
       - fc28
     exclude:
       - { version: '4.2', distro: fc28 }
-      - { version: '4.1', distro: fc28 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -41,7 +38,6 @@
     <<: *base-params
     name: ovirt-hosted-engine-ha_build-artifacts-manual-any
     version:
-      - '4.1'
       - '4.2'
       - 'master'
     jobs:
