@@ -4,8 +4,6 @@
     trigger: 'on-change'
     node-filter: integ-tests
     version:
-      - '4.1':
-          branch: '4.1'
       - '4.2':
           branch: '4.2'
       - master:
