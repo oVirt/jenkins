@@ -7,8 +7,6 @@
           branch: master
       - '4.2':
           branch: model_4.2
-      - '4.1':
-          branch: model_4.1
     stage: build-artifacts
     distro:
       - fc28
