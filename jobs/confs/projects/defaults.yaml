@@ -30,6 +30,9 @@
     stdci-scm-url: https://gerrit.ovirt.org/jenkins
     stdci-scm-refspec: refs/heads/master
     clone-dir-name: ''
+    trigger-schedule: '@midnight'
+    # Due to a bug in JJB, this value must be an empty string to indicate false
+    abort-on-update: ''
 
 - defaults:
     description: |
@@ -50,6 +53,3 @@
     wrappers:
       - default-wrapper
       - workspace-cleanup
-    trigger-schedule: '@midnight'
-    # Due to a bug in JJB, this value must be an empty string to indicate false
-    abort-on-update: ''
