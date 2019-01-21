@@ -143,6 +143,7 @@ try_proxy() {
         timeout 5 \
         curl \
             --silent \
+            --fail \
             "$repo_url" \
     &>/dev/null
     return $?
