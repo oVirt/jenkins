@@ -1,0 +1,35 @@
+##############################################################################
+####   Defaults
+###############################################################################
+- defaults:
+    description: |
+      This job is automatically updated by jenkins job builder, any manual
+      change will be lost in the next update. If you want to make permanent
+      changes, check out the <a href="http://gerrit.ovirt.org/gitweb?p=jenkins.git;a=tree;h=refs/heads/master;hb=refs/heads/master">
+      jenkins</a> repo.
+    name: global
+    project-type: freestyle
+    concurrent: false
+    # to enable the throttle plugin, you also need to set concurrent: true
+    scmtype: gerrit
+    git-server: 'gerrit.ovirt.org'
+    git-proto: 'git'
+    gerrit-server: 'gerrit.ovirt.org'
+    gerrit-subpath: ''
+    email-to: 'infra@ovirt.org'
+    git-config-name: 'jenkins CI'
+    git-config-email: 'jenkins@ovirt.org'
+    system-tests-chroot-distro: el7
+    arch: x86_64
+    distro: el7
+    properties:
+      - default-properties
+    wrappers:
+      - default-wrapper
+    default-scm-url-prefix: https://gerrit.ovirt.org
+    stdci-scm-url: https://gerrit.ovirt.org/jenkins
+    stdci-scm-refspec: refs/heads/master
+    clone-dir-name: ''
+    trigger-schedule: '@midnight'
+    # Due to a bug in JJB, this value must be an empty string to indicate false
+    abort-on-update: ''
