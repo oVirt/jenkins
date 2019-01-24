@@ -33,3 +33,4 @@
     trigger-schedule: '@midnight'
     # Due to a bug in JJB, this value must be an empty string to indicate false
     abort-on-update: ''
+    loader-node-label: 'loader-container'
