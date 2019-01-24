@@ -4,7 +4,7 @@
 def pipeline
 
 timestamps { ansiColor('xterm') {
-    node('loader-container') {
+    node(env?.LOADER_NODE_LABEL) {
         stage('loading code') {
             dir("exported-artifacts") { deleteDir() }
             checkout_jenkins_repo()

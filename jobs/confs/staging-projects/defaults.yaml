@@ -31,3 +31,4 @@
     clone-dir-name: ''
     trigger-schedule: '@daily'
     abort-on-update: ''
+    loader-node-label: 'loader-container'

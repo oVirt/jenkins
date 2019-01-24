@@ -93,7 +93,7 @@ def generate_summary(
         archiveArtifacts artifacts: summary_file
     } catch(MissingContextVariableException) {
         if(allocate_node) {
-            node('loader-container') {
+            node(env?.LOADER_NODE_LABEL) {
                 writeFile([file: summary_file, text: summary])
                 archiveArtifacts artifacts: summary_file
             }
