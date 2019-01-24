@@ -3,7 +3,7 @@
 //
 def pipeline
 
-timestamps { ansiColor('xterm') {
+timestamps {
     node(env?.LOADER_NODE_LABEL) {
         stage('loading code') {
             dir("exported-artifacts") { deleteDir() }
@@ -39,7 +39,7 @@ timestamps { ansiColor('xterm') {
     ) {
         pipeline.main()
     }
-}}
+}
 
 def load_code(String code_file, def load_as=null) {
     def code = load(code_file)
