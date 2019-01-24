@@ -184,6 +184,8 @@
                   - name: "{{master_name}}"
                     persistentVolumeClaim:
                       claimName: "{{master_name}}"
+                nodeSelector:
+                  type: "vm"
 
     - name: "Wait for pod to get created"
       k8s_wait:
