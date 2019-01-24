@@ -33,7 +33,7 @@ verify_el7_loader_node() {
     docker run -i --rm "${image}:${tag}" bash -c "
         git clone $jenkins_repo
         cd jenkins
-        ./scripts/usrc.py get
+        python -m pytest -vv test
     "
 }
 
