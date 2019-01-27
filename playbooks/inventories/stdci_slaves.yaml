@@ -93,8 +93,18 @@ all:
               labels:
                 jenkins_label: integ-tests-container_sriov-nic
                 jenkins_exclusive: True
+                podType: "sriov-nic"
             spec:
               <<: *slave_podspec_spec_base
+              affinity:
+                podAntiAffinity:
+                  requiredDuringSchedulingIgnoredDuringExecution:
+                    - labelSelector:
+                        matchExpressions:
+                          - key: podType
+                            operator: In
+                            values: ["sriov-nic"]
+                  topologyKey: hardwareSupport
               nodeSelector:
                 type: bare-metal
                 hardwareSupport: sriov-nic
