@@ -19,7 +19,7 @@ all:
                 value: /var/lib/stdci
             image: "\
               docker.io/ovirtinfra/el7-runner-node:\
-              119292329acad2e35570a2d23495f7c09275b1ab\
+              ba3f37f9762b1a2e75bffa1654eba55b68cf7d1b\
               "
             command: ['/usr/sbin/init']
             livenessProbe:
