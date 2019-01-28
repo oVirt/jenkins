@@ -21,6 +21,7 @@
       - ovirt-ansible-shutdown-env
       - ovirt-ansible-vm-infra
       - ovirt-ansible-v2v-conversion-host
+      - ovirt-engine-sdk-go
       - ovirt-openshift-extensions
       - ovirt-web-ui
     jobs:
