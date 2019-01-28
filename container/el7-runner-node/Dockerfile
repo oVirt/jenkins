@@ -1,4 +1,4 @@
-FROM quay.io/pod_utils/jenkins-caching-virtualization-agent:1.0.5
+FROM quay.io/pod_utils/jenkins-caching-virtualization-agent:1.0.6
 
 RUN yum install -y mock
 COPY systemd/* /etc/systemd/system/
