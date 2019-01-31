@@ -177,6 +177,15 @@
                         value: "/var/lib/jenkins/casc_configs"
                       - name: OVERRIDE_PV_PLUGINS_WITH_IMAGE_PLUGINS
                         value: "True"
+                      - name: JENKINS_JAVA_OVERRIDES
+                        value: "
+                          -Dhudson.model.Run.ArtifactList.treeCutoff=9999 \
+                          -Dhudson.model.DirectoryBrowserSupport.CSP=\
+                            sandbox\\ allow-scripts;\\ \
+                            default-src\\ 'self'\\ https://cdnjs.cloudflare.com;\\ \
+                            img-src\\ 'self';\\ \
+                            style-src\\ 'self'\\ https://cdnjs.cloudflare.com;\
+                        "
                     volumeMounts:
                       - name: "{{master_name}}"
                         mountPath: "/var/lib/jenkins"
