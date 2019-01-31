@@ -23,6 +23,18 @@
 #     ansible-playbook playbooks/master_deploy.yaml \
 #       -i playbooks/inventories/example_master.yaml -v
 #
+# Configuration variables:
+#
+# The following variables can be used to tweak the deployment. They can be set
+# with '-e' on the command line or in the inventory file. Sometimes the default
+# values for these varaibles need to be updated as part of maintaining the
+# system.
+#
+# - jenkins_image: The name and tag of the container image to be used for
+#                  Jenkins masters. The default value in the
+#                  `defaults/main.yaml` file of the `jenkins_master_pod` role
+#                  should be updated to update the image for all Jenkins masters
+#
 ---
 - hosts: 127.0.0.1
   connection: local
@@ -44,8 +56,6 @@
   gather_facts: no
   tags: deploy
   vars:
-    jenkins_imagestream_tag:
-      "{{ hostvars['127.0.0.1']['jenkins_imagestream_tag'] }}"
     openshift_project:
       "{{ hostvars['127.0.0.1']['openshift_project'] }}"
   tasks:
@@ -53,7 +63,6 @@
         name: jenkins_master_pod
       vars:
         master_name: "{{ inventory_hostname }}"
-        jenkins_image: "{{ jenkins_imagestream_tag }}"
         return_pod_as: 'jenkins_master_pod'
 
     - name: Allow connecting to pod

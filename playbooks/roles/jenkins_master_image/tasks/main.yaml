@@ -8,7 +8,6 @@
         source_image: "{{jenkins_base_image}}"
         dest_imagestream: "{{jenkins_base_imagestream}}"
       register: base_image
-      tags: always
 
     - debug:
         msg: "{{ lookup('tree_checksum', jenkins_image_source) }}"
@@ -18,7 +17,6 @@
         jenkins_image_version: "{{ '%.7s-%.7s'|format(
           base_image.container_sha,
           lookup('tree_checksum', jenkins_image_source)) }}"
-      tags: always
 
     - name: Build master image
       openshift_build:
@@ -34,4 +32,3 @@
       set_fact:
         "{{ return_image_as }}":
           "{{ jenkins_imagestream }}:{{ jenkins_image_version }}"
-      tags: always
