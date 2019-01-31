@@ -99,6 +99,7 @@
       - ovirt-node-ng-image
       - ovirt-provider-ovn
       - ovirt-system-tests
+      - py2exe-py2.7
       - releng-tools
       - repoman
       - vdsm
