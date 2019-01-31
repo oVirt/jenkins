@@ -1,0 +1,10 @@
+- project:
+    name: kubevirt-standard-pipelines
+    github-auth-id: stdci-production-gh-notify
+    abort-on-update: true
+    org: kubevirt-ci-stage
+    project:
+      - kubevirt
+    jobs:
+      - '{org}_{project}_standard-gh-jobs'
+

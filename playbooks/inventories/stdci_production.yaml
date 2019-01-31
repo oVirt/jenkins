@@ -1,0 +1,6 @@
+---
+all:
+  children:
+    jenkins_masters:
+      hosts:
+        kubevirt-master:
