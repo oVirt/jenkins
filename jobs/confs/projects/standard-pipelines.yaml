@@ -102,6 +102,7 @@
       - py2exe-py2.7
       - releng-tools
       - repoman
+      - vcredist-x86
       - vdsm
     jobs:
       - '{project}_standard-gerrit-jobs'
