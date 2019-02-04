@@ -98,6 +98,7 @@
       - ovirt-node-ng
       - ovirt-node-ng-image
       - ovirt-provider-ovn
+      - ovirt-release
       - ovirt-system-tests
       - py2exe-py2.7
       - releng-tools

@@ -1,7 +1,6 @@
 - project: &base-commons
     name: 'ovirt-release-commons'
     project: ovirt-release
-    trigger: on-change
     version:
       - master:
           branch: master
@@ -12,41 +11,15 @@
     distro:
       - el7
       - fc28
+      - fc29
+      - fcraw
     exclude:
+      - { version: '4.3', distro: fcraw }
+      - { version: '4.3', distro: fc29 }
+      - { version: '4.2', distro: fcraw }
+      - { version: '4.2', distro: fc29 }
       - { version: '4.2', distro: fc28 }
 
-- project:
-    <<: *base-commons
-    name: ovirt-release
-    project: ovirt-release
-    stage: check-patch
-    arch: x86_64
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
-
-- project:
-    <<: *base-commons
-    name: ovirt-release-altarch
-    project: ovirt-release
-    version:
-      - master:
-          branch: master
-      - '4.3':
-          branch: ovirt-4.3
-      - '4.2':
-          branch: ovirt-4.2
-    distro:
-      - el7
-      - fc28
-    stage: check-patch
-    arch:
-      - ppc64le:
-          node-filter: ppc64le
-    exclude:
-      - {                 arch: ppc64le, distro: fc28, }
-      - {                 arch: ppc64le, distro: fc28, }
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
 
 - project:
     <<: *base-commons
