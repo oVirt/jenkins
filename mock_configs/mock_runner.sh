@@ -645,7 +645,7 @@ run_shell() {
         --root="$mock_chroot" \\
         --resultdir="$LOGS_DIR/shell" \\
         "${mock_enable_network[@]}" \\
-        --shell
+        --shell /bin/bash
 EOC
     $MOCK \
         --old-chroot \
@@ -653,7 +653,7 @@ EOC
         --root="$mock_chroot" \
         --resultdir="$LOGS_DIR/shell" \
         "${mock_enable_network[@]}" \
-        --shell
+        --shell /bin/bash
     res=$?
 
     if [[ "$cleanup" == "true" ]]; then
@@ -718,28 +718,28 @@ run_script_in_mock() {
         else
             script_path="./$script"
         fi
-        (
-            echo "========== Running the shellscript $script"
-            start="\$(date +%s)"
-            if [[ "$TIMEOUT_DURATION" ]]; then
-                # _STDCI_TIMEOUT_CMD should be configured in mock_config
-                _STDCI_TIMEOUT_CMD="\${_STDCI_TIMEOUT_CMD:-timeout --kill-after 5m}"
-                echo "Timeout set to script: $TIMEOUT_DURATION"
-                \${_STDCI_TIMEOUT_CMD} "$TIMEOUT_DURATION" "\$script_path" < /dev/null
-            else
-                "\$script_path" < /dev/null
-            fi
-            res=\$?
-            end="\$(date +%s)"
-            if [[ \$res -eq 124 && "$TIMEOUT_DURATION" ]]; then
-                echo "Timed out after \$((end - start)) seconds"
-            else
-                echo "Took \$((end - start)) seconds"
-            fi
-            echo "==================================="
-            exit \$res
-        ) 2>&1 | tee \$logdir/stdout_stderr.log
-        res=\${PIPESTATUS[0]}
+
+        exec 98>&1 99>&2 &> >(tee \$logdir/stdout_stderr.log)
+        echo "========== Running the shellscript $script"
+        start="\$(date +%s)"
+        if [[ "$TIMEOUT_DURATION" ]]; then
+            # _STDCI_TIMEOUT_CMD should be configured in mock_config
+            _STDCI_TIMEOUT_CMD="\${_STDCI_TIMEOUT_CMD:-timeout --kill-after 5m}"
+            echo "Timeout set to script: $TIMEOUT_DURATION"
+            \${_STDCI_TIMEOUT_CMD} "$TIMEOUT_DURATION" "\$script_path" < /dev/null
+        else
+            "\$script_path" < /dev/null
+        fi
+        res=\$?
+        end="\$(date +%s)"
+        if [[ \$res -eq 124 && "$TIMEOUT_DURATION" ]]; then
+            echo "Timed out after \$((end - start)) seconds"
+        else
+            echo "Took \$((end - start)) seconds"
+        fi
+        echo "==================================="
+        exec 1>&98 2>&99
+
         mv "\$logdir" "$logs_xfr_dir"
         if [[ "\$(find . -uid 0 -print -quit)" != '' ]]; then
             chown -R "$UID:\$runner_GID" .
@@ -754,7 +754,7 @@ EOF
         --no-clean \
         --resultdir="$logs_dir" \
         "${mock_enable_network[@]}" \
-        --shell <<< "$mock_shell_cmd"
+        --shell /bin/bash <<< "$mock_shell_cmd"
 EOF
     $MOCK \
         --old-chroot \
@@ -763,7 +763,7 @@ EOF
         --no-clean \
         --resultdir="$logs_dir" \
         "${mock_enable_network[@]}" \
-        --shell <<< "$mock_shell_cmd"
+        --shell /bin/bash <<< "$mock_shell_cmd"
     local res=$?
     mv "$logs_xfr_dir"/* "$logs_dir" || :
     rmdir "$logs_xfr_dir"
