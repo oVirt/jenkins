@@ -1,3 +1,4 @@
+---
 - project:
     name: kubevirt-standard-pipelines
     github-auth-id: stdci-production-gh-notify
@@ -5,6 +6,11 @@
     org: kubevirt-ci-stage
     project:
       - kubevirt
+      - kubevirt-ansible
+      - kubernetes-device-plugins
+      - containerized-data-importer
+      - node-recovery
+      - ovs-cni
+      - common-templates
     jobs:
       - '{org}_{project}_standard-gh-jobs'
-
