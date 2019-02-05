@@ -101,6 +101,7 @@
       - ovirt-release
       - ovirt-system-tests
       - py2exe-py2.7
+      - python-windows
       - releng-tools
       - repoman
       - vcredist-x86
