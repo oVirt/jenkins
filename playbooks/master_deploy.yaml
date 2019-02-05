@@ -39,7 +39,6 @@
 - hosts: 127.0.0.1
   connection: local
   gather_facts: no
-  tags: build
   tasks:
     - name: Detect OpenShift project
       tags: always
@@ -51,6 +50,7 @@
         name: jenkins_master_image
       vars:
         return_image_as: 'jenkins_imagestream_tag'
+      tags: build
 
 - hosts: jenkins_masters
   gather_facts: no
