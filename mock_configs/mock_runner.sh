@@ -19,9 +19,19 @@ DEFAULT_MOCK_ENV=el7
 # inheritance
 readonly AUTH_ENV_VARS=(KRB5CCNAME SSH_AUTH_SOCK)
 # Hardwired env vars we always copy into the mock env
-readonly HW_ENV_VARS=(GIT_COMMITTER_{NAME,EMAIL} "${AUTH_ENV_VARS[@]}")
+readonly HW_ENV_VARS=(
+    GIT_COMMITTER_{NAME,EMAIL} "${AUTH_ENV_VARS[@]}" SSH_AUTH_USER
+)
 # Directories and files we always mount into the mock env
 readonly HW_MNTS=(/etc/krb5.conf{,.d} /var/lib/sss/pubconf/krb5.include.d)
+# Directories and files we mount from the CI source repo into the chroot
+# (specified as 'src:dst' pairs where src is relative to the repo and
+# dst is in the chroot
+readonly CODE_MNTS=(
+    scripts/ci_toolbox:/var/lib/ci_toolbox
+    data/ssh_files:/var/lib/ci_ssh_files
+    scripts/mock_runner_profile.sh:/etc/profile.d/mock_runner_profile.sh
+)
 
 # Generate temp dir to be used by any method in mock_runner
 # This dir is removed recursively in `finalize`
@@ -210,7 +220,7 @@ prepare_chroot() {
         | tee -a "$LOGS_DIR/init/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
     mock_conf_with_mounts="$(
-        gen_mock_config "$base_chroot" "$dist_label" "$script" "with_mounts" \
+        gen_mock_config "$base_chroot" "$dist_label" "$script" "user" \
             "${packages[@]}"
     )"
     return 0
@@ -288,7 +298,7 @@ config_opts["nosync"] = True
 # we are not going to build cross-arch packages, we can force it
 config_opts["nosync_force"] = True
 EOH
-    if [[ "$with_mounts" != 'no' ]]; then
+    if [[ "$with_mounts" == 'user' ]]; then
         echo "Adding mount points" >&2
         get_mount_conf "$dist_label" "$script" >> "$tmp_conf"
     else
@@ -345,7 +355,7 @@ config_opts['chroot_setup_cmd'] += ' ${packages[@]}'
 EOC
     fi
     [[ "$TRY_MIRRORS" ]] && gen_mirrors_conf "$TRY_MIRRORS" >> "$tmp_conf"
-    if [[ "$with_mounts" != 'no' ]]; then
+    if [[ "$with_mounts" == 'user' ]]; then
         echo "Adding environment variables" >&2
         gen_environ_conf "$dist_label" "$script" >> "$tmp_conf"
     else
@@ -356,12 +366,13 @@ EOC
     return 0
 }
 
-prepare_ci_toolbox() {
-    local toolbox_dir="${MR_TEMP_DIR}/ci_toolbox"
-    local toolbox_dir_orig="$MOCK_CONF_DIR/../scripts/ci_toolbox/"
-    [[ -d "$toolbox_dir" ]] && rm -rf "$toolbox_dir"
-    cp -rpL "$toolbox_dir_orig" "$toolbox_dir"
-    echo "$toolbox_dir"
+prepare_code_mnt() {
+    local code_dir="${1:?}"
+    local code_dir_name="${code_dir##*/}"
+    local code_dir_orig="$MOCK_CONF_DIR/../$code_dir"
+    local code_dir_copy="$(mktemp -u "${MR_TEMP_DIR}/${code_dir_name}.XXXXX")"
+    cp -rpL "$code_dir_orig" "$code_dir_copy"
+    echo "$code_dir_copy"
 }
 
 get_mount_conf() {
@@ -373,7 +384,6 @@ get_mount_conf() {
     local mount_opt
     local src_mnt
     local dst_mnt
-    local ci_tbx_dir="$(prepare_ci_toolbox)"
 
     echo "config_opts['plugin_conf']['bind_mount_enable']=True"
     echo "config_opts['chroothome'] = '$MOUNT_POINT'"
@@ -381,9 +391,14 @@ get_mount_conf() {
     echo "    # Mount the local dir to $MOUNT_POINT"
     echo "    [os.path.realpath(os.curdir), u'$MOUNT_POINT'],"
 
-    # Mount hardwired mounts if the exist on the host
-    local hw_mnts=("$ci_tbx_dir:/var/lib/ci_toolbox" "${HW_MNTS[@]}")
-    for mount_opt in "${hw_mnts[@]}"; do
+    # Mount code mounts
+    for mount_opt in "${CODE_MNTS[@]}"; do
+        src_mnt="${mount_opt%%:*}"
+        dst_mnt="${mount_opt##*:}"
+        echo "    [u'$(prepare_code_mnt $src_mnt)', u'$dst_mnt'],"
+    done
+    # Mount hardwired mounts if they exist on the host
+    for mount_opt in "${HW_MNTS[@]}"; do
         src_mnt="${mount_opt%%:*}"
         dst_mnt="${mount_opt##*:}"
         [[ $src_mnt ]] && [[ -e $src_mnt ]] || continue
@@ -514,6 +529,7 @@ gen_ci_env_info_conf() {
     # Since 'resolve_multiple_files' returns an array of matches, we need only
     # the first match.
     echo "config_opts['environment']['STD_CI_YUMREPOS']=\"${ci_reposfiles[0]}\""
+    echo "config_opts['environment']['MOCK_EXTERNAL_USER']=\"$USER\""
 }
 
 
@@ -709,7 +725,7 @@ run_shell() {
         --root="$mock_chroot" \\
         --resultdir="$LOGS_DIR/shell" \\
         "${mock_enable_network[@]}" \\
-        --shell /bin/bash
+        --shell '/bin/bash -l'
 EOC
     $MOCK \
         --old-chroot \
@@ -717,7 +733,7 @@ EOC
         --root="$mock_chroot" \
         --resultdir="$LOGS_DIR/shell" \
         "${mock_enable_network[@]}" \
-        --shell /bin/bash
+        --shell '/bin/bash -l'
     res=$?
 
     if [[ "$cleanup" == "true" ]]; then
@@ -818,7 +834,7 @@ EOF
         --no-clean \
         --resultdir="$logs_dir" \
         "${mock_enable_network[@]}" \
-        --shell /bin/bash <<< "$mock_shell_cmd"
+        --shell '/bin/bash -l' <<< "$mock_shell_cmd"
 EOF
     $MOCK \
         --old-chroot \
@@ -827,7 +843,7 @@ EOF
         --no-clean \
         --resultdir="$logs_dir" \
         "${mock_enable_network[@]}" \
-        --shell /bin/bash <<< "$mock_shell_cmd"
+        --shell '/bin/bash -l' <<< "$mock_shell_cmd"
     local res=$?
     mv "$logs_xfr_dir"/* "$logs_dir" || :
     rmdir "$logs_xfr_dir"
