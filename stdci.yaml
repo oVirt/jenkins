@@ -24,6 +24,11 @@ sub-stages:
           - test/*.py
           - date/dummy.spec
           - conftest.py
+          - automation/check-patch.sh
+          - automation/check-patch.mounts*
+          - automation/check-patch.packages*
+          - automation/check-patch.repos*
+          - automation/check-patch.environment.yaml*
   - jenkins-jobs:
       runif:
         file-changed:

@@ -357,6 +357,8 @@ docker_setup () {
     if ! docker_ensure_iptables_chain; then
         return 1
     fi
+    log INFO "Setting up docker netns directory"
+    mkdir -p /run/docker/netns || sudo -n mkdir -p /run/docker/netns
     return 0
 }
 
