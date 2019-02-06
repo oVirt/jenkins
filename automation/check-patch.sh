@@ -31,6 +31,7 @@ main() {
         test_rpmbuild "$@"
     fi
     test_secrets_and_credentials
+    test_mock_runner_mounts
     test_mock_runner_fd_leak
 }
 
@@ -117,6 +118,26 @@ test_secrets_and_credentials() {
     [[ "${test_secret_password}" = "JenkinsPassword" ]] || return 1
     [[ "${test_secret_specified}" = "OVIRT_CI" ]] || return 1
     return 0
+}
+
+test_mock_runner_mounts() {
+    # Verify that mock runner can mount directories and create them if they are
+    # missing
+    (
+        set +x
+        for d in $(cut -d: -f2 automation/check-patch.mounts | grep -v sock); do
+            echo -n "Testing mounted dir: $d: "
+            if ! [[ -d $d ]]; then
+                echo 'FAILED - not a directory'
+                exit 1
+            fi
+            if ! grep -q " $d " /proc/mounts; then
+                echo 'FAILED - not mounted'
+                exit 1
+            fi
+            echo SUCCESS
+        done
+    )
 }
 
 test_mock_runner_fd_leak() {

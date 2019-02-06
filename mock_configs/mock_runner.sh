@@ -237,10 +237,7 @@ gen_mock_config() {
     local packages=("${@:5}")
     local base_conf \
         tmp_conf \
-        mount_opt \
         repo_opt \
-        src_mnt \
-        dst_mnt \
         repo_name \
         repo_url \
         tmp_chroot \
@@ -251,8 +248,6 @@ gen_mock_config() {
         ci_distro \
         ci_stage \
         ci_reposfile \
-        upstream_src_folder \
-        upstream_dst_folder \
         env_req
 
     base_conf="$(get_base_conf "$MOCK_CONF_DIR" "$chroot")"
@@ -287,32 +282,7 @@ config_opts["nosync_force"] = True
 EOH
     if [[ "$with_mounts" != 'no' ]]; then
         echo "Adding mount points" >&2
-        cat >>"$tmp_conf" <<EOH
-config_opts["plugin_conf"]["bind_mount_enable"]=True
-config_opts['chroothome'] = '$MOUNT_POINT'
-config_opts["plugin_conf"]["bind_mount_opts"]["dirs"]=[
-    # Mount the local dir to $MOUNT_POINT
-    [os.path.realpath(os.curdir), u'$MOUNT_POINT'],
-EOH
-        upstream_src_folder="${PWD%/}._upstream"
-        upstream_dst_folder="${MOUNT_POINT%/}._upstream"
-        if [[ -d ${upstream_src_folder} ]]; then
-            echo "['$upstream_src_folder', '$upstream_dst_folder']," >> "$tmp_conf"
-        fi
-
-        for mount_opt in $(get_data_from_file "$script" mounts "$dist_label"); do
-            [[ "$mount_opt" == "" ]] && continue
-            if [[ "$mount_opt" =~ ^([^:]*)(:(.*))?$ ]]; then
-                src_mnt="${BASH_REMATCH[1]}"
-                dst_mnt="${BASH_REMATCH[3]:-$src_mnt}"
-                if [[ ! -e "$src_mnt" ]]; then
-                    echo "Creating destination folder before mounting"
-                    mkdir -p $src_mnt
-                fi
-            fi
-            echo "['$src_mnt', '$dst_mnt']," >> "$tmp_conf"
-        done
-        echo "]" >> "$tmp_conf"
+        get_mount_conf "$dist_label" "$script" >> "$tmp_conf"
     else
         echo "Skipping mount points" >&2
     fi
@@ -374,6 +344,43 @@ EOC
     touch --date "yesterday" "$tmp_conf"
     echo "$tmp_conf"
     return 0
+}
+
+
+get_mount_conf() {
+    local dist_label="${1?}"
+    local script="${2?}"
+
+    local upstream_src_folder
+    local upstream_dst_folder
+    local mount_opt
+    local src_mnt
+    local dst_mnt
+
+    echo "config_opts['plugin_conf']['bind_mount_enable']=True"
+    echo "config_opts['chroothome'] = '$MOUNT_POINT'"
+    echo "config_opts['plugin_conf']['bind_mount_opts']['dirs']=["
+    echo "    # Mount the local dir to $MOUNT_POINT"
+    echo "    [os.path.realpath(os.curdir), u'$MOUNT_POINT'],"
+
+    upstream_src_folder="${PWD%/}._upstream"
+    upstream_dst_folder="${MOUNT_POINT%/}._upstream"
+    if [[ -d ${upstream_src_folder} ]]; then
+        echo "['$upstream_src_folder', '$upstream_dst_folder'],"
+    fi
+
+    for mount_opt in $(get_data_from_file "$script" mounts "$dist_label"); do
+        [[ "$mount_opt" == "" ]] && continue
+        if [[ "$mount_opt" =~ ^([^:]*)(:(.*))?$ ]]; then
+            src_mnt="${BASH_REMATCH[1]}"
+            dst_mnt="${BASH_REMATCH[3]:-$src_mnt}"
+            if [[ ! -e "$src_mnt" ]]; then
+                mkdir -p $src_mnt
+            fi
+        fi
+        echo "['$src_mnt', '$dst_mnt'],"
+    done
+    echo "]"
 }
 
 
