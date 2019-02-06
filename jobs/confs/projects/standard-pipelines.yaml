@@ -20,10 +20,10 @@
       - ovirt-ansible-repositories
       - ovirt-ansible-shutdown-env
       - ovirt-ansible-vm-infra
-      - ovirt-ansible-v2v-conversion-host
       - ovirt-engine-sdk-go
       - ovirt-openshift-extensions
       - ovirt-web-ui
+      - v2v-conversion-host
     jobs:
       - '{org}_{project}_standard-gh-jobs'
 
