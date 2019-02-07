@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - '4.3':
+          branch: v2.3.z
       - '4.2':
           branch: v2.2.z
     stage:
@@ -38,6 +40,7 @@
     <<: *base-params
     name: ovirt-hosted-engine-ha_build-artifacts-manual-any
     version:
+      - '4.3'
       - '4.2'
       - 'master'
     jobs:
