@@ -1,0 +1,7 @@
+---
+{% if base_images: -%}
+base_image_tags:
+{% for bi in base_images: %}
+  {{ bi }}: {{ hostvars[bi].image_tag_name }}
+{% endfor -%}
+{% endif -%}

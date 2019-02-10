@@ -1,0 +1,3 @@
+---
+base_image_tags:
+  jenkins-2-centos7: jenkins-2-centos7:sha256-a6e0a11

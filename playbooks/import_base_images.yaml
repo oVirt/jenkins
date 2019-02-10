@@ -1,0 +1,100 @@
+# import_base_images.yam - Import images from external registries into OpenShift
+#                          and tag with the image SHA.
+#
+# This playbook's main purpose is to create frozen local copies of remote images
+# that may only have moving tags.
+#
+# Usage:
+#     ansible-playbook playbooks/import_base_images.yaml -i $INVENTORY
+#
+# Where $INVENTORY is an inventory file with a `base_images` group listing the
+# names of the image streams to import into and the remote tags to import from.
+# An example for such an inventory file can be found at:
+#
+#     playbooks/inventories/stdci_images.yaml
+#
+# Prerquisites for running:
+# * You need to have `oc` installed and logged in to OpenShift and set to use
+#   the namespace you want to have things installed in.
+# * You need to install Ansible as instructed in the README.md file
+# * You need to have the `skopeo` package installed or, alternatively, set the
+#   `skopeo_bin` variable to where the skopeo executable can be found.
+#
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Detect OpenShift project
+      tags: always
+      set_fact:
+        openshift_project:
+          "{{ lookup('pipe', oc_bin | default('oc') + ' project -q') }}"
+
+- hosts: base_images
+  gather_facts: no
+  vars:
+    openshift_project:
+      "{{ hostvars['127.0.0.1']['openshift_project'] }}"
+  tasks:
+    - name: Get base image information
+      delegate_to: 127.0.0.1
+      vars:
+        image_digest: "{{
+          (lookup(
+            'pipe',
+            skopeo_bin|default('skopeo') + ' inspect docker://' + upstream_image
+          ) | from_json).Digest
+        }}"
+        image_digest_algo: "{{ image_digest|regex_search('^[^:]+') }}"
+        image_tag: "{{
+          image_digest
+          |replace(':', '-')
+          |truncate(image_digest_algo|length + 8, True, '')
+        }}"
+      set_fact:
+        image_digest: "{{ image_digest }}"
+        upstream_image_at_digest:
+          "{{ upstream_image|regex_search('^[^:]+') }}@{{ image_digest }}"
+        image_tag_name: "{{ inventory_hostname }}:{{ image_tag }}"
+
+    - name: Import base image to OpenShift
+      delegate_to: 127.0.0.1
+      k8s:
+        state: present
+        definition:
+          kind: ImageStreamTag
+          apiVersion: image.openshift.io/v1
+          lookupPolicy:
+            local: false
+          metadata:
+            name: "{{ image_tag_name }}"
+            namespace: "{{ openshift_project }}"
+          tag:
+            from:
+              kind: DockerImage
+              name: "{{ upstream_image_at_digest }}"
+            name: "{{ image_tag_name }}"
+            referencePolicy:
+              type: Local
+
+- hosts: custom_images
+  gather_facts: no
+  vars:
+    host_vars_path: "{{inventory_dir}}/host_vars/{{inventory_hostname}}"
+  tasks:
+    - name: Create variable directory
+      delegate_to: 127.0.0.1
+      file:
+        state: directory
+        path: "{{ host_vars_path }}"
+      when: base_images
+
+    - name: Update custom image base
+      vars:
+        ansible_python_interpreter: /usr/bin/python
+      delegate_to: 127.0.0.1
+      template:
+        src: base_images.yaml.j2
+        dest: "{{host_vars_path}}/base_images.yaml"
+      when: base_images

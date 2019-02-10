@@ -1,0 +1,12 @@
+---
+all:
+  children:
+    base_images:
+      hosts:
+        jenkins-2-centos7:
+          upstream_image: openshift/jenkins-2-centos7:v3.11
+    custom_images:
+      hosts:
+        stdci-jenkins-master:
+          base_images:
+            - jenkins-2-centos7
