@@ -70,7 +70,7 @@ def inject_yum_mirrors(
     :returns: None
     """
     cfg = RawConfigParser()
-    cfg.readfp(yum_cfg)
+    _readfp(cfg, yum_cfg)
     for section in cfg.sections():
         if section not in mirrors:
             continue
@@ -84,6 +84,17 @@ def inject_yum_mirrors(
         if not allow_proxy:
             cfg.set(section, 'proxy', none_value_str)
     cfg.write(out_cfg)
+
+
+def _readfp(cp, fp, filename=None):
+    """Fix Python 3.2+ compatibility
+
+    RawConfigParser.readfp had been renamed to read_file in Python 3.2
+    """
+    if hasattr(cp, 'read_file'):
+        return cp.read_file(fp, filename)
+    else:
+        return cp.readfp(fp, filename)
 
 
 def none_value_by_repo_name(repo_name):
@@ -199,17 +210,19 @@ def mirrors_from_http(
             except ValueError as e:
                 # When JSON parsing fails we get a ValueError
                 loop_exception = e
-            logger.warn('Encountered error getting data from mirrors server' +
-                        ' in attempt {0}/{1}'.format(attempt, HTTP_RETRIES))
+            logger.warning(
+                'Encountered error getting data from mirrors server' +
+                ' in attempt {0}/{1}'.format(attempt, HTTP_RETRIES)
+            )
             # Sleep a short while to let server sort its issues
             sleep(HTTP_RETRY_DELAY_SEC)
         else:
             raise loop_exception
     except ConnectionError:
-        logger.warn('Failed to connect to mirrors server')
+        logger.warning('Failed to connect to mirrors server')
         return dict()
     except Timeout:
-        logger.warn('Timed out connecting to mirrors server')
+        logger.warning('Timed out connecting to mirrors server')
         return dict()
 
 

@@ -72,7 +72,8 @@ test_standard_ci() {
 
 test_python_scripts() {
     mkdir -p exported-artifacts
-    pip install -r 'test-requirements.txt'
+    pip install -U pip
+    pip install -r 'test-requirements.lock'
     python -m pytest -vv --junitxml='exported-artifacts/pytest.junit.xml' test
     if command -v py.test-3; then
         # If we have python3 (e.g we're on fedora) run tests in python 3 too

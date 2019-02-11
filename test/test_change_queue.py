@@ -153,12 +153,12 @@ class ChangeWithDeps(namedtuple('_ChangeWithDeps', ('id', 'requirements'))):
         try:
             return cls(int(chvalue), set())
         except ValueError:
-            match = re.match('^(\d+)((r\d+(,\d+)*)*)$', str(chvalue))
+            match = re.match('^(\\d+)((r\\d+(,\\d+)*)*)$', str(chvalue))
             if not match:
                 raise ValueError('Malformed ChangeWithDeps string')
             chid = int(match.group(1))
             req_set = set()
-            req_lists = re.findall('r(\d+(,\d+)*)', match.group(2))
+            req_lists = re.findall('r(\\d+(,\\d+)*)', match.group(2))
             for req_list, _ in req_lists:
                 req_set |= set(int(c) for c in req_list.split(','))
             return cls(chid, req_set)

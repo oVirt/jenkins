@@ -228,7 +228,7 @@ class EmailNotifyingChange(DisplayableChange):
         smtp = None
         try:
             smtp = smtplib.SMTP(smtp_host)
-            smtp.sendmail(msg['From'], re.split(',\s*', msg['To']), str(msg))
+            smtp.sendmail(msg['From'], re.split(',\\s*', msg['To']), str(msg))
         finally:
             if smtp is not None:
                 smtp.quit()

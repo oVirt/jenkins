@@ -6,7 +6,6 @@ from textwrap import dedent
 from functools import partial
 from itertools import cycle
 import py
-from subprocess import CalledProcessError
 try:
     from unittest.mock import MagicMock, call
 except ImportError:
@@ -475,7 +474,7 @@ def test_get_push_details_syntax(push_map_data, expected):
 
 @pytest.mark.parametrize('push_map_data, remote_url, expected', [
     (
-        [{'^(https|(git+)?ssh)://((.*)@)?server\.com(:29418)?/(.*)$': {
+        [{'^(https|(git+)?ssh)://((.*)@)?server\\.com(:29418)?/(.*)$': {
             'push_url': 'ssh://jenkins@server.com:29418/\\6',
             'host_key': 'some_host_key',
             'merge_flags': '--code-review=2 --verified=1',

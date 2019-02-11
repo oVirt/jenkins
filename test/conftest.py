@@ -34,7 +34,7 @@ def jenkins_env(monkeypatch, tmpdir):
         worspace=tmpdir,
     )
     for var, value in iteritems(env_spec):
-        monkeypatch.setenv(var.upper(), value)
+        monkeypatch.setenv(var.upper(), str(value))
     monkeypatch.chdir(env_spec['worspace'])
     return namedtuple('jenkins_env_spec', env_spec.keys())(*env_spec.values())
 
