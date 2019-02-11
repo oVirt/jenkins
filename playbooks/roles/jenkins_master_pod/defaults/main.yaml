@@ -1,2 +1,2 @@
 # The name and tag of the container image to be used for Jenkins masters.
-jenkins_image: stdci-jenkins-master:d5208ac-d8176a6
+jenkins_image: stdci-jenkins-master:07ac148-612c1b2
