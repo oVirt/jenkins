@@ -1,0 +1,4 @@
+# This file is intentionally empty because this role does not have any
+# explicit functionality other then making the `git_commit_files` module
+# available
+#

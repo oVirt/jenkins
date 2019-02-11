@@ -2,3 +2,4 @@ python-virtualenv
 libvirt-client
 openssh-clients
 rh-python36
+git
