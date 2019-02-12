@@ -80,9 +80,11 @@
 
 - hosts: custom_images
   gather_facts: no
-  vars:
-    host_vars_path: "{{inventory_dir}}/host_vars/{{inventory_hostname}}"
   tasks:
+    - name: Find host vars location
+      set_fact:
+        host_vars_path: "{{inventory_dir}}/host_vars/{{inventory_hostname}}"
+
     - name: Create variable directory
       delegate_to: 127.0.0.1
       file:
@@ -98,3 +100,23 @@
         src: base_images.yaml.j2
         dest: "{{host_vars_path}}/base_images.yaml"
       when: base_images
+
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  roles:
+    - git_commit_files
+  tasks:
+    - name: Commit image update
+      tags: commit
+      git_commit_files:
+        files: "{{
+          groups['custom_images']
+          |map('extract', hostvars, 'host_vars_path')
+          |list
+        }}"
+        repo_dir: "{{ lookup('env', 'PWD') }}"
+        branch: base_image_update
+        change_id_headers:
+          - Change-Id
+          - x-md5
