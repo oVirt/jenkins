@@ -12,3 +12,14 @@
       - common-templates
     jobs:
       - '{org}_{project}_standard-gh-jobs'
+
+- project:
+    name: kubevirt-standard-pipelines-github-aborting
+    github-auth-id: stdci-production-gh-notify
+    abort-on-update: true
+    org: kubevirt
+    project:
+      - kubernetes-device-plugins
+      - ovs-cni
+    jobs:
+      - '{org}_{project}_standard-gh-jobs'
