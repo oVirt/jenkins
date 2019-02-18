@@ -1,0 +1,20 @@
+---
+- project:
+    name: oVirt-standard-pipelines-github
+    github-auth-id: stdci-staging-gh-notify
+    org: oVirt
+    project:
+      - stage-gh-stdci1
+    jobs:
+      - '{org}_{project}_standard-gh-jobs'
+
+- project:
+    name: kubevirt-standard-pipelines
+    github-auth-id: stdci-staging-gh-notify
+    abort-on-update: true
+    org: kubevirt-ci-stage
+    project:
+      - kubernetes-device-plugins
+      - ovs-cni
+    jobs:
+      - '{org}_{project}_standard-gh-jobs'

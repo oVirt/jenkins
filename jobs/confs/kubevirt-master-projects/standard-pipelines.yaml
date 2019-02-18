@@ -7,10 +7,8 @@
     project:
       - kubevirt
       - kubevirt-ansible
-      - kubernetes-device-plugins
       - containerized-data-importer
       - node-recovery
-      - ovs-cni
       - common-templates
     jobs:
       - '{org}_{project}_standard-gh-jobs'
