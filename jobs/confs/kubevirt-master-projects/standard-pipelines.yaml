@@ -5,7 +5,6 @@
     abort-on-update: true
     org: kubevirt-ci-stage
     project:
-      - kubevirt
       - kubevirt-ansible
       - containerized-data-importer
       - node-recovery
@@ -19,6 +18,7 @@
     abort-on-update: true
     org: kubevirt
     project:
+      - kubevirt
       - kubernetes-device-plugins
       - ovs-cni
     jobs:
