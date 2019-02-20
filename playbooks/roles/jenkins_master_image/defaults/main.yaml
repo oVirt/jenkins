@@ -1,6 +1,0 @@
----
-jenkins_base_imagestream: 'jenkins-2-centos7:latest'
-jenkins_base_image: 'openshift/jenkins-2-centos7:v3.11'
-jenkins_image_source: "{{lookup('env', 'PWD')}}/container/jenkins-master-s2i"
-jenkins_imagestream: 'stdci-jenkins-master'
-return_image_as: 'jenkins_imagestream_tag'

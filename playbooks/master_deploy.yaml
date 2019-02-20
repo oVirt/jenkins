@@ -46,12 +46,6 @@
         openshift_project:
           "{{ lookup('pipe', oc_bin | default('oc') + ' project -q') }}"
 
-    - import_role:
-        name: jenkins_master_image
-      vars:
-        return_image_as: 'jenkins_imagestream_tag'
-      tags: build
-
 - hosts: jenkins_masters
   gather_facts: no
   tags: deploy
