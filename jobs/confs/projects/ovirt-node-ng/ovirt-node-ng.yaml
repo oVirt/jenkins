@@ -5,12 +5,8 @@
     name: ovirt-node-ng
     project: ovirt-node-ng
     version:
-      - ovirt-4.2:
-          branch: ovirt-4.2
       - ovirt-4.2-snapshot:
           branch: ovirt-4.2-snapshot
-      - ovirt-4.2-pre:
-          branch: ovirt-4.2-pre
     distro:
       - el7
     arch:
@@ -28,12 +24,8 @@
     name: ovirt-node-ng_build-nightly
     project: ovirt-node-ng
     version:
-      - ovirt-4.2:
-          branch: ovirt-4.2
       - '4.2':
           branch: ovirt-4.2-snapshot
-      - ovirt-4.2-pre:
-          branch: ovirt-4.2-pre
     stage: build-artifacts
     distro:
       - el7
