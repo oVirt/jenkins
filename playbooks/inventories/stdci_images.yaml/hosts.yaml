@@ -1,5 +1,8 @@
 ---
 all:
+  vars:
+    build_node_selector:
+      type: "vm"
   children:
     base_images:
       hosts:
@@ -10,3 +13,4 @@ all:
         stdci-jenkins-master:
           base_images:
             - jenkins-2-centos7
+          image_source: container/jenkins-master-s2i

@@ -1,0 +1,209 @@
+# build_images.yaml - Build container images in OpenShift
+#
+# Usage:
+#     ansible-playbook playbooks/import_base_images.yaml -i $INVENTORY
+#
+# Where $INVENTORY is an inventory file with a `custom_images` group listing the
+# names of the images to build and for each one:
+#   - base_images     - A list of the names of the base images it uses
+#                       ordered by the build stages in which they are
+#                       used (There should only be one in a single-stage
+#                       build)
+#   - base_image_tags - A dict mapping each base image to the exact
+#                       container tag to use. This may be auto-created
+#                       in a separate host_vars file by the
+#                       import_base_images playbook, in which case the
+#                       inventory needs to be a directory structure
+#                       rather then a single file.
+#   - image_source    - Where to fine the image source code, relative to
+#                       this Git repo root
+#
+# The following variables should be defined by setting globally in the
+# inventory, setting on the image record in the inventory or passing via
+# the command line:
+#   - build_node_selector - (Optional) A nodeSelector structure for
+#                           build nodes.
+#   - target_registry     - (Optional) The target registry to upload
+#                           built images into. Will default to `quay.io`
+#   - target_namespace    - (Optional) The target namespace in the
+#                           registry to upload images into. Default is
+#                           `pod_utils`
+#   - registry_secret     - (Optional) The name of an OpenShift secret
+#                           for accessing the registry. Defaults to
+#                           `stdci-registry-bot`. You can download the
+#                           YAML for generating the secret object from
+#                           the `quay.io` UI.
+#   - merge_tag           - (Optional) A tag to add to the image in
+#                           quay.io. This is meant for setting a
+#                           well-known tag name to enable finding the
+#                           latest image
+#
+# An example for an inventory directory structure can be found at:
+#
+#     playbooks/inventories/stdci_images.yaml
+#
+# Prerquisites for running:
+# * You need to have `oc` installed and logged in to OpenShift and set to use
+#   the namespace you want to have things installed in.
+# * You need to install Ansible as instructed in the README.md file
+# * You need to have the screts for pushing into the target registry
+#   defined in your OpenShift namespace
+#
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Detect OpenShift project
+      tags: always
+      set_fact:
+        openshift_project:
+          "{{ lookup('pipe', oc_bin | default('oc') + ' project -q') }}"
+
+- hosts: custom_images
+  gather_facts: no
+  vars:
+    openshift_project:
+      "{{ hostvars['127.0.0.1']['openshift_project'] }}"
+    image_source_path: "{{lookup('env', 'PWD')}}/{{image_source}}"
+    _registry_secret: "{{registry_secret|default('stdci-registry-bot')}}"
+    image_source_tag_label: org.ovirt.image-source-tag
+  roles:
+    - tree_checksum_lookup
+  tasks:
+    - name: Detect image tag
+      tags: always
+      vars:
+        image_source_checksum:
+          "{{ lookup('tree_checksum', image_source_path) }}"
+        cumulative_base_tag: "{{
+          base_images
+          |map('extract', base_image_tags)
+          |map('regex_replace', '^(([^/:]+)/)?([^/:]+)(:([^/:]+))?$', '\\5')
+          |join('-')
+        }}"
+        image_tag: "{{ '%s-%.7s'|format(
+          cumulative_base_tag, image_source_checksum
+        ) }}"
+        image_repo: "\
+          {{ target_registry|default('quay.io') }}/\
+          {{ target_namespace|default('pod_utils') }}/\
+          {{ inventory_hostname }}\
+        "
+      set_fact:
+        image_tag: "{{ image_tag }}"
+        image_repo: "{{ image_repo }}"
+        image_full_tag: "{{ image_repo }}:{{ image_tag }}"
+
+    - name: Create OpenShift BuildConfig
+      delegate_to: 127.0.0.1
+      tags: build
+      vars:
+        base_image: "{{base_image_tags[base_images[0]]}}"
+      k8s:
+        state: present
+        definition:
+          kind: BuildConfig
+          apiVersion: build.openshift.io/v1
+          metadata:
+            name: "{{ inventory_hostname }}-{{image_tag}}"
+            namespace: "{{ openshift_project }}"
+          spec:
+            nodeSelector: "{{build_node_selector|default({})}}"
+            output:
+              to:
+                kind: DockerImage
+                name: "{{ image_full_tag }}"
+              imageLabels:
+                - name: "{{image_source_tag_label}}"
+                  value: "{{image_tag}}"
+              pushSecret:
+                name: "{{_registry_secret}}"
+            source:
+              type: Binary
+            strategy:
+              sourceStrategy:
+                from:
+                  kind: ImageStreamTag
+                  name: "{{ base_image }}"
+                  namespace: "{{ openshift_project }}"
+
+    - name: Build the image
+      delegate_to: 127.0.0.1
+      tags: build
+      vars:
+        buildconfig: "{{ inventory_hostname }}-{{image_tag}}"
+      command:
+        argv:
+          - "{{ oc_bin|default('oc') }}"
+          - start-build
+          - "{{ buildconfig }}"
+          - "--from-dir={{ image_source_path }}"
+          - --follow
+          - --wait
+      when:
+        - query(
+            'k8s',
+            namespace=openshift_project,
+            kind='Build',
+            label_selector="buildconfig=" + buildconfig,
+          )|length == 0
+
+    - name: Tag merged image
+      delegate_to: 127.0.0.1
+      tags: on_merge
+      # We need to withhold logging in this block because registry
+      # credentials would show up otherwise
+      no_log: True
+      vars:
+        # Extract registry credentials from OpenShift secret
+        registry_credentials: "{{
+          (
+            (
+              lookup(
+                'k8s',
+                namespace=openshift_project,
+                kind='secret',
+                resource_name=_registry_secret,
+              ).data['.dockerconfigjson']
+              |b64decode
+              |from_json
+            ).auths
+            |dict2items
+            |first
+          ).value.auth|b64decode
+        }}"
+      block:
+        - name: Check existing merged image tag
+          command:
+            argv:
+              - "{{ skopeo_bin|default('skopeo') }}"
+              - inspect
+              - "--creds={{ registry_credentials }}"
+              - "docker://{{ image_repo }}:{{ merge_tag }}"
+          register: existing_image_out
+          changed_when: False
+          failed_when: False
+
+        - name: Set merged image tag
+          vars:
+            existing_image_labels: "{{
+              (existing_image_out.stdout|from_json).Labels
+              if existing_image_out.rc == 0
+              else {}
+            }}"
+          command:
+            argv:
+              - "{{ skopeo_bin|default('skopeo') }}"
+              - copy
+              - "--src-creds={{ registry_credentials }}"
+              - "--dest-creds={{ registry_credentials }}"
+              - "docker://{{ image_full_tag }}"
+              - "docker://{{ image_repo }}:{{ merge_tag }}"
+          when: |-
+            image_source_tag_label not in existing_image_labels
+            or existing_image_labels[image_source_tag_label] != image_tag
+
+      when:
+        - merge_tag is defined
+        - merge_tag|trim
