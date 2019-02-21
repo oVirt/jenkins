@@ -35,6 +35,7 @@ display-url-api:2.3.0
 docker-commons:1.13
 docker-workflow:1.17
 durable-task:1.29
+email-ext:2.63
 envinject:2.1.6
 envinject-api:1.5
 favorite:2.3.2
