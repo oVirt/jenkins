@@ -20,7 +20,10 @@ jenkins:
           kubevirt/virt-controller kubevirt/virt-controller
           kubevirt/virt-handler kubevirt/virt-handler kubevirt/vm-killer
           kubevirt/vm-killer kubevirt/winrmcli kubevirt/winrmcli
-          kubevirtci/gocli kubevirtci/gocli kubevirtci/os-3.10.0
+          kubevirtci/gocli kubevirtci/os-3.11.0-multus
+          kubevirtci/os-3.11.0 kubevirtci/os-3.11.0-crio
+          kubevirtci/k8s-1.10.11 kubevirtci/k8s-1.11.0
+          kubevirtci/k8s-multus-1.13.3 kubevirtci/k8s-genie-1.11.1
       - key: "CI_FILTERED_SECRETS"
         value: "${WORKSPACE}/ci_secrets.yaml"
       - key: "CI_MIRRORS_URL"
