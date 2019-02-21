@@ -189,12 +189,18 @@
                     volumeMounts:
                       - name: "{{master_name}}"
                         mountPath: "/var/lib/jenkins"
+                    resources:
+                      limits:
+                        memory: 8192Mi
+                      requests:
+                        memory: 8192Mi
                 volumes:
                   - name: "{{master_name}}"
                     persistentVolumeClaim:
                       claimName: "{{master_name}}"
                 nodeSelector:
                   type: "vm"
+                  zone: "prod"
 
     - name: "Wait for pod to get created"
       k8s_wait:
