@@ -39,6 +39,10 @@ all:
                 name: slave-cache
               - mountPath: /dev/shm
                 name: dshm
+              - mountPath: /lib/modules
+                name: lib-modules
+              - mountPath: /dev/vfio
+                name: dev-vfio
             workingDir: /home/jenkins
             tty: true
         nodeSelector:
@@ -52,6 +56,15 @@ all:
           - emptyDir:
               medium: Memory
             name: dshm
+          - hostPath:
+              path: /usr/lib/modules
+              type: Directory
+            name: lib-modules
+          - hostPath:
+              path: /dev/vfio
+              type: Directory
+            name: dev-vfio
+
 
   children:
     stdci_slave_types:
@@ -90,6 +103,8 @@ all:
             <<: *slave_podspec_base
             metadata:
               generateName: integ-test-container.sriov-nic
+              annotations:
+                k8s.v1.cni.cncf.io/networks: multus-cni-ns/sriov-passthrough-cni
               labels:
                 jenkins_label: integ-tests-container_sriov-nic
                 jenkins_exclusive: True
@@ -104,10 +119,37 @@ all:
                           - key: podType
                             operator: In
                             values: ["sriov-nic"]
-                  topologyKey: hardwareSupport
+                      topologyKey: "kubernetes.io/hostname"
+              containers:
+                - <<: *slave_jnlp_container_base
+                  volumeMounts:
+                    - mountPath: /var/lib/stdci
+                      name: slave-cache
+                    - mountPath: /dev/shm
+                      name: dshm
+                    - mountPath: /lib/modules
+                      name: lib-modules
+                    - mountPath: /dev/vfio
+                      name: dev-vfio
               nodeSelector:
                 type: bare-metal
                 hardwareSupport: sriov-nic
+              volumes:
+                - hostPath:
+                    path: /var/lib/stdci
+                    type: DirectoryOrCreate
+                  name: slave-cache
+                - emptyDir:
+                    medium: Memory
+                  name: dshm
+                - hostPath:
+                    path: /usr/lib/modules
+                    type: Directory
+                  name: lib-modules
+                - hostPath:
+                    path: /dev/vfio
+                    type: Directory
+                  name: dev-vfio
 
         jenkins-loader-node:
           podspec:
@@ -133,4 +175,5 @@ all:
                       memory: 500Mi
               nodeSelector:
                 type: vm
+                zone: ci
               serviceAccount: jenkins-slave
