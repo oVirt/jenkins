@@ -1,0 +1,3 @@
+---
+base_image_tags:
+  jenkins-slave-base-centos7: jenkins-slave-base-centos7:sha256-86db243

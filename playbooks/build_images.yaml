@@ -100,6 +100,16 @@
       tags: build
       vars:
         base_image: "{{base_image_tags[base_images[0]]}}"
+        build_strategy_str: |-
+          {{
+            (image_source_path + '/Dockerfile') is file
+            |ternary('dockerStrategy', 'sourceStrategy')
+          }}:
+            from:
+              kind: ImageStreamTag
+              name: "{{ base_image }}"
+              namespace: "{{ openshift_project }}"
+        build_strategy: "{{ build_strategy_str|from_yaml }}"
       k8s:
         state: present
         definition:
@@ -121,12 +131,7 @@
                 name: "{{_registry_secret}}"
             source:
               type: Binary
-            strategy:
-              sourceStrategy:
-                from:
-                  kind: ImageStreamTag
-                  name: "{{ base_image }}"
-                  namespace: "{{ openshift_project }}"
+            strategy: "{{ build_strategy }}"
 
     - name: Build the image
       delegate_to: 127.0.0.1

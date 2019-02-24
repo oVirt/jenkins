@@ -8,9 +8,15 @@ all:
       hosts:
         jenkins-2-centos7:
           upstream_image: openshift/jenkins-2-centos7:v3.11
+        jenkins-slave-base-centos7:
+          upstream_image: openshift/jenkins-slave-base-centos7
     custom_images:
       hosts:
         stdci-jenkins-master:
           base_images:
             - jenkins-2-centos7
           image_source: container/jenkins-master-s2i
+        stdci-loader-node:
+          base_images:
+            - jenkins-slave-base-centos7
+          image_source: container/el7-loader-node
