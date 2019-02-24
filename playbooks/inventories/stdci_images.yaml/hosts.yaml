@@ -10,6 +10,9 @@ all:
           upstream_image: openshift/jenkins-2-centos7:v3.11
         jenkins-slave-base-centos7:
           upstream_image: openshift/jenkins-slave-base-centos7
+        jenkins-caching-virt-agent-centos7:
+          upstream_image:
+            quay.io/pod_utils/jenkins-caching-virtualization-agent:master
     custom_images:
       hosts:
         stdci-jenkins-master:
@@ -20,3 +23,7 @@ all:
           base_images:
             - jenkins-slave-base-centos7
           image_source: container/el7-loader-node
+        stdci-integ-node-el7:
+          base_images:
+            - jenkins-caching-virt-agent-centos7
+          image_source: container/el7-runner-node

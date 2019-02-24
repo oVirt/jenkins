@@ -1,0 +1,3 @@
+---
+base_image_tags:
+  jenkins-caching-virt-agent-centos7: jenkins-caching-virt-agent-centos7:sha256-722ac78
