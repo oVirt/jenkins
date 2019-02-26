@@ -338,6 +338,8 @@ docker_setup () {
         verify_packages docker || return 1
     fi
 
+    log INFO "$(docker --version)"
+
     log INFO "Trying to setup Docker python API"
     if ! verify_packages python2-docker python3-docker; then
         # We failed to install the new API version, try to install the old one
@@ -351,6 +353,7 @@ docker_setup () {
     log INFO "Starting docker service"
     if ! sudo -n systemctl start docker; then
         sudo -n systemctl status docker || :
+        sudo -n journalctl --no-pager -x -e -u docker || :
         log ERROR "Failed to start docker service"
         return 1
     fi
