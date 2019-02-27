@@ -14,8 +14,10 @@
     abort-on-update: true
     org: kubevirt-ci-stage
     project:
-      - kubevirt
+      - common-templates
+      - containerized-data-importer
       - kubernetes-device-plugins
+      - kubevirt
       - ovs-cni
     jobs:
       - '{org}_{project}_standard-gh-jobs'

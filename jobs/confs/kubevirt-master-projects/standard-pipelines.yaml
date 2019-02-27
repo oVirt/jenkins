@@ -6,9 +6,7 @@
     org: kubevirt-ci-stage
     project:
       - kubevirt-ansible
-      - containerized-data-importer
       - node-recovery
-      - common-templates
     jobs:
       - '{org}_{project}_standard-gh-jobs'
 
@@ -18,8 +16,10 @@
     abort-on-update: true
     org: kubevirt
     project:
-      - kubevirt
+      - common-templates
+      - containerized-data-importer
       - kubernetes-device-plugins
+      - kubevirt
       - ovs-cni
     jobs:
       - '{org}_{project}_standard-gh-jobs'
