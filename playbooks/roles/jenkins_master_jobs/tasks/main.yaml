@@ -28,13 +28,6 @@
   connection: oc
   failed_when: False
 
-- name: Create job directories
-  file:
-    state: directory
-    path: "{{ jenkins_jobs_xml_dest + '/' + item }}"
-  connection: oc
-  loop: "{{ jobs_list | list }}"
-
 - name: Upload job XML
   vars:
     # Need to base64-decode the job cache content because the `slurp` module
@@ -44,18 +37,21 @@
       if 'content' in slurp_jobs_cache
       else []
     }}"
-  template:
-    src: job.xml.j2
-    dest: "{{
-      jenkins_jobs_xml_dest + '/' + item + '/config.xml'
-    }}"
+  command:
+    argv: [
+      'ssh',
+      '-o', 'StrictHostKeyChecking=no',
+      '-o', 'UserKnownHostsFile=/dev/null',
+      'admin@localhost', '-p', '2222',
+      "{{ (item in jobs_cache)|ternary('update-job', 'create-job') }}",
+      "{{ item }}",
+    ]
+    stdin: "{{ jobs_list[item] }}"
   connection: oc
   loop: "{{ jobs_list | list }}"
   when: |-
     item not in jobs_cache
     or jobs_list[item]|hash('sha1') != jobs_cache[item]
-  notify:
-    - Reload jenkins configuration
 
 - name: Upload job cache
   template:
