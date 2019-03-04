@@ -6,6 +6,7 @@ import pytest
 from six import iteritems
 from collections import namedtuple
 from functools import partial
+from contextlib import contextmanager
 try:
     from subprocess import check_output, STDOUT
 except ImportError:
@@ -117,6 +118,34 @@ def gitrepo(tmpdir, git, git_at, git_config_at, symlinkto):
             repogit('commit', '-m', msg, '--allow-empty')
         return repodir
     return repo_maker
+
+@pytest.fixture
+def git_branch(tmpdir, gitrepo, git, git_at, git_config_at, git_tag):
+    @contextmanager
+    def branch_maker(reponame, branch_name):
+        repodir = tmpdir / reponame
+        repogit = git_at(repodir)
+        current_branch = repogit('symbolic-ref', '--short', 'HEAD').strip()
+        # Check if branch already exist
+        if not (repodir / '.git/refs/heads' / branch_name).isfile():
+            repogit('branch', str(branch_name))
+        if current_branch != branch_name:
+            repogit('checkout', str(branch_name))
+        yield
+        if current_branch != branch_name:
+            repogit('checkout', current_branch)
+    return branch_maker
+
+@pytest.fixture
+def git_tag(tmpdir, git, git_at):
+    def tag_maker(reponame, tag_name, annotation=False):
+        repodir = tmpdir / reponame
+        repogit = git_at(repodir)
+        if annotation:
+            repogit('tag', '-a', str(tag_name), '-m', str(annotation))
+        else:
+            repogit('tag', str(tag_name))
+    return tag_maker
 
 
 @pytest.fixture

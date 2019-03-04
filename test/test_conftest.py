@@ -79,3 +79,65 @@ def test_gitrepo(gitrepo, git_at, git_config_at, symlinkto):
     assert log == [
         'Fourth empty commit', 'Third commit', 'Second commit', 'First commit'
     ]
+
+def test_git_branch(gitrepo, git_branch, git_at, symlinkto):
+    repo = gitrepo(
+        'tst_repo_with_branch',
+        {
+            'msg': 'First commit',
+            'files': {
+                'fil1.txt': 'Text of fil1',
+                'link1': symlinkto('fil1.txt'),
+                'fil2.txt': 'Text of fil2',
+                'fil5.txt': None,
+                },
+        },
+    )
+    repogit = git_at(repo)
+    current_branch = repogit('symbolic-ref', '--short', 'HEAD').strip()
+    with git_branch('tst_repo_with_branch', 'test_git_branch'):
+        gitrepo(
+            'tst_repo_with_branch',
+            {
+                'msg': 'Second commit',
+                'files': {
+                    'fil2.txt': 'Modified text of fil2',
+                    'fil3.txt': 'Text of fil3',
+                    'fil5.txt': 'Text of fil5',
+                    'link1': symlinkto('fil5.txt'),
+                },
+            }
+        )
+        assert repogit(
+            'symbolic-ref', '--short', 'HEAD'
+            ).strip() == 'test_git_branch'
+        assert (repo / '.git').isdir()
+        assert (repo / 'fil1.txt').isfile()
+        assert (repo / 'fil1.txt').read() == 'Text of fil1'
+        assert (repo / 'fil2.txt').isfile()
+        assert (repo / 'fil2.txt').read() == 'Modified text of fil2'
+        assert (repo / 'fil3.txt').isfile()
+        assert (repo / 'fil3.txt').read() == 'Text of fil3'
+        assert (repo / 'fil5.txt').isfile()
+        assert (repo / 'fil5.txt').read() == 'Text of fil5'
+        assert (repo / 'link1').check(link=1, file=1)
+        assert (repo / 'link1').read() == 'Text of fil5'
+    # Checking checkout to starting 'test_git_branch' point.
+    assert repogit('symbolic-ref', '--short', 'HEAD').strip() == current_branch
+
+def test_git_tag(gitrepo, git_at, symlinkto, git_tag):
+      repo = gitrepo(
+        'tst_repo',
+        {
+            'msg': 'First commit',
+            'files': {
+                'fil1.txt': 'Text of fil1',
+                'link1': symlinkto('fil1.txt'),
+                'fil2.txt': 'Text of fil2',
+                'fil5.txt': None,
+            },
+        }
+      )
+      git_tag('tst_repo', 'some_tag', 'Text of some_tag')
+      assert (repo / ".git/refs/tags" / "some_tag").isfile()
+      assert not (repo / ".git/refs/tags" / "tag_not_exist").isfile()
