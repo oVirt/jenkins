@@ -1,4 +1,13 @@
 - project:
+    name: jenkins_standard-poll-upstream-sources
+    project:
+      - jenkins
+    branch:
+      - master
+    jobs:
+      - '{project}_{branch}_standard-poll-upstream-sources'
+
+- project:
     name: ovirt-engine-metrics_standard-poll-upstream-sources
     project:
       - ovirt-engine-metrics

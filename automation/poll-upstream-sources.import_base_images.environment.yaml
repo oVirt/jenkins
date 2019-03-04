@@ -1,0 +1,13 @@
+- name: 'PLAYBOOK'
+  value: import_base_images
+- name: 'INVENTORY'
+  value: stdci_images
+- name: 'APISERVER'
+  value: https://shift.ovirt.org:8443
+- name: 'PROJECT'
+  value: stdci-production
+- name: 'TOKEN'
+  valueFrom:
+    secretKeyRef:
+      name: 'kubevirt-master-serviceaccount'
+      key: 'token'

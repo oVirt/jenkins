@@ -34,6 +34,11 @@ _safe_download_usage() {
     echo "                         remote file stored next to the downloaded"
     echo "                         file with an extension matching the digest"
     echo "                         algorithm"
+    echo "                         If this is set to `CHECKSUM_FILE` if would"
+    echo "                         be assumes the remote location contains a"
+    echo "                         file called CHECKSUM that contains a"
+    echo "                         space-separated table of checksum and file"
+    echo "                         name"
 }
 
 safe_download() (
@@ -100,6 +105,14 @@ safe_download() (
         # Remote file includes only digest w/o filename suffix
         local remote_digest_url="${download_from}.${digest}"
         remote_digest="$(curl -sL "${remote_digest_url}")"
+    elif [[ "$remote_digest" == CHECKSUM_FILE ]]; then
+        local remote_checksum_file="${download_from%/*}/CHECKSUM"
+        local checksum_file_contents
+        checksum_file_contents="$(curl -sL "${remote_checksum_file}")"
+        remote_digest="$(
+            sed -nre "s/^(\S+)\s+.*${download_from##*/}$/\1/p" \
+                <<<"$checksum_file_contents"
+        )"
     fi
     local local_digest_file="${download_to}.${digest}"
     if [[ "$(cat "$local_digest_file")" != "$remote_digest" ]]; then
