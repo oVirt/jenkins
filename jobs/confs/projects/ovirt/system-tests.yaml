@@ -22,6 +22,8 @@
           chroot_distro: el7
       - 4.2:
           chroot_distro: el7
+      - 4.3:
+          chroot_distro: el7
     email-to: >
       lgoldber@redhat.com,
       edwardh@redhat.com,
@@ -39,12 +41,16 @@
       - he-node-ng
     project: 'ovirt-system-tests'
     version:
+      - 4.3:
+          chroot_distro: el7
       - 4.2:
           chroot_distro: el7
       - master:
           chroot_distro: el7
     exclude:
       - {suite_type: he-basic-ansible, version: master}
+      - {suite_type: he-basic-ansible, version: 4.3}
+
     email-to: >
       didi@redhat.com,
       lveyde@redhat.com,
@@ -102,6 +108,9 @@
           chroot_distro: el7
       - 4.2:
           chroot_distro: el7
+      - 4.3:
+          chroot_distro: el7
+
     email-to: 'sabose@redhat.com'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
