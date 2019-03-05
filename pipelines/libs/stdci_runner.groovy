@@ -156,6 +156,11 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
         try {
             def node = node_lib.get_current_pipeline_node_details()
             print("Running on node: $node.name ($node.labels)")
+            if(job.runtime_reqs?.isolationlevel == 'container') {
+                sh """
+                    echo \"OpenShift node name: \${_CI_ENV_NODE_NAME:-NO DATA}\"
+                """
+            }
             report.status('PENDING', 'Setting up test environment')
             // Clear al left-over artifacts from previous builds
             dir(get_job_dir(job)) { deleteDir() }
