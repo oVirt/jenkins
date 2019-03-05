@@ -17,6 +17,10 @@ all:
                 value: im_a_container
               - name: CONTAINER_SLOTS
                 value: /var/lib/stdci
+              - name: _CI_ENV_NODE_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: spec.nodeName
             image: "\
               docker.io/ovirtinfra/el7-runner-node:\
               0379f5e943a73c98eaf40788eecb060d4539642a\
@@ -167,6 +171,11 @@ all:
                     docker.io/ovirtinfra/el7-loader-node:\
                     44fb5ecf4f19d330e7ea28c36a841f265351d16b\
                     "
+                  env:
+                    - name: _CI_ENV_NODE_NAME
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: spec.nodeName
                   tty: true
                   resources:
                     limits:
