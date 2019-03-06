@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - '4.3':
+          branch: master
       - '4.2':
           branch: master
     stage: check-patch
@@ -38,6 +40,7 @@
     name: vdsm-jsonrpc-java_build-artifacts-manual-any
     version:
       - '4.2'
+      - '4.3'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
