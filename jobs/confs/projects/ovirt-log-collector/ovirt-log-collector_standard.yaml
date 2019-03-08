@@ -7,6 +7,8 @@
           branch: master
       - '4.2':
           branch: ovirt-log-collector-4.2
+      - '4.3':
+          branch: ovirt-log-collector-4.3
     stage:
       - check-patch
       - check-merged
@@ -38,6 +40,7 @@
     <<: *base-params
     name: ovirt-log-collector_build-artifacts-manual-any
     version:
+      - '4.3'
       - '4.2'
       - 'master'
     jobs:
