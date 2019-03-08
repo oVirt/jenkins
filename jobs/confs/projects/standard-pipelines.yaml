@@ -102,6 +102,7 @@
       - ovirt-system-tests
       - py2exe-py2.7
       - python-windows
+      - pywin32-py2.7
       - releng-tools
       - repoman
       - vcredist-x86
