@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - '4.3':
+          branch: ovirt-4.3
       - '4.2':
           branch: ovirt-4.2
     distro:
@@ -27,6 +29,8 @@
     version:
       - master:
           branch: master
+      - '4.3':
+          branch: ovirt-4.3
       - '4.2':
           branch: ovirt-4.2
     distro:
@@ -60,6 +64,8 @@
     version:
       - master:
           branch: master
+      - '4.3':
+          branch: ovirt-4.3
       - '4.2':
           branch: ovirt-4.2
     distro:
