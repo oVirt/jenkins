@@ -1,0 +1,1 @@
+quay.io/pod_utils/stdci-jenkins-master:sha256-a6e0a11-dd5d1a0

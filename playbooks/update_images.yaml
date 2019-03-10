@@ -1,0 +1,85 @@
+# update_images.yaml - Update the latest builds of our custom images in
+#                      quay.io in the configuration of the playbooks
+#                      that use them
+#
+# Usage:
+#     ansible-playbook playbooks/update_images.yaml -i $INVENTORY
+#
+# Where $INVENTORY is an inventory file with a `custom_images` group
+# listing the names of the custom images we build. An example for such
+# an inventory file can be found at:
+#
+#     playbooks/inventories/stdci_images.yaml
+#
+# The following variables should be defined by setting globally in the
+# inventory, setting on the image record in the inventory or passing via
+# the command line:
+#   - target_registry     - (Optional) The target registry to get images
+#                           from. Will default to `quay.io`
+#   - target_namespace    - (Optional) The target namespace in the
+#                           registry to get images from. Default is
+#                           `pod_utils`
+#   - merge_tag           - (Optional) The tag the latest images in the
+#                           target registry should have, defaults to
+#                           'master-latest'
+#
+# Prerquisites for running:
+# * You need to install Ansible as instructed in the README.md file
+# * You need to have the `skopeo` package installed or, alternatively, set the
+#   `skopeo_bin` variable to where the skopeo executable can be found.
+#
+- hosts: custom_images
+  gather_facts: no
+  vars:
+    image_repo: "\
+      {{ target_registry|default('quay.io') }}/\
+      {{ target_namespace|default('pod_utils') }}/\
+      {{ inventory_hostname }}\
+    "
+    image_full_tag: "{{ image_repo }}:{{ image_tag|default('master-latest') }}"
+    image_source_tag_label: org.ovirt.image-source-tag
+  vars_files:
+    - vars/common.yaml
+  tasks:
+    - name: Get image information
+      delegate_to: 127.0.0.1
+      set_fact:
+        image_source_tag: "{{
+          (lookup(
+            'pipe',
+            skopeo_bin|default('skopeo') + ' inspect docker://' + image_full_tag
+          ) | from_json).Labels[image_source_tag_label]
+        }}"
+
+    - name: Create image tag directory
+      delegate_to: 127.0.0.1
+      file:
+        state: directory
+        path: "{{ tag_file_path }}"
+
+    - name: Write image tag file
+      delegate_to: 127.0.0.1
+      vars:
+        file_content: "{{ image_repo }}:{{ image_source_tag }}"
+        ansible_python_interpreter: /usr/bin/python
+      template:
+        src: plain_content_file.txt.j2
+        dest: "{{ tag_file_path }}/{{ inventory_hostname }}.txt"
+
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  vars_files:
+    - vars/common.yaml
+  roles:
+    - git_commit_files
+  tasks:
+    - name: Commit image update
+      tags: commit
+      git_commit_files:
+        files: "{{ lookup('fileglob', tag_file_path + '/*.txt') }}"
+        repo_dir: "{{ lookup('env', 'PWD') }}"
+        branch: image_update
+        change_id_headers:
+          - Change-Id
+          - x-md5

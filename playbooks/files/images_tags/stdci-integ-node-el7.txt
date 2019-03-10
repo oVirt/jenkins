@@ -1,0 +1,1 @@
+quay.io/pod_utils/stdci-integ-node-el7:sha256-722ac78-b14ee8b

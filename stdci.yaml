@@ -69,3 +69,4 @@ sub-stages:
         file-changed:
           - container/*
           - automation/*.{{ substage }}.*
+  - update_images

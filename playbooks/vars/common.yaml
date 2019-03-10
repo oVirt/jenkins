@@ -1,0 +1,4 @@
+---
+# Common variables used by many playbooks
+#
+tag_file_path: "{{ playbook_dir }}/files/images_tags"

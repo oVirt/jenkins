@@ -1,0 +1,1 @@
+quay.io/pod_utils/stdci-loader-node:sha256-86db243-1bd9aa5
