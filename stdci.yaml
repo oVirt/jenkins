@@ -63,4 +63,9 @@ sub-stages:
         file-changed:
           - container/el7-runner-node/*
           - automation/verify-build-containers.*
-  - import_base_image-jenkins-2-centos7
+  - import_base_images
+  - build_images:
+      runif:
+        file-changed:
+          - container/*
+          - automation/*.{{ substage }}.*
