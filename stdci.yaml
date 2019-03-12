@@ -19,6 +19,7 @@ sub-stages:
           - jobs/confs/shell-scripts/global_setup*
           - scripts/docker_cleanup.py
           - date/Dockerfiles/*
+          - data/slave-repos/*
           - mock_configs/*
           - scripts/*.py
           - test/*.py
