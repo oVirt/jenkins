@@ -42,9 +42,9 @@ SCL][1]. To install it either use the instructions in the mentioned link
 or, if you don't want to use Subscription Manager on RHEL, just add the
 following `*.repo` file to `/etc/yum.repos.d`:
 
-    [centos-sclo-sclo]
-    name=CentOS-7 - SCLo sclo
-    baseurl=http://mirror.centos.org/centos/7/sclo/$basearch/sclo/
+    [centos-sclo-rh]
+    name=CentOS-7 - SCLo rh
+    baseurl=http://mirror.centos.org/centos/7/sclo/$basearch/rh/
     gpgcheck=1
     enabled=1
     gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-SCLo
