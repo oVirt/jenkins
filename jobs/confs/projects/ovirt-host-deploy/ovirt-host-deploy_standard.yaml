@@ -1,3 +1,4 @@
+---
 - project: &base-params
     name: ovirt-host-deploy_build
     project: ovirt-host-deploy
@@ -5,7 +6,9 @@
     version:
       - master:
           branch: master
-      - 4.2:
+      - '4.3':
+          branch: ovirt-host-deploy-1.8
+      - '4.2':
           branch: ovirt-host-deploy-1.7
     stage:
       - check-patch
@@ -38,6 +41,7 @@
     name: ovirt-host-deploy_build-artifacts-manual-any
     version:
       - '4.2'
+      - '4.3'
       - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
