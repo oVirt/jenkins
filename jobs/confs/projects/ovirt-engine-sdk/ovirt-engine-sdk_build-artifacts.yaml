@@ -29,10 +29,12 @@
     name: python-ovirt-engine-sdk4_checks
     project: ovirt-engine-sdk
     version:
-      - '4.2':
-          branch: sdk_4.2
       - master:
           branch: master
+      - '4.3':
+          branch: master
+      - '4.2':
+          branch: sdk_4.2
     distro:
       - el7
       - fc28
@@ -46,6 +48,8 @@
     project: ovirt-engine-sdk
     version:
       - master:
+          branch: sdk_3.6
+      - '4.3':
           branch: sdk_3.6
       - '4.2':
           branch: sdk_3.6
@@ -62,6 +66,8 @@
     project: ovirt-engine-sdk
     version:
       - master:
+          branch: master
+      - '4.3':
           branch: master
       - '4.2':
           branch: sdk_4.2
