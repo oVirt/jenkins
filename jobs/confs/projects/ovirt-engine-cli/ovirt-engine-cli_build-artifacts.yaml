@@ -5,6 +5,8 @@
     version:
       - master:
           branch: cli_3.6
+      - '4.3':
+          branch: cli_3.6
       - '4.2':
           branch: cli_3.6
     stage: build-artifacts
