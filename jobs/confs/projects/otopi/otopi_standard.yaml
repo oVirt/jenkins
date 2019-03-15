@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - '4.3':
+          branch: otopi-1.8
       - '4.2':
           branch: otopi-1.7
     stage:
@@ -38,6 +40,7 @@
     <<: *base-params
     name: otopi_build-artifacts-manual-any
     version:
+      - '4.3'
       - '4.2'
       - 'master'
     jobs:
