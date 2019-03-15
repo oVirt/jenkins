@@ -21,10 +21,12 @@
     <<: *basic-params
     name: java-ovirt-engine-sdk4_checks
     version:
-      - '4.2':
-          branch: sdk_4.2
       - master:
           branch: master
+      - '4.3':
+          branch: master
+      - '4.2':
+          branch: sdk_4.2
     jobs:
       - 'java-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
 
@@ -35,6 +37,8 @@
     project: ovirt-engine-sdk-java
     version:
       - master:
+          branch: sdk_3.6
+      - '4.3':
           branch: sdk_3.6
       - '4.2':
           branch: sdk_3.6
@@ -48,6 +52,8 @@
     project: ovirt-engine-sdk-java
     version:
       - master:
+          branch: master
+      - '4.3':
           branch: master
       - '4.2':
           branch: sdk_4.2
