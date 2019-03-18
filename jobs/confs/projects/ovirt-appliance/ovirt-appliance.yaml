@@ -28,7 +28,7 @@
           branch: master
           trigger: 'timed'
           trigger-times: '@daily'
-      - ovirt-4.3:
+      - '4.3':
           branch: ovirt-4.3
           trigger: 'timed'
           trigger-times: '@daily'
