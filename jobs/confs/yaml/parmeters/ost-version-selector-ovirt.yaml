@@ -5,6 +5,7 @@
         name: ENGINE_VERSION
         choices:
           - 'master'
+          - '4.3'
           - '4.2'
         description: '<b>Target oVirt version which will be tested.</b>
                         <br><style type="text/css">
