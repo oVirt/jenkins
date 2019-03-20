@@ -8,6 +8,9 @@ all:
         containers:
           - &slave_jnlp_container_base
             name: jnlp
+            # When adding environment variable, make sure it has the
+            # _CI_ENV_ prefix so it will be automatically exported.
+            # This is true for any no-name-yet/systemd-base based image.
             env:
               - name: JENKINS_AGENT_WORKDIR
                 value: /home/jenkins
