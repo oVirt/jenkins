@@ -36,6 +36,30 @@
 
 - project:
     <<: *ioprocess_standard_common
+    name: ioprocess-4.3
+    version:
+      - 4.3:
+          branch: ioprocess-1.0
+          repoversion: 4.3
+    stage:
+      - build-artifacts
+      - check-patch
+    distro:
+      - el7
+      - fc28
+    arch:
+      - x86_64
+      - ppc64le:
+          node-filter: ppc64le
+#      - s390x:
+#          node-filter: s390x
+    exclude:
+        - { distro: fc28, arch: ppc64le }
+        - { distro: el7,  arch: s390x, }
+        - { stage: check-patch, arch: s390x, }
+
+- project:
+    <<: *ioprocess_standard_common
     name: ioprocess-4.2
     version:
       - 4.2:
