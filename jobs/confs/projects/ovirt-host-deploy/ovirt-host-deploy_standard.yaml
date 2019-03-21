@@ -1,11 +1,10 @@
 ---
+# master moved to stdci v2, other branches may follow later on
 - project: &base-params
     name: ovirt-host-deploy_build
     project: ovirt-host-deploy
     trigger: on-change
     version:
-      - master:
-          branch: master
       - '4.3':
           branch: ovirt-host-deploy-1.8
       - '4.2':
@@ -42,6 +41,5 @@
     version:
       - '4.2'
       - '4.3'
-      - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'

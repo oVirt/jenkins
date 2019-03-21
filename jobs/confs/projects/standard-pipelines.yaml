@@ -91,6 +91,7 @@
       - ovirt-engine-wildfly
       - ovirt-engine-wildfly-overlay
       - ovirt-engine-yarn
+      - ovirt-host-deploy
       - ovirt-imageio
       - ovirt-jboss-modules-maven-plugin
       - ovirt-js-dependencies
