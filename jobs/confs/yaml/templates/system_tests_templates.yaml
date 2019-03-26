@@ -61,7 +61,7 @@
         - throttle:
             enabled: true
             option: project
-            max-total: 3
+            max-total: 10
         - inject: *standard-system-tests-properties-inject
     node: '{node-filter}'
     scm:

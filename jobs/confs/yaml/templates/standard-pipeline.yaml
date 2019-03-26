@@ -152,8 +152,13 @@
 - job-template:
     name: standard-manual-runner
     project-type: pipeline
+    concurrent: true
     quiet-period: 0
     properties:
+      - throttle:
+          enabled: true
+          max-total: 10
+          option: project
       - build-discarder:
           days-to-keep: 14
           artifact-num-to-keep: 60
