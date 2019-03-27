@@ -39,6 +39,7 @@ all:
                 memory: 16Gi
               requests:
                 memory: 16Gi
+                cpu: 100m
             securityContext:
               privileged: true
             volumeMounts:
@@ -102,6 +103,7 @@ all:
                       memory: 32Gi
                     requests:
                       memory: 32Gi
+                      cpu: 100m
               nodeSelector:
                 model: r620
 
