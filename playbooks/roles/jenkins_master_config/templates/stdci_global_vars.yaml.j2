@@ -24,6 +24,8 @@ jenkins:
           kubevirtci/os-3.11.0 kubevirtci/os-3.11.0-crio
           kubevirtci/k8s-1.10.11 kubevirtci/k8s-1.11.0
           kubevirtci/k8s-multus-1.13.3 kubevirtci/k8s-genie-1.11.1
+          selenium/hub selenium/node-firefox-debug
+          selenium/node-chrome-debug
       - key: "CI_FILTERED_SECRETS"
         value: "${WORKSPACE}/ci_secrets.yaml"
       - key: "CI_MIRRORS_URL"
