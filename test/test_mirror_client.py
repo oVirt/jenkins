@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """test_mirror_client.py - Tests for mirror_client.py
 """
+import socket
 from textwrap import dedent
 from six.moves import StringIO
 import pytest
@@ -11,6 +12,7 @@ from threading import Thread
 from six.moves.urllib.parse import urljoin
 import requests
 from time import sleep
+from random import randrange
 from os import environ
 try:
     from unittest.mock import MagicMock, call, sentinel
@@ -148,9 +150,20 @@ def mirror_server(mirrors_dict):
             else:
                 self.send_error(404)
 
-    server_address = ('127.0.0.1', 8765)
+    for attempt in range(0,20):
+        server_address = ('127.0.0.1', randrange(8765, 8876))
+        try:
+            server = HTTPServer(server_address, MirrorRequestHandler)
+        except socket.error as e:
+            if e.errno == 98:
+                continue
+            raise
+        break
+    else:
+        raise RuntimeError("Failed to allocate port for mirror_server fixture")
+
     server_url = 'http://{0}:{1}'.format(*server_address)
-    server = HTTPServer(server_address, MirrorRequestHandler)
+
     sthread = Thread(target=server.serve_forever)
     sthread.start()
     try:
@@ -167,7 +180,7 @@ def mirror_server(mirrors_dict):
                 json_varname=mirror_json_varname,
                 bad_path_url=urljoin(server_url, '/bad_file'),
                 bad_port_url=urljoin(
-                    'http://{0}:8766'.format(server_address[0]),
+                    'http://{0}:8764'.format(server_address[0]),
                     mirror_file_path
                 ),
                 corrupt_url=urljoin(server_url, mirror_corrupt_file_path),
