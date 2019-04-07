@@ -16,6 +16,7 @@
     abort-on-update: true
     org: kubevirt
     project:
+      - cluster-network-addons-operator
       - common-templates
       - containerized-data-importer
       - kubernetes-device-plugins
