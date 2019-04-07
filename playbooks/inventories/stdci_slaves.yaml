@@ -36,9 +36,9 @@ all:
               periodSeconds: 7200
             resources:
               limits:
-                memory: 25Gi
+                memory: 20Gi
               requests:
-                memory: 25Gi
+                memory: 20Gi
                 cpu: 100m
             securityContext:
               privileged: true
