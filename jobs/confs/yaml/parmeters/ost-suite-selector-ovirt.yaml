@@ -10,6 +10,9 @@
             - upgrade-from-prevrelease
             - he-basic
             - he-basic-ansible
+            - he-basic-iscsi
+            - he-node-ng
+            - he-basic-role-remote
             - hc-basic
             - image-ng
             - ansible

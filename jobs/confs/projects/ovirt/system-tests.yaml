@@ -39,6 +39,7 @@
       - he-basic-iscsi
       - he-basic-ansible
       - he-node-ng
+      - he-basic-role-remote
     project: 'ovirt-system-tests'
     version:
       - 4.3:
