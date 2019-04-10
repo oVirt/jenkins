@@ -51,6 +51,7 @@
     exclude:
       - {suite_type: he-basic-ansible, version: master}
       - {suite_type: he-basic-ansible, version: 4.3}
+      - {suite_type: he-basic-role-remote, version: 4.2}
 
     email-to: >
       didi@redhat.com,
