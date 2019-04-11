@@ -170,6 +170,7 @@ all:
                 jenkins_label: loader-container
                 jenkins_exclusive: True
             spec:
+              activeDeadlineSeconds: 1800
               containers:
                 - name: jnlp
                   image: "\
