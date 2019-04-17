@@ -5,6 +5,8 @@
     version:
       - master:
           branch: master
+      - '4.3.z':
+          branch: cockpit-ovirt-0.12.7.z
       - '4.3':
           branch: ovirt-4.3
       - '4.2':
