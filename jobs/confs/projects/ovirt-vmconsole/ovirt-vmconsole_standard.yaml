@@ -29,6 +29,15 @@
 
 - project:
     <<: *base-params
+    name: ovirt-vmconsole_check-patch
+    stage: check-patch
+    trigger: on-change
+    jobs:
+      - '{project}_{version}_{stage}-{distro}-{arch}'
+
+
+- project:
+    <<: *base-params
     name: ovirt-vmconsole_build-artifacts-manual-any
     stage: build-artifacts-manual
     version:
