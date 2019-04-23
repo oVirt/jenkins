@@ -9,6 +9,8 @@
           branch: ovirt-engine-4.2
       - '4.3':
           branch: ovirt-engine-4.3
+      - '4.3.3.z':
+          branch: ovirt-engine-4.3.3.z
     distro:
       - el7
       - fc28
