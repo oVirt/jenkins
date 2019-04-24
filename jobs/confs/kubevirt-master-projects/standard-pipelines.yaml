@@ -16,7 +16,7 @@
     abort-on-update: true
     org: kubevirt
     project:
-      - bridge-maker
+      - bridge-marker
       - cluster-network-addons-operator
       - common-templates
       - containerized-data-importer
