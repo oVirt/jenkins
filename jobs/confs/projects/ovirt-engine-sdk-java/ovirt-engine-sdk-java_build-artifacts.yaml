@@ -24,7 +24,7 @@
       - master:
           branch: master
       - '4.3':
-          branch: master
+          branch: sdk_4.3
       - '4.2':
           branch: sdk_4.2
     jobs:
@@ -54,7 +54,7 @@
       - master:
           branch: master
       - '4.3':
-          branch: master
+          branch: sdk_4.3
       - '4.2':
           branch: sdk_4.2
     jobs:

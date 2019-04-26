@@ -6,7 +6,7 @@
       - master:
           branch: master
       - '4.3':
-          branch: master
+          branch: model_4.3
       - '4.2':
           branch: model_4.2
     stage: build-artifacts
