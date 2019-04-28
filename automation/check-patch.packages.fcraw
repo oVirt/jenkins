@@ -1,5 +1,5 @@
+docker-ce
 PyYAML
-docker
 git
 pytest
 python-jinja2
