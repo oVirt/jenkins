@@ -47,6 +47,7 @@ def loader_main(loader) {
         currentBuild.displayName += " ${project.name} [$std_ci_stage]"
 
         project_lib.checkout_project(project)
+        save_stdci_info(std_ci_stage, project)
         set_gerrit_automerge(project, std_ci_stage)
         dir(project.clone_dir_name) {
             // This is a temporary workaround for KubeVirt project
@@ -311,6 +312,11 @@ def check_whitelist(project) {
         currentBuild.result = 'NOT_BUILT'
         error("User $project.change_owner is not whitelisted")
     }
+}
+
+def save_stdci_info(std_ci_stage, project) {
+    modify_build_parameter('STD_CI_STAGE', std_ci_stage)
+    project_lib.save_project_info(project)
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from

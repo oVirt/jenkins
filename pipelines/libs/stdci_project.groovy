@@ -10,7 +10,13 @@ def on_load(loader) {
         url=null, head=null, clone_dir_name=null ->
         loader.metaClass.invokeMethod(
             loader, 'checkout_repo',
-            [repo_name, refspec, url, head, clone_dir_name])
+            [repo_name, refspec, url, head, clone_dir_name]
+        )
+    }
+    metaClass.modify_build_parameter = { key, value ->
+        loader.metaClass.invokeMethod(
+            loader, 'modify_build_parameter', [key, value]
+        )
     }
 }
 
@@ -269,6 +275,14 @@ def is_gerrit_change_merged() {
     return is_merged == 0
 }
 
+def save_project_info(Project project) {
+    modify_build_parameter('STD_CI_CLONE_URL', project.clone_url)
+    modify_build_parameter('STD_CI_REFSPEC', project.refspec)
+    modify_build_parameter('STD_CI_PROJECT', project.name)
+    modify_build_parameter(
+        'STD_CI_GIT_SHA', project.checkout_data.GIT_COMMIT
+    )
+}
 
 // We need to return 'this' so the actual pipeline job can invoke functions from
 // this script
