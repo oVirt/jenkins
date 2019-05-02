@@ -2,6 +2,7 @@
 //
 
 import hudson.model.ParametersAction
+import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper
 
 def project_lib
 def stdci_runner_lib
@@ -318,6 +319,31 @@ def save_stdci_info(std_ci_stage, project) {
     modify_build_parameter('STD_CI_STAGE', std_ci_stage)
     project_lib.save_project_info(project)
 }
+
+@NonCPS
+def is_same_stdci_build(std_ci_stage, project, build) {
+    def build_params = build.getAction(hudson.model.ParametersAction)
+    return (
+        build_params.getParameter('STD_CI_STAGE')?.value == std_ci_stage &&
+        project_lib.is_same_project_build(project, build)
+    )
+}
+
+@NonCPS
+def find_oldest_same_build(std_ci_stage, project) {
+    def same_builds = currentBuild.rawBuild.parent.builds.findAll { build ->
+        (build.number < currentBuild.number) && (
+            build.isBuilding() ||
+            build.result.isBetterOrEqualTo(hudson.model.Result.SUCCESS)
+        ) &&
+        is_same_stdci_build(std_ci_stage, project, build)
+    }
+    if(same_builds.isEmpty()) {
+        return null
+    }
+    return new RunWrapper(same_builds.last(), false)
+}
+
 
 // We need to return 'this' so the actual pipeline job can invoke functions from
 // this script

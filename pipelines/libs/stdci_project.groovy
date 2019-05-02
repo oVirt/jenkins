@@ -284,6 +284,31 @@ def save_project_info(Project project) {
     )
 }
 
+@NonCPS
+def is_same_project_build(Project project, build) {
+    def build_params = build.getAction(hudson.model.ParametersAction)
+    def is_same = true
+
+    def build_project = build_params.getParameter('STD_CI_PROJECT')?.value
+    if(build_project != null) {
+        is_same &= (build_project == project.name)
+    } else {
+        // If we don't have STD_CI_PROJECT (because we did not store it ion the build yet as can
+        // happen to queued builds, we fall back to STD_CI_CLONE_URL which might be passed as a
+        // parameter
+        is_same &= (build_params.getParameter('STD_CI_CLONE_URL')?.value == project.clone_url)
+    }
+    def build_git_sha = build_params.getParameter('STD_CI_GIT_SHA')?.value
+    def self_git_sha = project.checkout_data.GIT_COMMIT
+    if(build_git_sha != null && self_git_sha != null) {
+        is_same &= (build_git_sha == self_git_sha)
+    } else {
+        is_same &= (build_params.getParameter('STD_CI_REFSPEC')?.value == project.refspec)
+    }
+
+    return is_same
+}
+
 // We need to return 'this' so the actual pipeline job can invoke functions from
 // this script
 return this
