@@ -51,7 +51,7 @@ def load_code(String code_file, def load_as=null) {
 
 def checkout_jenkins_repo() {
     def url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
-    checkout_repo(
+    return checkout_repo(
         repo_name: 'jenkins',
         refspec: env.STDCI_SCM_REFSPEC ?: 'refs/heads/master',
         url: env.STDCI_SCM_URL ?: "${url_prefix}/jenkins"
@@ -65,6 +65,7 @@ def checkout_repo(
     String head=null,
     String clone_dir_name=null
 ) {
+    def checkoutData
     if(url == null) {
         url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
         url = "${url_prefix}/${repo_name}"
@@ -76,7 +77,7 @@ def checkout_repo(
         clone_dir_name = repo_name
     }
     dir(clone_dir_name) {
-        checkout(
+        checkoutData = checkout(
             changelog: false, poll: false, scm: [
                 $class: 'GitSCM',
                 branches: [[name: head]],
@@ -105,16 +106,17 @@ def checkout_repo(
             """
         }
     }
+    return checkoutData
 }
 
 def checkout_repo(Map named_args) {
     if('refspec' in named_args) {
-        checkout_repo(
+        return checkout_repo(
             named_args.repo_name, named_args.refspec,
             named_args.url, named_args.head
         )
     } else {
-        checkout_repo(named_args.repo_name)
+        return checkout_repo(named_args.repo_name)
     }
 }
 
