@@ -11,6 +11,8 @@ String std_ci_stage
 def project
 def jobs
 def queues
+def previous_build
+Boolean wait_for_previous_build
 
 def on_load(loader){
     // Copy methods from loader to this script
@@ -84,9 +86,49 @@ def loader_main(loader) {
             enqueue_change(project, queues)
         }
     }
+    previous_build = null
+    wait_for_previous_build = false
+    if(std_ci_stage == 'build-artifacts') {
+        // Try to find previous build of the same commit
+        stage('Looking for existing build') {
+            previous_build = find_oldest_same_build(std_ci_stage, project)
+            if(previous_build == null) {
+                echo "No previous build, would run builds here"
+                return
+            }
+            echo "Found previous build of same commit: ${previous_build.number}"
+            if(previous_build.result == null) {
+                wait_for_previous_build = true
+            } else {
+                copy_previos_build_artifacts()
+            }
+        }
+    }
 }
 
 def main() {
+    if(std_ci_stage == 'build-artifacts') {
+        stage('Downloading existing build') {
+            if(previous_build != null) {
+                if(wait_for_previous_build) {
+                    waitUntil {
+                        echo "Waiting for build ${previous_build.number} to finish"
+                        return previous_build.result != null
+                    }
+                    node(env?.LOADER_NODE_LABEL) {
+                        copy_previos_build_artifacts()
+                    }
+                } else {
+                    echo "Done already."
+                }
+            } else {
+                echo "Skipped - no previous build"
+            }
+        }
+    }
+    if(previous_build != null) {
+        return
+    }
     tag_poll_job(jobs)
     stage('Invoking jobs') {
         stdci_runner_lib.run_std_ci_jobs(project, jobs)
@@ -342,6 +384,24 @@ def find_oldest_same_build(std_ci_stage, project) {
         return null
     }
     return new RunWrapper(same_builds.last(), false)
+}
+
+def copy_previos_build_artifacts() {
+    if(previous_build.result != 'SUCCESS') {
+        error 'Previous build failed'
+    }
+    echo "Getting artifacts from previous build instead of building"
+    dir('imported-artifacts') {
+        deleteDir()
+        copyArtifacts(
+            fingerprintArtifacts: true,
+            optional: true,
+            projectName: env.JOB_NAME,
+            selector: specific(previous_build.id),
+            target: '.',
+        )
+        archiveArtifacts '**/*'
+    }
 }
 
 
