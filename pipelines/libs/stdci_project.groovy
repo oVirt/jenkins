@@ -28,6 +28,7 @@ class Project implements Serializable {
     String rerun_title = 'Rebuild'
     String rerun_url
     String org
+    def checkout_data
     def notify = \
         { context, status, short_msg=null, long_msg=null, url=null -> }
     def get_queue_build_args = null
@@ -35,13 +36,15 @@ class Project implements Serializable {
 }
 
 def checkout_project(Project project) {
-    checkout_repo(
+    def checkoutData = checkout_repo(
             project.name,
             project.refspec,
             project.clone_url,
             project.head,
             project.clone_dir_name
     )
+    project.checkout_data = checkoutData
+    return checkoutData
 }
 
 def new_project(Map init_params) {
