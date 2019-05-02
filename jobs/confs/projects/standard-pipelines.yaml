@@ -107,6 +107,7 @@
       - pywin32-py2.7
       - releng-tools
       - repoman
+      - safelease
       - vcredist-x86
       - vdsm
     jobs:
