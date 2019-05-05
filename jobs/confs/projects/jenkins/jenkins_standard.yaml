@@ -11,8 +11,6 @@
           node-filter: el7
       - fc29:
           node-filter: fc29
-      - fcraw:
-          node-filter: fc29
     arch: x86_64
     jobs:
         - 'jenkins_{version}_{stage}-{distro}-{arch}'
