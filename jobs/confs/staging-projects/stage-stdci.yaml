@@ -11,10 +11,7 @@
     distro:
       - el7:
           arch: x86_64
-      - fc27:
-          arch: s390x
-          node-filter: s390x
-      - fc26:
+      - fc28:
           arch: s390x
           node-filter: s390x
     jobs:
