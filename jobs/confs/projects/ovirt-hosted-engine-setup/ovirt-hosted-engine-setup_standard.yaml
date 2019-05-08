@@ -3,8 +3,6 @@
     project: ovirt-hosted-engine-setup
     trigger: on-change
     version:
-      - master:
-          branch: master
       - '4.3':
           branch: ovirt-hosted-engine-setup-2.3
       - '4.2':
