@@ -3,8 +3,6 @@
     project: ovirt-host
     trigger: on-change
     version:
-      - master:
-          branch: master
       - '4.3':
           branch: ovirt-4.3
       - '4.2':
@@ -27,8 +25,6 @@
     name: ovirt-host-altarch
     project: ovirt-host
     version:
-      - master:
-          branch: master
       - '4.3':
           branch: ovirt-4.3
       - '4.2':
@@ -62,8 +58,6 @@
     name: ovirt-host-altarch_build-artifacts
     project: ovirt-host
     version:
-      - master:
-          branch: master
       - '4.3':
           branch: ovirt-4.3
       - '4.2':
