@@ -23,5 +23,6 @@
       - kubernetes-device-plugins
       - kubevirt
       - ovs-cni
+      - node-maintenance-operator
     jobs:
       - '{org}_{project}_standard-gh-jobs'
