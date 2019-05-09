@@ -23,6 +23,7 @@
       - { version: '4.3', distro: fc29 }
       - { version: '4.3', distro: fcraw }
       - { arch: s390x,   distro: el7 }
+      - { arch: s390x,   distro: fcraw }
       - { arch: ppc64le, distro: fc28 }
       - { arch: ppc64le, distro: fc29 }
       - { arch: ppc64le, distro: fcraw }
