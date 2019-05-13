@@ -5,9 +5,11 @@ from six import iteritems
 from functools import partial
 from difflib import get_close_matches
 try:
+    from resolver_base import ResolverKeyError
     from secrets_resolvers import ci_secrets_file_resolver, load_secret_data
     from gdbm_db_resolvers import gdbm_resolver
 except ImportError:
+    from scripts.resolver_base import ResolverKeyError
     from scripts.secrets_resolvers import (
         ci_secrets_file_resolver, load_secret_data
     )
@@ -73,6 +75,12 @@ def serve_request(request, providers):
                 req_provider, get_close_matches(req_provider, providers.keys())
             )
         )
+    except ResolverKeyError:
+        if request.get('optional', 'default' in request):
+            if 'default' in request:
+                return var_name, request['default']
+            return None
+        raise
 
 
 def secret_key_ref_provider(resolver, request):

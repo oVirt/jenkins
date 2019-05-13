@@ -8,6 +8,7 @@ from scripts.ci_env_client import (
     secret_key_ref_provider,
     gen_env_vars_from_requests,
 )
+from scripts.resolver_base import ResolverKeyError
 try:
     from mock import MagicMock, call
 except ImportError:
@@ -40,24 +41,72 @@ def test_secret_key_ref_provider():
     mock_resolver.assert_called_with('secret')
 
 
-@pytest.mark.parametrize("user_request,exception", [
-    ({}, RuntimeError),
+@pytest.mark.parametrize('request_,expected', [
     (
-        {'name': 'VAR', 'valueFrom': {
-            'nonExistingPrvdr': {'key': 'username'}
-        }}, RuntimeError
+        {'name': 'VAR', 'value': 'VAL'},
+        ('VAR', 'VAL')
     ),
     (
-        {'name': 'VAR1', '': {'secretKeyRef': {'key': 'username'}}},
+        {'name': 'VAR'},
         RuntimeError
-    )
+    ),
+    (
+        {'value': 'VAL'},
+        RuntimeError
+    ),
+    (
+        {'name': 'VAR', 'valueFrom': {'dummy': '*key*'}},
+        ('VAR', '*value*')
+    ),
+    (
+        {'name': 'VAR', 'valueFrom': {'no_such_prov': '*key*'}},
+        RuntimeError
+    ),
+    (
+        {'name': 'VAR', 'valueFrom': {'dummy': 'no_key'}},
+        RuntimeError
+    ),
+    (
+        {'name': 'VAR', 'valueFrom': {'dummy': 'no_key'}, 'default': 'DEF'},
+        ('VAR', 'DEF')
+    ),
+    (
+        {'name': 'VAR', 'valueFrom': {'dummy': 'no_key'}, 'optional': True},
+        None
+    ),
+    (
+        {'name': 'VAR', 'valueFrom': {'dummy': 'no_key'}, 'optional': False},
+        RuntimeError
+    ),
+    (
+        {
+            'name': 'VAR', 'valueFrom': {'dummy': 'no_key'},
+            'optional': False, 'default': 'DEF'
+        },
+        RuntimeError
+    ),
+    (
+        {
+            'name': 'VAR', 'valueFrom': {'dummy': 'no_key'},
+            'optional': True, 'default': 'DEF'
+        },
+        ('VAR', 'DEF')
+    ),
 ])
-def test_serve_request_exceptions(user_request, exception):
-    mock_provider = MagicMock(return_value='password')
-    mock_load_providers = \
-        MagicMock(return_value={'secretKeyRef': mock_provider})
-    with pytest.raises(exception):
-        serve_request(user_request, mock_load_providers())
+def test_serve_request(request_, expected):
+    def provider(key):
+        if key == '*key*':
+            return '*value*'
+        else:
+            raise ResolverKeyError
+
+    providers = {'dummy': provider}
+    if isinstance(expected, type) and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            serve_request(request_, providers)
+    else:
+        out = serve_request(request_, providers)
+        assert out == expected
 
 
 def test_serve_specified_request():
