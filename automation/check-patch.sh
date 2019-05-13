@@ -33,6 +33,7 @@ main() {
     test_secrets_and_credentials
     test_mock_runner_mounts
     test_mock_runner_fd_leak
+    test_mock_runner_hardwired_env
     test_ci_toolbox
 }
 
@@ -154,6 +155,16 @@ test_mock_runner_fd_leak() {
         return 1
     else
         return 0
+    fi
+}
+
+test_mock_runner_hardwired_env() {
+    echo "GIT_COMMITTER_NAME: $GIT_COMMITTER_NAME"
+    echo "GIT_COMMITTER_EMAIL: $GIT_COMMITTER_EMAIL"
+    if [[ $GIT_COMMITTER_NAME ]] && [[ $GIT_COMMITTER_EMAIL ]]; then
+        return 0
+    else
+        return 1
     fi
 }
 

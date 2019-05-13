@@ -421,6 +421,8 @@ gen_environ_conf() {
     local scripts_path="${base_dir}/scripts"
     local gdbm_db=$(mktemp --tmpdir="$MR_TEMP_DIR" "gdbm_db.XXX")
 
+    local hardwired_vars=(GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL)
+
     # Generate GDBM database from `$env`
     python "${scripts_path}/gdbm_db_resolvers.py" "${gdbm_db}"
 
@@ -441,6 +443,17 @@ gen_environ_conf() {
     echo "        config_opts['environment'].update("
     echo "            gen_env_vars_from_requests(requests, providers)"
     echo "        )"
+
+    echo "        _hw_vars = '${hardwired_vars[*]}'.split()"
+    echo "        _hw_requests = [{"
+    echo "            'name': var,"
+    echo "            'valueFrom': {'runtimeEnv': var},"
+    echo "            'optional': True,"
+    echo "        } for var in _hw_vars]"
+    echo "        config_opts['environment'].update("
+    echo "            gen_env_vars_from_requests(_hw_requests, providers)"
+    echo "        )"
+
     echo "    finally:"
     echo "        sys.path.pop()"
 }
