@@ -6,7 +6,7 @@ from functools import partial
 from difflib import get_close_matches
 try:
     from secrets_resolvers import ci_secrets_file_resolver, load_secret_data
-    from gdbm_db_resolvers import  gdbm_resolver
+    from gdbm_db_resolvers import gdbm_resolver
 except ImportError:
     from scripts.secrets_resolvers import (
         ci_secrets_file_resolver, load_secret_data
@@ -37,7 +37,9 @@ def gen_env_vars_from_requests(requests, providers):
     :returns: A dictionary of {var_name(s): value(s)}, where value is extracted
               from secrets file per user's request or specified in the request.
     """
-    return dict([serve_request(request, providers) for request in requests])
+    served_requests = \
+        (serve_request(request, providers) for request in requests)
+    return dict(sr for sr in served_requests if sr is not None)
 
 
 def serve_request(request, providers):
