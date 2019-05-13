@@ -2,10 +2,10 @@
 """test_gdbm_db_resolvers.py - Tests for gdbm_db_resolvers.py
 """
 import pytest
-from contextlib import contextmanager
 from scripts.gdbm_db_resolvers import (
-        gdbm_resolver, is_key_safe, gen_gdbm_from_dict
+    gdbm_resolver, is_key_safe, gen_gdbm_from_dict
 )
+from scripts.resolver_base import ResolverKeyError
 
 
 @pytest.fixture
@@ -28,5 +28,5 @@ def test_gdbm_resolver(database_fixture, tmpdir):
     gen_gdbm_from_dict(database_path, database_fixture)
     resolver = gdbm_resolver(database_path)
     assert resolver('var') == '1234'
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ResolverKeyError):
         resolver('no such key')

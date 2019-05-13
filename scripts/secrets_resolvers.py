@@ -7,6 +7,12 @@ from re import match
 from xdg.BaseDirectory import xdg_config_home
 
 
+try:
+    from resolver_base import ResolverKeyError
+except ImportError:
+    from scripts.resolver_base import ResolverKeyError
+
+
 def main():
     parse_args()
 
@@ -28,11 +34,11 @@ def parse_args():
         'resolve', help="Resolve secrets file",
         description=(
             "Resolve secrets file and return requested secret"
-            "if resolve is used, the first argument to resolve should be the key"
-            "which should be resolved."
+            "if resolve is used, the first argument to resolve should be the"
+            "key which should be resolved."
             "secrets_resolvers.py resolve key"
         )
-   )
+    )
     parser_resolve.add_argument("key", type=str,
                                 help="Name of the secret to resolve")
     parser_resolve.set_defaults(func=main_resolve)
@@ -91,11 +97,12 @@ def ci_secrets_file_resolver(secret_data, req_secret_name):
         return next(secret['secret_data'] for secret in secret_data
                     if match(secret.get('name', '.*'), req_secret_name))
     except StopIteration:
-        raise RuntimeError("Could not find matching secret for {0}"
-                           .format(req_secret_name))
+        raise ResolverKeyError(
+            "Could not find matching secret for {0}".format(req_secret_name)
+        )
 
 
-def filter_secret_data(project,branch,secret_data):
+def filter_secret_data(project, branch, secret_data):
     """Filter secrets file by project and branch.
 
     :param list secret_data:           Secrets data to filter
@@ -106,8 +113,10 @@ def filter_secret_data(project,branch,secret_data):
     :returns: Filtered secrets data
     """
     for data in secret_data:
-        if match(data.get('project', '.*'), project) \
-            and match(data.get('branch', '.*'), branch):
+        if (
+            match(data.get('project', '.*'), project)
+            and match(data.get('branch', '.*'), branch)
+        ):
             yield data
 
 

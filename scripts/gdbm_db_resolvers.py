@@ -9,6 +9,12 @@ from re import match
 import argparse
 
 
+try:
+    from resolver_base import ResolverKeyError
+except ImportError:
+    from scripts.resolver_base import ResolverKeyError
+
+
 class gdbm_resolver:
     def __init__(self, database_path):
         self._database = dbm.open(database_path, 'c')
@@ -20,8 +26,10 @@ class gdbm_resolver:
         try:
             return (self._database[request.encode('utf-8')]).decode('utf-8')
         except KeyError:
-            raise RuntimeError("[DBM_RESOLVER] No such key {0} in env runtime."
-                               .format(request))
+            raise ResolverKeyError(
+                "[DBM_RESOLVER] No such key {0} in env runtime."
+                .format(request)
+            )
 
 
 def main():
