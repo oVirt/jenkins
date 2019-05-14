@@ -319,7 +319,7 @@ extra_packages() {
         fi
     else
         # CentOS-specific packages
-        package_list+=(python34-PyYAML)
+        package_list+=(python36-PyYAML python36-pyxdg rpm-libs)
         if can_sudo yum; then
             package_list+=(
                 firewalld haveged libvirt qemu-kvm-rhev
