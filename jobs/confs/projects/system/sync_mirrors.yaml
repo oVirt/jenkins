@@ -21,6 +21,10 @@
       - 'fedora-updates-fc29'
       - 'fedora-base-fc30'
       - 'fedora-updates-fc30'
+      - 'mock-copr-el7'
+      - 'mock-copr-fc28'
+      - 'mock-copr-fc29'
+      - 'mock-copr-fc30'
     arch: x86_64
     jobs:
       - 'system-sync_mirrors-{repo}-{arch}'
