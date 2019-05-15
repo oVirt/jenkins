@@ -32,6 +32,7 @@ def on_load(loader){
             loader, 'load_code', [code_file, load_as]
         )
     }
+    hook_caller = loader.load_code('libs/stdci_hook_caller.groovy', this)
     project_lib = loader.load_code('libs/stdci_project.groovy', this)
     stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy', this)
 }

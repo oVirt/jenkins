@@ -28,6 +28,8 @@ def on_load(loader) {
             loader, 'checkout_repo',
             [repo_name, refspec, url, head, clone_dir_name])
     }
+    hook_caller = loader.hook_caller
+    withHook = hook_caller.&withHook
     project_lib = loader.project_lib
     stdci_summary_lib = loader.load_code('libs/stdci_summary.groovy', this)
     node_lib = loader.load_code('libs/stdci_node.groovy', this)
@@ -240,13 +242,15 @@ def run_std_ci_in_mock(
                 println "extra_sources file was created: ${extra_sources_file}"
             }
             report.status('PENDING', 'Running test')
-            // Set flag to 'true' to indicate that exception from this point
-            // means the test failed and not the CI system
-            tfr.test_failed = true
-            mock_runner(job.script, job.distro, job.arch, job.timeout, mirrors)
-            // If we got here (no exception thrown so far), the test did not
-            // fail
-            tfr.test_failed = false
+            withHook('mock_runner') {
+                // Set flag to 'true' to indicate that exception from this point
+                // means the test failed and not the CI system
+                tfr.test_failed = true
+                mock_runner(job.script, job.distro, job.arch, job.timeout, mirrors)
+                // If we got here (no exception thrown so far), the test did not
+                // fail
+                tfr.test_failed = false
+            }
             invoke_pusher(
                 project, 'push',
                 args: [
