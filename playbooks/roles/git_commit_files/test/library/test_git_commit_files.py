@@ -253,24 +253,24 @@ class TestGitCommitFileModule(object):
             ),
             (
                 'file1', 'Change-Id x-md5', {},
-                '\nChange-Id: CHECKSUM_GOES_HERE'
                 '\nx-md5: CHECKSUM_GOES_HERE'
+                '\nChange-Id: CHECKSUM_GOES_HERE'
             ),
             (
                 'file1', 'x-md5 Change-Id', {},
-                '\nChange-Id: CHECKSUM_GOES_HERE'
                 '\nx-md5: CHECKSUM_GOES_HERE'
+                '\nChange-Id: CHECKSUM_GOES_HERE'
             ),
             (
                 'file1', 'x-md5 Change-Id x-md5', {},
-                '\nChange-Id: CHECKSUM_GOES_HERE'
                 '\nx-md5: CHECKSUM_GOES_HERE'
+                '\nChange-Id: CHECKSUM_GOES_HERE'
             ),
             (
                 'file1', 'Change-Id', {'B_hdr': 'val1', 'A_hdr': 7},
-                '\nChange-Id: CHECKSUM_GOES_HERE'
                 '\nA_hdr: 7'
                 '\nB_hdr: val1'
+                '\nChange-Id: CHECKSUM_GOES_HERE'
             ),
             ('', '', {}, ''),
             ('', 'Change-Id', {}, ''),

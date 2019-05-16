@@ -248,13 +248,21 @@ class GitCommitFilesModule(AnsibleModule):
 
     def _commit_headers(self, changed_files, change_id_headers, extra_headers):
         headers = ''
-        if changed_files and change_id_headers:
-            checksum = self._files_checksum(changed_files)
-            for hdr in sorted(set(change_id_headers)):
-                headers += '\n{}: {}'.format(hdr, checksum)
         if extra_headers:
             for hdr, val in sorted(iteritems(extra_headers)):
                 headers += '\n{}: {}'.format(hdr, val)
+        if changed_files and change_id_headers:
+            change_id_set = False
+            checksum = self._files_checksum(changed_files)
+            for hdr in sorted(set(change_id_headers)):
+                if hdr == 'Change-Id':
+                    change_id_set = True
+                    continue
+                headers += '\n{}: {}'.format(hdr, checksum)
+            # Ensure that 'Change-Id' is the last header we set because Gerrit
+            # needs it to be on the very last line of the commit message
+            if change_id_set:
+                headers += '\nChange-Id: {}'.format(checksum)
         return headers
 
     def _files_checksum(self, changed_files):
