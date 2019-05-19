@@ -3,8 +3,6 @@
     project: otopi
     trigger: 'on-change'
     version:
-      - master:
-          branch: master
       - '4.3':
           branch: otopi-1.8
       - '4.2':
