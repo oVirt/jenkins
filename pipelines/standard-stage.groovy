@@ -115,7 +115,7 @@ def get_stage_gerrit() {
     }
     if (params.GERRIT_EVENT_TYPE == "change-merged") { return 'check-merged' }
     if (params.GERRIT_EVENT_TYPE == "comment-added") {
-        if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci +(please +)?test( +please)?$/) {
+        if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci +(please +)?(test|check)( +please)?$/) {
             return 'check-patch'
         } else if (params.GERRIT_EVENT_COMMENT_TEXT =~ /(?m)^ci +(please +)?build( +please)?$/) {
             return 'build-artifacts'
