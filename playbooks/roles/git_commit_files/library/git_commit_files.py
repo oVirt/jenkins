@@ -109,7 +109,7 @@ changed_files:
 import os
 from six.moves import filter
 from six import iteritems
-from hashlib import sha256
+from hashlib import sha1
 
 from ansible.module_utils.basic import AnsibleModule, heuristic_log_sanitize
 
@@ -253,20 +253,20 @@ class GitCommitFilesModule(AnsibleModule):
                 headers += '\n{}: {}'.format(hdr, val)
         if changed_files and change_id_headers:
             change_id_set = False
-            checksum = self._files_checksum(changed_files)
+            change_id = 'I' + self._files_checksum(changed_files)
             for hdr in sorted(set(change_id_headers)):
                 if hdr == 'Change-Id':
                     change_id_set = True
                     continue
-                headers += '\n{}: {}'.format(hdr, checksum)
+                headers += '\n{}: {}'.format(hdr, change_id)
             # Ensure that 'Change-Id' is the last header we set because Gerrit
             # needs it to be on the very last line of the commit message
             if change_id_set:
-                headers += '\nChange-Id: {}'.format(checksum)
+                headers += '\nChange-Id: {}'.format(change_id)
         return headers
 
     def _files_checksum(self, changed_files):
-        digest = sha256()
+        digest = sha1()
         for fil in sorted(set(changed_files)):
             digest.update(fil.encode('utf-8'))
             with open(fil, 'rb') as f:
