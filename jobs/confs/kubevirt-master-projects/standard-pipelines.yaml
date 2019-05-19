@@ -16,6 +16,7 @@
     abort-on-update: true
     org: kubevirt
     project:
+      - ansible-kubevirt-modules
       - bridge-marker
       - cluster-network-addons-operator
       - common-templates
