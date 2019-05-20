@@ -3,10 +3,8 @@
     builders:
       - usrc:
           project: 'jenkins'
-          usrc_update: ''
       - usrc:
           project: '{project}'
-          usrc_update: '{usrc_update}'
 
 - builder:
     name: usrc
@@ -20,22 +18,4 @@
           [[ -x "$usrc" ]] || usrc="$WORKSPACE/jenkins/scripts/usrc_local.py"
 
           cd "./{project}"
-          [[ "{usrc_update}" ]] && \
-              "$usrc" --log="$LOGDIR/update_{project}.log" update --commit
           "$usrc" --log="$LOGDIR/get_{project}.log" get
-
-- builder:
-    name: pusher
-    builders:
-      - shell: |
-          WORKSPACE="${{WORKSPACE:-$PWD}}"
-          LOGDIR="$WORKSPACE/exported-artifacts/pusher_logs"
-          mkdir -p "$LOGDIR"
-
-          cd "./{project}"
-          "$WORKSPACE/jenkins/scripts/pusher.py" \
-              --log="$LOGDIR/push_{project}.log" \
-              push \
-                --if-not-exists \
-                --unless-hash="${{BUILD_TAG}}" \
-                "${{GERRIT_BRANCH##*/}}"

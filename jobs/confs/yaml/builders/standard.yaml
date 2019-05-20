@@ -24,15 +24,12 @@
       - global-setup
       - upstream-source-collector:
           project: '{project}'
-          usrc_update: '{usrc_update}'
       - project-setup
       - mock_runner:
           project: '{project}'
           distro: '{distro}'
           arch: '{arch}'
           action: '{action}'
-      - pusher:
-          project: '{project}'
 
 - builder:
     name: build-artifacts_builder
@@ -84,16 +81,6 @@
                     --code-review=2 \
                     --verified=1 \
                     --submit"
-
-- builder:
-    name: poll-upstream-sources_builder
-    builders:
-      - standard_stage:
-          project: '{project}'
-          distro: '{distro}'
-          arch: '{arch}'
-          action: '--execute-script automation/poll-upstream-sources.sh'
-          usrc_update: 'true'
 
 - builder:
     name: build-artifacts-manual_builder

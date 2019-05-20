@@ -51,7 +51,6 @@
           log: 0
     wrappers:
         - default-wrapper
-        - inject-git-push-credentials
         - credentials-binding:
             - username-password-separated:
                 credential-id: 'ci-containers_intermediate-repository'
