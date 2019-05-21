@@ -26,8 +26,8 @@
       - x86_64
       - ppc64le:
           node-filter: ppc64le
-#      - s390x:
-#          node-filter: s390x
+      - s390x:
+          node-filter: s390x
     exclude:
         - { distro: fc28, arch: ppc64le }
         - { distro: fc29, arch: ppc64le }
@@ -53,8 +53,8 @@
       - x86_64
       - ppc64le:
           node-filter: ppc64le
-#      - s390x:
-#          node-filter: s390x
+      - s390x:
+          node-filter: s390x
     exclude:
         - { distro: fc28, arch: ppc64le }
         - { distro: el7,  arch: s390x, }
