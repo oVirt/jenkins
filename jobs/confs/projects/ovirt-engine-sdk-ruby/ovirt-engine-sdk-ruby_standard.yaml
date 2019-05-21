@@ -19,10 +19,8 @@
           node-filter: el7
       - ppc64le:
           node-filter: ppc64le
-      # Temporarly disabled:
-      # https://lists.ovirt.org/archives/list/devel@ovirt.org/message/DRIZMHAYBKIPEBHZTWEBOXZ2PMSP33N4/
-      #- s390x:
-      #    node-filter: s390x
+      - s390x:
+          node-filter: s390x
     exclude:
       - { version: '4.2', distro: fc28 }
       - { version: '4.2', distro: fc29 }
