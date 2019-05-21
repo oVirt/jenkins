@@ -133,7 +133,6 @@
     <<: *system-tests-common
     name: ovirt-system-compat-suite
     suite_type:
-      - compat-4.1
       - compat-4.2
     project: 'ovirt-system-tests'
     version:
