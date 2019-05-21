@@ -337,10 +337,15 @@ config_opts['chroot_setup_cmd'] += ' ${packages[@]}'
 EOC
     fi
     [[ "$TRY_MIRRORS" ]] && gen_mirrors_conf "$TRY_MIRRORS" >> "$tmp_conf"
-    gen_ci_env_info_conf "$script" "$dist_label" >> "$tmp_conf"
-    env_req=($(resolve_file "$script" "environment.yaml" "$dist_label"))
-    [[ -e "$env_req" ]] && \
-        gen_environ_conf "$env_req" >> "$tmp_conf"
+    if [[ "$with_mounts" != 'no' ]]; then
+        echo "Adding environment variables" >&2
+        gen_ci_env_info_conf "$script" "$dist_label" >> "$tmp_conf"
+        env_req=($(resolve_file "$script" "environment.yaml" "$dist_label"))
+        [[ -e "$env_req" ]] && \
+            gen_environ_conf "$env_req" >> "$tmp_conf"
+    else
+        echo "Skipping environment variables" >&2
+    fi
     touch --date "yesterday" "$tmp_conf"
     echo "$tmp_conf"
     return 0
