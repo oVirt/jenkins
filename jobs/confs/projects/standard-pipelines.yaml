@@ -74,6 +74,7 @@
       - infra-puppet
       - ioprocess
       - jenkins
+      - mom
       - nsis-simple-service-plugin
       - otopi
       - ovirt-appliance
