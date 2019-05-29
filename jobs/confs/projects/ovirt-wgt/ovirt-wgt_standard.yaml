@@ -10,6 +10,7 @@
     distro:
       - el7
       - fc28
+      - fc29
     arch: x86_64
 
 - project:
