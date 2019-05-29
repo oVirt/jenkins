@@ -65,6 +65,7 @@ def loader_main(loader) {
             )
             jobs += get_std_ci_jobs(build_job_properties)
         }
+        stdci_runner_lib.remove_blacklisted_jobs(jobs)
         if(jobs.empty) {
             echo "No STD-CI job definitions found"
         } else {

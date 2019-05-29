@@ -45,6 +45,7 @@ def run_std_ci_jobs(Map named_args) {
 def run_std_ci_jobs(project, jobs, mirrors=null, extra_sources=null) {
     def branches = [:]
     def report = new PipelineReporter(this, project)
+    remove_blacklisted_jobs(jobs)
     if(jobs) {
         for(job in jobs) {
             branches[get_job_name(job)] = mk_std_ci_runner(
@@ -396,6 +397,16 @@ class PipelineReporter extends CpsScript implements Serializable {
     def run() {}
 }
 
+
+@NonCPS
+def remove_blacklisted_jobs(jobs) {
+    def blacklisted_archs = (env.STDCI_BLACKLISTED_ARCHS ?: '').split(':') as Set
+    def blacklisted_distros = (env.STDCI_BLACKLISTED_DISTROS ?: '').split(':') as Set
+    print "Blacklisted: archs: $blacklisted_archs distros: $blacklisted_distros"
+    jobs.removeAll { job ->
+        (job.arch in blacklisted_archs) || (job.distro in blacklisted_distros)
+    }
+}
 
 
 // We need to return 'this' so the actual pipeline job can invoke functions from
