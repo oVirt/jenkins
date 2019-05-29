@@ -113,6 +113,9 @@ setup_os_repos() {
 }
 
 mk_wokspace_dirs() {
+    mkdir -p /var/lib/stdci/shared \
+        || sudo -n mkdir -p /var/lib/stdci/shared \
+        || :
     rm -rf "$WORKSPACE/tmp"
     mkdir -p "$WORKSPACE/"{tmp,exported-artifacts}
 }
