@@ -304,7 +304,7 @@ extra_packages() {
     # Add extra packages we need for STDCI
     # packages common for all distros
     local package_list=(
-        git mock sed bash procps-ng createrepo python-paramiko
+        git mock sed bash procps-ng createrepo_c python-paramiko
         PyYAML python2-pyxdg python-jinja2 python-py python-six
         distribution-gpg-keys librbd1
     )

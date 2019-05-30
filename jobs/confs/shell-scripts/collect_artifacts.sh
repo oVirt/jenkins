@@ -178,14 +178,14 @@ createrepo_if_needed(){
     if [[ ! -e "$EXPORTED_ARTIFACTS/repodata" ]] &&
         find "$EXPORTED_ARTIFACTS" -type f -name '*.rpm' | grep -q .
     then
-        if [[ ! -e /usr/bin/createrepo ]]; then
+        if [[ ! -e /usr/bin/createrepo_c ]]; then
             if [[ -e '/usr/bin/dnf' ]]; then
-                sudo -n dnf install -y createrepo
+                sudo -n dnf install -y createrepo_c
             else
-                sudo -n yum install -y createrepo
+                sudo -n yum install -y createrepo_c
             fi
         fi
-        createrepo "$EXPORTED_ARTIFACTS"
+        createrepo_c "$EXPORTED_ARTIFACTS"
     fi
 }
 

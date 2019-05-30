@@ -27,7 +27,7 @@ main() {
     if grep -q '\.py$' <<< "$changed_files"; then
         test_python_scripts "$@"
     fi
-    if grep -q 'data/dummy.spec' <<< "$changed_files"; then
+    if grep -qE '(data/dummy.spec|collect_artifacts.sh)' <<< "$changed_files"; then
         test_rpmbuild "$@"
     fi
     test_secrets_and_credentials
@@ -88,14 +88,7 @@ test_rpmbuild() {
     local version release
 
     version='0.1.0'
-    if git describe >& /dev/null; then
-        release="$(
-            git describe --dirty=.dr |
-            sed -re 's/-([0-9])/p\1/;s/-g/git/'
-        )"
-    else
-        release="0.0.0.git$(git describe --always --dirty=.dr)"
-    fi
+    release="0.$(git log --oneline | wc -l)"
     chown $USER:$USER data/dummy.spec
     rpmbuild \
         --define '_rpmdir exported-artifacts' \
