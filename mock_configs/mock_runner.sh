@@ -14,6 +14,15 @@ TRY_MIRRORS=""
 PACKAGES=()
 DEFAULT_MOCK_ENV=el7
 
+# Environment variables set by authentication systems, that point to files that
+# need to be made available inside the mock environment to enable authentication
+# inheritance
+readonly AUTH_ENV_VARS=(KRB5CCNAME SSH_AUTH_SOCK)
+# Hardwired env vars we always copy into the mock env
+readonly HW_ENV_VARS=(GIT_COMMITTER_{NAME,EMAIL} "${AUTH_ENV_VARS[@]}")
+# Directories and files we always mount into the mock env
+readonly HW_MNTS=(/etc/krb5.conf{,.d} /var/lib/sss/pubconf/krb5.include.d)
+
 # Generate temp dir to be used by any method in mock_runner
 # This dir is removed recursively in `finalize`
 readonly MR_TEMP_DIR=$(mktemp --tmpdir -d "tmp.mock_runner.XXX")
@@ -375,8 +384,32 @@ get_mount_conf() {
     echo "config_opts['plugin_conf']['bind_mount_opts']['dirs']=["
     echo "    # Mount the local dir to $MOUNT_POINT"
     echo "    [os.path.realpath(os.curdir), u'$MOUNT_POINT'],"
-    echo "    # Mount ci toolbox"
-    echo "    [u'$ci_tbx_dir', u'/var/lib/ci_toolbox'],"
+
+    # Mount hardwired mounts if the exist on the host
+    local hw_mnts=("$ci_tbx_dir:/var/lib/ci_toolbox" "${HW_MNTS[@]}")
+    for mount_opt in "${hw_mnts[@]}"; do
+        src_mnt="${mount_opt%%:*}"
+        dst_mnt="${mount_opt##*:}"
+        [[ $src_mnt ]] && [[ -e $src_mnt ]] || continue
+        echo "    [u'$src_mnt', u'$dst_mnt'],"
+    done
+
+    # Mount files indicated by authentication environment variables
+    local evar_name evar_value
+    for evar_name in "${AUTH_ENV_VARS[@]}"; do
+        evar_value="${!evar_name}"
+        # some env var values contain a prefix with ':' so strip it away to get
+        # the actual path they point to
+        src_mnt="${evar_value##*:}"
+        # mount the path pointed be variable X in /tmp/X
+        dst_mnt="/tmp/$evar_name"
+        # skip mounting if the variable isn't defined or the pointed file does
+        # not exist
+        [[ $evar_value ]] && [[ -e $src_mnt ]] || continue
+        echo "    ['$src_mnt', '$dst_mnt'],"
+        # make the var point to the internal mount point inside the mock env
+        export "$evar_name=$dst_mnt"
+    done
 
     upstream_src_folder="${PWD%/}._upstream"
     upstream_dst_folder="${MOUNT_POINT%/}._upstream"
@@ -426,8 +459,6 @@ gen_environ_conf() {
     local scripts_path="${base_dir}/scripts"
     local gdbm_db=$(mktemp --tmpdir="$MR_TEMP_DIR" "gdbm_db.XXX")
 
-    local hardwired_vars=(GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL)
-
     # Generate GDBM database from `$env`
     python "${scripts_path}/gdbm_db_resolvers.py" "${gdbm_db}"
 
@@ -449,7 +480,7 @@ gen_environ_conf() {
     echo "            gen_env_vars_from_requests(requests, providers)"
     echo "        )"
 
-    echo "        _hw_vars = '${hardwired_vars[*]}'.split()"
+    echo "        _hw_vars = '${HW_ENV_VARS[*]}'.split()"
     echo "        _hw_requests = [{"
     echo "            'name': var,"
     echo "            'valueFrom': {'runtimeEnv': var},"
