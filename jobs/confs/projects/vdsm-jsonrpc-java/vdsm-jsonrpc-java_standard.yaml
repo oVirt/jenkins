@@ -12,10 +12,8 @@
     stage: check-patch
     distro:
       - el7
-      - fc28
       - fc29
     exclude:
-      - { version: '4.2', distro: fc28 }
       - { version: '4.2', distro: fc29 }
       - { version: '4.3', distro: fc29 }
     arch: x86_64

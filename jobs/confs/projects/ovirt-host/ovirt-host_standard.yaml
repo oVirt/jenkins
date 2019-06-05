@@ -9,7 +9,6 @@
           branch: ovirt-4.2
     distro:
       - el7
-      - fc28
 
 - project:
     <<: *base-commons
@@ -31,7 +30,6 @@
           branch: ovirt-4.2
     distro:
       - el7
-      - fc28
     stage: check-patch
     arch:
       - ppc64le:
@@ -40,7 +38,6 @@
           node-filter: s390x
     exclude:
       - {                 arch: s390x,   distro: el7, }
-      - {                 arch: ppc64le, distro: fc28, }
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
@@ -64,7 +61,6 @@
           branch: ovirt-4.2
     distro:
       - el7
-      - fc28
     stage: build-artifacts
     arch:
       - ppc64le:
@@ -73,6 +69,5 @@
           node-filter: s390x
     exclude:
       - {                 arch: s390x,   distro: el7, }
-      - {                 arch: ppc64le, distro: fc28, }
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
