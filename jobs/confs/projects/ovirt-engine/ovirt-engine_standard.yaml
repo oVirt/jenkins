@@ -9,8 +9,8 @@
           branch: ovirt-engine-4.2
       - '4.3':
           branch: ovirt-engine-4.3
-      - '4.3.3.z':
-          branch: ovirt-engine-4.3.3.z
+      - '4.3.4.z':
+          branch: ovirt-engine-4.3.4.z
     distro:
       - el7
       - fc28
@@ -19,7 +19,7 @@
       - { version: '4.2', distro: fc28 }
       - { version: '4.2', distro: fc29 }
       - { version: '4.3', distro: fc29 }
-      - { version: '4.3.3.z', distro: fc29 }
+      - { version: '4.3.4.z', distro: fc29 }
     arch: x86_64
 
 - project:
