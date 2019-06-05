@@ -21,6 +21,7 @@
       - cluster-network-addons-operator
       - common-templates
       - containerized-data-importer
+      - hyperconverged-cluster-operator
       - kubernetes-device-plugins
       - kubevirt
       - ovs-cni
