@@ -318,6 +318,62 @@ class GitUpstreamSource(object):
             '{0}:refs/heads/{1}'.format(self.commit, dst_branch)
         )
 
+    def _source_repos_format_handler(
+        self, push_map, dst_path, files_dest_dir=None, src_repos_file=None,
+        **kwargs
+    ):
+        """Write a source-repos file. If the file already exists, will append to
+        it's end.
+
+        :param str push_map:       The path to a file containing information
+                                   about remote SCM servers that is needed to
+                                   push changes to them.
+        :param str dst_path:       Path where the tool was called from.
+        :param str files_dest_dir: Destination directory where to place the
+                                   source-repos file. If not specified, falls
+                                   back to global files_dest_dir and then to
+                                   dst_path. Can be used in conjunction with
+                                   src_repos_file.
+        :param str src_repos_file: Where to write source-repos file. Path must
+                                   be is relative to repo's root. Default's
+                                   to files_dest_dir. If used in conjunction
+                                   with files_dest_dir, files_dest_dir will
+                                   prefix the path specified in src_repos_file.
+
+        """
+        src_repos_file = src_repos_file or 'source-repos'
+        files_dest_dir = files_dest_dir or self.files_dest_dir
+        src_repos_file = os.path.join(dst_path, files_dest_dir, src_repos_file)
+        self._assert_path_under_root(dst_path, src_repos_file)
+        source_repos_dirname = os.path.dirname(src_repos_file)
+        try:
+            if source_repos_dirname: os.makedirs(source_repos_dirname)
+        except OSError as os_error:
+            if os_error.errno != 17: raise  # Directory already exist
+        url = read_push_details(push_map).push_url
+        with open(src_repos_file, 'a') as source_repos:
+            source_repos.write(
+                '{url} {commit}\n'.format(url=url, commit=self.commit)
+            )
+
+    @staticmethod
+    def _assert_path_under_root(root_path, file_path):
+        """Ensure that the given path is under repo's root
+
+        Due to security reasons, we do not allow writing files outside of the
+        project's source dir.
+
+        :param str root_path: Root reference path
+        :param str file_path: Path to check is under root
+        :raises ConfigError: if the path is not under repo's root
+        """
+        root_abspath = os.path.abspath(root_path)
+        file_abspath = os.path.abspath(file_path)
+        if file_abspath.startswith(root_path): return
+        raise ConfigError('{file_path} is not under {root_path}'.format(
+            file_path=file_path, root_path=root_path
+        ))
+
     def get(self, dst_path, push_map):
         """Fetch the upstream source and call to the formatters
 

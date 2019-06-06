@@ -619,6 +619,39 @@ class TestGitUpstreamSource(object):
 
 
     @pytest.mark.parametrize(
+        'src_repos_file,files_dest_dir,expected_file_name',
+        [
+            ('custom-source-repos', None, 'custom-source-repos'),
+            ('path/custom-source-repos', None, 'path/custom-source-repos'),
+            (None, None, 'source-repos'),
+            (None, 'base', 'base/source-repos'),
+        ]
+    )
+    def test_source_repos_format_handler(
+        self, src_repos_file, expected_file_name, files_dest_dir, tmpdir,
+        monkeypatch
+    ):
+        tmp_dir = tmpdir.mkdir('tmp_dir')
+        gus = GitUpstreamSource(
+            'str(upstream)', 'master', 'some-commit',
+            files_dest_dir=str(tmp_dir)
+        )
+        mock_push_details = MagicMock(
+            side_effect=(MagicMock(push_url='some-url'),)
+        )
+        monkeypatch.setattr(usrc, 'read_push_details', mock_push_details)
+        gus._source_repos_format_handler(
+            dst_path=str(tmp_dir), push_map={}, src_repos_file=src_repos_file,
+            files_dest_dir=files_dest_dir
+        )
+
+        mock_push_details.assert_called_once_with({})
+        f = tmp_dir.join(expected_file_name)
+        assert f.exists()
+        assert f.read_text(encoding='utf-8') == 'some-url some-commit\n'
+
+
+    @pytest.mark.parametrize(
         'dest_formats,get_as_files_expected,push_to_branch_expected', [
             ({'files': None}, True, False),
             ({'files': None, 'branch': None}, True, True),
@@ -755,6 +788,26 @@ class TestGitUpstreamSource(object):
             call('a_commit', git_func=gus._cache_git)
         assert fetch.called
         assert out == sentinel.some_files
+
+    @pytest.mark.parametrize(
+        'root_path,file_path',
+        (
+            ('/some/path', '/not/some/path'),
+            ('/some/path', '/some/path/../here'),
+        )
+    )
+    def test_assert_path_under_root_raises(self, root_path, file_path):
+        with pytest.raises(usrc.ConfigError):
+            GitUpstreamSource._assert_path_under_root(root_path, file_path)
+
+    @pytest.mark.parametrize(
+        'root_path,file_path',
+        (
+            ('/some/path', '/some/path/here/is/ok'),
+        )
+    )
+    def test_assert_path_under_root_ok(self, root_path, file_path):
+        GitUpstreamSource._assert_path_under_root(root_path, file_path)
 
 
 def test_get_upstream_sources(monkeypatch, gerrit_push_map, downstream):
