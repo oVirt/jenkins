@@ -176,7 +176,7 @@ class TestGitUpstreamSource(object):
             dict(url='some/url', branch='br1', commit='some_sha'),
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                automerge='no', dest_format=['files'], files_dest_dir='',
+                automerge='no', dest_formats={'files': None}, files_dest_dir='',
             ),
         ),
         (
@@ -312,31 +312,21 @@ class TestGitUpstreamSource(object):
         (
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                dest_format=['files', 'branch'],
+                dest_formats={'files': None, 'branch': None},
             ),
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                dest_format=['files', 'branch'],
-            ),
-        ),
-        (
-            dict(
-                url='some/url', branch='br1', commit='some_sha',
-                dest_format=['branch'],
-            ),
-            dict(
-                url='some/url', branch='br1', commit='some_sha',
-                dest_format=['branch'],
+                dest_formats={'files': None, 'branch': None},
             ),
         ),
         (
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                dest_format='branch',
+                dest_formats={'branch': None},
             ),
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                dest_format=['branch'],
+                dest_formats={'branch': None},
             ),
         ),
     ])
@@ -496,31 +486,21 @@ class TestGitUpstreamSource(object):
         (
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                dest_format=['files', 'branch'],
+                dest_formats={'files': None, 'branch': None},
             ),
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                dest_format=['files', 'branch'],
-            ),
-        ),
-        (
-            dict(
-                url='some/url', branch='br1', commit='some_sha',
-                dest_format=['branch'],
-            ),
-            dict(
-                url='some/url', branch='br1', commit='some_sha',
-                dest_format=['branch'],
+                dest_formats={'files': None, 'branch': None},
             ),
         ),
         (
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                dest_format='branch',
+                dest_formats={'branch': None},
             ),
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                dest_format=['branch'],
+                dest_formats={'branch': None},
             ),
         ),
     ])
@@ -577,7 +557,7 @@ class TestGitUpstreamSource(object):
             self, upstream, downstream, git_last_sha, gerrit_push_map):
         gus = GitUpstreamSource(
             str(upstream), 'master', git_last_sha(upstream), 'no',
-            ['files'], 'temp'
+            {'files': None}, 'temp'
         )
         assert not (downstream / 'temp' / 'upstream_file.txt').exists()
         gus.get(str(downstream), gerrit_push_map)
@@ -595,9 +575,12 @@ class TestGitUpstreamSource(object):
         assert (downstream / 'temp' / 'overriden_file.txt').read() == \
             'Overridden content'
 
-    def test_get_as_files(self, upstream, downstream, git_last_sha, gerrit_push_map):
+    def test_files_format_handler(
+        self, upstream, downstream, git_last_sha, gerrit_push_map
+    ):
         gus = GitUpstreamSource(
-            str(upstream), 'master', git_last_sha(upstream), dest_format=['files']
+            str(upstream), 'master', git_last_sha(upstream),
+            dest_formats={'files': None}
         )
         assert not (downstream / 'upstream_file.txt').exists()
         gus.get(str(downstream), gerrit_push_map)
@@ -607,12 +590,13 @@ class TestGitUpstreamSource(object):
         assert (downstream / 'overriden_file.txt').read() == \
             'Overridden content'
 
-    def test_push_to_branch(
+    def test_branch_format_handler(
         self, monkeypatch, upstream, downstream, downstream_remote,
         git_at, git_last_sha, gerrit_push_map
         ):
         gus = GitUpstreamSource(
-            str(upstream), 'master', git_last_sha(upstream), 'no', ['branch']
+            str(upstream), 'master', git_last_sha(upstream), 'no',
+            {'branch': None}
         )
         dst_branch = '_upstream_' + gus.branch + '_' + gus.commit[0:7]
         gus._fetch()
@@ -625,7 +609,7 @@ class TestGitUpstreamSource(object):
         # Check dst_branch does not exist on downstream_remote pre push
         assert origin_pre == ''
         monkeypatch.chdir(str(downstream))
-        gus._push_to_branch(gerrit_push_map)
+        gus._branch_format_handler(gerrit_push_map)
         origin_post = git('ls-remote', '--heads', 'origin', dst_branch)
         assert origin_post != ''
         origin_post_commit = origin_post.split()[0]
@@ -635,23 +619,23 @@ class TestGitUpstreamSource(object):
 
 
     @pytest.mark.parametrize(
-        'dest_format,get_as_files_expected,push_to_branch_expected', [
-            (['files'], True, False),
-            (['files', 'branch'], True, True),
-            (['branch'], False, True)
+        'dest_formats,get_as_files_expected,push_to_branch_expected', [
+            ({'files': None}, True, False),
+            ({'files': None, 'branch': None}, True, True),
+            ({'branch': None}, False, True)
     ])
     def test_get(
-        self, upstream, git_last_sha, gerrit_push_map, dest_format,
+        self, upstream, git_last_sha, gerrit_push_map, dest_formats,
         get_as_files_expected, push_to_branch_expected
         ):
         get_as_files = MagicMock()
         push_to_branch = MagicMock()
         gus = GitUpstreamSource(
             str(upstream), 'master', git_last_sha(upstream),
-            dest_format=dest_format
+            dest_formats=dest_formats
         )
-        gus._get_as_files = get_as_files
-        gus._push_to_branch = push_to_branch
+        gus._files_format_handler = get_as_files
+        gus._branch_format_handler = push_to_branch
         gus.get(str(upstream), gerrit_push_map)
         assert get_as_files.called == get_as_files_expected
         assert push_to_branch.called == push_to_branch_expected
@@ -659,20 +643,37 @@ class TestGitUpstreamSource(object):
 
     def test_get_unknown_dest_exception(
         self, upstream, git_last_sha, gerrit_push_map):
+        with pytest.raises(UnkownDestFormatError):
+            GitUpstreamSource(
+                str(upstream), 'master', git_last_sha(upstream),
+                dest_formats={'unknown_dest': None}
+            )
+
+
+    def test_call_format_handlers(self, git_last_sha, upstream, monkeypatch):
+        mock_formatter = MagicMock()
+        monkeypatch.setattr(
+            GitUpstreamSource,
+            '_validate_dst_fmt_exists',
+            lambda this: True
+        )
         gus = GitUpstreamSource(
             str(upstream), 'master', git_last_sha(upstream),
-            dest_format=['unknown_dest']
+            dest_formats={'mock': {'mock_param': 'mock_value'}}
         )
-        with pytest.raises(UnkownDestFormatError):
-            gus.get(str(upstream), gerrit_push_map)
+        setattr(gus, '_mock_format_handler', mock_formatter)
+        gus._call_format_handlers('dst_path', 'push_map')
+        mock_formatter.assert_called_once_with(
+            mock_param='mock_value', dst_path='dst_path', push_map='push_map'
+        )
 
 
     def test_update(self, gitrepo, upstream, git_last_sha):
         url, branch, commit = str(upstream), 'master', git_last_sha(upstream)
-        dest_format = ['files']
+        dest_formats = {'files': None}
         files_dest_dir = 'temp'
         gus = GitUpstreamSource(
-                url, branch, commit, 'no', dest_format, files_dest_dir
+                url, branch, commit, 'no', dest_formats, files_dest_dir
         )
         gus_id = id(gus)
         updated = gus.updated()
@@ -680,7 +681,7 @@ class TestGitUpstreamSource(object):
         assert gus.url == url
         assert gus.branch == branch
         assert gus.commit == commit
-        assert gus.dest_format == dest_format
+        assert gus.dest_formats == dest_formats
         assert gus.files_dest_dir == files_dest_dir
         assert updated == gus
         assert id(updated) == id(gus)
@@ -697,14 +698,14 @@ class TestGitUpstreamSource(object):
         assert gus.url == url
         assert gus.branch == branch
         assert gus.commit == commit
-        assert gus.dest_format == dest_format
+        assert gus.dest_formats == dest_formats
         assert gus.files_dest_dir == files_dest_dir
         assert updated != gus
         assert id(updated) != id(gus)
         assert updated.url == url
         assert updated.branch == branch
         assert updated.commit == new_commit
-        assert gus.dest_format == dest_format
+        assert gus.dest_formats == dest_formats
         assert updated.files_dest_dir == files_dest_dir
 
     def test_commit_details(self, upstream, git_last_sha, git_at):

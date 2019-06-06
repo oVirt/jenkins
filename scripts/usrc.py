@@ -202,25 +202,22 @@ def changed_files_main(args):
 class GitUpstreamSource(object):
     """A class representing Git-based upstream source dependencies
 
-    :params : dest_format - list, destination format, currently supported
-                            'files', 'branch' or both
+    :params : dict dest_formats - destination formats.
     :params : update_policy - the latest or tagged policy to be updated.
     :params : tag_filter - used to filter to specific tags you like.
     :params : annotated_tag_only - used to pick only annotated tags.
     """
+
+    _dest_fmt_default = {'files': None}
+
     def __init__(
-        self, url, branch, commit, automerge='no', dest_format=None,
+        self, url, branch, commit, automerge='no', dest_formats=None,
         files_dest_dir='', update_policy=None, tag_filter=None,
         annotated_tag_only=None
     ):
         self.url, self.branch, self.commit = url, branch, commit
-        if dest_format is None:
-            self.dest_format=['files']
-        else:
-            if isinstance(dest_format, string_types):
-                self.dest_format = [dest_format.lower()]
-            else:
-                self.dest_format = [e.lower() for e in dest_format]
+        self.dest_formats = dest_formats or self._dest_fmt_default
+        self._validate_dst_fmt_exists()
         self.files_dest_dir = files_dest_dir
         if update_policy:
             self.update_policy = update_policy
@@ -265,7 +262,7 @@ class GitUpstreamSource(object):
             struct['branch'],
             struct['commit'],
             struct.get('automerge', 'no'),
-            struct.get('dest_format', ['files']),
+            struct.get('dest_formats'),
             struct.get('files_dest_dir', ''),
             struct.get('update_policy', ('latest')),
             struct.get('tag_filter', None),
@@ -281,8 +278,8 @@ class GitUpstreamSource(object):
         struct = dict(url=self.url, branch=self.branch, commit=self.commit)
         if self.automerge != 'no':
             struct['automerge'] = self.automerge
-        if self.dest_format != ['files']:
-            struct['dest_format'] = self.dest_format
+        if self.dest_formats != self._dest_fmt_default:
+            struct['dest_formats'] = self.dest_formats
         if self.files_dest_dir != '':
             struct['files_dest_dir'] = self.files_dest_dir
         if self.update_policy != ('latest'):
@@ -293,11 +290,12 @@ class GitUpstreamSource(object):
             struct['annotated_tag_only'] = self.annotated_tag_only
         return struct
 
-    def _get_as_files(self, dst_path):
+    def _files_format_handler(self, dst_path, files_dest_dir=None, **kwargs):
         """Get the upstream source into the given path
         """
-        if self.files_dest_dir != '':
-            dst_path = os.path.join(dst_path, self.files_dest_dir)
+        dst_dir = files_dest_dir or self.files_dest_dir
+        if dst_dir != '':
+            dst_path = os.path.join(dst_path, dst_dir)
             try:
                 os.makedirs(dst_path)
             except OSError as e:
@@ -307,7 +305,7 @@ class GitUpstreamSource(object):
             'checkout', self.commit, '-f',
         )
 
-    def _push_to_branch(self, push_map):
+    def _branch_format_handler(self, push_map, **kwargs):
         """Get the upstream source to branch
         """
         dst_branch = '_upstream_' + self.branch + '_' + self.commit[0:7]
@@ -321,10 +319,7 @@ class GitUpstreamSource(object):
         )
 
     def get(self, dst_path, push_map):
-        """Get the upstream sources
-
-        Currently supported are pulling upstream sources as files into a given
-        path or pushing them into remote branch.
+        """Fetch the upstream source and call to the formatters
 
         :param str dst_path: The path to get source into
         :param str push_map: The path to a file containing information about
@@ -334,19 +329,40 @@ class GitUpstreamSource(object):
         # TODO: check if git_commit is already available locally and skip
         #       fetching
         self._fetch()
-        unsupported_formats = []
-        for dest_format in set(self.dest_format):
-            if dest_format == 'files':
-                self._get_as_files(dst_path)
-            elif dest_format == 'branch':
-                self._push_to_branch(push_map)
-            else:
-                unsupported_formats.append(dest_format)
-        if unsupported_formats:
-            raise UnkownDestFormatError(
-                "Unknown destination formats {}.".format(
-                    ", ".join(unsupported_formats)))
+        self._call_format_handlers(dst_path, push_map)
 
+    def _call_format_handlers(self, dst_path, push_map):
+        """Call all the format handlers as the user specified in the config
+
+        Each format handler get's all the params so it is expected to accept
+        **kwargs as a param. The formatter is free to ignore or use whatever
+        arguments it needs. The arguments the user specified under the formatter
+        will be passed to the handler.
+
+        :param str dst_path: The path to get source into
+        :param str push_map: The path to a file containing information about
+                             remote SCM servers that is needed to push changes
+                             to them.
+        """
+        for handler_name, handler_params in iteritems(self.dest_formats):
+            params = handler_params or {}  # avoid edge case
+            formatter = '_{fmt}_format_handler'.format(fmt=handler_name)
+            handler = getattr(self, formatter)
+            handler(dst_path=dst_path, push_map=push_map, **params)
+
+    def _validate_dst_fmt_exists(self):
+        """Validate that all the requested dest formatters exists. If there is a
+        missing formatter, will raise an UnknownDestFormatError.
+        """
+        missing_formatters = [
+            fmt for fmt in self.dest_formats
+            if not hasattr(self, '_{fmt}_format_handler'.format(fmt=fmt))
+        ]
+        if not missing_formatters:
+            return
+        raise UnkownDestFormatError(
+            "Unknown destination formatters {missing}.".format(
+                missing=missing_formatters))
 
     def updated(self):
         """Look for the most up-to-date commit or tag of the upstream source
@@ -369,7 +385,7 @@ class GitUpstreamSource(object):
                 )
                 return self.__class__(
                     self.url, self.branch, latest_commit, self.automerge,
-                    self.dest_format, self.files_dest_dir, self.update_policy,
+                    self.dest_formats, self.files_dest_dir, self.update_policy,
                     self.tag_filter, self.annotated_tag_only
                 )
         return self
