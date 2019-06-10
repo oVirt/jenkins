@@ -28,6 +28,7 @@ def on_load(loader) {
         loader.metaClass.invokeMethod(
             loader, 'load_code', [code_file, load_as])
     }
+    hook_caller = loader.hook_caller
     project_lib = load_code('libs/stdci_project.groovy', this)
     stdci_runner_lib = load_code('libs/stdci_runner.groovy', this)
 }

@@ -23,6 +23,7 @@ def on_load(loader) {
         loader.metaClass.invokeMethod(
             loader, 'load_code', [code_file, load_as])
     }
+    hook_caller = loader.load_code('libs/stdci_hook_caller.groovy', this)
     // Every change queue tester job is supposed to have another *.groovy file
     // that contains the actual testing functions
     def tf_file = env.JOB_NAME.replaceFirst(
