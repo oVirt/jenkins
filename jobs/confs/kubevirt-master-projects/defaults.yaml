@@ -13,7 +13,7 @@
     # to enable the throttle plugin, you also need to set concurrent: true
     scmtype: gerrit
     git-server: 'gerrit.ovirt.org'
-    git-proto: 'git'
+    git-proto: 'https'
     gerrit-server: 'gerrit.ovirt.org'
     gerrit-subpath: ''
     email-to: 'infra@ovirt.org'

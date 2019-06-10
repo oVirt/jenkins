@@ -2,7 +2,7 @@
     name: ovirt-engine
     scm:
         - git:
-            url: 'git://{git-server}/ovirt-engine.git'
+            url: '{git-proto}://{git-server}/ovirt-engine.git'
             branches:
               - 'origin/{branch}'
             basedir: ovirt-engine
@@ -22,7 +22,7 @@
     name: ovirt-engine_coverity-analysis
     scm:
         - git:
-            url: 'git://{git-server}/ovirt-engine.git'
+            url: '{git-proto}://{git-server}/ovirt-engine.git'
             branches:
               - 'origin/{branch}'
             basedir: ovirt-engine

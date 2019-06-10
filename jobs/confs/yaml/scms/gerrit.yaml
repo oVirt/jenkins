@@ -14,7 +14,7 @@
       - gerrit-with-proto:
           project: '{project}'
           git-server: '{git-server}'
-          git-proto: git
+          git-proto: https
           git-config-name: '{git-config-name}'
           git-config-email: '{git-config-email}'
 
