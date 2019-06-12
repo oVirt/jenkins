@@ -94,14 +94,16 @@ def checkout_repo(
                 ],
             ]
         )
-        sh """
-            WORKSPACE="\${WORKSPACE:-\$(dirname \$PWD)}"
+        sshagent(['std-ci-git-push-credentials']) {
+            sh """
+                WORKSPACE="\${WORKSPACE:-\$(dirname \$PWD)}"
 
-            usrc="\$WORKSPACE/jenkins/scripts/usrc.py"
-            [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/scripts/usrc_local.py"
+                usrc="\$WORKSPACE/jenkins/scripts/usrc.py"
+                [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/scripts/usrc_local.py"
 
-            "\$usrc" --log -d get
-        """
+                "\$usrc" --log -d get
+            """
+        }
     }
 }
 
