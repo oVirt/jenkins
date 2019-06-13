@@ -67,14 +67,14 @@ class PushDetails(object):
         return not self == other
 
     def __repr__(self):
-        return repr({
+        return yaml.dump({
             'push_url': self.push_url,
-            'host_key': self.host_key,
+            'host_key': self.host_key[:57] + (self.host_key[57:] and '...'),
             'merge_flags': self.merge_flags,
             'maintainer_groups': self.maintainer_groups,
             'maintainers:': self.maintainers,
             'anonymous_clone_url': self.anonymous_clone_url,
-        })
+        }, width=70)
 
 
 class PushMapError(Exception):
@@ -251,6 +251,23 @@ def parse_args():
         ),
         nargs='?', default='HEAD',
     )
+    map_check_parser = subparsers.add_parser(
+        'map_check', help='Check push map file',
+        description=(
+            'Check correctness of push map file'
+        ),
+    )
+    map_check_parser.set_defaults(handler=map_check_main)
+    map_check_parser.add_argument(
+        'remote_url', help='The remote URL to lookup in the push map'
+    )
+    map_check_parser.add_argument(
+        '--push-map', default=DEFAULT_PUSH_MAP,
+        help=(
+            'Path to a push map YAML file that specifies details about how'
+            ' to connect to the remote SCM servers and merge changes.'
+        ),
+    )
     return parser.parse_args()
 
 
@@ -291,6 +308,13 @@ def is_header_true_main(args):
         return 0
     else:
         return 100
+
+
+def map_check_main(args):
+    push_map_data = read_push_map(args.push_map)
+    push_details = get_push_details(push_map_data, args.remote_url)
+    print(push_details)
+    return 0
 
 
 def push_to_scm(
@@ -403,15 +427,14 @@ def can_merge_to_scm(push_map, commit='HEAD', check_header='automerge'):
     return False
 
 
-def read_push_details(push_map):
-    """Read information about how to push commits to remote SCM server
+def read_push_map(push_map):
+    """Read and parse the push map file
 
     :param str push_map: A path to where the push map file, that describes how
                          to push to various remote SCMs, can be found.
 
-    :rtype: PushDetails
-    :returns: Details from the push_map file describing how to push commits
-              made to the repo at $PWD
+    :rtype: list
+    :returns: Contents of the push map file
     """
     try:
         with open(os.path.expanduser(push_map), 'r') as stream:
@@ -423,6 +446,20 @@ def read_push_details(push_map):
         raise PushMapSyntaxError("Failed to parse push map: '{0}'".format(e))
     except yaml.YAMLError as e:
         raise PushMapSyntaxError("Failed to parse push map: '{0}'".format(e))
+    return push_map_data
+
+
+def read_push_details(push_map):
+    """Read information about how to push commits to remote SCM server
+
+    :param str push_map: A path to where the push map file, that describes how
+                         to push to various remote SCMs, can be found.
+
+    :rtype: PushDetails
+    :returns: Details from the push_map file describing how to push commits
+              made to the repo at $PWD
+    """
+    push_map_data = read_push_map(push_map)
     remote_url = get_remote_url_from_ws()
     return get_push_details(push_map_data, remote_url)
 
