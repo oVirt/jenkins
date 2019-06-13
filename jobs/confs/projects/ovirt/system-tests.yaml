@@ -5,7 +5,7 @@
       node-filter: integ-tests
       branch: master
       version:
-        - 4.2:
+        - 4.3:
             chroot_distro: el7
         - master:
             chroot_distro: el7
@@ -19,8 +19,6 @@
     project: ovirt-system-tests
     version:
       - master:
-          chroot_distro: el7
-      - 4.2:
           chroot_distro: el7
       - 4.3:
           chroot_distro: el7
@@ -128,7 +126,7 @@
     <<: *system-tests-common
     name: ovirt-system-compat-suite
     suite_type:
-      - compat-4.2
+      - compat-4.3
     project: 'ovirt-system-tests'
     version:
       - master:
