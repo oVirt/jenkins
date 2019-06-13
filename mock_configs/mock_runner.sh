@@ -257,7 +257,6 @@ gen_mock_config() {
         ci_distro \
         ci_stage \
         ci_reposfile \
-        env_req
 
     base_conf="$(get_base_conf "$MOCK_CONF_DIR" "$chroot")"
     tmp_conf="$(get_temp_conf "$chroot" "$dist_label")"
@@ -348,10 +347,7 @@ EOC
     [[ "$TRY_MIRRORS" ]] && gen_mirrors_conf "$TRY_MIRRORS" >> "$tmp_conf"
     if [[ "$with_mounts" != 'no' ]]; then
         echo "Adding environment variables" >&2
-        gen_ci_env_info_conf "$script" "$dist_label" >> "$tmp_conf"
-        env_req=($(resolve_file "$script" "environment.yaml" "$dist_label"))
-        [[ -e "$env_req" ]] && \
-            gen_environ_conf "$env_req" >> "$tmp_conf"
+        gen_environ_conf "$dist_label" "$script" >> "$tmp_conf"
     else
         echo "Skipping environment variables" >&2
     fi
@@ -453,8 +449,9 @@ gen_mirrors_conf() {
 
 
 gen_environ_conf() {
-    local user_requests="${1:?}"
-    local user_requests_path="$(realpath "$user_requests")"
+    local dist_label="${1?}"
+    local script="${2?}"
+
     local base_dir="$(dirname "$(which "$0")")/.."
     local scripts_path="${base_dir}/scripts"
     local gdbm_db=$(mktemp --tmpdir="$MR_TEMP_DIR" "gdbm_db.XXX")
@@ -474,11 +471,17 @@ gen_environ_conf() {
     echo "        providers = load_providers("
     echo "            '$gdbm_db', ${SECRETS_FILE:+'$SECRETS_FILE'}"
     echo "        )"
-    echo "        with open('${user_requests_path}', 'r') as rf:"
-    echo "            requests = safe_load(rf)"
-    echo "        config_opts['environment'].update("
-    echo "            gen_env_vars_from_requests(requests, providers)"
-    echo "        )"
+
+    local user_requests
+    user_requests="$(resolve_file "$script" "environment.yaml" "$dist_label")"
+    if [[ $user_requests ]]; then
+        local user_requests_path="$(realpath "$user_requests")"
+        echo "        with open('${user_requests_path}', 'r') as rf:"
+        echo "            requests = safe_load(rf)"
+        echo "        config_opts['environment'].update("
+        echo "            gen_env_vars_from_requests(requests, providers)"
+        echo "        )"
+    fi
 
     echo "        _hw_vars = '${HW_ENV_VARS[*]}'.split()"
     echo "        _hw_requests = [{"
@@ -492,6 +495,8 @@ gen_environ_conf() {
 
     echo "    finally:"
     echo "        sys.path.pop()"
+
+    gen_ci_env_info_conf "$script" "$dist_label"
 }
 
 
