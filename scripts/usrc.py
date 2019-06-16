@@ -25,9 +25,13 @@ from pprint import pformat
 from operator import or_
 from functools import cmp_to_key
 try:
-    from pusher import DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
+    from pusher import (
+        DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
+    )
 except ImportError:
-    from .pusher import DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
+    from .pusher import (
+        DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
+    )
 
 
 UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
@@ -298,7 +302,7 @@ class GitUpstreamSource(object):
             dst_path = os.path.join(dst_path, dst_dir)
             try:
                 os.makedirs(dst_path)
-            except OSError as e:
+            except OSError:
                 pass
         self._cache_git(
             '--work-tree=' + dst_path,
@@ -347,9 +351,11 @@ class GitUpstreamSource(object):
         self._assert_path_under_root(dst_path, src_repos_file)
         source_repos_dirname = os.path.dirname(src_repos_file)
         try:
-            if source_repos_dirname: os.makedirs(source_repos_dirname)
+            if source_repos_dirname:
+                os.makedirs(source_repos_dirname)
         except OSError as os_error:
-            if os_error.errno != 17: raise  # Directory already exist
+            if os_error.errno != 17:
+                raise  # Directory already exist
         url = read_push_details(push_map).push_url
         with open(src_repos_file, 'a') as source_repos:
             source_repos.write(
@@ -369,7 +375,8 @@ class GitUpstreamSource(object):
         """
         root_abspath = os.path.abspath(root_path)
         file_abspath = os.path.abspath(file_path)
-        if file_abspath.startswith(root_path): return
+        if file_abspath.startswith(root_abspath):
+            return
         raise ConfigError('{file_path} is not under {root_path}'.format(
             file_path=file_path, root_path=root_path
         ))
@@ -770,7 +777,7 @@ def get_links_to_file(file, links_map):
         return set()
     links = links_map[file]
     # Recursively get links to links to file
-    links_to_links = ( get_links_to_file(link, links_map) for link in links )
+    links_to_links = (get_links_to_file(link, links_map) for link in links)
     links_to_file = reduce(or_, links_to_links, links)
     logger.debug(
         'Links to file [{0}]: {1}'.format(file, pformat(links_to_file))

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """test_usrc.py - Tests for usrc.py
 """
-import os
 import pytest
 from scripts.usrc import (
     get_upstream_sources, update_upstream_sources,
@@ -19,9 +18,9 @@ try:
     from unittest.mock import MagicMock, call, sentinel
 except ImportError:
     from mock import MagicMock, call, sentinel
-from functools import cmp_to_key
 from scripts.git_utils import git_rev_parse
 from scripts import usrc
+
 
 class TestGitProcessError(object):
     def test_inheritance(self):
@@ -91,8 +90,8 @@ def downstream(gitrepo, upstream, git_last_sha, symlinkto):
 
 @pytest.fixture
 def upstream_scenarios_for_tests(
-        gitrepo, git_last_sha, git_tag, git_branch, git_at
-    ):
+    gitrepo, git_last_sha, git_tag, git_branch, git_at
+):
     """
     This is a demonstration of the git repo commits:
     Both commit nodes E and D are childrens of commit node C.
@@ -169,6 +168,7 @@ def upstream_scenarios_for_tests(
             }
         })
     return repo
+
 
 class TestGitUpstreamSource(object):
     @pytest.mark.parametrize('struct,expected', [
@@ -510,33 +510,32 @@ class TestGitUpstreamSource(object):
         assert out == expected
 
     @pytest.mark.parametrize('struct,expected', [
-            (
-                ('master', 'master~2', ('tagged')),
-                ('master~1')
-            ),
-            (
-                ('master', 'master~2', ('tagged', 'latest')),
-                ('master~1')
-            ),
-            (
-                ('master', 'master~2', ('latest')),
-                ('master')
-            ),
-            (
-                ('sample_git_branch', 'sample_git_branch^1', ('tagged')),
-                ('sample_git_branch')
-            ),
-            (
-                ('another_git_branch', 'another_git_branch~2', ('tagged')),
-                ('another_git_branch')
-            ),
-            (
-                ('another_git_branch', 'another_git_branch~1',
-                    ('tagged', 'latest')),
-                ('another_git_branch')
-            ),
-        ]
-    )
+        (
+            ('master', 'master~2', ('tagged')),
+            ('master~1')
+        ),
+        (
+            ('master', 'master~2', ('tagged', 'latest')),
+            ('master~1')
+        ),
+        (
+            ('master', 'master~2', ('latest')),
+            ('master')
+        ),
+        (
+            ('sample_git_branch', 'sample_git_branch^1', ('tagged')),
+            ('sample_git_branch')
+        ),
+        (
+            ('another_git_branch', 'another_git_branch~2', ('tagged')),
+            ('another_git_branch')
+        ),
+        (
+            ('another_git_branch', 'another_git_branch~1',
+                ('tagged', 'latest')),
+            ('another_git_branch')
+        ),
+    ])
     def test_tag_updated(
         self, struct, expected,
         upstream_scenarios_for_tests, git_branch, monkeypatch
@@ -593,7 +592,7 @@ class TestGitUpstreamSource(object):
     def test_branch_format_handler(
         self, monkeypatch, upstream, downstream, downstream_remote,
         git_at, git_last_sha, gerrit_push_map
-        ):
+    ):
         gus = GitUpstreamSource(
             str(upstream), 'master', git_last_sha(upstream), 'no',
             {'branch': None}
@@ -616,7 +615,6 @@ class TestGitUpstreamSource(object):
         # Check dst_branch on downstream_remote points to the same commit
         # as upstream branch
         assert upstream_head == origin_post_commit
-
 
     @pytest.mark.parametrize(
         'src_repos_file,files_dest_dir,expected_file_name',
@@ -650,17 +648,18 @@ class TestGitUpstreamSource(object):
         assert f.exists()
         assert f.read_text(encoding='utf-8') == 'some-url some-commit\n'
 
-
     @pytest.mark.parametrize(
-        'dest_formats,get_as_files_expected,push_to_branch_expected', [
+        'dest_formats,get_as_files_expected,push_to_branch_expected',
+        [
             ({'files': None}, True, False),
             ({'files': None, 'branch': None}, True, True),
             ({'branch': None}, False, True)
-    ])
+        ]
+    )
     def test_get(
         self, upstream, git_last_sha, gerrit_push_map, dest_formats,
         get_as_files_expected, push_to_branch_expected
-        ):
+    ):
         get_as_files = MagicMock()
         push_to_branch = MagicMock()
         gus = GitUpstreamSource(
@@ -673,15 +672,14 @@ class TestGitUpstreamSource(object):
         assert get_as_files.called == get_as_files_expected
         assert push_to_branch.called == push_to_branch_expected
 
-
     def test_get_unknown_dest_exception(
-        self, upstream, git_last_sha, gerrit_push_map):
+        self, upstream, git_last_sha, gerrit_push_map
+    ):
         with pytest.raises(UnkownDestFormatError):
             GitUpstreamSource(
                 str(upstream), 'master', git_last_sha(upstream),
                 dest_formats={'unknown_dest': None}
             )
-
 
     def test_call_format_handlers(self, git_last_sha, upstream, monkeypatch):
         mock_formatter = MagicMock()
@@ -700,13 +698,12 @@ class TestGitUpstreamSource(object):
             mock_param='mock_value', dst_path='dst_path', push_map='push_map'
         )
 
-
     def test_update(self, gitrepo, upstream, git_last_sha):
         url, branch, commit = str(upstream), 'master', git_last_sha(upstream)
         dest_formats = {'files': None}
         files_dest_dir = 'temp'
         gus = GitUpstreamSource(
-                url, branch, commit, 'no', dest_formats, files_dest_dir
+            url, branch, commit, 'no', dest_formats, files_dest_dir
         )
         gus_id = id(gus)
         updated = gus.updated()
@@ -820,6 +817,7 @@ def test_get_upstream_sources(monkeypatch, gerrit_push_map, downstream):
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
     assert (downstream / 'overriden_file.txt').isfile()
     assert (downstream / 'overriden_file.txt').read() == 'Overriding content'
+
 
 @pytest.fixture
 def updated_upstream(gitrepo, upstream, downstream):
@@ -1333,7 +1331,9 @@ def test_git_file_object(monkeypatch):
         ),
     ]
 )
-def test_get_modified_files_resolve_links(links_map, diff, expected, monkeypatch):
+def test_get_modified_files_resolve_links(
+    links_map, diff, expected, monkeypatch
+):
     ls_all_files = MagicMock(side_effect=lambda x: getattr(sentinel, x))
     files_diff = MagicMock(side_effect=lambda x, y: diff)
     get_files_to_links_map = MagicMock(side_effect=lambda x, y: links_map)
@@ -1361,7 +1361,7 @@ def test_get_files_to_links_map(monkeypatch):
     git_file = MagicMock(
         path='dummy_link_path',
         file_type=0o120000,
-        read_file=MagicMock(side_effect=lambda : 'linked_by'),
+        read_file=MagicMock(side_effect=lambda: 'linked_by'),
     )
     out = get_files_to_links_map({'filename': git_file})
     assert git_file.read_file.called
