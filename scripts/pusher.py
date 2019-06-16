@@ -13,13 +13,13 @@ from collections import Iterable, Mapping
 from itertools import chain
 from six import iteritems, string_types
 from six.moves.urllib.parse import urlparse
-from subprocess import Popen, CalledProcessError, STDOUT, PIPE
+from subprocess import Popen, CalledProcessError, PIPE
 try:
     from stdci_logging import add_logging_args, setup_console_logging
-    from git_utils import git, GitProcessError, git_rev_parse, InvalidGitRef
+    from git_utils import git, GitProcessError, git_rev_parse
 except ImportError:
     from .stdci_logging import add_logging_args, setup_console_logging
-    from .git_utils import git, GitProcessError, git_rev_parse, InvalidGitRef
+    from .git_utils import git, GitProcessError, git_rev_parse
 
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ class PushDetails(object):
     """
     def __init__(
         self, push_url, host_key=None, merge_flags=None,
-        maintainer_groups=None, maintainers=None
+        maintainer_groups=None, maintainers=None, anonymous_clone_url=None,
     ):
         if merge_flags is None:
             merge_flags = []
@@ -44,18 +44,23 @@ class PushDetails(object):
             maintainer_groups = []
         if maintainers is None:
             maintainers = []
+        if anonymous_clone_url is None:
+            anonymous_clone_url = push_url
         self.push_url, self.host_key, self.merge_flags = \
             push_url, host_key, merge_flags
         self.maintainer_groups, self.maintainers = \
             maintainer_groups, maintainers
+        self.anonymous_clone_url = anonymous_clone_url
 
     def __eq__(self, other):
         return (
             self.push_url, self.host_key, self.merge_flags,
-            self.maintainer_groups, self.maintainers
+            self.maintainer_groups, self.maintainers,
+            self.anonymous_clone_url
         ) == (
             other.push_url, other.host_key, other.merge_flags,
-            other.maintainer_groups, other.maintainers
+            other.maintainer_groups, other.maintainers,
+            other.anonymous_clone_url
         )
 
     def __ne__(self, other):
@@ -68,6 +73,7 @@ class PushDetails(object):
             'merge_flags': self.merge_flags,
             'maintainer_groups': self.maintainer_groups,
             'maintainers:': self.maintainers,
+            'anonymous_clone_url': self.anonymous_clone_url,
         })
 
 
@@ -287,7 +293,9 @@ def is_header_true_main(args):
         return 100
 
 
-def push_to_scm(dst_branch, push_map, direct=False, if_not_exists=True, unless_hash=None):
+def push_to_scm(
+    dst_branch, push_map, direct=False, if_not_exists=True, unless_hash=None
+):
     """Push commits to the specified remote branch
 
     :param str dst_branch:    The target remote branch to push changes into.
@@ -497,6 +505,8 @@ def get_push_details(push_map_data, remote_url):
             [match_obj.expand(expr) for expr in push_details.maintainer_groups]
         push_details.maintainers = \
             [match_obj.expand(expr) for expr in push_details.maintainers]
+        push_details.anonymous_clone_url = \
+            match_obj.expand(push_details.anonymous_clone_url)
 
         return push_details
 
@@ -542,6 +552,7 @@ def parse_push_details_struct(push_details_struct):
         maintainers=parse_yaml_to_list(
             push_details_struct.get('maintainers', [])
         ),
+        anonymous_clone_url=push_details_struct.get('anonymous_clone_url'),
     )
 
 

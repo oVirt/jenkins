@@ -55,18 +55,21 @@ class TestPushDetails(object):
         assert pd.merge_flags == []
         assert pd.maintainer_groups == []
         assert pd.maintainers == []
+        assert pd.anonymous_clone_url == 'a_push_url'
         pd = PushDetails('a_push_url', 'a_host_key')
         assert pd.push_url == 'a_push_url'
         assert pd.host_key == 'a_host_key'
         assert pd.merge_flags == []
         assert pd.maintainer_groups == []
         assert pd.maintainers == []
+        assert pd.anonymous_clone_url == 'a_push_url'
         pd = PushDetails('a_push_url', 'a_host_key', ['merge', 'flags'])
         assert pd.push_url == 'a_push_url'
         assert pd.host_key == 'a_host_key'
         assert pd.merge_flags == ['merge', 'flags']
         assert pd.maintainer_groups == []
         assert pd.maintainers == []
+        assert pd.anonymous_clone_url == 'a_push_url'
         pd = PushDetails(
             'a_push_url', 'a_host_key', ['merge', 'flags'],
             ['gr1', 'gr2'], ['mnt1', 'mnt2'],
@@ -76,6 +79,17 @@ class TestPushDetails(object):
         assert pd.merge_flags == ['merge', 'flags']
         assert pd.maintainer_groups == ['gr1', 'gr2']
         assert pd.maintainers == ['mnt1', 'mnt2']
+        assert pd.anonymous_clone_url == 'a_push_url'
+        pd = PushDetails(
+            'a_push_url', 'a_host_key', ['merge', 'flags'],
+            ['gr1', 'gr2'], ['mnt1', 'mnt2'], 'anon_url'
+        )
+        assert pd.push_url == 'a_push_url'
+        assert pd.host_key == 'a_host_key'
+        assert pd.merge_flags == ['merge', 'flags']
+        assert pd.maintainer_groups == ['gr1', 'gr2']
+        assert pd.maintainers == ['mnt1', 'mnt2']
+        assert pd.anonymous_clone_url == 'anon_url'
 
     def test_named_init(self):
         pd = PushDetails(
@@ -84,12 +98,14 @@ class TestPushDetails(object):
             host_key='a_host_key',
             maintainer_groups=['gr1', 'gr2'],
             maintainers=['mnt1', 'mnt2'],
+            anonymous_clone_url='anon_url',
         )
         assert pd.push_url == 'a_push_url'
         assert pd.host_key == 'a_host_key'
         assert pd.merge_flags == ['merge', 'flags']
         assert pd.maintainer_groups == ['gr1', 'gr2']
         assert pd.maintainers == ['mnt1', 'mnt2']
+        assert pd.anonymous_clone_url == 'anon_url'
         pd = PushDetails(
             push_url='a_push_url',
             merge_flags=['merge', 'flags'],
@@ -100,6 +116,7 @@ class TestPushDetails(object):
         assert pd.merge_flags == ['merge', 'flags']
         assert pd.maintainer_groups == []
         assert pd.maintainers == []
+        assert pd.anonymous_clone_url == 'a_push_url'
         pd = PushDetails(
             push_url='a_push_url',
             merge_flags=['merge', 'flags'],
@@ -109,6 +126,7 @@ class TestPushDetails(object):
         assert pd.merge_flags == ['merge', 'flags']
         assert pd.maintainer_groups == []
         assert pd.maintainers == []
+        assert pd.anonymous_clone_url == 'a_push_url'
 
     def test_eq(self):
         pd1 = PushDetails(
@@ -117,6 +135,7 @@ class TestPushDetails(object):
             host_key='a_host_key',
             maintainer_groups=['gr1', 'gr2'],
             maintainers=['mnt1', 'mnt2'],
+            anonymous_clone_url='anon_url',
         )
         pd2 = PushDetails(
             push_url='a_push_url',
@@ -124,6 +143,7 @@ class TestPushDetails(object):
             host_key='a_host_key',
             maintainer_groups=['gr1', 'gr2'],
             maintainers=['mnt1', 'mnt2'],
+            anonymous_clone_url='anon_url',
         )
         assert id(pd1) != id(pd2)
         assert pd1 == pd2
@@ -134,6 +154,7 @@ class TestPushDetails(object):
         ('maintainer_groups',),
         ('maintainers',),
         ('merge_flags', 'host_key', 'maintainer_groups', 'maintainers',),
+        ('anonymous_clone_url',),
     ])
     def test_neq(self, unset_attrs):
         pd1_attrs = dict(
@@ -142,6 +163,7 @@ class TestPushDetails(object):
             host_key='a_host_key',
             maintainer_groups=['gr1', 'gr2'],
             maintainers=['mnt1', 'mnt2'],
+            anonymous_clone_url='anon_url',
         )
         pd2_attrs = dict()
         pd2_attrs.update(pd1_attrs)
@@ -151,7 +173,7 @@ class TestPushDetails(object):
         pd2 = PushDetails(**pd2_attrs)
         all_attrs = (
             'push_url', 'merge_flags', 'host_key', 'maintainer_groups',
-            'maintainers',
+            'maintainers', 'anonymous_clone_url',
         )
         print(unset_attrs)
         for attr in all_attrs:
@@ -467,6 +489,7 @@ def test_get_push_details_syntax(push_map_data, expected):
             'merge_flags': '--code-review=2 --verified=1',
             'maintainer_groups': ['\\6', '\\6-maintainers'],
             'maintainers': '\\4',
+            'anonymous_clone_url': 'http://server.com/\\6'
         }}],
         'ssh://jenkins@server.com:29418/project_name',
         PushDetails(
@@ -475,6 +498,7 @@ def test_get_push_details_syntax(push_map_data, expected):
             merge_flags=['--code-review=2', '--verified=1'],
             maintainer_groups=['project_name', 'project_name-maintainers'],
             maintainers=['jenkins'],
+            anonymous_clone_url='http://server.com/project_name',
         )
     )
 ])
@@ -486,6 +510,7 @@ def test_get_push_details_expansion(push_map_data, remote_url, expected):
     assert out.merge_flags == expected.merge_flags
     assert out.maintainer_groups == expected.maintainer_groups
     assert out.maintainers == expected.maintainers
+    assert out.anonymous_clone_url == expected.anonymous_clone_url
     assert out == expected
 
 
@@ -538,8 +563,11 @@ def test_parse_yaml_to_list(yaml_object, expected):
         (
             dict(push_url='a_url', maintainers='mr1 mr2 mr3'),
             PushDetails('a_url', maintainers=['mr1', 'mr2', 'mr3'])
-        )
-
+        ),
+        (
+            dict(push_url='a_url', anonymous_clone_url='anon_url'),
+            PushDetails('a_url', anonymous_clone_url='anon_url')
+        ),
     ]
 )
 def test_parse_push_details_struct(struct, expected):
