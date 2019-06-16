@@ -635,7 +635,7 @@ class TestGitUpstreamSource(object):
             files_dest_dir=str(tmp_dir)
         )
         mock_push_details = MagicMock(
-            side_effect=(MagicMock(push_url='some-url'),)
+            side_effect=(MagicMock(anonymous_clone_url='some-url'),)
         )
         monkeypatch.setattr(usrc, 'read_push_details', mock_push_details)
         gus._source_repos_format_handler(

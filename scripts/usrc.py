@@ -356,7 +356,7 @@ class GitUpstreamSource(object):
         except OSError as os_error:
             if os_error.errno != 17:
                 raise  # Directory already exist
-        url = read_push_details(push_map).push_url
+        url = read_push_details(push_map).anonymous_clone_url
         with open(src_repos_file, 'a') as source_repos:
             source_repos.write(
                 '{url} {commit}\n'.format(url=url, commit=self.commit)
