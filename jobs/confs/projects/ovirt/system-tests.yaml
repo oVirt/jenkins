@@ -105,8 +105,10 @@
           chroot_distro: el7
       - 4.3:
           chroot_distro: el7
-
-    email-to: 'sabose@redhat.com'
+    email-to: >
+      sabose@redhat.com,
+      godas@redhat.com,
+      kmajumde@redhat.com
     jobs:
         - '{project}_{suite_type}-suite-{version}'
 
