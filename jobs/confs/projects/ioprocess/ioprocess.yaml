@@ -20,6 +20,7 @@
     distro:
       - el7
       - fc29
+      - f30
       - fcraw
     arch:
       - x86_64
@@ -29,8 +30,10 @@
           node-filter: s390x
     exclude:
         - { distro: fc29, arch: ppc64le }
+        - { distro: fc30, arch: ppc64le }
         - { distro: fcraw, arch: ppc64le }
         - { distro: el7,  arch: s390x, }
+        - { distro: fc30, arch: s390x, }
         - { distro: fcraw, arch: s390x, }
         - { stage: check-patch, arch: s390x, }
 
