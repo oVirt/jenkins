@@ -8,7 +8,17 @@ import hudson.FilePath
 @NonCPS
 def get_current_pipeline_node() {
     def thread = CpsThread.current()
-    return thread.contextVariables.get(FilePath)?.toComputer()?.node
+    def cv = thread.contextVariables
+    def fp
+    // The signature of ContextVariableSet.get() changed in later versions of
+    // the pipeline plugins. Therefore we first try calling the newer version of
+    // the function (that gets 3 arguments), and then the older version.
+    try {
+        fp = cv.get(FilePath, null, null)
+    } catch(MissingMethodException) {
+        fp = cv.get(FilePath)
+    }
+    return fp?.toComputer()?.node
 }
 
 
