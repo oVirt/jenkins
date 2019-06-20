@@ -131,8 +131,7 @@ get_data_from_file() {
     local script="${1?}"
     local ftype="${2?}"
     local distro_suffix="${3?}"
-    local source_file \
-        sfile
+    local source_file
 
     source_file="$(resolve_file "${script}" "$ftype" "$distro_suffix")"
     if [[ "$?" != "0" ]]; then
@@ -156,8 +155,9 @@ extract_repo_url_from_mock_conf() {
 
 try_proxy() {
     local mock_conf_file="${1?}"
-    local proxy="$(extract_proxy_from_mock_conf "$mock_conf_file")"
-    local repo_url="$(extract_repo_url_from_mock_conf "$mock_conf_file")"
+    local proxy repo_url
+    proxy="$(extract_proxy_from_mock_conf "$mock_conf_file")"
+    repo_url="$(extract_repo_url_from_mock_conf "$mock_conf_file")"
     http_proxy="$proxy" \
         timeout 5 \
         curl \
@@ -170,8 +170,8 @@ try_proxy() {
 
 rotate_logs_dir() {
     local logs_dir="${1?}"
-    local dst_dir="${logs_dir}.$(date +%Y%m%d)_0"
-    local dir_num=0
+    local dst_dir dir_num=0
+    dst_dir="${logs_dir}.$(date +%Y%m%d)_0"
     [[ -d "$logs_dir" ]] || return 0
     while [[ -e "$dst_dir" ]]; do
         dir_num=$((dir_num + 1))
@@ -200,7 +200,6 @@ prepare_chroot() {
         mock_conf \
         mock_chroot \
         mock_dir \
-        mock_conf_with_mounts \
         packages
 
     packages=(
@@ -219,10 +218,8 @@ prepare_chroot() {
     init_chroot "${mock_chroot}" "${mock_dir}" 2>&1 \
         | tee -a "$LOGS_DIR/init/stdout_stderr.log"
     [[ "${PIPESTATUS[0]}" != 0 ]] && return 1
-    mock_conf_with_mounts="$(
-        gen_mock_config "$base_chroot" "$dist_label" "$script" "user" \
-            "${packages[@]}"
-    )"
+    gen_mock_config "$base_chroot" "$dist_label" "$script" "user" \
+        "${packages[@]}"
     return 0
 }
 
@@ -263,10 +260,8 @@ gen_mock_config() {
         proxy \
         repos_md5 \
         last_gen_repo_name \
-        chroot_setup_cmd \
         ci_distro \
-        ci_stage \
-        ci_reposfile \
+        ci_stage
 
     base_conf="$(get_base_conf "$MOCK_CONF_DIR" "$chroot")"
     tmp_conf="$(get_temp_conf "$chroot" "$dist_label")"
@@ -308,7 +303,7 @@ EOH
     repos=($(get_data_from_file "$script" repos "$dist_label"))
     # if we use custom repos, we don't want to mess with existing cached
     # chroots so we change the root param to have that info too
-    if [[ "$repos" != "" || "$packages" != "" ]]; then
+    if [[ "${#repos[@]}" -ne 0 || "${#packages[@]}" -ne 0 ]]; then
         repos_md5=($(echo "${repos[@]}" "${packages[@]}" | sort | md5sum ))
         tmp_chroot="${chroot}-${repos_md5[0]}"
     else
@@ -316,12 +311,14 @@ EOH
     fi
     echo "Using chroot cache = /var/cache/mock/${tmp_chroot}" >&2
     echo "Using chroot dir = /var/lib/mock/${tmp_chroot}-$$" >&2
-    echo "config_opts['root'] = '${tmp_chroot}'" >> "$tmp_conf"
-    echo "config_opts['unique-ext'] = '$$'" >> "$tmp_conf"
-    sed -n \
-        -e "/config_opts\[.root.\]/d" \
-        -e "1,/\[[\"\']yum.conf[\"\']\]/p" \
-        "$base_conf" >> "$tmp_conf"
+    {
+        echo "config_opts['root'] = '${tmp_chroot}'"
+        echo "config_opts['unique-ext'] = '$$'"
+        sed -n \
+            -e "/config_opts\[.root.\]/d" \
+            -e "1,/\[[\"\']yum.conf[\"\']\]/p" \
+            "$base_conf"
+    } >> "$tmp_conf"
 
     last_gen_repo_name=0
     for repo_opt in "${repos[@]}"; do
@@ -333,7 +330,7 @@ EOH
         if [[ "$repo_url" == "" ]]; then
             repo_url="$repo_name"
             repo_name="repo-$last_gen_repo_name"
-            last_gen_repo_name=$(($last_gen_repo_name + 1))
+            last_gen_repo_name=$((last_gen_repo_name + 1))
         fi
         # this is here because for the init we can't use /etc/yum/vars or
         # something, as it's not there yet
@@ -349,7 +346,7 @@ name="Custom $repo_name"
 EOR
     done
     sed -n -e '/\[main\]/,$p' "$base_conf" >> "$tmp_conf"
-    if [[ "$packages" != "" ]]; then
+    if [[ "${#packages[@]}" -ne 0 ]]; then
         cat  >> "$tmp_conf" <<EOC
 config_opts['chroot_setup_cmd'] += ' ${packages[@]}'
 EOC
@@ -370,7 +367,8 @@ prepare_code_mnt() {
     local code_dir="${1:?}"
     local code_dir_name="${code_dir##*/}"
     local code_dir_orig="$MOCK_CONF_DIR/../$code_dir"
-    local code_dir_copy="$(mktemp -u "${MR_TEMP_DIR}/${code_dir_name}.XXXXX")"
+    local code_dir_copy
+    code_dir_copy="$(mktemp -u "${MR_TEMP_DIR}/${code_dir_name}.XXXXX")"
     cp -rpL "$code_dir_orig" "$code_dir_copy"
     echo "$code_dir_copy"
 }
@@ -395,12 +393,13 @@ get_mount_conf() {
     for mount_opt in "${CODE_MNTS[@]}"; do
         src_mnt="${mount_opt%%:*}"
         dst_mnt="${mount_opt##*:}"
-        echo "    [u'$(prepare_code_mnt $src_mnt)', u'$dst_mnt'],"
+        echo "    [u'$(prepare_code_mnt "$src_mnt")', u'$dst_mnt'],"
     done
     # Mount hardwired mounts if they exist on the host
     for mount_opt in "${HW_MNTS[@]}"; do
         src_mnt="${mount_opt%%:*}"
         dst_mnt="${mount_opt##*:}"
+        # shellcheck disable=2015
         [[ $src_mnt ]] && [[ -e $src_mnt ]] || continue
         echo "    [u'$src_mnt', u'$dst_mnt'],"
     done
@@ -416,6 +415,7 @@ get_mount_conf() {
         dst_mnt="/tmp/$evar_name"
         # skip mounting if the variable isn't defined or the pointed file does
         # not exist
+        # shellcheck disable=2015
         [[ $evar_value ]] && [[ -e $src_mnt ]] || continue
         echo "    ['$src_mnt', '$dst_mnt'],"
         # make the var point to the internal mount point inside the mock env
@@ -434,7 +434,7 @@ get_mount_conf() {
             src_mnt="${BASH_REMATCH[1]}"
             dst_mnt="${BASH_REMATCH[3]:-$src_mnt}"
             if [[ ! -e "$src_mnt" ]]; then
-                mkdir -p $src_mnt
+                mkdir -p "$src_mnt"
             fi
         fi
         echo "['$src_mnt', '$dst_mnt'],"
@@ -467,9 +467,10 @@ gen_environ_conf() {
     local dist_label="${1?}"
     local script="${2?}"
 
-    local base_dir="$(dirname "$(which "$0")")/.."
-    local scripts_path="${base_dir}/scripts"
-    local gdbm_db=$(mktemp --tmpdir="$MR_TEMP_DIR" "gdbm_db.XXX")
+    local base_dir scripts_path gdbm_db
+    base_dir="$(dirname "$(which "$0")")/.."
+    scripts_path="${base_dir}/scripts"
+    gdbm_db=$(mktemp --tmpdir="$MR_TEMP_DIR" "gdbm_db.XXX")
 
     # Generate GDBM database from `$env`
     python "${scripts_path}/gdbm_db_resolvers.py" "${gdbm_db}"
@@ -484,13 +485,15 @@ gen_environ_conf() {
     echo "            load_providers, gen_env_vars_from_requests"
     echo "        )"
     echo "        providers = load_providers("
+    # shellcheck disable=2016
     echo "            '$gdbm_db', ${SECRETS_FILE:+'$SECRETS_FILE'}"
     echo "        )"
 
     local user_requests
     user_requests="$(resolve_file "$script" "environment.yaml" "$dist_label")"
     if [[ $user_requests ]]; then
-        local user_requests_path="$(realpath "$user_requests")"
+        local user_requests_path
+        user_requests_path="$(realpath "$user_requests")"
         echo "        with open('${user_requests_path}', 'r') as rf:"
         echo "            requests = safe_load(rf)"
         echo "        config_opts['environment'].update("
@@ -749,8 +752,6 @@ run_script_in_mock() {
     local mock_env="${2?}"
     local script="${3?}"
     local base_chroot \
-        configdir \
-        custom_conf \
         distro_id \
         mock_enable_network
 
@@ -774,8 +775,9 @@ run_script_in_mock() {
     echo "Using base mock conf $MOCK_CONF_DIR/${base_chroot}.cfg" >&2
     prepare_chroot "$base_chroot" "${mock_env%%:*}" "$script" \
     || return 1
-    local logs_dir="$LOGS_DIR/script"
-    local logs_xfr_dir="$(mktemp --tmpdir=. -u -d -t mock_logs.XXXXXXXX)"
+    local logs_dir logs_xfr_dir
+    logs_dir="$LOGS_DIR/script"
+    logs_xfr_dir="$(mktemp --tmpdir=. -u -d -t mock_logs.XXXXXXXX)"
     mkdir -p "$logs_dir"
     local mock_shell_cmd
     read -r -d '' mock_shell_cmd <<EOF
@@ -857,7 +859,6 @@ run_script() {
     local script="${3?}"
     local distro_id \
         mock_conf \
-        packages_file \
         packages \
         script \
         start \
@@ -898,7 +899,8 @@ run_script() {
 
 
 finalize() {
-    local logs="$(find "$LOGS_DIR" -mindepth 1 -maxdepth 1)"
+    local logs
+    logs="$(find "$LOGS_DIR" -mindepth 1 -maxdepth 1)"
     if [[ -n "$logs" ]]; then
         rotate_logs_dir "$PWD/$FINAL_LOGS_DIR"
         makedir "$FINAL_LOGS_DIR"
@@ -1067,8 +1069,8 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
         echo "##########################################################"
         if [[ "$res" != "0" ]]; then
             lastlog="$( \
-                find "$LOGS_DIR" -iname \*.log \
-                | xargs ls -lt \
+                find "$LOGS_DIR" -iname \*.log -print0 \
+                | xargs -0 ls -lt \
                 | head -n1\
                 | awk '{print $9}' \
             )"
