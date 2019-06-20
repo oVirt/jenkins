@@ -156,13 +156,16 @@ test_mock_runner_fd_leak() {
 }
 
 test_mock_runner_hardwired_env() {
-    echo "GIT_COMMITTER_NAME: $GIT_COMMITTER_NAME"
-    echo "GIT_COMMITTER_EMAIL: $GIT_COMMITTER_EMAIL"
-    if [[ $GIT_COMMITTER_NAME ]] && [[ $GIT_COMMITTER_EMAIL ]]; then
-        return 0
-    else
-        return 1
-    fi
+    readonly HW_ENV_VARS=(
+        GIT_COMMITTER_{NAME,EMAIL}
+        BUILD_{NUMBER,ID,DISPLAY_NAME,TAG,URL} JOB_{{,BASE_}NAME,URL}
+        NODE_{NAME,LABELS} WORKSPACE JENKINS_URL
+    )
+    for var_name in "${HW_ENV_VARS[@]}"; do
+        local var_value="${!var_name}"
+        echo "$var_name: $var_value"
+        [[ $var_value ]] || return 1
+    done
 }
 
 test_ci_toolbox() {
