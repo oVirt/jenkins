@@ -46,6 +46,7 @@ test_job_configs() {
 }
 
 test_standard_ci_proxy() {
+    #shellcheck disable=2154
     if [[ -n "$http_proxy" ]]; then
         echo "It looked like we are running in a PROXIED environment"
         echo "http_proxy='$http_proxy'"
@@ -89,7 +90,7 @@ test_rpmbuild() {
 
     version='0.1.0'
     release="0.$(git log --oneline | wc -l)"
-    chown $USER:$USER data/dummy.spec
+    chown "$USER:$USER" data/dummy.spec
     rpmbuild \
         --define '_rpmdir exported-artifacts' \
         --define '_srcrpmdir exported-artifacts' \
@@ -106,6 +107,7 @@ test_docker_container() {
     docker run check_patch_container:$export_tag
 }
 
+#shellcheck disable=2154
 test_secrets_and_credentials() {
     # Check if secrets were injected and parsed correctly from secrets file
     # In our secrets file we hold a dummy secret named jenkins-check-patch
@@ -121,7 +123,8 @@ test_mock_runner_mounts() {
     # missing
     (
         set +x
-        for d in $(cut -d: -f2 automation/check-patch.mounts | grep -v sock); do
+        cut -d: -f2 automation/check-patch.mounts | grep -v sock \
+        | while read d; do
             echo -n "Testing mounted dir: $d: "
             if ! [[ -d $d ]]; then
                 echo 'FAILED - not a directory'
@@ -141,6 +144,7 @@ test_mock_runner_fd_leak() {
     # If we reached timeout, it means that stdin is empty
     # If $A is empty it means that stdin is empty
     local res A
+    # shellcheck disable=2034
     read -t 2 A && timeout 2s cat > /dev/null
     res=$?
     if (( res == 0 || res == 142 )); then
