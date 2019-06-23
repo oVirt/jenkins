@@ -135,21 +135,30 @@ def get_std_ci_node_label(project, job) {
         label_conditions << job.distro
     }
     if(job.runtime_reqs?.hostdistro =~ /^(?i)newer$/) {
-        String[] host_distros = [
-            'el6', 'el7', 'fc24', 'fc25', 'fc26', 'fc27', 'fc28'
-        ]
-        int dist_idx = host_distros.findIndexOf { it == job.distro }
-        if(dist_idx < 0) {
-            throw new Exception("Can't find newer distros for ${job.distro}")
-        }
-        String[] job_distros = host_distros[dist_idx..<host_distros.size()]
-        label_conditions << "(${job_distros.join(' || ')})"
+        label_conditions << get_newer_distros_label(job.distro)
+    }
+    // Only run FCRAW jobs on FC >= 29 slaves
+    if(job.distro == 'fcraw') {
+        label_conditions << get_newer_distros_label('fc29')
     }
     if (job.arch != "x86_64") {
         label_conditions << job.arch
     }
 
     return label_conditions.join(' && ')
+}
+
+@NonCPS
+def get_newer_distros_label(distro) {
+    String[] host_distros = [
+        'el6', 'el7', 'fc27', 'fc28', 'fc29', 'fc30', 'fc31',
+    ]
+    int dist_idx = host_distros.findIndexOf { it == distro }
+    if(dist_idx < 0) {
+        throw new Exception("Can't find newer distros for ${job.distro}")
+    }
+    String[] job_distros = host_distros[dist_idx..<host_distros.size()]
+    return "(${job_distros.join(' || ')})"
 }
 
 def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
