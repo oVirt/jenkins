@@ -61,15 +61,8 @@ test_standard_ci_proxy() {
     fi
 }
 
-test_mock_genconfig() {
-    for mock_cfg in mock_configs/*.cfg; do
-        mock_configs/mock_genconfig --base "$mock_cfg" --name 'foo'
-    done
-}
-
 test_standard_ci() {
     test_standard_ci_proxy
-    test_mock_genconfig
 }
 
 test_python_scripts() {
