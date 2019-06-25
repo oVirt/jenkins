@@ -9,12 +9,12 @@ python-jinja2
 python-paramiko
 python-six
 PyYAML
-python34-jinja2
-python34-paramiko
-python34-PyYAML
+python36-jinja2
+python36-paramiko
+python36-PyYAML
 git
 docker
 python2-pyxdg
-python34-pyxdg
+python36-pyxdg
 xdg-utils
 xdg-user-dirs

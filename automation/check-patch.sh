@@ -12,7 +12,7 @@ main() {
 
     # dispatch tests according to what changed in git
     local changed_files
-    changed_files="$($usrc changed-files)"
+    changed_files="$(python3 $usrc changed-files)"
 
     # These are the files which are involved with the containers flow
     local containers_flow="Dockerfiles|collect_artifacts.sh|standard-stage.yaml|cleanup_slave.sh|docker_cleanup.py"
