@@ -18,6 +18,11 @@ _ci_ssh_prep() {
     fi
 }
 
+_setup_path() {
+    export PATH="/var/lib/ci_toolbox:${PATH}"
+}
+
+_setup_path
 _ci_ssh_prep
 # Remove functions to leave shell namespace clean
-unset _ci_ssh_prep
+unset _ci_ssh_prep _setup_path

@@ -182,6 +182,14 @@ test_ci_toolbox() {
             echo " SUCCESS"
         done
     )
+
+     test_ci_toolbox_in_path || exit "$?"
+}
+
+test_ci_toolbox_in_path() {
+    type -P dummy.sh && { echo "${FUNCNAME[0]} SUCCESS"; return 0; }
+    echo "${FUNCNAME[0]} FAILED - ci toolbox is not in the PATH"
+    return 1
 }
 
 main "$@"
