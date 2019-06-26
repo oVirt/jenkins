@@ -1,0 +1,9 @@
+---
+all:
+  children:
+    zuul_nodes:
+      hosts:
+        zuul-staging.phx.ovirt.org:
+        jenkins-staging.phx.ovirt.org:
+        zuul01.phx.ovirt.org:
+        jenkins.ovirt.org:

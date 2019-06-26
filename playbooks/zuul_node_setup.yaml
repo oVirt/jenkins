@@ -1,0 +1,37 @@
+# zuul_nodes_setup.yaml - Setup nodes for use from Zuul
+#
+# Usage:
+#     ansible-playbook playbooks/zuul_nodes_setup.yaml -i $INVENTORY
+#
+# Where $INVENTORY is an inventory file listing the names of the nodes
+# masters we want to setup as Zuul nodes
+#
+# Example - setting up the Zuul nodes in oVirt PHX:
+#
+#     ansible-playbook playbooks/zuul_node_setup.yaml \
+#       -i playbooks/inventories/zuul_nodes.yaml -v
+#
+---
+- hosts: zuul_nodes
+  become: yes
+  tasks:
+    - name: Create `zuul` group
+      group:
+        name: zuul
+        gid: 5001
+        local: yes
+
+    - name: Create `zuul` account
+      user:
+        name: zuul
+        comment: Zuul user account
+        uid: 5001
+        generate_ssh_key: yes
+        group: zuul
+        local: yes
+
+    - name: Add softwarefactory-project.io SSH key
+      authorized_key:
+        key: https://softwarefactory-project.io/keys/zuul_rsa.pub
+        user: zuul
+
