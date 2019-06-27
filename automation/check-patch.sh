@@ -152,7 +152,7 @@ test_mock_runner_hardwired_env() {
     readonly HW_ENV_VARS=(
         GIT_COMMITTER_{NAME,EMAIL}
         BUILD_{NUMBER,ID,DISPLAY_NAME,TAG,URL} JOB_{{,BASE_}NAME,URL}
-        NODE_{NAME,LABELS} WORKSPACE JENKINS_URL
+        NODE_{NAME,LABELS} WORKSPACE JENKINS_URL GERRIT_BRANCH
     )
     for var_name in "${HW_ENV_VARS[@]}"; do
         local var_value="${!var_name}"

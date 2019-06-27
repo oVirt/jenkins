@@ -22,7 +22,7 @@ readonly AUTH_ENV_VARS=(KRB5CCNAME SSH_AUTH_SOCK)
 readonly HW_ENV_VARS=(
     GIT_COMMITTER_{NAME,EMAIL} "${AUTH_ENV_VARS[@]}" SSH_AUTH_USER
     BUILD_{NUMBER,ID,DISPLAY_NAME,TAG,URL} JOB_{{,BASE_}NAME,URL}
-    NODE_{NAME,LABELS} WORKSPACE JENKINS_URL
+    NODE_{NAME,LABELS} WORKSPACE JENKINS_URL GERRIT_BRANCH
 )
 # Directories and files we always mount into the mock env
 readonly HW_MNTS=(/etc/krb5.conf{,.d} /var/lib/sss/pubconf/krb5.include.d)
