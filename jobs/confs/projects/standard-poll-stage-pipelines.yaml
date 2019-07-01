@@ -15,3 +15,12 @@
       - master
     jobs:
       - '{project}_{branch}_standard-poll-upstream-sources'
+
+- project:
+    name: standard-poll-upstream-sources
+    project:
+      - ovirt-system-tests:
+          branch: master
+    jobs:
+      - '{project}_{branch}_standard-poll-upstream-sources'
+
