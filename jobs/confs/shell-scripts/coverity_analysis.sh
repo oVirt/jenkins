@@ -12,7 +12,7 @@ MAVEN_OPTS+="-Dgwt.compiler.localWorkers=1 "
 MAVEN_OPTS+="-Dgwt.logLevel=TRACE"
 export MAVEN_OPTS
 
-wget -N https://scan.coverity.com/download/linux64 \
+wget -N https://scan.coverity.com/download/java/linux64 \
     --post-data "token=YqBYeyDp2jPuC_uVz0Hdog&project=ovirt-engine" \
     -O coverity_tool.tgz
 rm -rf "{{$WORKSPACE}}"/"cov-analysis-linux64-*"
@@ -31,6 +31,15 @@ backend/manager/modules/scheduler,\
 backend/manager/modules/searchbackend,\
 backend/manager/modules/utils,\
 backend/manager/modules/vdsbroker,\
+backend/manager/modules/auth-plugin,\
+backend/manager/modules/builtin-extensions,\
+backend/manager/modules/enginesso,\
+backend/manager/modules/extensions-api-root,\
+backend/manager/modules/extensions-manager,\
+backend/manager/modules/nmicrobenchmarks,\
+backend/manager/modules/restapi,\
+backend/manager/modules/services,\
+backend/manager/modules/uutils,
 "
 pushd ovirt-engine
 ../cov-analysis-linux64-*/bin/cov-build \
