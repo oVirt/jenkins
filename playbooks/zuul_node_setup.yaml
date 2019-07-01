@@ -35,3 +35,14 @@
         key: https://softwarefactory-project.io/keys/zuul_rsa.pub
         user: zuul
 
+- hosts: source_hosts
+  become: yes
+  roles:
+    - git_http_ro_server
+  tasks:
+    - name: "Add zuul user to {{ git_http_writers_group }} group"
+      user:
+        name: zuul
+        append: yes
+        groups: "{{ git_http_writers_group }}"
+

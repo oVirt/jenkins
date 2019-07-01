@@ -1,0 +1,7 @@
+---
+# handlers file for git_http_ro_server
+- name: Restart HTTPD
+  service:
+    name: httpd
+    state: restarted
+

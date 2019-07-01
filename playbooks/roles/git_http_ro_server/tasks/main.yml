@@ -1,0 +1,37 @@
+---
+# tasks file for git_http_ro_server
+- name: Install HTTPD, Git packages
+  yum:
+    name:
+      - httpd
+      - git
+    state: present
+
+- name: Create `git_writers` group
+  group:
+    name: "{{ git_http_writers_group}}"
+    gid: 8001
+    local: yes
+
+- name: Create shared git dir
+  file:
+    name: "{{ git_http_shared_dir }}"
+    state: directory
+    owner: root
+    group: "{{ git_http_writers_group }}"
+    mode: 06775
+
+- name: Configure HTTPD
+  template:
+    dest: "{{ git_http_conf_file }}"
+    src: git_http.conf.j2
+    owner: root
+    group: root
+  notify:
+    - Restart HTTPD
+
+- name: Start HTTPD
+  service:
+    name: httpd
+    enabled: yes
+    state: started

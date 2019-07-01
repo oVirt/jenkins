@@ -1,0 +1,20 @@
+# {{ git_http_conf_file }} - Configure a public read-only Git-over-HTTP share
+#                            from {{ git_http_shared_dir }}
+#
+# This file is managed by Ansible - please do not modify manually
+#
+SetEnv GIT_PROJECT_ROOT {{ git_http_shared_dir }}
+SetEnv GIT_HTTP_EXPORT_ALL
+ScriptAlias {{ git_http_base_url }} {{ git_http_backend_path }}
+
+RewriteCond %{QUERY_STRING} service=git-receive-pack [OR]
+RewriteCond %{REQUEST_URI} /git-receive-pack$
+RewriteRule ^{{ git_http_base_url }} - [E=GIT_HTTP_WRITE:yes]
+
+<LocationMatch "^{{ git_http_base_url }}">
+        Order Deny,Allow
+        Deny from env=GIT_HTTP_WRITE
+	Require all granted
+</LocationMatch>
+
+

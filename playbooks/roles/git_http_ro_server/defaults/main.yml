@@ -1,0 +1,7 @@
+---
+# defaults file for git_http_ro_server
+git_http_writers_group: git_writers
+git_http_shared_dir: /var/www/git
+git_http_conf_file: /etc/httpd/conf.d/git_http.conf
+git_http_base_url: /git/
+git_http_backend_path: /usr/libexec/git-core/git-http-backend/
