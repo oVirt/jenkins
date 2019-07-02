@@ -138,6 +138,7 @@ def get_pipeline_for_job(name) {
         /^(.*)_standard-(.*)$/: 'standard-stage.groovy',
         /^(.*)_change-queue(-tester)?$/: 'change-queue$2.groovy',
         /^deploy-to-.*$/: 'deployer.groovy',
+        /^(.*)_gate$/: 'gate.groovy'
     ]
     return job_to_pipelines.findResult { key, value ->
         def match = (name =~ key)
