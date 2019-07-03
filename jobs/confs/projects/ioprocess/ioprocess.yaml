@@ -20,7 +20,7 @@
     distro:
       - el7
       - fc29
-      - f30
+      - fc30
       - fcraw
     arch:
       - x86_64
