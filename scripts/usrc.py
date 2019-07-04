@@ -311,9 +311,17 @@ class GitUpstreamSource(object):
 
     def _branch_format_handler(self, push_map, **kwargs):
         """Get the upstream source to branch
+
+        :param str push_map: The path to a file containing information
+                             about remote SCM servers that is needed to
+                             push changes to them.
+        :param str push_url: Choose a push url to use from the push_map.
+        :param bool gen_source_repos: If set to True, after pushed sources to
+                                      a remote branch, propogate the call to
+                                      _source_repos_format_handler.
         """
         dst_branch = '_upstream_' + self.branch + '_' + self.commit[0:7]
-        push_details = read_push_details(push_map)
+        push_details = read_push_details(push_map, kwargs.get('push_url'))
         logger.info("Would push to: '%s'", push_details.push_url)
         if push_details.host_key:
             add_key_to_known_hosts(push_details.host_key)
@@ -321,6 +329,8 @@ class GitUpstreamSource(object):
             'push', push_details.push_url,
             '{0}:refs/heads/{1}'.format(self.commit, dst_branch)
         )
+        if kwargs.get('gen_source_repos'):
+            self._source_repos_format_handler(push_map, **kwargs)
 
     def _source_repos_format_handler(
         self, push_map, dst_path, files_dest_dir=None, src_repos_file=None,
@@ -343,6 +353,8 @@ class GitUpstreamSource(object):
                                    to files_dest_dir. If used in conjunction
                                    with files_dest_dir, files_dest_dir will
                                    prefix the path specified in src_repos_file.
+        :param str push_url:       Choose a push url to use from the push_map.
+
 
         """
         src_repos_file = src_repos_file or 'source-repos'
@@ -356,7 +368,9 @@ class GitUpstreamSource(object):
         except OSError as os_error:
             if os_error.errno != 17:
                 raise  # Directory already exist
-        url = read_push_details(push_map).anonymous_clone_url
+        url = read_push_details(
+            push_map, kwargs.get('push_url')
+        ).anonymous_clone_url
         with open(src_repos_file, 'a') as source_repos:
             source_repos.write(
                 '{url} {commit}\n'.format(url=url, commit=self.commit)

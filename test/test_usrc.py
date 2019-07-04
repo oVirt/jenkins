@@ -608,6 +608,7 @@ class TestGitUpstreamSource(object):
         # Check dst_branch does not exist on downstream_remote pre push
         assert origin_pre == ''
         monkeypatch.chdir(str(downstream))
+        mock_src_repos_handler = MagicMock()
         gus._branch_format_handler(gerrit_push_map)
         origin_post = git('ls-remote', '--heads', 'origin', dst_branch)
         assert origin_post != ''
@@ -615,6 +616,15 @@ class TestGitUpstreamSource(object):
         # Check dst_branch on downstream_remote points to the same commit
         # as upstream branch
         assert upstream_head == origin_post_commit
+        mock_src_repos_handler.assert_not_called
+        monkeypatch.setattr(
+            gus, '_source_repos_format_handler', mock_src_repos_handler
+        )
+        gus._branch_format_handler(
+            gerrit_push_map, gen_source_repos=True, dst_path='path')
+        mock_src_repos_handler.assert_called_once_with(
+            gerrit_push_map, dst_path='path', gen_source_repos=True
+        )
 
     @pytest.mark.parametrize(
         'src_repos_file,files_dest_dir,expected_file_name',
@@ -643,7 +653,7 @@ class TestGitUpstreamSource(object):
             files_dest_dir=files_dest_dir
         )
 
-        mock_push_details.assert_called_once_with({})
+        mock_push_details.assert_called_once_with({}, None)
         f = tmp_dir.join(expected_file_name)
         assert f.exists()
         assert f.read_text(encoding='utf-8') == 'some-url some-commit\n'
