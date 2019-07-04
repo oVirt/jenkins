@@ -449,18 +449,20 @@ def read_push_map(push_map):
     return push_map_data
 
 
-def read_push_details(push_map):
+def read_push_details(push_map, remote_url=None):
     """Read information about how to push commits to remote SCM server
 
     :param str push_map: A path to where the push map file, that describes how
                          to push to various remote SCMs, can be found.
+    :param str remote_url: Specify remote url to read from the push map. If not
+                           specified, will read the remote url from workspace.
 
     :rtype: PushDetails
     :returns: Details from the push_map file describing how to push commits
               made to the repo at $PWD
     """
     push_map_data = read_push_map(push_map)
-    remote_url = get_remote_url_from_ws()
+    remote_url = remote_url or get_remote_url_from_ws()
     return get_push_details(push_map_data, remote_url)
 
 

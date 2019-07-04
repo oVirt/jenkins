@@ -18,7 +18,7 @@ from scripts.pusher import (
     PushMapError, PushMapMatchError, PushMapSyntaxError, PushMapIOError,
     merge_to_scm, patch_header_is_true, check_if_similar_patch_pushed,
     get_patch_owner, gerrit_user_in_group, can_merge_to_scm, PatchInfoError,
-    parse_yaml_to_list,
+    parse_yaml_to_list, read_push_details
 )
 
 
@@ -939,3 +939,17 @@ def test_can_merge_to_scm(has_hdr, u_in_group, u_in_file, exp, monkeypatch):
         assert not add_key_to_known_hosts.called
         assert not get_patch_owner.called
         assert not gerrit_user_in_group.called
+
+
+def test_read_push_details_ws(gerrit_push_map, local_repo, monkeypatch):
+    monkeypatch.chdir(str(local_repo))
+    push_details = read_push_details(gerrit_push_map)
+    expected_push_url = local_repo.dirname + '/remote'
+    assert push_details.push_url == str(expected_push_url)
+
+
+def test_read_push_details(gerrit_push_map, local_repo, monkeypatch):
+    monkeypatch.chdir(str(local_repo))
+    push_details = read_push_details(gerrit_push_map, '/my-url')
+    expected_push_url = '/my-url'
+    assert push_details.push_url == expected_push_url
