@@ -29,7 +29,6 @@
     gerrit-server: 'gerrit.ovirt.org'
     project:
       - jenkins
-      - stdci-staging
     jobs:
       - '{project}_standard-gerrit-jobs'
 
@@ -39,5 +38,7 @@
     project:
       - ds-jenkins-stg
       - stdci-sample-liora
+      - stdci-staging
+      - stage-stdci1
     jobs:
       - '{project}_standard-gerrit-jobs'
