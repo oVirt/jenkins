@@ -66,6 +66,7 @@
     name: oVirt-standard-pipelines-gerrit
     gerrit-server: 'gerrit.ovirt.org'
     project:
+      - changequeue-status
       - engine-db-query
       - fabric-ovirt
       - imgbased
