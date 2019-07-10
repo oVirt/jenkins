@@ -1,26 +1,6 @@
 ---
-- project: &base-params
-    name: ovirt-appliance
-    project: ovirt-appliance
-    version:
-      - ovirt-4.2:
-          branch: ovirt-4.2
-      - ovirt-4.2-snapshot:
-          branch: ovirt-4.2-snapshot
-    distro:
-      - el7
-    arch:
-      - x86_64
-    stage:
-      - check-patch
-      - check-merged
-    trigger: 'on-change'
-    node-filter: 'el7 && 80gb-disk'
-    jobs:
-      - '{project}_{version}_{stage}-{distro}-{arch}'
-
 - project:
-    <<: *base-params
+    project: ovirt-appliance
     name: ovirt-appliance_build-artifacts
     stage: build-artifacts
     version:
@@ -32,24 +12,12 @@
           branch: ovirt-4.3
           trigger: 'timed'
           trigger-times: '@daily'
-      - ovirt-4.2:
-          branch: ovirt-4.2
-          trigger: 'timed'
-          trigger-times: '@weekly'
-      - '4.2':
-          branch: ovirt-4.2-snapshot
-          trigger: 'timed'
-          trigger-times: '@daily'
+    arch:
+      - x86_64
     distro:
       - el7
+    node-filter: 'el7 && 80gb-disk'
     email-to: 'yturgema@redhat.com'
     jobs:
       - 'ovirt-appliance_{version}_build-artifacts-{distro}-{arch}'
 
-- project:
-    <<: *base-params
-    name: ovirt-appliance_build-artifacts-manual
-    stage: build-artifacts-manual
-    trigger: 'manual'
-    jobs:
-      - '{project}_{version}_build-artifacts-manual-{distro}-{arch}'
