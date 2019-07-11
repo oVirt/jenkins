@@ -67,14 +67,34 @@ test_standard_ci() {
 
 test_python_scripts() {
     mkdir -p exported-artifacts
-    pip install -U pip
-    pip install -r 'test-requirements.lock'
+    install_python_test_deps
     python -m pytest -vv --junitxml='exported-artifacts/pytest.junit.xml' test
     if command -v py.test-3; then
         # If we have python3 (e.g we're on fedora) run tests in python 3 too
         python3 -m pytest -vv \
             --junitxml='exported-artifacts/pytest3.junit.xml' test
     fi
+}
+
+install_python_test_deps() {
+    local versions=(2 3)
+    local version _python
+    local installed=false
+
+    for version in "${versions[@]}"; do
+        _python="python${version}"
+        command -v "$_python" || continue
+        "$_python" -c 'import pip' &>/dev/null || continue
+        "$_python" -m pip install -U pip
+        "$_python" -m pip install -r 'test-requirements.lock'
+        installed=true
+        echo "Successfully installed test dependencies with $_python" 1>&2
+    done
+
+    "$installed" && return
+    echo "Failed to install Python test dependencies"
+
+    return 1
 }
 
 test_rpmbuild() {
