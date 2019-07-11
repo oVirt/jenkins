@@ -5,13 +5,14 @@ pytest
 python-jinja2
 python-mock
 python-paramiko
-python-pip
+python2-pip
 python-pluggy
 python-requests
 python-setuptools
 python2-pyasn1
 python2-pyxdg
 python3
+python3-pip
 python3-PyYAML
 python3-jinja2
 python3-paramiko

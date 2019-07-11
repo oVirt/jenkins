@@ -1,5 +1,5 @@
 jenkins-job-builder
-python-pip
+python2-pip
 python-setuptools
 python-ordereddict
 python-requests
@@ -12,6 +12,8 @@ PyYAML
 python36-jinja2
 python36-paramiko
 python36-PyYAML
+python36-pip
+python36-requests
 git
 docker
 python2-pyxdg

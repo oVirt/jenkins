@@ -65,36 +65,48 @@ test_standard_ci() {
     test_standard_ci_proxy
 }
 
-test_python_scripts() {
-    mkdir -p exported-artifacts
-    install_python_test_deps
-    python -m pytest -vv --junitxml='exported-artifacts/pytest.junit.xml' test
-    if command -v py.test-3; then
-        # If we have python3 (e.g we're on fedora) run tests in python 3 too
-        python3 -m pytest -vv \
-            --junitxml='exported-artifacts/pytest3.junit.xml' test
-    fi
-}
 
 install_python_test_deps() {
+    local python_cmd="${1:?}"
+
+    "$python_cmd" -m pip install -U pip
+    "$python_cmd" -m pip install -r 'test-requirements.lock'
+}
+
+test_python_scripts() {
     local versions=(2 3)
     local version _python
-    local installed=false
+    local tested=false
 
     for version in "${versions[@]}"; do
         _python="python${version}"
-        command -v "$_python" || continue
-        "$_python" -c 'import pip' &>/dev/null || continue
-        "$_python" -m pip install -U pip
-        "$_python" -m pip install -r 'test-requirements.lock'
-        installed=true
+        command -v "$_python" || {
+            echo "$_python command was not found, skipping tests" 1>&2
+            continue
+        }
+        install_python_test_deps "$_python"
         echo "Successfully installed test dependencies with $_python" 1>&2
+        run_pytest "$_python"
+        tested=true
     done
 
-    "$installed" && return
-    echo "Failed to install Python test dependencies"
+    "$tested" && return
+    (
+        echo "Python versions ${versions[*]} weren't found"
+        echo "Failed to execute Python tests"
+    ) 1>&2
 
     return 1
+}
+
+run_pytest() {
+    local python_cmd="${1:?}"
+
+    "$_python" \
+        -m pytest \
+        -vv \
+        --junitxml="exported-artifacts/${python_cmd}-pytest.junit.xml" \
+        test
 }
 
 test_rpmbuild() {
