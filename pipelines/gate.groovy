@@ -39,6 +39,48 @@ def loader_main(loader) {
     }
 }
 
+def main() {
+    stage('Building packages') {
+        def threads = [:]
+        releases_to_test = [:]
+        threads = create_build_threads(build_thread_params, releases_to_test)
+        parallel threads
+        def releases_list = "Will test the following releases and builds:"
+        releases_list += releases_to_test.collect { release, builds ->
+            def builds_list = builds.collect { "\n  - ${it}" }.join()
+            "\n- ${release}:${builds_list}"
+        }.join()
+        print(releases_list)
+    }
+}
+
+def create_build_threads(build_thread_params, releases_to_test) {
+    def threads = [:]
+    for (i = 0; i < build_thread_params.size(); ++i) {
+        // build_thread_params have 3 elements inside the list by order of: job
+        // run specs for jenkins, ovirt-releases and unique job name to display
+        def job_run_spec = build_thread_params[i][0]
+        def releases = build_thread_params[i][1]
+        def thread_name = build_thread_params[i][2]
+        threads[thread_name] = create_build_thread(
+            job_run_spec, releases, releases_to_test
+        )
+    }
+    return threads
+}
+
+def create_build_thread(job_run_spec, releases, releases_to_test) {
+    return {
+        job_run_spec['wait'] = true
+        build_results = build(job_run_spec)
+        releases.each { release ->
+            def temp_url = releases_to_test.get(release, [])
+            temp_url << build_results.absoluteUrl
+            releases_to_test[release] = temp_url
+        }
+    }
+}
+
 def get_build_thread_parameters() {
     def build_thread_params = "build_thread_params_for_gating.json"
     withEnv(['PYTHONPATH=jenkins']) {
