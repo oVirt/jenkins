@@ -24,3 +24,10 @@
     jobs:
       - '{project}_{branch}_standard-poll-upstream-sources'
 
+- project:
+    name: changequeue_status_standard-poll-upstream-sources
+    project:
+      - changequeue-status:
+          branch: master
+    jobs:
+      - '{project}_{branch}_standard-poll-upstream-sources'
