@@ -3,6 +3,26 @@ all:
   children:
     zuul_nodes:
       children:
+        production:
+          hosts:
+            jenkins.ovirt.org:
+            zuul01.phx.ovirt.org:
+          vars:
+            zuul_tenant: ovirt
+            zuul_jobs_project: ovirt-zuul-config
+            zuul_projects:
+              - jenkins
+        staging:
+          hosts:
+            jenkins-staging.phx.ovirt.org:
+            zuul-staging.phx.ovirt.org:
+          vars:
+            zuul_tenant: ovirt-staging
+            zuul_jobs_project: ovirt-staging-zuul-config
+            zuul_projects:
+              - stage-stdci1
+              - stage-stdci2
+
         jenkins_masters:
           hosts:
             jenkins-staging.phx.ovirt.org:

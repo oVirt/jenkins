@@ -30,10 +30,18 @@
         group: zuul
         local: yes
 
-    - name: Add softwarefactory-project.io SSH key
+    - name: Add project SSH keys
       authorized_key:
-        key: https://softwarefactory-project.io/keys/zuul_rsa.pub
+        key: "{{
+          'https://softwarefactory-project.io/zuul/api/tenant/'
+          + zuul_tenant
+          + '/project-ssh-key/'
+          + item
+          + '.pub'
+        }}"
         user: zuul
+        comment: "{{ item }}"
+      loop: "{{ zuul_projects }}"
 
 - hosts: source_hosts
   become: yes
