@@ -40,5 +40,6 @@
       - stdci-sample-liora
       - stdci-staging
       - stage-stdci1
+      - stage-stdci2
     jobs:
       - '{project}_standard-gerrit-jobs'
