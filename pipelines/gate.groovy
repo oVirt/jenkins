@@ -45,6 +45,8 @@ def main() {
         releases_to_test = [:]
         threads = create_build_threads(build_thread_params, releases_to_test)
         parallel threads
+    }
+    stage('Running test suits') {
         def releases_list = "Will test the following releases and builds:"
         releases_list += releases_to_test.collect { release, builds ->
             def builds_list = builds.collect { "\n  - ${it}" }.join()
