@@ -52,7 +52,7 @@ def run_std_ci_jobs(project, jobs, mirrors=null, extra_sources=null) {
         for(job in jobs) {
             branches[get_job_name(job)] = mk_std_ci_runner(
                 report.mk_thread_reporter(job), project, job, mirrors,
-                extra_sources
+                job?.extra_sources ?: extra_sources
             )
         }
         parallel branches
