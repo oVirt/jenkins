@@ -2,7 +2,7 @@
     name: 'system_tests-placeholder-name'
     system_tests--key: &system-tests-common
       project: ovirt
-      node-filter: integ-tests
+      node-filter: integ-tests-container
       branch: master
       version:
         - 4.3:
@@ -90,7 +90,7 @@
     name: ovirt-system-tests_manual
     project: 'ovirt-system-tests'
     ost-flavour: 'ovirt'
-    node-filter: integ-tests
+    node-filter: integ-tests-container
     jobs:
       - '{project}_manual'
 
