@@ -1,6 +1,4 @@
-// gate.groovy - System pathc gating job
-
-def project
+// gate.groovy - System patch gating job
 
 def on_load(loader){
     // Copy methods from loader to this script
@@ -33,6 +31,15 @@ def loader_main(loader) {
     stage('Analyzing patches') {
         // Global Var.
         build_thread_params = get_build_thread_parameters()
+        system_test_project = project_lib.new_project(
+                name: env.SYSTEM_TESTS_PROJECT,
+            )
+        println("System tests project: ${system_test_project.name}")
+        // Global Var.
+        available_suits = get_all_suits(system_test_project)
+        def available_suits_list = "Found ${available_suits.size()} test suit(s):"
+        available_suits_list += available_suits.collect { "\n- ${it}" }.join()
+        print(available_suits_list)
         def build_list = "Will run ${build_thread_params.size()} build(s):"
         build_list += build_thread_params.collect { "\n- ${it[2]}" }.join()
         print(build_list)
@@ -53,6 +60,7 @@ def main() {
             "\n- ${release}:${builds_list}"
         }.join()
         print(releases_list)
+        run_test_threads(releases_to_test, available_suits)
     }
 }
 
@@ -102,6 +110,58 @@ def get_build_thread_parameters() {
     }
     def jobs = readJSON file: build_thread_params
     return jobs
+}
+
+@NonCPS
+def get_test_threads(releases_to_test, available_suits) {
+    def suit_types_to_use = [
+        'basic', 'upgrade-from-release', 'upgrade-from-prevrelease'
+    ]
+    return releases_to_test.collectMany { release, builds ->
+        suit_types_to_use.findResults { suit_type ->
+            // script has to be of type `String` so looking it up in the
+            // `available_suits` Set will work
+            String script = "${suit_type}_suite_${release}.sh"
+            if(script in available_suits) {
+                def extra_sources = builds.collect { "jenkins:${it}"}.join('\n')
+                return [
+                    'stage': "${suit_type}-suit-${release}",
+                    'substage': 'default',
+                    'distro': 'el7',
+                    'arch': 'x86_64',
+                    'script': "automation/$script",
+                    'runtime_reqs': [
+                        'supportnestinglevel': 2,
+                        'isolationlevel' : 'container'
+                    ],
+                    'release_branches': [:],
+                    'reporting': ['style': 'stdci'],
+                    'timeout': '3h',
+                    'extra_sources' : extra_sources
+                ]
+            }
+        }
+    }
+}
+
+def run_test_threads(releases_to_test, available_suits) {
+    def test_threads = get_test_threads(releases_to_test, available_suits)
+    def threads_list = "Will run the following test suits:"
+    threads_list += test_threads.collect { "\n - ${it.stage}" }.join()
+    print(threads_list)
+    stdci_runner_lib.run_std_ci_jobs(
+        project: system_test_project,
+        jobs: test_threads
+    )
+}
+
+def get_all_suits(system_test_project) {
+    project_lib.checkout_project(system_test_project)
+    def all_suits
+    dir(system_test_project.name) {
+        all_suits = findFiles(glob: 'automation/*_suite_*.sh').name as Set
+    }
+    return all_suits
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from
