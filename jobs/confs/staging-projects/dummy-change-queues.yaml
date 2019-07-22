@@ -8,7 +8,7 @@
       - 'standard-enqueue'
 
 - project:
-    name: dummy_change-queueus
+    name: dummy_change-queues
     queue-name:
       - dummy-master
       - dummy-1.0

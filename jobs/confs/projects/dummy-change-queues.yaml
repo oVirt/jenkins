@@ -1,0 +1,8 @@
+- project:
+    name: dummy_change-queueus
+    queue-name:
+      - dummy-master
+    jobs:
+      - '{queue-name}_change-queue'
+      - '{queue-name}_change-queue-tester'
+

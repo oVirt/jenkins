@@ -70,3 +70,5 @@ sub-stages:
           - container/*
           - automation/*.{{ substage }}.*
   - update_images
+release-branches:
+  'master': 'dummy-master'

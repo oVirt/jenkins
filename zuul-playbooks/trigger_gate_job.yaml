@@ -1,0 +1,138 @@
+# trigger_gate_job.yaml - Trigger gating jobs in Jenkins from Zuul
+#
+# This playbook is meant to be triggered from Zuul is a part of a job rather
+# then manually via `ansible-playbook`.
+#
+# This playbook does not need an inventory file, instead, host details are
+# configured via the following extra variables:
+#
+# - jenkins_host:             The name of the Jenkins master host to trigger the
+#                             job on
+# - jenkins_host_user:        The username to use to connect to the Jenkins
+#                             master via SSH
+# - jenkins_host_ssh_hostkey: The SSH hostkey of the Jenkins master host, to be
+#                             used while connecting to it
+#
+# In addition to the above this playbook requires the following variables to be
+# defined (Typically by the Zuul `job` or `project` entry):
+#
+# - job_name: The name of the Jenkins job to trigger
+#
+# This playbook expects to be invoked after the `expose_source.yaml` playbook
+# had been invoked and will try to read the `sources_table.txt` file it
+# generates.
+#
+# Jenkins master requirements:
+# ----------------------------
+#
+# This playbook assumes that once an SSH connection is established into the
+# Jenkins master, further SSH connection can be made into the Jenkins SSH-based
+# API. To enable that one should follow the following procedure (With the
+# assumption that the user on the Jenkins master host is called `zuul`):
+#
+# 1. Create the `zuul` user on the Jenkins master, the `zuul_node_setup.yaml`
+#    playbook can be used to this.
+# 2. Create an SSH key pair for the `zuul` user on the Jenkins master host (The
+#    `zuul_node_setup.yaml playbook takes care of that as well)
+# 3. In the Jenkins master UI - via a 'private' browser session:
+#    3.1. Sign up as a new user called `zuul`. The email address and password
+#         can be set to random data.
+#    3.2. In the user configuration screen, accessible from the user drop-down
+#         menu in the top-right corner, paste the public SSH key generated in
+#         step #2 into the `SSH Public Keys` field, and then save and log-out of
+#         the account.
+# 4. In the Jenkins master UI (Assuming it uses RBAC security), logged in as an
+#    administrative user:
+#    4.1. Create a `gate` global role with the following permissions:
+#         4.1.1. Overall: Read
+#         4.1.2. Job: Build
+#         4.1.3. Job: ExtendedRead
+#         4.1.4. Job: Read
+#         4.1.5. View: Read
+#    4.2. Create a `gate` project role with the `.*_gate` patterm and set the
+#         following permissions:
+#         4.2.1. Gerrit: ManualTrigger
+#         4.2.2. Gerrit: Retrigger
+#         4.2.3. Job: Build
+#         4.2.4. Job: Cancel
+#         4.2.5. Job: ExtendedRead
+#         4.2.6. Job: Read
+#         4.2.7. Job: ViewStatus
+#         4.2.8. Job: Workspace
+#         4.2.9. Run: Update
+#    4.3. Assign the new `gate` role to the `zuul` user.
+#    4.4. From the 'Global Security' screen, set the SSHD port to 'random'.
+#
+# Job requirements:
+# -----------------
+# The Jenkins job that is triggered by this playbook must support having the
+# following parameters passed to it:
+# - CHECKED_COMMITS - This parameter will be passed a whitespace-separated table
+#                     where is row contains a project's Git URL, a branch name
+#                     the checked commit is targeting and a refspec to be used
+#                     to obtain the commit.
+#
+---
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Add Jenkins master to inventory
+      add_host:
+        name: jenkins
+        ansible_host: "{{ jenkins_host }}"
+        ansible_user: "{{ jenkins_host_user }}"
+
+    - name: Add source host SSH hostkey
+      known_hosts:
+        name: "{{ jenkins_host }}"
+        key: "{{ jenkins_host_ssh_hostkey }}"
+
+- hosts: jenkins
+  tasks:
+    - name: Obtain Jenkins HTTP headers
+      uri:
+        url: http://localhost
+        method: HEAD
+      register: jenkins_master_http_headers
+
+    - name: Detect Jenkins SSH port
+      vars:
+        _ssh_url_parts: "{{
+          ('ssh://' + jenkins_master_http_headers.x_ssh_endpoint) | urlsplit
+        }}"
+      set_fact:
+        jenkins_master_ssh_port: "{{ _ssh_url_parts.port }}"
+        jenkins_master_hostname: "{{ _ssh_url_parts.hostname }}"
+
+    - name: Run gate job
+      block:
+        - name: Trigger gate job
+          vars:
+            _sources_table: "{{ sources_table|default(
+              lookup('file', zuul.executor.log_root + '/source_table.txt')
+            ) }}"
+          command: |
+            ssh localhost -p {{ jenkins_master_ssh_port | quote }} \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ServerAliveInterval=300 \
+              build -s \
+              -p CHECKED_COMMITS={{ _sources_table | quote | quote }} \
+              {{ job_name | quote }}
+          register: build_output
+      always:
+        - name: Return job URL
+          delegate_to: localhost
+          vars:
+            _job_build_number: "{{ build_output.stdout | regex_replace(
+              '(?sm).*^Started ' + job_name + ' #(\\d+)$.*', '\\1'
+            ) }}"
+          zuul_return:
+            data:
+              job_build_number: "{{ _job_build_number }}"
+              zuul:
+                log_url: "\
+                  http://{{jenkins_master_hostname}}/\
+                  job/{{job_name}}/\
+                  {{_job_build_number}}\
+                "

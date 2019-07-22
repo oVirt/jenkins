@@ -1,0 +1,15 @@
+- project:
+    name: jenkins-gate
+    st-queue-prefix: dummy
+    st-project: jenkins
+    st-suit-types: "dummy"
+    jobs:
+      - "{st-project}_gate"
+
+- project:
+    name: ost-gate
+    st-queue-prefix: ovirt
+    st-project: ovirt-system-tests
+    st-suit-types: "basic upgrade-from-release upgrade-from-prevrelease"
+    jobs:
+      - "{st-project}_gate"

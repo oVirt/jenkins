@@ -1,0 +1,29 @@
+---
+- job:
+    name: run-gate-job
+    description: Trigger system gating job in Jenkins
+    pre-run: zuul-playbooks/expose_source.yaml
+    run: zuul-playbooks/trigger_gate_job.yaml
+    timeout: 9000
+    extra-vars:
+      report_via: custom
+      source_host: zuul01.phx.ovirt.org
+      source_host_user: zuul
+      source_host_ssh_hostkey: "\
+        zuul01.phx.ovirt.org,38.145.50.166 ecdsa-sha2-nistp256 \
+        AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBaezTM28i9Zl8nLpc\
+        5X+XXtk6EecFlfo7Pl+aS+oSKDmP1SvXOVxd/IVjATCoQhmcXeIoLmpI0OJBmwbc7dTIE=\
+        "
+      jenkins_host: jenkins.ovirt.org
+      jenkins_host_user: zuul
+      jenkins_host_ssh_hostkey: "\
+        jenkins.ovirt.org,66.187.230.92 ecdsa-sha2-nistp256 \
+        AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBCG2RB0Mng/1KiZGMb\
+        KXFh40Z8yiTwl2Y4RoNwazUd5Rv1twRJF6ZppRRRMY3CYAwxiSR6DpmyfTBRIEHbexIpY=\
+        "
+
+- job:
+    name: ost-gate
+    parent: run-gate-job
+    vars:
+      job_name: ovirt-system-tests_gate
