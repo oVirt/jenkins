@@ -39,16 +39,16 @@
                           <tr>
                             <td class="tg-fmcx">master</td>
                             <td class="tg-fmcx">---</td>
-                            <td class="tg-fmcx">4.2</td>
+                            <td class="tg-fmcx">4.3</td>
                           </tr>
                           <tr>
-                            <td class="tg-fmcx">---</td>
-                            <td class="tg-fmcx">4.1</td>
+                            <td class="tg-fmcx">4.3</td>
                             <td class="tg-fmcx">4.2</td>
+                            <td class="tg-fmcx">4.3</td>
                           </tr>
                           <tr>
+                            <td class="tg-fmcx">4.2</td>
                             <td class="tg-fmcx">4.1</td>
-                            <td class="tg-fmcx">---</td>
-                            <td class="tg-fmcx">4.1</td>
+                            <td class="tg-fmcx">4.2</td>
                           </tr>
                         </table>'
