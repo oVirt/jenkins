@@ -513,7 +513,7 @@ class GitUpstreamSource(object):
         latest_tag = max(tags, key=cmp_to_key(self._commit_cmp))
         # Checking wether the tag is older than the current commit.
         if self._commit_cmp(latest_tag.commit, self.commit) <= 0:
-                return self.commit
+            return self.commit
         return latest_tag.commit
 
     def _get_raw_tags(self):
