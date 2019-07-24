@@ -114,9 +114,7 @@ def get_build_thread_parameters() {
 
 @NonCPS
 def get_test_threads(releases_to_test, available_suits) {
-    def suit_types_to_use = [
-        'basic', 'upgrade-from-release', 'upgrade-from-prevrelease'
-    ]
+    def suit_types_to_use = (env?.SYSTEM_TEST_SUIT_TYPES ?: 'basic').tokenize()
     return releases_to_test.collectMany { release, builds ->
         suit_types_to_use.findResults { suit_type ->
             // script has to be of type `String` so looking it up in the
