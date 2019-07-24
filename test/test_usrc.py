@@ -15,7 +15,7 @@ from hashlib import md5
 import os
 from subprocess import CalledProcessError
 from six import iteritems
-from six.moves import map
+from six.moves import map, builtins
 import yaml
 import re
 try:
@@ -940,6 +940,24 @@ class TestGitUpstreamSource(object):
         _get_tags_ret = gus._get_tags()
         safe_load_mock.assert_called_with(_get_raw_tags_mock_ret)
         assert _get_tags_ret is _get_tags_gen_mock_ret
+
+    def test_update_policy_tagged_not_calling_max_if_tag_list_is_empty(
+        self, monkeypatch
+    ):
+        commit = 'best_commit_ever'
+        gus = GitUpstreamSource(
+            url='https://gerrit.ovirt.org/some-project',
+            branch='master',
+            commit=commit
+        )
+        max_mock = MagicMock()
+        _get_tags_mock = MagicMock(return_value=[])
+        monkeypatch.setattr(builtins, 'max', max_mock)
+        monkeypatch.setattr(gus, '_get_tags', _get_tags_mock)
+        _get_tags_ret = gus._update_policy_tagged()
+        assert _get_tags_mock.call_count == 1
+        assert max_mock.call_count == 0
+        assert _get_tags_ret == commit
 
 def test_get_upstream_sources(monkeypatch, gerrit_push_map, downstream):
     monkeypatch.chdir(downstream)

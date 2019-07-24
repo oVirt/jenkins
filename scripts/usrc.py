@@ -505,7 +505,10 @@ class GitUpstreamSource(object):
         if self.annotated_tag_only:
             tags = (tag for tag in tags if 'tag' == tag.annotated)
         # Filtering tagged commits for branch
-        tags = (tag for tag in tags if self._tag_in_branch(tag))
+        tags = [tag for tag in tags if self._tag_in_branch(tag)]
+        # The filters filtered all the possible tags, keep the same commit
+        if not tags:
+            return self.commit
         # Getting latest tagged commit.
         latest_tag = max(tags, key=cmp_to_key(self._commit_cmp))
         # Checking wether the tag is older than the current commit.
