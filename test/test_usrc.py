@@ -10,10 +10,14 @@ from scripts.usrc import (
     UnkownDestFormatError,
 )
 from textwrap import dedent
+from types import GeneratorType
 from hashlib import md5
+import os
 from subprocess import CalledProcessError
 from six import iteritems
 from six.moves import map
+import yaml
+import re
 try:
     from unittest.mock import MagicMock, call, sentinel
 except ImportError:
@@ -816,6 +820,113 @@ class TestGitUpstreamSource(object):
     def test_assert_path_under_root_ok(self, root_path, file_path):
         GitUpstreamSource._assert_path_under_root(root_path, file_path)
 
+    @pytest.mark.parametrize('tag_filter,expected', [
+        (
+            None,
+            [
+                {'annotated': 'tag', 'name': 'a_tag'},
+                {'annotated': 'tag', 'name': 'b_tag'},
+                {'annotated': 'tag', 'name': 'c_tag'},
+                {'annotated': 'tag', 'name': 'd_tag'},
+            ]
+        ),
+        (
+            'a*',
+            [{'annotated': 'tag', 'name': 'a_tag'}]
+        )
+    ])
+    def test_get_raw_tags(
+        self, tag_filter, expected,
+        upstream_scenarios_for_tests, tmpdir, monkeypatch
+    ):
+        monkeypatch.setattr(usrc, 'xdg_cache_home', str(tmpdir))
+        gus = GitUpstreamSource(
+            url=str(upstream_scenarios_for_tests),
+            branch='master',
+            commit='master',
+            tag_filter=tag_filter
+        )
+        gus._fetch()
+        tags = gus._get_raw_tags()
+        assert isinstance(tags, str)
+        yaml_struct = yaml.safe_load(tags)
+
+        git_sha_pattern = re.compile(r'[a-f0-9]{40}')
+        for r, e in zip(yaml_struct, expected):
+            for attr in ('annotated', 'name'):
+                assert r[attr] == e[attr]
+
+            assert git_sha_pattern.match(r['commit'])
+
+    def test_get_raw_tags_should_return_empty_str(
+        self, upstream_scenarios_for_tests, tmpdir,
+        monkeypatch
+    ):
+        monkeypatch.setattr(usrc, 'xdg_cache_home', str(tmpdir))
+        gus = GitUpstreamSource(
+            url=str(upstream_scenarios_for_tests),
+            branch='master',
+            commit='master',
+            tag_filter='blabla'
+        )
+        gus._fetch()
+        tags = gus._get_raw_tags()
+        assert isinstance(tags, str)
+        assert tags == ''
+
+    @pytest.mark.parametrize('tags_yaml_struct,expected', [
+        ([], []),
+        (
+            [
+                {'commit': 'abc', 'annotated': 'tag', 'name': 'a_tag'},
+                {'commit': 'efg', 'annotated': 'commit', 'name': 'b_tag'},
+            ],
+            [
+                usrc.TagObject(commit='abc', annotated='tag', name='a_tag'),
+                usrc.TagObject(commit='efg', annotated='commit', name='b_tag'),
+            ]
+        )
+    ])
+    def test_get_tags_gen(self, tags_yaml_struct, expected, monkeypatch):
+        gus = GitUpstreamSource(
+            url='https://gerrit.ovirt.org/some-project',
+            branch='master',
+            commit='master',
+        )
+        rev_parse_mock = MagicMock(side_effect=lambda x: x)
+        monkeypatch.setattr(gus, '_rev_parse', rev_parse_mock)
+        tag_gen = gus._get_tags_gen(tags_yaml_struct)
+        assert isinstance(tag_gen, GeneratorType)
+        tag_list = list(tag_gen)
+        assert rev_parse_mock.call_count == len(expected)
+        assert tag_list == expected
+
+    def test_get_tags(self, monkeypatch):
+        gus = GitUpstreamSource(
+            url='https://gerrit.ovirt.org/some-project',
+            branch='master',
+            commit='master',
+        )
+        yaml_safe_load_ret = sentinel.yaml_struct
+        safe_load_mock = MagicMock(return_value=yaml_safe_load_ret)
+        _get_raw_tags_mock_ret = ''
+        _get_raw_tags_mock = MagicMock(return_value=_get_raw_tags_mock_ret)
+        _get_tags_gen_mock_ret = sentinel.generator
+        _get_tags_gen_mock = MagicMock(return_value=_get_tags_gen_mock_ret)
+        monkeypatch.setattr(yaml, 'safe_load', safe_load_mock)
+        monkeypatch.setattr(gus, '_get_raw_tags', _get_raw_tags_mock)
+        monkeypatch.setattr(gus, '_get_tags_gen', _get_tags_gen_mock)
+
+        _get_tags_ret = gus._get_tags()
+        assert safe_load_mock.call_count == 0
+        assert _get_tags_ret == []
+        safe_load_mock.reset_mock()
+
+        _get_raw_tags_mock_ret = sentinel.string_with_tags
+        _get_raw_tags_mock.return_value = _get_raw_tags_mock_ret
+        _get_tags_ret = gus._get_tags()
+        safe_load_mock.assert_called_with(_get_raw_tags_mock_ret)
+        assert _get_tags_ret is _get_tags_gen_mock_ret
 
 def test_get_upstream_sources(monkeypatch, gerrit_push_map, downstream):
     monkeypatch.chdir(downstream)
