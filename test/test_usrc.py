@@ -959,6 +959,20 @@ class TestGitUpstreamSource(object):
         assert max_mock.call_count == 0
         assert _get_tags_ret == commit
 
+    def test_rev_parse_returns_an_str(
+        self, upstream_scenarios_for_tests, tmpdir, monkeypatch
+    ):
+        monkeypatch.setattr(usrc, 'xdg_cache_home', str(tmpdir))
+        gus = GitUpstreamSource(
+            url=str(upstream_scenarios_for_tests),
+            branch='master',
+            commit='master',
+        )
+        gus._fetch()
+        out = gus._rev_parse('refs/remotes/origin/master')
+        assert isinstance(out, str)
+
+
 def test_get_upstream_sources(monkeypatch, gerrit_push_map, downstream):
     monkeypatch.chdir(downstream)
     assert not (downstream / 'upstream_file.txt').exists()

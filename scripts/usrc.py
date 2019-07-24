@@ -621,9 +621,13 @@ class GitUpstreamSource(object):
         :returns : returns sha of a given ref.
         :rtype   : str
         """
-        return self._cache_git(
+        out = self._cache_git(
             'rev-parse', "{0}^{{commit}}".format(ref)
         ).rstrip()
+        if not isinstance(out, str):
+            return out.encode('ascii', 'ignore')
+
+        return out
 
     @property
     def commit_title(self):
