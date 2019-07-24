@@ -740,7 +740,7 @@ def save_upstream_sources(upstream_sources):
         git=[usrc.to_yaml_struct() for usrc in upstream_sources]
     )
     with open(UPSTREAM_SOURCES_PATH, 'w') as stream:
-        yaml.dump(sources_doc, stream, default_flow_style=False)
+        yaml.safe_dump(sources_doc, stream, default_flow_style=False)
 
 
 def get_upstream_sources(push_map):
