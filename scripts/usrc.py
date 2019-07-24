@@ -228,10 +228,18 @@ class GitUpstreamSource(object):
         else:
             self.update_policy = ('latest')
         self.tag_filter = tag_filter
-        if annotated_tag_only == 'yes':
+
+        if isinstance(annotated_tag_only, string_types):
+            self.annotated_tag_only = (annotated_tag_only == 'yes')
+        elif isinstance(annotated_tag_only, bool):
             self.annotated_tag_only = annotated_tag_only
+        elif annotated_tag_only is None:
+            self.annotated_tag_only = False
         else:
-            self.annotated_tag_only = 'no'
+            raise ConfigError(
+                'annotated_tag_only field should contain a string or a boolean'
+            )
+
         if isinstance(automerge, string_types):
             if automerge.lower() in ('yes', 'true'):
                 self.automerge = 'yes'
@@ -290,8 +298,8 @@ class GitUpstreamSource(object):
             struct['update_policy'] = self.update_policy
         if self.tag_filter is not None:
             struct['tag_filter'] = self.tag_filter
-        if self.annotated_tag_only != 'no':
-            struct['annotated_tag_only'] = self.annotated_tag_only
+        if self.annotated_tag_only:
+            struct['annotated_tag_only'] = 'yes'
         return struct
 
     def _files_format_handler(self, dst_path, files_dest_dir=None, **kwargs):

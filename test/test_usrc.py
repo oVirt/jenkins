@@ -262,7 +262,7 @@ class TestGitUpstreamSource(object):
             dict(
                 url='some/url', branch='br1', commit='some_sha',
                 update_policy=('latest'), tag_filter='tag*',
-                annotated_tag_only='yes'
+                annotated_tag_only=True
             ),
         ),
         (
@@ -274,45 +274,58 @@ class TestGitUpstreamSource(object):
             dict(
                 url='some/url', branch='br1', commit='some_sha',
                 update_policy=('tagged'), tag_filter=None,
-                annotated_tag_only='yes'
+                annotated_tag_only=True
             ),
         ),
         (
             dict(
                 url='some/url', branch='br1', commit='some_sha',
                 update_policy=('tagged', 'latest'),
+                annotated_tag_only=False
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('tagged', 'latest'),
+                annotated_tag_only=False
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=False,
+                annotated_tag_only='no'
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('latest'),
+                annotated_tag_only=False
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=False,
+                annotated_tag_only='yes'
+            ),
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=('latest'),
+                annotated_tag_only=True
+            ),
+        ),
+        (
+            dict(
+                url='some/url', branch='br1', commit='some_sha',
+                update_policy=False,
                 annotated_tag_only=None
             ),
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                update_policy=('tagged', 'latest'),
-                annotated_tag_only='no'
-            ),
-        ),
-        (
-            dict(
-                url='some/url', branch='br1', commit='some_sha',
-                update_policy=False,
-                annotated_tag_only='no'
-            ),
-            dict(
-                url='some/url', branch='br1', commit='some_sha',
                 update_policy=('latest'),
-                annotated_tag_only='no'
+                annotated_tag_only=False
             ),
         ),
-        (
-            dict(
-                url='some/url', branch='br1', commit='some_sha',
-                update_policy=False,
-                annotated_tag_only='yes'
-            ),
-            dict(
-                url='some/url', branch='br1', commit='some_sha',
-                update_policy=('latest'),
-                annotated_tag_only='yes'
-            ),
-        ),
+
         (
             dict(
                 url='some/url', branch='br1', commit='some_sha',
@@ -472,7 +485,7 @@ class TestGitUpstreamSource(object):
         (
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                annotated_tag_only=None
+                annotated_tag_only=False
             ),
             dict(
                 url='some/url', branch='br1', commit='some_sha',
@@ -481,7 +494,7 @@ class TestGitUpstreamSource(object):
         (
             dict(
                 url='some/url', branch='br1', commit='some_sha',
-                annotated_tag_only='no'
+                annotated_tag_only=False
             ),
             dict(
                 url='some/url', branch='br1', commit='some_sha'
