@@ -91,7 +91,10 @@ def get_build_thread_parameters() {
             import json
             from os import environ
             from scripts.ost_build_resolver import create_patch_threads
-            jobs = create_patch_threads(environ['CHECKED_COMMITS'])
+            jobs = create_patch_threads(
+                environ['CHECKED_COMMITS'],
+                environ['SYSTEM_QUEUE_PREFIX'],
+            )
 
             with open('${build_thread_params}', 'w') as jtb:
                 json.dump(jobs, jtb)

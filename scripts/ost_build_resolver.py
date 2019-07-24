@@ -21,14 +21,25 @@ patch_object = namedtuple(
 )
 
 
-def create_patch_threads(sources_table):
+def create_patch_threads(sources_table, queue_prefix=None):
     """Get sources_table info from given str and build jobs threads from it.
 
-    :param str sources_table: patches info seperated by url refspec branch
-    :rtype: dict
-    :returns: a dict of lists per projects organized by their ovirt release.
+    :param str sources_table: A newline-and-space-seperated table of patches
+                              where each row includes a url, a branch and
+                              a refspec.
+    :param str queue_prefix:  (Optional) The prefix for change queue names that
+                              we support projects sending into. If given, only
+                              release queues that begin with the given prefix
+                              will be returned, and the prefix will be
+                              stripped from their names.
+
+    :rtype: iterator
+    :returns: iterator containing tuples where each containsa triplet of a
+              build job triggering specification, a list of releases or release
+              queues the build should be sent into and a representative name to
+              describe the build as it is running.
     """
-    patches_list = parse_sources_table(sources_table)
+    patches_list = parse_sources_table(sources_table, queue_prefix)
     patch_to_release = unique_patches_per_release(patches_list)
     jrs_list = [
         (
@@ -41,15 +52,25 @@ def create_patch_threads(sources_table):
     return jrs_list
 
 
-def parse_sources_table(sources_table):
+def parse_sources_table(sources_table, queue_prefix=None):
     """Parse each patch and yield it's data
-    :params: sources_table str: sources_table input
-    :rtype: tuple
-    :returns: returns patch data and it's ovirt releases.
+
+    :param str sources_table:  A newline-and-space-seperated table of patches
+                               where each row includes a url, a branch and
+                               a refspec.
+    :param str queue_prefix:   (Optional) The prefix for change queue names
+                               that we support projects sending into. If given,
+                               only release queues that begin with the given
+                               prefix will be returned, and the prefix will be
+                               stripped from their names.
+
+    :rtype: iterator of tuples
+    :returns: returns for each pathc in the sources_table a tuples of
+              patch_object and a list of release queues this patch targets.
     """
     for patch in sources_table.splitlines():
         patch_data = create_patch_object(patch)
-        releases = get_release_branches(patch_data)
+        releases = get_release_queues(patch_data, queue_prefix)
         yield (patch_data, releases)
 
 
@@ -111,10 +132,17 @@ def get_patch_sha(url, refspec):
     return sha
 
 
-def get_release_branches(patch_object):
+def get_release_queues(patch_object, queue_prefix=None):
     """Returns release branches per project's branch.
 
-    :params patch_object: object containing patch data.
+    :param patch_object patch_object: object containing patch data.
+    :param str queue_prefix:          (Optional) The prefix for change queue
+                                      names that we support projects sending
+                                      into. If given, only release queues that
+                                      begin with the given prefix will be
+                                      returned, and the prefix will be
+                                      stripped.
+
     :rtype: list
     :returns: returns a list of releases, None if there is no release.
     """
@@ -123,7 +151,13 @@ def get_release_branches(patch_object):
     rb = gopts.get('releasebranches', {})
     releases = rb.get(patch_object.branch, [])
     if isinstance(releases, string_types):
-        return [releases]
+        releases = [releases]
+    if queue_prefix is not None:
+        releases = [
+            release[len(queue_prefix)+1:]
+            for release in releases
+            if release.startswith(queue_prefix + '-')
+        ]
     return releases
 
 

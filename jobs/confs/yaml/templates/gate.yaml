@@ -17,6 +17,7 @@
             GIT_COMMITTER_NAME={git-config-name}
             GIT_COMMITTER_EMAIL={git-config-email}
             LOADER_NODE_LABEL={loader-node-label}
+            SYSTEM_QUEUE_PREFIX={st-queue-prefix}
             SYSTEM_TESTS_PROJECT={st-project}
     parameters:
       - text:

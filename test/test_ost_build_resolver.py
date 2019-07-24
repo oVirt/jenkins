@@ -3,7 +3,7 @@
 """
 import pytest
 from scripts.ost_build_resolver import (
-    get_project_name, get_release_branches,
+    get_project_name, get_release_queues,
     create_patch_threads, unique_patches_per_release, patch_object,
     create_job_spec, get_patch_sha, create_patch_object,
     create_pipeline_thread_name,
@@ -19,7 +19,6 @@ def stdci_project_dir(gitrepo, git_branch, git_tag):
             'msg': 'stdci yaml commit',
             'files': {
                 'stdci.yaml': (
-                    'stage: build-artifacts\n'
                     'release_branches:\n'
                     '  master: master\n'
                 )
@@ -27,6 +26,19 @@ def stdci_project_dir(gitrepo, git_branch, git_tag):
         },
     )
     git_tag('stdci_project_dir', 'master_first_commit')
+    with git_branch('stdci_project_dir', 'multi-rel-branch'):
+        gitrepo(
+            'stdci_project_dir',
+            {
+                'msg': 'New release branch',
+                'files': {
+                    'stdci.yaml': (
+                        'release_branches:\n'
+                        '  multi-rel-branch: [test-1, test-2, r-3]'
+                    )
+                },
+            },
+        )
     with git_branch('stdci_project_dir', 'test-release-branch'):
         gitrepo(
             'stdci_project_dir',
@@ -34,8 +46,6 @@ def stdci_project_dir(gitrepo, git_branch, git_tag):
                 'msg': 'New release branch',
                 'files': {
                     'stdci.yaml': (
-                        'stage:\n'
-                        '  - build-artifacts\n'
                         'release_branches:\n'
                         '  test-release-branch: test-release'
                     )
@@ -57,16 +67,19 @@ def test_get_project_name(input, expected):
     assert projects == expected
 
 
-@pytest.mark.parametrize('refspec,branch,expected', [
-    ('master', 'master', ['master']),
-    ('test-release-branch', 'test-release-branch', ['test-release'])
+@pytest.mark.parametrize('refspec,branch,qp,expected', [
+    ('master', 'master', None, 'master'),
+    ('test-release-branch', 'test-release-branch', None, 'test-release'),
+    ('multi-rel-branch', 'multi-rel-branch', None, 'test-1 test-2 r-3'),
+    ('multi-rel-branch', 'multi-rel-branch', 'test', '1 2'),
 ])
-def test_get_release_branches(refspec, branch, expected, stdci_project_dir):
+def test_get_release_queues(refspec, branch, qp, expected, stdci_project_dir):
+    expected = expected.split()
     patch = patch_object(
         url=str(stdci_project_dir), refspec=refspec, branch=branch,
         sha='HEAD', name='stdci_project_dir'
     )
-    result = get_release_branches(patch)
+    result = get_release_queues(patch, qp)
     assert result == expected
 
 

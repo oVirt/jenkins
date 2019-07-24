@@ -1,5 +1,6 @@
 - project:
     name: ost-gate
+    st-queue-prefix: dummy
     st-project: ovirt-system-tests
     jobs:
       - "{st-project}_gate"
