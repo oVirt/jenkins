@@ -4,10 +4,11 @@
 import pytest
 from scripts.ost_build_resolver import (
     get_project_name, get_release_queues,
-    create_patch_threads, unique_patches_per_release, patch_object,
+    create_build_jobs, unique_patches_per_release, patch_object,
     create_job_spec, get_patch_sha, create_patch_object,
     create_pipeline_thread_name,
 )
+from scripts import ost_build_resolver
 from scripts.jenkins_objects import JobRunSpec
 
 
@@ -83,15 +84,28 @@ def test_get_release_queues(refspec, branch, qp, expected, stdci_project_dir):
     assert result == expected
 
 
-def test_unique_patches_per_release(stdci_project_dir, gitrepo, git_branch):
+def test_unique_patches_per_release():
     patchList = [
-        (patch_object('prj1', 'refspec1', 'br1', 'url1', 'sha1'), ['rb1']),
-        (patch_object('prj1', 'refspec2', 'br1', 'url1', 'sha2'), ['rb1'])
+        (patch_object('pr1', 'ref1a', 'br1', 'url1', 'sha1a'), ['r1']),
+        (patch_object('pr1', 'ref1b', 'br1', 'url1', 'sha1b'), ['r1']),
+        (patch_object('pr2', 'ref2a', 'br2', 'url2', 'sha2a'), ['r2', 'r3']),
+        (patch_object('pr2', 'ref2b', 'br2', 'url2', 'sha2b'), ['r2']),
+        (patch_object('pr3', 'ref3a', 'br3', 'url3', 'sha3a'), ['r2']),
+        (patch_object('pr3', 'ref3b', 'br3', 'url3', 'sha3b'), ['r2', 'r3']),
+        (patch_object('pr4', 'ref4a', 'br4', 'url4', 'sha4a'), ['r1']),
+        (patch_object('pr4', 'ref4b', 'br4', 'url4', 'sha4b'), ['r2', 'r3']),
     ]
-    expected = 1  # 1 patch will stay.
+    expected = [
+        (patch_object('pr1', 'ref1b', 'br1', 'url1', 'sha1b'), ['r1']),
+        (patch_object('pr2', 'ref2a', 'br2', 'url2', 'sha2a'), ['r3']),
+        (patch_object('pr2', 'ref2b', 'br2', 'url2', 'sha2b'), ['r2']),
+        (patch_object('pr3', 'ref3b', 'br3', 'url3', 'sha3b'), ['r2', 'r3']),
+        (patch_object('pr4', 'ref4a', 'br4', 'url4', 'sha4a'), ['r1']),
+        (patch_object('pr4', 'ref4b', 'br4', 'url4', 'sha4b'), ['r2', 'r3']),
+    ]
     output = unique_patches_per_release(patchList)
     output = list(output)
-    assert len(output) == expected
+    assert sorted(output) == sorted(expected)
 
 
 @pytest.mark.parametrize('input,expected', [
@@ -136,22 +150,20 @@ def test_create_patch_object(stdci_project_dir, git):
     assert expected == create_patch_object(project)
 
 
-def test_create_patch_threads(stdci_project_dir, gitrepo, git_branch):
-    url = str(stdci_project_dir)
-    with git_branch('stdci_project_dir', 'master'):
-        gitrepo(
-            'stdci_project_dir',
-            {
-                'msg': 'New file',
-                'files': {
-                    'file.txt': 'Some text'
-                },
-            },
-        )
-    branch = 'master'
-    project1 = " ".join([url, branch, 'master_first_commit'])
-    project2 = " ".join([url, branch, 'HEAD'])
-    projects = "\n".join([project1, project2])
-    projects_list = create_patch_threads(projects)
-    projects_list = list(projects_list)
-    assert len(projects_list) == 1
+def test_create_build_jobs(monkeypatch):
+    sources_list = [
+        (patch_object('pr1', 'ref1a', 'br1', 'u1', 'sh1a'), ['r1']),
+        (patch_object('pr1', 'ref1b', 'br1', 'u1', 'sh1b'), ['r1', 'r2']),
+        (patch_object('pr1', 'ref1c', 'br1', 'u1', 'sh1c'), ['r1', 'r2']),
+        (patch_object('pr2', 'ref2a', 'br2', 'u2', 'sh2a'), ['r1']),
+    ]
+    expected = [
+        ('jspec:ref1c', ['r1', 'r2'], 'pr1-sh1c'),
+        ('jspec:ref2a', ['r1'], 'pr2-sh2a'),
+    ]
+    monkeypatch.setattr(
+        ost_build_resolver, 'create_job_spec', lambda x: "jspec:" + x.refspec
+    )
+    out = create_build_jobs(sources_list)
+    out = list(out)
+    assert out == expected

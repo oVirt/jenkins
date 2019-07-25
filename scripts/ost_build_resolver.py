@@ -22,33 +22,31 @@ patch_object = namedtuple(
 
 
 def create_patch_threads(sources_table, queue_prefix=None):
+    sources_list = parse_sources_table(sources_table)
+    return create_build_jobs(sources_list)
+
+
+def create_build_jobs(sources_list):
     """Get sources_table info from given str and build jobs threads from it.
 
-    :param str sources_table: A newline-and-space-seperated table of patches
-                              where each row includes a url, a branch and
-                              a refspec.
-    :param str queue_prefix:  (Optional) The prefix for change queue names that
-                              we support projects sending into. If given, only
-                              release queues that begin with the given prefix
-                              will be returned, and the prefix will be
-                              stripped from their names.
+    :param str sources_list: List of source object and releases as generated
+                             by `parse_sources_table'.
 
     :rtype: iterator
-    :returns: iterator containing tuples where each containsa triplet of a
+    :returns: iterator containing tuples where each contains a triplet of a
               build job triggering specification, a list of releases or release
               queues the build should be sent into and a representative name to
               describe the build as it is running.
     """
-    patches_list = parse_sources_table(sources_table, queue_prefix)
-    patch_to_release = unique_patches_per_release(patches_list)
-    jrs_list = [
+    patch_to_release = unique_patches_per_release(sources_list)
+    jrs_list = (
         (
             create_job_spec(patch_object),
             release,
             create_pipeline_thread_name(patch_object)
         )
         for patch_object, release in patch_to_release
-    ]
+    )
     return jrs_list
 
 
