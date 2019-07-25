@@ -29,11 +29,15 @@ def on_load(loader){
 
 def loader_main(loader) {
     stage('Analyzing patches') {
+        def gate_info = create_gate_info()
         // Global Var.
-        build_thread_params = get_build_thread_parameters()
+        build_thread_params = gate_info.builds
         system_test_project = project_lib.new_project(
-                name: env.SYSTEM_TESTS_PROJECT,
-            )
+            name: env.SYSTEM_TESTS_PROJECT,
+            branch: gate_info.st_project?.branch,
+            clone_url: gate_info.st_project?.url,
+            refspec: gate_info.st_project?.refspec ?: 'refs/heads/master',
+        )
         println("System tests project: ${system_test_project.name}")
         // Global Var.
         available_suits = get_all_suits(system_test_project)
@@ -91,25 +95,26 @@ def create_build_thread(job_run_spec, releases, releases_to_test) {
     }
 }
 
-def get_build_thread_parameters() {
-    def build_thread_params = "build_thread_params_for_gating.json"
+def create_gate_info() {
+    def gate_info_json = "gate_info.json"
     withEnv(['PYTHONPATH=jenkins']) {
         sh """\
             #!/usr/bin/env python
             import json
             from os import environ
-            from scripts.ost_build_resolver import create_patch_threads
-            jobs = create_patch_threads(
+            from scripts.ost_build_resolver import create_gate_info
+            gate_info = create_gate_info(
                 environ['CHECKED_COMMITS'],
                 environ['SYSTEM_QUEUE_PREFIX'],
+                environ['SYSTEM_TESTS_PROJECT'],
             )
 
-            with open('${build_thread_params}', 'w') as jtb:
-                json.dump(jobs, jtb)
+            with open('${gate_info_json}', 'w') as f:
+                json.dump(gate_info, f)
         """.stripIndent()
     }
-    def jobs = readJSON file: build_thread_params
-    return jobs
+    def gate_info = readJSON file: gate_info_json
+    return gate_info
 }
 
 @NonCPS
