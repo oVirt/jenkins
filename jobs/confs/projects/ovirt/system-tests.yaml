@@ -23,7 +23,7 @@
       - 4.3:
           chroot_distro: el7
     email-to: >
-      lgoldber@redhat.com,
+      eraviv@redhat.com,
       edwardh@redhat.com,
     jobs:
       - '{project}_{suite_type}-suite-{version}'
