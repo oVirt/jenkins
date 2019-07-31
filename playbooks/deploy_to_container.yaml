@@ -1,0 +1,311 @@
+# deploy_to_container.yaml - Deploy packages to containers in OpenShift
+#
+# Usage:
+#     ansible-playbook playbooks/deploy_to_container.yaml
+#
+# Mandatory variables:
+# This playbook requires that several values be passed to it in order to work.
+# The values can be provided via the '-e' command-line argument, via an
+# inventory file or via environment variables. When environment variables are
+# used, their names are capitalized versions of the variable names listed here.
+# - repo_name       - Specifies the name of the repository we're adding packages
+#                     into, the name is going to be used as part of the names of
+#                     OpenShift resources, so it must is a legal DNS name (E.g.
+#                     cannot include underscores).
+# - repoman_sources - Specifies the list of repoman artifact sources to add into
+#                     the repo
+#
+# Optional variables:
+# - build_node_selector   - A K8s selector for the node the repo container would
+#                           be built on
+# - runtime_node_selector - A K8s selector for the node the repo container would
+#                           be deployed on
+# - openshift_apps_domain - The domain name under which OpenShift creates route
+#                           domain names (E.g. `apps.ovirt.org`)
+#
+# Prerquisites for running:
+# * You need to have `oc` installed and logged in to OpenShift and set to use
+#   the namespace you want to have things installed in.
+# * You need to install Ansible as instructed in the README.md file
+#
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  vars:
+    base_image: quay.io/pod_utils/repoman-repo-centos7
+    _repo_name: "{{ repo_name|default(lookup('env', 'REPO_NAME')) }}"
+    _repoman_sources: "{{
+      repoman_sources|default(lookup('env', 'REPOMAN_SOURCES'))
+    }}"
+    _repo_version: "{{ '%s'|strftime }}"
+    default_runtime_node_selector:
+      type: "vm"
+      zone: "ci"
+    _openshift_apps_domain: "{{
+      openshift_apps_domain|default('apps.ovirt.org')
+    }}"
+  tasks:
+    - name: Check for mandatory input
+      assert:
+        that:
+          - _repo_name|string
+          - _repoman_sources|string
+
+    - name: Detect OpenShift project & set some facts
+      tags: always
+      set_fact:
+        openshift_project:
+          "{{ lookup('pipe', oc_bin | default('oc') + ' project -q') }}"
+        latest_image_tag: "{{ _repo_name }}:latest"
+        versioned_image_tag: "{{ _repo_name }}:{{ _repo_version }}"
+        deployment_name: "{{ _repo_name }}-{{ _repo_version }}"
+        latest_deployment_name: "{{ _repo_name }}-latest"
+        repo_version: "{{ _repo_version }}"
+
+    - name: Tag base builder image as latest in ImageStream
+      k8s:
+        state: present
+        definition:
+          kind: ImageStreamTag
+          apiVersion: image.openshift.io/v1
+          lookupPolicy:
+            local: false
+          metadata:
+            name: "{{ latest_image_tag }}"
+            namespace: "{{ openshift_project }}"
+          tag:
+            from:
+              kind: DockerImage
+              name: "{{ base_image }}"
+            name: "{{ latest_image_tag }}"
+            referencePolicy:
+              type: Local
+      when: |
+        query(
+          'k8s',
+          namespace=openshift_project,
+          kind='ImageStreamTag',
+          resource_name=latest_image_tag,
+        )|length == 0
+
+    - name: Create OpenShift BuildConfig
+      k8s:
+        state: present
+        definition:
+          kind: BuildConfig
+          apiVersion: build.openshift.io/v1
+          metadata:
+            name: "{{ _repo_name }}"
+            namespace: "{{ openshift_project }}"
+          spec:
+            strategy:
+              sourceStrategy:
+                from:
+                  kind: ImageStreamTag
+                  name: "{{ latest_image_tag }}"
+                  namespace: "{{ openshift_project }}"
+                # Since we're using the :latest tag we must unsure we pull the
+                # most recent image for layering to work correctly
+                forcePull: true
+                # We're layering the new image on the older latest image, so we
+                # don't need s2i's incremental build to work in this case
+                incremental: false
+            nodeSelector: "{{build_node_selector|default({})}}"
+            output:
+              to:
+                kind: ImageStreamTag
+                name: "{{ latest_image_tag }}"
+            source:
+              type: Binary
+
+    - name: Create image sources tmpdir
+      tempfile:
+        state: directory
+      register: repoman_sources_tmpdir
+      changed_when: false
+
+    - name: Create the image
+      vars:
+        # This is needed to avoid the "target uses selinux but python
+        # bindings (libselinux-python) aren't installed!" error.
+        ansible_python_interpreter: /usr/bin/python
+      block:
+        - name: Create image sources
+          copy:
+            content: "{{ _repoman_sources }}"
+            dest: "{{ repoman_sources_tmpdir.path }}/repoman_sources.lst"
+          changed_when: false
+
+        - name: Create directory for s2i script overrides
+          file:
+            path: "{{ repoman_sources_tmpdir.path }}/.s2i/bin"
+            state: directory
+          changed_when: false
+
+        - name: Create image run script override
+          template:
+            src: container-repo-s2i-run.j2
+            dest: "{{ repoman_sources_tmpdir.path }}/.s2i/bin/run"
+          changed_when: false
+
+        - name: Build the image
+          command:
+            argv:
+              - "{{ oc_bin|default('oc') }}"
+              - start-build
+              - "{{ _repo_name }}"
+              - "--from-dir={{ repoman_sources_tmpdir.path }}"
+              - --follow
+              - --wait
+
+      always:
+        - name: Delete image sources tmpdir
+          file:
+            path: "{{ repoman_sources_tmpdir.path }}"
+            state: absent
+          changed_when: false
+
+    - name: Tag the image
+      command:
+        argv:
+          - "{{ oc_bin|default('oc') }}"
+          - tag
+          - --source=imagestreamtag
+          - "{{ latest_image_tag }}"
+          - "{{ versioned_image_tag }}"
+
+    - name: Deploy the repo image
+      k8s:
+        state: present
+        definition:
+          kind: Deployment
+          apiVersion: apps/v1
+          metadata:
+            name: "{{ deployment_name }}"
+            namespace: "{{ openshift_project }}"
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                repo_name: "{{ _repo_name }}"
+                repo_version: "{{ repo_version }}"
+            strategy:
+              type: RollingUpdate
+            revisionHistoryLimit: 5
+            template:
+              metadata:
+                generateName: "{{ deployment_name }}"
+                labels:
+                  repo_name: "{{ _repo_name }}"
+                  repo_version: "{{ repo_version }}"
+                annotations:
+                  alpha.image.policy.openshift.io/resolve-names: '*'
+              spec:
+                containers:
+                  - name: "repo-server"
+                    image: "{{ versioned_image_tag }}"
+                    imagePullPolicy: Always
+                    ports:
+                      - containerPort: 8080
+                        protocol: TCP
+                    env:
+                      - name: REPO_NAME
+                        value: "{{ _repo_name }}"
+                      - name: REPO_VERSION
+                        value: "{{ repo_version }}"
+                    resources:
+                      limits:
+                        memory: 128Mi
+                      requests:
+                        memory: 128Mi
+                nodeSelector: "{{
+                  runtime_node_selector|default(default_runtime_node_selector)
+                }}"
+
+    - name: Expose the repo image
+      k8s:
+        state: present
+        definition:
+          kind: Service
+          apiVersion: v1
+          metadata:
+            name: "{{ deployment_name }}"
+            namespace: "{{ openshift_project }}"
+          spec:
+            ports:
+              - name: ui
+                port: 80
+                protocol: TCP
+                targetPort: 8080
+            selector:
+              repo_name: "{{ _repo_name }}"
+              repo_version: "{{ repo_version }}"
+
+    - name: Route traffic to the repo image
+      k8s:
+        state: present
+        definition:
+          apiVersion: route.openshift.io/v1
+          kind: Route
+          metadata:
+            name: "{{ deployment_name }}"
+            namespace: "{{ openshift_project }}"
+            annotations:
+              "kubernetes.io/tls-acme": "true"
+          spec:
+            host:
+              "resources-{{ openshift_project }}.{{ _openshift_apps_domain }}"
+            path: "/{{ _repo_name }}/{{ repo_version }}"
+            port:
+              targetPort: ui
+            to:
+              kind: Service
+              name: "{{ deployment_name }}"
+            tls:
+              termination: edge
+              insecureEdgeTerminationPolicy: Redirect
+
+    - name: Mark repo as latest
+      k8s:
+        state: present
+        definition:
+          kind: Service
+          apiVersion: v1
+          metadata:
+            name: "{{ latest_deployment_name }}"
+            namespace: "{{ openshift_project }}"
+          spec:
+            ports:
+              - name: ui
+                port: 80
+                protocol: TCP
+                targetPort: 8080
+            selector:
+              repo_name: "{{ _repo_name }}"
+              repo_version: "{{ repo_version }}"
+
+    - name: Route traffic to the latest repo
+      k8s:
+        state: present
+        definition:
+          apiVersion: route.openshift.io/v1
+          kind: Route
+          metadata:
+            name: "{{ latest_deployment_name }}"
+            namespace: "{{ openshift_project }}"
+            annotations:
+              "kubernetes.io/tls-acme": "true"
+          spec:
+            host:
+              "resources-{{ openshift_project }}.{{ _openshift_apps_domain }}"
+            path: "/{{ _repo_name }}"
+            port:
+              targetPort: ui
+            to:
+              kind: Service
+              name: "{{ latest_deployment_name }}"
+            tls:
+              termination: edge
+              insecureEdgeTerminationPolicy: Redirect
+

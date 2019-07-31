@@ -1,0 +1,17 @@
+#!/bin/bash
+# Custom s2i run script that overrides the one that is included in the
+# repoman-repo-centos7 base image to add redirects needed for OpenShift.
+#
+
+if [[ $REPO_NAME ]] && [[ $REPO_VERSION ]]; then
+    # Inject redirection rules for HTTPD
+    cat > "$HTTPD_MAIN_CONF_D_PATH/repo-redirect.conf" <<EOC
+RewriteEngine on
+RewriteRule "^/$REPO_NAME/latest(/?)\$" "$REPO_NAME/$REPO_VERSION\$1" [R]
+RewriteRule "^/$REPO_NAME(/$REPO_VERSION)?\$" "\$0/" [R]
+RewriteRule "^/$REPO_NAME(/$REPO_VERSION)?(/.*)\$" "\$2" [PT]
+EOC
+fi
+
+# source the s2i run script from the base image
+source /usr/libexec/s2i/run
