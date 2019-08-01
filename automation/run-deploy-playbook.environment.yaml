@@ -1,0 +1,20 @@
+- name: 'PLAYBOOK'
+  value: deploy_to_container
+- name: 'INVENTORY'
+  value: blank
+- name: 'APISERVER'
+  value: https://shift.ovirt.org:8443
+- name: 'PROJECT'
+  valueFrom:
+    runtimeEnv: 'OPENSHIFT_PROJECT'
+- name: 'TOKEN'
+  valueFrom:
+    secretKeyRef:
+      name: 'openshift-deploy-serviceaccount'
+      key: 'token'
+- name: 'REPO_NAME'
+  valueFrom:
+    runtimeEnv: 'REPO_NAME'
+- name: 'REPOMAN_SOURCES'
+  valueFrom:
+    runtimeEnv: 'REPOMAN_SOURCES'

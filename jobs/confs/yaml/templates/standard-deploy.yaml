@@ -34,3 +34,35 @@
             - deploy-to-tested
     publishers:
       - email-infra
+
+- job-template:
+    name: 'deploy-to-{repo-name}'
+    project-type: pipeline
+    quiet-period: 0
+    concurrent: false
+    properties:
+      - build-discarder:
+          days-to-keep: 14
+          artifact-num-to-keep: 60
+      - inject:
+          properties-content: |
+            SCM_NOTIFICATION_CREDENTIALS=''
+            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
+            STDCI_SCM_URL={stdci-scm-url}
+            STDCI_SCM_REFSPEC={stdci-scm-refspec}
+            CLONE_DIR_NAME={clone-dir-name}
+            GIT_AUTHOR_NAME={git-config-name}
+            GIT_AUTHOR_EMAIL={git-config-email}
+            GIT_COMMITTER_NAME={git-config-name}
+            GIT_COMMITTER_EMAIL={git-config-email}
+            LOADER_NODE_LABEL={loader-node-label}
+            OPENSHIFT_PROJECT={openshift-project}
+            REPO_NAME={repo-name}
+    parameters:
+      - text:
+          name: REPOMAN_SOURCES
+          default: ''
+          description: |
+            List of newline-separated repoman sources to get packages to deploy
+            from
+    dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
