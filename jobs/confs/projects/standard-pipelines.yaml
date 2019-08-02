@@ -24,6 +24,7 @@
       - ovirt-openshift-extensions
       - ovirt-web-ui
       - v2v-conversion-host
+      - wix-toolset-binaries
     jobs:
       - '{org}_{project}_standard-gh-jobs'
 
