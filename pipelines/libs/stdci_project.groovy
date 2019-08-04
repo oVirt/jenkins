@@ -247,7 +247,8 @@ def get_clone_dir_name(String project_name) {
 
 def update_project_upstream_sources(Project project) {
     dir(project.clone_dir_name) {
-        def ret = sh(
+        sshagent(['std-ci-git-push-credentials']) {
+            def ret = sh(
                 returnStatus: true,
                 script: """
                 echo "Updating upstream sources."
@@ -259,11 +260,12 @@ def update_project_upstream_sources(Project project) {
 
                 "\$usrc" --log="\$LOGDIR/update_${project.name}.log" update --commit
                 "\$usrc" --log="\$LOGDIR/get_${project.name}.log" get
-            """
-        )
-        if(ret != 0) {
-            println("Failed to update upstream sources. See logs for info.")
-            currentBuild.result = 'FAILURE'
+                """
+            )
+            if (ret != 0) {
+                println("Failed to update upstream sources. See logs for info.")
+                currentBuild.result = 'FAILURE'
+            }
         }
     }
 }
