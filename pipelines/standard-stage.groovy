@@ -62,6 +62,7 @@ def loader_main(loader) {
         job_properties = get_std_ci_job_properties(project, std_ci_stage)
         jobs = get_std_ci_jobs(job_properties)
         queues = get_std_ci_queues(project, job_properties)
+        save_gate_info(job_properties.is_gated_project, queues)
         if(!queues.empty && std_ci_stage != 'build-artifacts') {
             // If we need to submit the change the queues, make sure we
             // generate builds
@@ -132,6 +133,11 @@ def main() {
     tag_poll_job(jobs)
     stage('Invoking jobs') {
         stdci_runner_lib.run_std_ci_jobs(project, jobs)
+    }
+    if(!queues.empty && job_properties.is_gated_project) {
+        stage('Deploying to gated repo') {
+            deploy_to_gated(project, queues)
+        }
     }
 }
 
@@ -232,14 +238,25 @@ def get_std_ci_job_properties(project, String std_ci_stage) {
     withEnv(['PYTHONPATH=jenkins']) {
         sh """\
             #!/usr/bin/env python
+            import yaml
             from scripts.stdci_dsl.api import (
                 get_formatted_threads, setupLogging
             )
+            from scripts.zuul_helpers import is_gated_project
 
             setupLogging()
             stdci_config = get_formatted_threads(
                 'pipeline_dict', '${project.clone_dir_name}', '${std_ci_stage}'
             )
+
+            # Inject gating info into STDCI config
+            stdci_config_parsed = yaml.safe_load(stdci_config)
+            stdci_config_parsed['is_gated_project'] = \
+                is_gated_project('${project.clone_dir_name}')
+            stdci_config = yaml.safe_dump(
+                stdci_config_parsed, default_flow_style=False
+            )
+
             with open('${stdci_job_properties}', 'w') as conf:
                 conf.write(stdci_config)
         """.stripIndent()
@@ -402,6 +419,46 @@ def copy_previos_build_artifacts() {
         )
         archiveArtifacts '**/*'
     }
+}
+
+def deploy_to_gated(project, queues) {
+    def branches = [:]
+    for(queue in queues) {
+        branches[queue] = mk_deploy_to_gated_branch(project, queue)
+   }
+    try {
+        parallel branches
+    } catch(Exception e) {
+        // Make deploy failures not fail the whole job but still show up in
+        // yellow in Jenkins
+        currentBuild.result = 'UNSTABLE'
+    }
+}
+
+def mk_deploy_to_gated_branch(project, String queue) {
+    return {
+        String ctx = "deploy to: gated-$queue"
+        try {
+            project.notify(ctx, 'PENDING', 'Deploying change to gated repo')
+            build "deploy-to-gated-$queue"
+            project.notify(ctx, 'SUCCESS', 'Change deployed')
+        } catch(Exception eb) {
+            project.notify(ctx, 'FAILURE', 'Failed to deploy - does repo exist?')
+            throw eb
+        }
+    }
+}
+
+def save_gate_info(is_gated_project, queues) {
+    def value
+    // Save information about which gated repos are we deploying to, so gating
+    // jobs can avoid waiting for builds they do not need to test
+    if(is_gated_project) {
+        value = queues.join(' ')
+    } else {
+        value = '__none__'
+    }
+    modify_build_parameter('GATE_DEPLOYMENTS', value)
 }
 
 
