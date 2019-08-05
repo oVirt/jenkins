@@ -49,6 +49,7 @@
     stage: build-artifacts
     distro:
       - el7
+      - fc30
     trigger: 'timed'
     trigger-times: 'H H(5-8) * * *'
     arch:
