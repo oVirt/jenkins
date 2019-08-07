@@ -356,6 +356,41 @@ def normalize_mirror_urls(mirrors, base_uri):
     }
 
 
+def mirrors_to_inserts(mirrors, ins_repo_prefix, ins_type='before'):
+    """Convert mirrors map into a set of repo insertions
+
+    :param Mapping mirrors:     Mirrors information map
+    :param str ins_repo_prefix: The prefix for names of repos that the repos
+                                will be inserted with relation to
+    :param str ins_type:        (Optional) The type of insertion to create,
+                                currently, only 'before' is supported
+
+    :rtype: dict
+    :returns: A new mirror map where the repos in `mirrors` had been converted
+              to insertion requests in the following way:
+              - The last part of the repo name will be treated as a distro id,
+                for example, for a repo called `foo-el7` the distro id would be
+                `el7`.
+              - The repo will become an insertion with relation to a repo with
+                the prefix given in `ins_repo_prefix` and the same distro id.
+                For example, if `ins_repo_prefix` is `bar`, a repo called
+                `foo-el7` would be inserted in relation to `bar-el7`.
+              - Existing insertion statements in `mirrors` are generally left
+                as-is, but repos could be added into them.
+              - In case there are multiple insertions with relation to the same
+                repo, they would be ordered alphabetically according to repo
+                name
+    """
+    inserts = {k: v for k, v in iteritems(mirrors) if ':' in k}
+    for repo_name, repo_url in sorted(iteritems(mirrors)):
+        if ':' in repo_name:
+            continue
+        distro = repo_name.rsplit('-', 1)[-1]
+        ins_key = '{}:{}-{}'.format(ins_type, ins_repo_prefix, distro)
+        inserts.setdefault(ins_key, []).append([repo_name, repo_url])
+    return inserts
+
+
 def setupLogging(level=logging.INFO):
     """Basic logging setup for users of this script who don't what to bother
     with it

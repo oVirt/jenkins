@@ -22,7 +22,8 @@ except ImportError:
 from scripts.mirror_client import (
     inject_yum_mirrors, inject_yum_mirrors_str, mirrors_from_http,
     mirrors_from_file, mirrors_from_uri, mirrors_from_environ,
-    ovirt_tested_as_mirrors, none_value_by_repo_name, normalize_mirror_urls
+    ovirt_tested_as_mirrors, none_value_by_repo_name, normalize_mirror_urls,
+    mirrors_to_inserts,
 )
 
 
@@ -414,6 +415,39 @@ def test_mirrors_from_environ(monkeypatch):
 def test_normalize_mirror_urls(mirrors, base_uri, expected):
     out = normalize_mirror_urls(mirrors, base_uri)
     assert out == expected
+
+
+@pytest.mark.parametrize('mirrors,ins_repo_prefix,expected', [
+    (
+        {
+            'repo1-el7': '/repo1/el7',
+            'repo1-el8': '/repo1/el8',
+            'repo1-fc30': '/repo1/fc30',
+            'repo2-el7': '/repo2/el7',
+            'before:target-fc30': [
+                ['repo3-fc30', '/repo3/fc30'],
+            ]
+        },
+        'target',
+        {
+            'before:target-el7': [
+                ['repo1-el7', '/repo1/el7'],
+                ['repo2-el7', '/repo2/el7'],
+            ],
+            'before:target-el8': [
+                ['repo1-el8', '/repo1/el8'],
+            ],
+            'before:target-fc30': [
+                ['repo3-fc30', '/repo3/fc30'],
+                ['repo1-fc30', '/repo1/fc30'],
+            ],
+        },
+    )
+])
+def test_mirrors_to_inserts(mirrors, ins_repo_prefix, expected):
+    out = mirrors_to_inserts(mirrors, ins_repo_prefix)
+    assert out == expected
+
 
 def test_ovirt_tested_as_mirrors():
     expected = {
