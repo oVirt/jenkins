@@ -1,4 +1,5 @@
 // gate.groovy - System patch gating job
+import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper
 
 def on_load(loader){
     // Copy methods from loader to this script
@@ -56,6 +57,9 @@ def main() {
         releases_to_test = [:]
         threads = create_build_threads(build_thread_params, releases_to_test)
         parallel threads
+    }
+    stage('Wait for merged packages') {
+        wait_for_merged_packages(releases_to_test)
     }
     stage('Running test suits') {
         def releases_list = "Will test the following releases and builds:"
@@ -165,6 +169,52 @@ def get_all_suits(system_test_project) {
         all_suits = findFiles(glob: 'automation/*_suite_*.sh').name as Set
     }
     return all_suits
+}
+
+def wait_for_merged_packages(releases_to_test) {
+    def releases_set = releases_to_test.keySet()
+    def builds
+    builds = find_running_builds_before(currentBuild.timeInMillis)
+    waitUntil {
+        builds = remove_done_and_unrelated_builds(builds, releases_set)
+        print "Waiting for: ${builds.fullDisplayName.join(', ')}"
+        return builds.isEmpty()
+    }
+}
+
+@NonCPS
+def find_running_builds_before(time) {
+    return jenkins.model.Jenkins.instance.allItems(
+        hudson.model.Job
+    ).findResults({ job ->
+        if(!(job.name =~ /_standard-on-(merge|ghpush)$/)) {
+            return
+        }
+        return job.builds.findResult { build ->
+            if(build.isBuilding() && build.timeInMillis <= time) {
+                return new RunWrapper(build, false)
+            }
+        }
+    }) as List
+}
+
+@NonCPS
+def remove_done_and_unrelated_builds(builds, releases_set) {
+    return builds.findAll({ build ->
+        build.rawBuild.isBuilding() \
+        && build_is_related_to_gate(build, releases_set)
+    })
+}
+
+@NonCPS
+def build_is_related_to_gate(build, releases_set) {
+    def params = build.rawBuild.getAction(hudson.model.ParametersAction)
+    def gate_deployments = params?.getParameter('GATE_DEPLOYMENTS')?.value
+    return gate_deployments != '__none__' \
+        && (
+            gate_deployments.is(null)
+            || releases_set.intersect(gate_deployments.split as Set)
+        )
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from
