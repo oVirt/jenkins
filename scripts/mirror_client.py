@@ -3,8 +3,8 @@
 """
 from six.moves import StringIO, range
 from six.moves.configparser import RawConfigParser
-from six.moves.urllib.parse import urlparse
-from six import MAXSIZE
+from six.moves.urllib.parse import urlparse, urljoin
+from six import MAXSIZE, iteritems, string_types
 import requests
 from requests.exceptions import ConnectionError, Timeout
 from os import environ
@@ -304,9 +304,10 @@ def mirrors_from_uri(uri, json_varname='latest_ci_repos', allow_proxy=False):
     """
     parsed = urlparse(uri)
     if parsed.scheme == 'http' or parsed.scheme == 'https':
-        return mirrors_from_http(parsed.geturl(), json_varname, allow_proxy)
-    if parsed.scheme == '' or parsed.scheme == 'file':
-        return mirrors_from_file(parsed.path)
+        mirrors = mirrors_from_http(parsed.geturl(), json_varname, allow_proxy)
+    elif parsed.scheme == '' or parsed.scheme == 'file':
+        mirrors = mirrors_from_file(parsed.path)
+    return normalize_mirror_urls(mirrors, uri)
 
 
 def mirrors_from_environ(
@@ -330,6 +331,29 @@ def mirrors_from_environ(
     if env_varname not in environ:
         return dict()
     return mirrors_from_uri(environ[env_varname])
+
+
+def normalize_mirror_urls(mirrors, base_uri):
+    """Turn relative URLs in mirrors to absolute ones
+
+    :param Mapping mirrors: Mirror information map
+    :param str base_uri:    Base URI to add to relative URLs, usually the URI
+                            whee the mirrors JSON file was obtained from
+
+    :rtype: dict
+    :returns: The mirror information given in `mirrors` with all the relative
+              URLs turned into absolute ones
+    """
+    return {
+        repo_name: (
+            urljoin(base_uri, uri) if isinstance(uri, string_types)
+            else [
+                [ins_repo_name, urljoin(base_uri, ins_uri)]
+                for ins_repo_name, ins_uri in uri
+            ]
+        )
+        for repo_name, uri in iteritems(mirrors)
+    }
 
 
 def setupLogging(level=logging.INFO):

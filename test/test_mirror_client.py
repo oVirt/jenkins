@@ -22,7 +22,7 @@ except ImportError:
 from scripts.mirror_client import (
     inject_yum_mirrors, inject_yum_mirrors_str, mirrors_from_http,
     mirrors_from_file, mirrors_from_uri, mirrors_from_environ,
-    ovirt_tested_as_mirrors, none_value_by_repo_name
+    ovirt_tested_as_mirrors, none_value_by_repo_name, normalize_mirror_urls
 )
 
 
@@ -323,13 +323,20 @@ def test_mirrors_from_bad_file(tmpdir):
         mirrors_from_file(str(bad_file))
 
 
+def identity(x, *args, **kwargs):
+    return x
+
+
 def test_mirrors_from_uri_http(monkeypatch):
     mirrors_from_http = MagicMock(side_effect=[sentinel.http_mirrors])
     mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
+    normalize_mirror_urls = MagicMock(side_effect=identity)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
                         mirrors_from_http)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
                         mirrors_from_file)
+    monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
+                        normalize_mirror_urls)
     http_url = 'http://mirrors.example.com'
     out = mirrors_from_uri(http_url)
     assert out == sentinel.http_mirrors
@@ -337,6 +344,9 @@ def test_mirrors_from_uri_http(monkeypatch):
     assert mirrors_from_http.call_args == \
         call(http_url, 'latest_ci_repos', False)
     assert not mirrors_from_file.called
+    assert normalize_mirror_urls.called
+    assert normalize_mirror_urls.call_args == \
+        call(sentinel.http_mirrors, http_url)
 
 
 @pytest.mark.parametrize(
@@ -350,15 +360,21 @@ def test_mirrors_from_uri_http(monkeypatch):
 def test_mirrors_from_uri_file(monkeypatch, in_path, passed_path):
     mirrors_from_http = MagicMock(side_effect=[sentinel.http_mirrors])
     mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
+    normalize_mirror_urls = MagicMock(side_effect=identity)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
                         mirrors_from_http)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
                         mirrors_from_file)
+    monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
+                        normalize_mirror_urls)
     out = mirrors_from_uri(in_path)
     assert out == sentinel.file_mirrors
     assert mirrors_from_file.called
     assert mirrors_from_file.call_args == call(passed_path)
     assert not mirrors_from_http.called
+    assert normalize_mirror_urls.called
+    assert normalize_mirror_urls.call_args == \
+        call(sentinel.file_mirrors, in_path)
 
 
 def test_mirrors_from_environ(monkeypatch):
@@ -371,6 +387,33 @@ def test_mirrors_from_environ(monkeypatch):
     assert mirrors_from_uri.called
     assert mirrors_from_uri.call_args == call('some_mirrors_uri')
 
+
+@pytest.mark.parametrize('mirrors,base_uri,expected', [
+    (
+        {
+            'repo1': 'http://example.com/repo1',
+            'repo2': '/repos/repo2',
+            'repo3': 'packages/repo3',
+            'before:repo3': [
+                ['repo4', '/repos/repo4'],
+                ['repo5', 'http://example.com/repo5'],
+            ]
+        },
+        'https://foo.bar.com/mirrors/latest.json',
+        {
+            'repo1': 'http://example.com/repo1',
+            'repo2': 'https://foo.bar.com/repos/repo2',
+            'repo3': 'https://foo.bar.com/mirrors/packages/repo3',
+            'before:repo3': [
+                ['repo4', 'https://foo.bar.com/repos/repo4'],
+                ['repo5', 'http://example.com/repo5'],
+            ]
+        },
+    ),
+])
+def test_normalize_mirror_urls(mirrors, base_uri, expected):
+    out = normalize_mirror_urls(mirrors, base_uri)
+    assert out == expected
 
 def test_ovirt_tested_as_mirrors():
     expected = {
