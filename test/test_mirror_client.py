@@ -51,6 +51,11 @@ def orig_repos_cfg():
         name=A non-mirrored repo
         baseurl=http://example.com/yum/another_repo
         enabled=1
+
+        [unmirrored_repo_w_insert]
+        name=A non-mirrored repo that get an insert
+        baseurl=http://example.com/yum/one_more_repo
+        enabled=1
         """
     ).lstrip()
 
@@ -61,6 +66,17 @@ def mirrors_dict():
         plain_mirrored_repo='http://mirror.com/yum/repo',
         list_mirrored_repo='http://mirror.com/yum/list_repo',
         metalink_mirrored_repo='http://mirror.com/yum/metalink_repo',
+        **{
+            'before:list_mirrored_repo': [
+                ['inserted1', 'http://localhost/inserted1'],
+            ],
+            'before:unmirrored_repo_w_insert': [
+                ['inserted2', 'http://localhost/inserted2'],
+            ],
+            'before:non_existant_repo': [
+                ['inserted3', 'http://localhost/inserted3'],
+            ],
+        }
     )
 
 
@@ -74,6 +90,10 @@ def expected_repos_cfg():
         [plain_mirrored_repo]
         name = A plain mirrored repo
         baseurl = http://mirror.com/yum/repo
+        proxy = None
+
+        [inserted1]
+        baseurl = http://localhost/inserted1
         proxy = None
 
         [list_mirrored_repo]
@@ -93,6 +113,15 @@ def expected_repos_cfg():
         baseurl = http://example.com/yum/another_repo
         enabled = 1
 
+        [inserted2]
+        baseurl = http://localhost/inserted2
+        proxy = None
+
+        [unmirrored_repo_w_insert]
+        name = A non-mirrored repo that get an insert
+        baseurl = http://example.com/yum/one_more_repo
+        enabled = 1
+
         """
     ).lstrip()
 
@@ -108,6 +137,9 @@ def expected_repos_proxied_cfg():
         name = A plain mirrored repo
         baseurl = http://mirror.com/yum/repo
 
+        [inserted1]
+        baseurl = http://localhost/inserted1
+
         [list_mirrored_repo]
         name = A mirrored repo with an (upstream) mirror list
         failovermethod = priority
@@ -121,6 +153,14 @@ def expected_repos_proxied_cfg():
         [unmirrored_repo]
         name = A non-mirrored repo
         baseurl = http://example.com/yum/another_repo
+        enabled = 1
+
+        [inserted2]
+        baseurl = http://localhost/inserted2
+
+        [unmirrored_repo_w_insert]
+        name = A non-mirrored repo that get an insert
+        baseurl = http://example.com/yum/one_more_repo
         enabled = 1
 
         """
@@ -150,7 +190,7 @@ def mirror_server(mirrors_dict):
             else:
                 self.send_error(404)
 
-    for attempt in range(0,20):
+    for attempt in range(0, 20):
         server_address = ('127.0.0.1', randrange(8765, 8876))
         try:
             server = HTTPServer(server_address, MirrorRequestHandler)

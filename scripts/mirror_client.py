@@ -69,21 +69,68 @@ def inject_yum_mirrors(
 
     :returns: None
     """
-    cfg = RawConfigParser()
-    _readfp(cfg, yum_cfg)
-    for section in cfg.sections():
+    oldcfg = RawConfigParser()
+    newcfg = RawConfigParser()
+    _readfp(oldcfg, yum_cfg)
+    for section in oldcfg.sections():
+        for repoid, baseurl in mirrors.get('before:' + section, []):
+            mk_injected_section(
+                oldcfg, newcfg, repoid, baseurl, allow_proxy, none_value
+            )
         if section not in mirrors:
-            continue
-        if none_value is None:
-            none_value_str = none_value_by_repo_name(section)
+            copy_section(oldcfg, newcfg, section)
         else:
-            none_value_str = str(none_value)
-        cfg.set(section, 'baseurl', mirrors[section])
-        cfg.remove_option(section, 'mirrorlist')
-        cfg.remove_option(section, 'metalink')
-        if not allow_proxy:
-            cfg.set(section, 'proxy', none_value_str)
-    cfg.write(out_cfg)
+            mk_injected_section(
+                oldcfg, newcfg, section, mirrors[section], allow_proxy,
+                none_value
+            )
+    newcfg.write(out_cfg)
+
+
+def copy_section(oldcfg, newcfg, section):
+    """Copy a configuration section between RawConfigParser objects
+
+    :param RawConfigParser oldcfg: RawConfigParser to read from
+    :param RawConfigParser newcfg: RawConfigParser to write to
+    :param str section:            The name of the section to copy
+    """
+    if not oldcfg.has_section(section):
+        return
+    if not newcfg.has_section(section):
+        newcfg.add_section(section)
+    for option, value in oldcfg.items(section):
+        newcfg.set(section, option, value)
+
+
+def mk_injected_section(
+    oldcfg, newcfg, section, baseurl, allow_proxy=False, none_value=None
+):
+    """Make a configuration section with injected mirror URL
+
+    :param RawConfigParser oldcfg: RawConfigParser to take existing
+                                   configuration values from
+    :param RawConfigParser newcfg: RawConfigParser to write configuration
+                                   section into
+    :param str section:            The name of the configuration section to
+                                   make
+    :param str baseurl:            The mirror URL to inject
+    :param bool allow_proxy:       Wether to allow accessing the mirrors via
+                                   HTTP proxies (defaults to False)
+    :param str none_value:         Specify the 'no-proxy' value - see docstring
+                                   for inject_yum_mirrors for full explanation
+    """
+    copy_section(oldcfg, newcfg, section)
+    if not newcfg.has_section(section):
+        newcfg.add_section(section)
+    if none_value is None:
+        none_value_str = none_value_by_repo_name(section)
+    else:
+        none_value_str = str(none_value)
+    newcfg.set(section, 'baseurl', baseurl)
+    newcfg.remove_option(section, 'mirrorlist')
+    newcfg.remove_option(section, 'metalink')
+    if not allow_proxy:
+        newcfg.set(section, 'proxy', none_value_str)
 
 
 def _readfp(cp, fp, filename=None):
