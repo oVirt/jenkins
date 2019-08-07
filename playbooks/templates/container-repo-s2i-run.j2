@@ -3,6 +3,19 @@
 # repoman-repo-centos7 base image to add redirects needed for OpenShift.
 #
 
+mk_latest_json() {
+    echo "{ \"latest_ci_repos\": {"
+    json="$(
+        find "$REPO_PATH" -type d -name repodata -printf "%h\\n" \
+        | while read rpath; do
+            echo -n "  \"$REPO_NAME-${rpath##*/}\": "
+            echo "\"/$REPO_NAME/$REPO_VERSION/${rpath##$REPO_PATH/}/\","
+        done
+    )"
+    echo "${json%%,}"
+    echo "} }"
+}
+
 if [[ $REPO_NAME ]] && [[ $REPO_VERSION ]]; then
     # Inject redirection rules for HTTPD
     cat > "$HTTPD_MAIN_CONF_D_PATH/repo-redirect.conf" <<EOC
@@ -11,6 +24,8 @@ RewriteRule "^/$REPO_NAME/latest(/?)\$" "$REPO_NAME/$REPO_VERSION\$1" [R]
 RewriteRule "^/$REPO_NAME(/$REPO_VERSION)?\$" "\$0/" [R]
 RewriteRule "^/$REPO_NAME(/$REPO_VERSION)?(/.*)\$" "\$2" [PT]
 EOC
+
+    mk_latest_json > "$REPO_PATH/all_latest.json"
 fi
 
 # source the s2i run script from the base image
