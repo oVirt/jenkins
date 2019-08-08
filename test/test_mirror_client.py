@@ -22,8 +22,9 @@ except ImportError:
 from scripts.mirror_client import (
     inject_yum_mirrors, inject_yum_mirrors_str, mirrors_from_http,
     mirrors_from_file, mirrors_from_data_url, mirrors_from_uri,
-    mirrors_from_environ, ovirt_tested_as_mirrors, none_value_by_repo_name,
-    normalize_mirror_urls, mirrors_to_inserts,
+    parse_mirror_includes, merge_mirrors, mirrors_from_environ,
+    ovirt_tested_as_mirrors, none_value_by_repo_name, normalize_mirror_urls,
+    mirrors_to_inserts,
 )
 
 
@@ -352,6 +353,7 @@ def test_mirrors_from_uri_http(monkeypatch):
     mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
     mirrors_from_data_url = MagicMock(side_effect=[sentinel.data_mirrors])
     normalize_mirror_urls = MagicMock(side_effect=identity)
+    parse_mirror_includes = MagicMock(side_effect=identity)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
                         mirrors_from_http)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
@@ -360,6 +362,8 @@ def test_mirrors_from_uri_http(monkeypatch):
                         mirrors_from_data_url)
     monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
                         normalize_mirror_urls)
+    monkeypatch.setattr("scripts.mirror_client.parse_mirror_includes",
+                        parse_mirror_includes)
     http_url = 'http://mirrors.example.com'
     out = mirrors_from_uri(http_url)
     assert out == sentinel.http_mirrors
@@ -386,6 +390,7 @@ def test_mirrors_from_uri_file(monkeypatch, in_path, passed_path):
     mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
     mirrors_from_data_url = MagicMock(side_effect=[sentinel.data_mirrors])
     normalize_mirror_urls = MagicMock(side_effect=identity)
+    parse_mirror_includes = MagicMock(side_effect=identity)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
                         mirrors_from_http)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
@@ -394,6 +399,8 @@ def test_mirrors_from_uri_file(monkeypatch, in_path, passed_path):
                         mirrors_from_data_url)
     monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
                         normalize_mirror_urls)
+    monkeypatch.setattr("scripts.mirror_client.parse_mirror_includes",
+                        parse_mirror_includes)
     out = mirrors_from_uri(in_path)
     assert out == sentinel.file_mirrors
     assert mirrors_from_file.called
@@ -410,6 +417,7 @@ def test_mirrors_from_uri_data(monkeypatch):
     mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
     mirrors_from_data_url = MagicMock(side_effect=[sentinel.data_mirrors])
     normalize_mirror_urls = MagicMock(side_effect=identity)
+    parse_mirror_includes = MagicMock(side_effect=identity)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
                         mirrors_from_http)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
@@ -418,6 +426,8 @@ def test_mirrors_from_uri_data(monkeypatch):
                         mirrors_from_data_url)
     monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
                         normalize_mirror_urls)
+    monkeypatch.setattr("scripts.mirror_client.parse_mirror_includes",
+                        parse_mirror_includes)
     data_url = 'data:application/json:{"foo": "bar"}'
     out = mirrors_from_uri(data_url)
     assert out == sentinel.data_mirrors
@@ -428,6 +438,113 @@ def test_mirrors_from_uri_data(monkeypatch):
     assert normalize_mirror_urls.called
     assert normalize_mirror_urls.call_args == \
         call(sentinel.data_mirrors, data_url)
+
+
+@pytest.mark.parametrize('mirrors,expected', [
+    (
+        {
+            u'repo1-el7': u'url1',
+            u'include:': [
+                u'data:application/json,' + json.dumps({
+                    u'repo2-el7': u'url2',
+                }),
+            ]
+        },
+        {
+            u'repo1-el7': u'url1',
+            u'repo2-el7': u'url2',
+        },
+    ),
+    (
+        {
+            u'repo1-el7': u'url1',
+            u'before:repo1-el7': [[u'repo2-el7', u'url2']],
+            u'include:': [
+                u'data:application/json,' + json.dumps({
+                    u'repo1-el7': u'url1a',
+                    u'repo3-el7': u'url3a',
+                    u'repo4-el7': u'url4a',
+                    u'before:repo1-el7': [[u'repo5-el7', u'url5']],
+                    u'before:repo3-el7': [[u'repo6-el7', u'url6']],
+                }),
+                u'data:application/json,' + json.dumps({
+                    u'repo1-el7': u'url1b',
+                    u'repo3-el7': u'url3b',
+                    u'repo7-el7': u'url7b',
+                    u'before:repo3-el7': [[u'repo8-el7', u'url8']],
+                    u'include:': [
+                        u'data:application/json,' + json.dumps({
+                            u'repo9-el7': u'url9c',
+                        }),
+                    ]
+                }),
+            ],
+            u'include:before:': [
+                [u'repo1', u'data:application/json,' + json.dumps({
+                    u'repo10-el7': u'url10',
+                    u'repo11-el8': u'url11',
+                })],
+                [u'repo3', u'data:application/json,' + json.dumps({
+                    u'repo12-el7': u'url12',
+                })],
+                [u'repo4', u'data:application/json,' + json.dumps({
+                    u'repo13-el8': u'url13',
+                })],
+            ]
+        },
+        {
+            u'repo1-el7': u'url1',
+            u'before:repo1-el7': [
+                [u'repo2-el7', u'url2'], [u'repo5-el7', u'url5'],
+                [u'repo10-el7', u'url10'],
+            ],
+            u'before:repo1-el8': [
+                [u'repo11-el8', u'url11'],
+            ],
+            u'repo3-el7': u'url3a',
+            u'before:repo3-el7': [
+                [u'repo6-el7', u'url6'], [u'repo8-el7', u'url8'],
+                [u'repo12-el7', u'url12'],
+            ],
+            u'repo4-el7': u'url4a',
+            u'before:repo4-el8': [
+                [u'repo13-el8', u'url13'],
+            ],
+            u'repo7-el7': u'url7b',
+            u'repo9-el7': u'url9c',
+        }
+    ),
+])
+def test_parse_mirror_includes(mirrors, expected):
+    out = parse_mirror_includes(mirrors)
+    assert out == expected
+
+
+@pytest.mark.parametrize('a,b,expected', [(
+    {
+        'repo1': 'url1',
+        'repo2': 'url2',
+        'before:repo1': [['repo3', 'url3']],
+        'before:repo2': [['repo4', 'url4']],
+    },
+    {
+        'repo2': 'url2b',
+        'repo5': 'url5',
+        'before:repo2': [['repo6', 'url6'], ['repo7', 'url7']],
+    },
+    {
+        'repo1': 'url1',
+        'repo2': 'url2',
+        'repo5': 'url5',
+        'before:repo1': [['repo3', 'url3']],
+        'before:repo2': [
+            ['repo4', 'url4'], ['repo6', 'url6'], ['repo7', 'url7'],
+        ],
+    },
+)])
+def test_merge_mirrors(a, b, expected):
+    out = merge_mirrors(a, b)
+    assert out == expected
 
 
 def test_mirrors_from_environ(monkeypatch):

@@ -338,7 +338,67 @@ def mirrors_from_uri(uri, json_varname='latest_ci_repos', allow_proxy=False):
         mirrors = mirrors_from_file(parsed.path)
     elif parsed.scheme == 'data':
         mirrors = mirrors_from_data_url(uri)
-    return normalize_mirror_urls(mirrors, uri)
+    mirrors = normalize_mirror_urls(mirrors, uri)
+    mirrors = parse_mirror_includes(mirrors, json_varname, allow_proxy)
+    return mirrors
+
+
+def parse_mirror_includes(
+    mirrors, json_varname='latest_ci_repos', allow_proxy=False
+):
+    """Parse and implement includes in the mirrors data
+
+    :param Mapping mirrors: Mirrors data with or without includes
+    :param str json_varname: The variable in the file pointing to the mirror
+                             dictionary
+    :param bool allow_proxy: Wether to allow accessing the mirrors via HTTP
+                             proxies (defaults to False)
+
+    Includes can be specified in mirrors data in two ways:
+    1. Adding an 'include:' key that points to list of URLs. Data is read from
+       Each one of the URLs in the list and merged into the resulting mirrors
+       data
+    2. Adding an 'include:before:' key that points to a list of name-url pairs.
+       The data will be read from the URLs and then converted to insertion
+       statements before the repos that start with `name`.
+
+    :rtype: dict
+    :returns: copy of the data in `mirrors` with all includes converted to
+              included data
+    """
+    parsed = {
+        k: v for k, v in iteritems(mirrors) if not k.startswith('include:')
+    }
+    for uri in mirrors.get('include:', []):
+        parsed = merge_mirrors(
+            parsed, mirrors_from_uri(uri, json_varname, allow_proxy)
+        )
+    for repo_name, uri in mirrors.get('include:before:', []):
+        parsed = merge_mirrors(parsed, mirrors_to_inserts(
+            mirrors_from_uri(uri, json_varname, allow_proxy), repo_name
+        ))
+    return parsed
+
+
+def merge_mirrors(a, b):
+    """Merge mirror data
+
+    Merge the mirror data in b into the data in a so that:
+    - A repo that is defined both in 'a' and 'b' remains with the URL defined
+      in 'a'
+    - When insertions to the same repo exist both in 'a' and 'b', the
+      insertions from 'b' are added after the insertions from 'a'
+
+    :rtype: dict
+    """
+    merged = dict(a)
+    for repo_name, repo_url in iteritems(b):
+        if repo_name not in merged:
+            merged[repo_name] = repo_url
+            continue
+        if ':' in repo_name:
+            merged[repo_name].extend(repo_url)
+    return merged
 
 
 def mirrors_from_environ(
@@ -379,6 +439,9 @@ def normalize_mirror_urls(mirrors, base_uri):
         repo_name: (
             urljoin(base_uri, uri) if isinstance(uri, string_types)
             else [
+                urljoin(base_uri, inc_uri) for inc_uri in uri
+            ] if repo_name == 'include:'
+            else [
                 [ins_repo_name, urljoin(base_uri, ins_uri)]
                 for ins_repo_name, ins_uri in uri
             ]
@@ -417,7 +480,7 @@ def mirrors_to_inserts(mirrors, ins_repo_prefix, ins_type='before'):
         if ':' in repo_name:
             continue
         distro = repo_name.rsplit('-', 1)[-1]
-        ins_key = '{}:{}-{}'.format(ins_type, ins_repo_prefix, distro)
+        ins_key = u'{}:{}-{}'.format(ins_type, ins_repo_prefix, distro)
         inserts.setdefault(ins_key, []).append([repo_name, repo_url])
     return inserts
 
