@@ -1,5 +1,6 @@
 // gate.groovy - System patch gating job
 import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper
+import groovy.json.JsonOutput
 
 def on_load(loader){
     // Copy methods from loader to this script
@@ -156,9 +157,12 @@ def run_test_threads(releases_to_test, available_suits) {
     def threads_list = "Will run the following test suits:"
     threads_list += test_threads.collect { "\n - ${it.stage}" }.join()
     print(threads_list)
+    def mirrors = mk_mirrors_conf(releases_to_test)
+    print("Will use the following mirrors configuration:\n$mirrors")
     stdci_runner_lib.run_std_ci_jobs(
         project: system_test_project,
-        jobs: test_threads
+        jobs: test_threads,
+        mirrors: mirrors,
     )
 }
 
@@ -215,6 +219,24 @@ def build_is_related_to_gate(build, releases_set) {
             gate_deployments.is(null)
             || releases_set.intersect(gate_deployments.split() as Set)
         )
+}
+
+def mk_mirrors_conf(releases_to_test) {
+    def os_apps_domain =\
+        env.OPENSHIFT_APPS_DOMAIN ?: 'apps.ovirt.org'
+    def os_res_base = "https://resources-${env.OPENSHIFT_PROJECT}.$os_apps_domain"
+    def gated_repos = releases_to_test.keySet().collect { release ->
+        def release_full = "${env.SYSTEM_QUEUE_PREFIX}-$release"
+        return [
+            "$release_full-tested" as String,
+            "$os_res_base/gated-$release_full/all_latest.json" as String
+        ]
+    }
+    def gated_mirrors_data = ['include:before:': gated_repos]
+    if(!env.CI_MIRRORS_URL.is(null)) {
+        gated_mirrors_data['include:'] = [env.CI_MIRRORS_URL]
+    }
+    return JsonOutput.toJson(gated_mirrors_data)
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from
