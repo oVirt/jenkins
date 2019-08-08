@@ -15,6 +15,8 @@ import re
 from collections import Mapping
 from time import sleep
 import argparse
+from base64 import b64decode
+import json
 
 HTTP_TIMEOUT = 30
 HTTP_RETRIES = 3
@@ -290,6 +292,33 @@ def mirrors_from_file(file_name):
     return data
 
 
+def mirrors_from_data_url(url):
+    """Load mirrors from a data URL
+
+    :param str url: The data URL to get mirrors from
+
+    Accepted data URLs have the following syntax:
+
+        data:application/json[;base64],<json data>
+
+    Where if `;base64` is present the data would be base64 encoded, otherwise
+    it would be in plain text.
+
+    :rtype: dict
+    :returs: The mirror data embedded in the URL
+    """
+    PREFIX = 'data:application/json'
+    PLAIN_PREFIX = PREFIX + ','
+    B64_PREFIX = PREFIX + ';base64,'
+    if url.startswith(PLAIN_PREFIX):
+        js = url[len(PLAIN_PREFIX):]
+    elif url.startswith(B64_PREFIX):
+        js = b64decode(url[len(B64_PREFIX):])
+    else:
+        return {}
+    return json.loads(js)
+
+
 def mirrors_from_uri(uri, json_varname='latest_ci_repos', allow_proxy=False):
     """Load mirrors from URI
 
@@ -307,6 +336,8 @@ def mirrors_from_uri(uri, json_varname='latest_ci_repos', allow_proxy=False):
         mirrors = mirrors_from_http(parsed.geturl(), json_varname, allow_proxy)
     elif parsed.scheme == '' or parsed.scheme == 'file':
         mirrors = mirrors_from_file(parsed.path)
+    elif parsed.scheme == 'data':
+        mirrors = mirrors_from_data_url(uri)
     return normalize_mirror_urls(mirrors, uri)
 
 

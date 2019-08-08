@@ -21,9 +21,9 @@ except ImportError:
 
 from scripts.mirror_client import (
     inject_yum_mirrors, inject_yum_mirrors_str, mirrors_from_http,
-    mirrors_from_file, mirrors_from_uri, mirrors_from_environ,
-    ovirt_tested_as_mirrors, none_value_by_repo_name, normalize_mirror_urls,
-    mirrors_to_inserts,
+    mirrors_from_file, mirrors_from_data_url, mirrors_from_uri,
+    mirrors_from_environ, ovirt_tested_as_mirrors, none_value_by_repo_name,
+    normalize_mirror_urls, mirrors_to_inserts,
 )
 
 
@@ -324,6 +324,25 @@ def test_mirrors_from_bad_file(tmpdir):
         mirrors_from_file(str(bad_file))
 
 
+@pytest.mark.parametrize('url,expected', [
+    (
+        'data:application/json,{"foo": "bar", "baz": "bal"}',
+        {"foo": "bar", "baz": "bal"}
+    ),
+    (
+        'data:application/json;base64,eyJmb28iOiAiYmFyIiwgImJheiI6ICJiYWwifQ=='
+        , {"foo": "bar", "baz": "bal"}
+    ),
+    ('http://foo.com/bar', {}),
+    ('data:text/plain,{"foo": "bar", "baz": "bal"}', {}),
+    ('data:{"foo": "bar", "baz": "bal"}', {}),
+    ('data:;base64,eyJmb28iOiAiYmFyIiwgImJheiI6ICJiYWwifQ==', {}),
+])
+def test_mirrors_from_data_url(url, expected):
+    out = mirrors_from_data_url(url)
+    assert out == expected
+
+
 def identity(x, *args, **kwargs):
     return x
 
@@ -331,11 +350,14 @@ def identity(x, *args, **kwargs):
 def test_mirrors_from_uri_http(monkeypatch):
     mirrors_from_http = MagicMock(side_effect=[sentinel.http_mirrors])
     mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
+    mirrors_from_data_url = MagicMock(side_effect=[sentinel.data_mirrors])
     normalize_mirror_urls = MagicMock(side_effect=identity)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
                         mirrors_from_http)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
                         mirrors_from_file)
+    monkeypatch.setattr("scripts.mirror_client.mirrors_from_data_url",
+                        mirrors_from_data_url)
     monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
                         normalize_mirror_urls)
     http_url = 'http://mirrors.example.com'
@@ -345,6 +367,7 @@ def test_mirrors_from_uri_http(monkeypatch):
     assert mirrors_from_http.call_args == \
         call(http_url, 'latest_ci_repos', False)
     assert not mirrors_from_file.called
+    assert not mirrors_from_data_url.called
     assert normalize_mirror_urls.called
     assert normalize_mirror_urls.call_args == \
         call(sentinel.http_mirrors, http_url)
@@ -361,11 +384,14 @@ def test_mirrors_from_uri_http(monkeypatch):
 def test_mirrors_from_uri_file(monkeypatch, in_path, passed_path):
     mirrors_from_http = MagicMock(side_effect=[sentinel.http_mirrors])
     mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
+    mirrors_from_data_url = MagicMock(side_effect=[sentinel.data_mirrors])
     normalize_mirror_urls = MagicMock(side_effect=identity)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
                         mirrors_from_http)
     monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
                         mirrors_from_file)
+    monkeypatch.setattr("scripts.mirror_client.mirrors_from_data_url",
+                        mirrors_from_data_url)
     monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
                         normalize_mirror_urls)
     out = mirrors_from_uri(in_path)
@@ -373,9 +399,35 @@ def test_mirrors_from_uri_file(monkeypatch, in_path, passed_path):
     assert mirrors_from_file.called
     assert mirrors_from_file.call_args == call(passed_path)
     assert not mirrors_from_http.called
+    assert not mirrors_from_data_url.called
     assert normalize_mirror_urls.called
     assert normalize_mirror_urls.call_args == \
         call(sentinel.file_mirrors, in_path)
+
+
+def test_mirrors_from_uri_data(monkeypatch):
+    mirrors_from_http = MagicMock(side_effect=[sentinel.http_mirrors])
+    mirrors_from_file = MagicMock(side_effect=[sentinel.file_mirrors])
+    mirrors_from_data_url = MagicMock(side_effect=[sentinel.data_mirrors])
+    normalize_mirror_urls = MagicMock(side_effect=identity)
+    monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
+                        mirrors_from_http)
+    monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
+                        mirrors_from_file)
+    monkeypatch.setattr("scripts.mirror_client.mirrors_from_data_url",
+                        mirrors_from_data_url)
+    monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
+                        normalize_mirror_urls)
+    data_url = 'data:application/json:{"foo": "bar"}'
+    out = mirrors_from_uri(data_url)
+    assert out == sentinel.data_mirrors
+    assert mirrors_from_data_url.called
+    assert mirrors_from_data_url.call_args == call(data_url)
+    assert not mirrors_from_file.called
+    assert not mirrors_from_http.called
+    assert normalize_mirror_urls.called
+    assert normalize_mirror_urls.call_args == \
+        call(sentinel.data_mirrors, data_url)
 
 
 def test_mirrors_from_environ(monkeypatch):
