@@ -1,0 +1,6 @@
+- project:
+    name: repo-deploy-jobs
+    repo-name:
+      - gated-dummy-master
+    jobs:
+      - "deploy-to-{repo-name}"
