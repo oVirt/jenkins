@@ -1,0 +1,15 @@
+# dummy_suit_master.yumrepos - Yum configuration file for dummy_suit_master
+#
+[main]
+cachedir = /var/cache/yum/$basearch/$releasever
+keepcache = 0
+reposdir = /dev/null
+sslverify = false
+retries = 3
+
+[dummy-master-tested-el7]
+# We include the 'tested' repo to verify if the gated one gets inserted
+baseurl=https://resources-stdci-production.apps.ovirt.org/tested-dummy-master/rpm/el7/
+gpgcheck=0
+skip_if_unavailable = true
+proxy = _none_
