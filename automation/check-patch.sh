@@ -27,7 +27,8 @@ main() {
     if grep -q '\.py$' <<< "$changed_files"; then
         test_python_scripts "$@"
     fi
-    if grep -qE '(data/dummy.spec|collect_artifacts.sh)' <<< "$changed_files"; then
+    local package_files='data/dummy.spec|collect_artifacts.sh|automation/.*\.dummy-rpm\..*'
+    if grep -qE "($package_files)" <<< "$changed_files"; then
         test_rpmbuild "$@"
     fi
     test_secrets_and_credentials
@@ -111,17 +112,9 @@ run_pytest() {
 
 test_rpmbuild() {
     # Build an RPM to test RPM-related processes
-    local version release
+    source automation/build-artifacts.dummy-rpm.sh
 
-    version='0.1.0'
-    release="0.$(git log --oneline | wc -l)"
-    chown "$USER:$USER" data/dummy.spec
-    rpmbuild \
-        --define '_rpmdir exported-artifacts' \
-        --define '_srcrpmdir exported-artifacts' \
-        --define "_version $version" \
-        --define "_release $release" \
-        -ba data/dummy.spec
+    build_dummy_rpm
 }
 
 test_docker_container() {

@@ -30,6 +30,7 @@ sub-stages:
           - automation/check-patch.packages*
           - automation/check-patch.repos*
           - automation/check-patch.environment.yaml*
+          - automation/build-artifacts.dummy-rpm.*
   - jenkins-jobs:
       runif:
         file-changed:
@@ -70,5 +71,6 @@ sub-stages:
           - container/*
           - automation/*.{{ substage }}.*
   - update_images
+  - dummy-rpm
 release-branches:
   'master': 'dummy-master'
