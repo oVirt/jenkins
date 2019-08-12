@@ -131,7 +131,7 @@ def get_test_threads(releases_to_test, available_suits) {
             // `available_suits` Set will work
             String script = "${suit_type}_suite_${release}.sh"
             if(script in available_suits) {
-                def extra_sources = builds.collect { "jenkins:${it}"}.join('\n')
+                def extra_sources = builds.collect { "jenkins:${it}\n"}.join('')
                 return [
                     'stage': "${suit_type}-suit-${release}",
                     'substage': 'default',
