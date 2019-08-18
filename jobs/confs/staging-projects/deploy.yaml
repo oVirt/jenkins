@@ -2,5 +2,7 @@
     name: repo-deploy-jobs
     repo-name:
       - gated-dummy-master
+    image_flatten_schedule:
+      'H * * * *'
     jobs:
       - "deploy-to-{repo-name}"

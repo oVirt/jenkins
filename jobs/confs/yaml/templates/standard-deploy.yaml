@@ -48,6 +48,8 @@
           properties-content: !include-raw:
             - includes/pipeline-env-inject.inc
             - includes/deploy-pipeline-env-inject.inc
+    triggers:
+      - timed: "{image_flatten_schedule|H H H/14 * *}"
     parameters:
       - text:
           name: REPOMAN_SOURCES

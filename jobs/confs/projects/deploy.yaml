@@ -1,7 +1,8 @@
 - project:
     name: repo-deploy-jobs
     repo-name:
-      - gated-dummy-master
+      - gated-dummy-master:
+          image_flatten_schedule: 'H H H/3 * *'
       - gated-ovirt-master
       - gated-ovirt-4.3
     jobs:

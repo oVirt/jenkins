@@ -20,3 +20,6 @@
 - name: 'REPOMAN_SOURCES'
   valueFrom:
     runtimeEnv: 'REPOMAN_SOURCES'
+- name: 'FLATTEN_LAYERS'
+  valueFrom:
+    runtimeEnv: 'FLATTEN_LAYERS'

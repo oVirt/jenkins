@@ -15,21 +15,34 @@ def loader_main(loader) {
 
 def main() {
     def repoman_sources
+    def flatten_layers=false
 
     try {
         stage('find builds to deploy') {
+            flatten_layers = should_flatten_layers()
             repoman_sources = env.REPOMAN_SOURCES ?: get_sources_from_triggers()
             if(!repoman_sources) {
-                error('No repoman sources passed, will not run deployment')
+                if(flatten_layers) {
+                    repoman_sources = '# empty build to flatten image layers\n'
+                } else {
+                    print('No repoman sources passed, will not run deployment')
+                    return
+                }
             }
             def sources_out
-            sources_out =  "will deploy build from the following sources:\n"
-            sources_out += "---------------------------------------------\n"
+            sources_out =  'will deploy build from the following sources:\n'
+            sources_out += '---------------------------------------------\n'
             sources_out += repoman_sources
+            if(flatten_layers) {
+                sources_out += '---------------------------------------------\n'
+                sources_out += 'Would fatten container image layers'
+            }
             print(sources_out)
         }
-        stage("Deploying to '${env.REPO_NAME}' repo") {
-            deploy_to(env.REPO_NAME, repoman_sources)
+        if(repoman_sources) {
+            stage("Deploying to '${env.REPO_NAME}' repo") {
+                deploy_to(env.REPO_NAME, repoman_sources, flatten_layers)
+            }
         }
     } catch(Exception e) {
         email_notify('FAILURE')
@@ -46,7 +59,22 @@ def get_sources_from_triggers() {
     }).join()
 }
 
-def deploy_to(repo_name, repoman_sources) {
+@NonCPS
+def should_flatten_layers() {
+    return is_time_triggered(currentBuild) && (
+        currentBuild.previousBuild.is(null)
+        || !is_time_triggered(currentBuild.previousBuild)
+    )
+}
+
+@NonCPS
+def is_time_triggered(build) {
+    return build.getBuildCauses().any({ cause ->
+        cause._class == 'hudson.triggers.TimerTrigger$TimerTriggerCause'
+    })
+}
+
+def deploy_to(repo_name, repoman_sources, flatten_layers) {
     def url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
     def project = project_lib.new_project(
         name: 'jenkins',
@@ -64,7 +92,10 @@ def deploy_to(repo_name, repoman_sources) {
         'reporting': ['style': 'stdci'],
         'timeout': '3h'
     ]]
-    withEnv(["REPOMAN_SOURCES=$repoman_sources"]) {
+    withEnv([
+        "REPOMAN_SOURCES=$repoman_sources",
+        "FLATTEN_LAYERS=${flatten_layers as String}",
+    ]) {
         stdci_runner_lib.run_std_ci_jobs(
             project: project,
             jobs: jobs,
