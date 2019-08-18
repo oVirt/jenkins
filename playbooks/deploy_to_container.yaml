@@ -22,6 +22,12 @@
 #                           be deployed on
 # - openshift_apps_domain - The domain name under which OpenShift creates route
 #                           domain names (E.g. `apps.ovirt.org`)
+# - flatten_layers        - A boolean value indicating wither to flatten the run
+#                           an incremental S2i build that would flatten the
+#                           container image layers in the repository reducing
+#                           then to a single layer on top of the base builder
+#                           image (Default is False). This variable's value can
+#                           also be given via a capitalized environment variable
 #
 # Prerquisites for running:
 # * You need to have `oc` installed and logged in to OpenShift and set to use
@@ -48,6 +54,9 @@
       zone: "ci"
     _openshift_apps_domain: "{{
       openshift_apps_domain|default('apps.ovirt.org')
+    }}"
+    _flatten_layers: "{{
+      flatten_layers|default(lookup('env', 'FLATTEN_LAYERS'))|bool
     }}"
   tasks:
     - name: Check for mandatory input
@@ -106,15 +115,16 @@
             strategy:
               sourceStrategy:
                 from:
-                  kind: ImageStreamTag
-                  name: "{{ latest_image_tag }}"
-                  namespace: "{{ openshift_project }}"
+                  kind: "{{ 'DockerImage' if _flatten_layers else 'ImageStreamTag' }}"
+                  name: "{{ base_image if _flatten_layers else latest_image_tag }}"
+                  namespace: "{{ '' if _flatten_layers else openshift_project }}"
                 # Since we're using the :latest tag we must unsure we pull the
                 # most recent image for layering to work correctly
                 forcePull: true
                 # We're layering the new image on the older latest image, so we
-                # don't need s2i's incremental build to work in this case
-                incremental: false
+                # don't need s2i's incremental build to work unless we intend to
+                # flatten the layers
+                incremental: "{{ _flatten_layers }}"
             nodeSelector: "{{build_node_selector|default({})}}"
             output:
               to:
