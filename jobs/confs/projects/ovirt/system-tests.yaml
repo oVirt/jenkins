@@ -10,6 +10,9 @@
         - master:
             chroot_distro: el7
       email-to: infra@ovirt.org
+    system_tests-big--key: &system-tests-big-common
+      <<: *system-tests-common
+      node-filter: integ-tests-container-big
 
 - project:
     <<: *system-tests-common
@@ -96,7 +99,7 @@
 
 # Storage Hyper Converged system tests
 - project:
-    <<: *system-tests-common
+    <<: *system-tests-big-common
     name: ovirt-system-hc-tests
     suite_type: hc-basic
     project: 'ovirt-system-tests'
