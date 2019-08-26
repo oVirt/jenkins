@@ -97,6 +97,7 @@
       - ovirt-js-dependencies
       - ovirt-lldp-labeler
       - ovirt-log-collector
+      - ovirt-node-coreos
       - ovirt-node-ng
       - ovirt-node-ng-image
       - ovirt-provider-ovn
