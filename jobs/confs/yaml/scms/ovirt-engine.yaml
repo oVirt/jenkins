@@ -8,7 +8,7 @@
             basedir: ovirt-engine
             scm-name: ovirt-engine
             wipe-workspace: false
-            timeout: 20
+            timeout: 30
 
 - scm:
     name: ovirt-engine-gerrit
@@ -28,7 +28,7 @@
             basedir: ovirt-engine
             scm-name: ovirt-engine
             wipe-workspace: true
-            timeout: 20
+            timeout: 30
             prune: true
             clean:
                 after: true

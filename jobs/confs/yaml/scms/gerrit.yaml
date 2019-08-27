@@ -36,7 +36,7 @@
           skip-tag: false
           per-build-tag: true
           prune: true
-          timeout: 20
+          timeout: 30
           wipe-workspace: false
           clean:
             before: true
