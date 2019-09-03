@@ -10,7 +10,6 @@ main() {
 
     setup_os_repos
     mk_wokspace_dirs
-    remove_packages || failed=true
     release_rpms || failed=true
     extra_packages || failed=true
     user_configuration || failed=true
@@ -34,43 +33,6 @@ main() {
         return 1
     fi
     return 0
-}
-
-remove_packages() {
-    # Remove packages if they are installed
-    local package_list=(python2-paramiko)
-    local tool
-
-    if [[ -e '/usr/bin/dnf' ]]; then
-        # Fedora-specific packages
-        package_list+=()
-        if can_sudo dnf; then
-            tool='dnf'
-        fi
-    else
-        # CentOS-specific packages
-        package_list+=()
-        if can_sudo yum; then
-            tool='yum'
-        fi
-    fi
-    if [[ -z "$tool" ]]; then
-        log WARN "Skipping removal of packages. No permissions."
-        return
-    fi
-    local failed=0
-    for package in "${package_list[@]}"; do
-        if ! "$tool" list --disablerepo='*' "$package"; then
-            log INFO "Skipping $package: not installed"
-            continue
-        fi
-        log INFO "Removing $package"
-        if ! sudo -n "$tool" remove -y "$package"; then
-            log WARN "Could not remove $package"
-            failed=1
-        fi
-    done
-    return $failed
 }
 
 setup_os_repos() {
@@ -307,22 +269,27 @@ extra_packages() {
     # Add extra packages we need for STDCI
     # packages common for all distros
     local package_list=(
-        git mock sed bash procps-ng createrepo_c python-paramiko
-        PyYAML python2-pyxdg python-jinja2 python-py python-six
+        git mock sed bash procps-ng createrepo_c
         distribution-gpg-keys librbd1
     )
     if [[ -e '/usr/bin/dnf' ]]; then
         # Fedora-specific packages
-        package_list+=(python3-PyYAML python3-py python3-pyxdg)
+        package_list+=(python{2,3}-{pyyaml,pyxdg,jinja2,six,py})
         if can_sudo dnf; then
             package_list+=(
-                firewalld haveged libvirt qemu-kvm python3-six
-                nosync libselinux-utils kmod yum
+                firewalld haveged libvirt qemu-kvm python3-paramiko
+                nosync libselinux-utils kmod
             )
+            # Workaround for the following FC30 bug
+            # https://bugzilla.redhat.com/show_bug.cgi?id=1724305
+            package_list+=(nfs-utils libnfsidmap)
         fi
     else
         # CentOS-specific packages
-        package_list+=(python36-PyYAML python36-pyxdg rpm-libs)
+        package_list+=(
+            python-paramiko PyYAML python2-pyxdg python-jinja2 python-py
+            python-six python36-PyYAML python36-pyxdg rpm-libs
+        )
         if can_sudo yum; then
             package_list+=(
                 firewalld haveged libvirt qemu-kvm-rhev
@@ -343,13 +310,13 @@ docker_setup () {
 
     log INFO "$(docker --version)"
 
-    log INFO "Trying to setup Docker python API"
-    if ! verify_packages python2-docker python3-docker; then
+    log INFO "Trying to setup Docker Python3 API"
+    if ! verify_packages python3-docker; then
         # We failed to install the new API version, try to install the old one
-        log WARN "Failed to install new docker API (that is ok)."
-        log INFO "Trying to install old docker API"
-        if ! verify_packages python-docker-py; then
-            log ERROR "Failed to install docker API."
+        log WARN "Failed to install Docker Python3 API (that is ok)."
+        log INFO "Trying to install Docker Python36 API"
+        if ! verify_packages python36-docker; then
+            log ERROR "Failed to install Docker Python36 API."
             return 1
         fi
     fi

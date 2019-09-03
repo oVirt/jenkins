@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python3
 """docker_cleanup.py - Safely remove Docker images with a whitelist filter"""
 
 import logging
@@ -7,10 +7,7 @@ import sys
 import re
 from copy import copy
 from six import iterkeys, iteritems
-try:
-    from .stdci_logging import add_logging_args, setup_console_logging
-except ValueError:
-    from stdci_logging import add_logging_args, setup_console_logging
+from stdci_logging import add_logging_args, setup_console_logging
 
 try:
     import docker
