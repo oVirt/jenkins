@@ -81,6 +81,7 @@
       - otopi
       - ovirt-appliance
       - ovirt-dwh
+      - ovirt-engine
       - ovirt-engine-dashboard
       - ovirt-engine-metrics
       - ovirt-engine-nodejs
