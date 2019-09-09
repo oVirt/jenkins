@@ -72,8 +72,15 @@ def _get_client(args):
     :returns: A client for communicating with a Docker server.
     """
     if args.client != 'from-env':
-        return docker.DockerClient(base_url=args)
-    return docker.from_env()
+        client = docker.DockerClient(base_url=args)
+    else:
+        client = docker.from_env()
+    logger.info('Docker: {} Client: {} Python: {}'.format(
+        client.info().get('ServerVersion', '?'),
+        docker.version,
+        '.'.join(map(str, sys.version_info))
+    ))
+    return client
 
 
 def _get_whitelisted_repos(args):
