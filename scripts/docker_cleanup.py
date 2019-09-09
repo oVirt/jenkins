@@ -8,6 +8,10 @@ import re
 from copy import copy
 from six import iterkeys, iteritems
 from stdci_logging import add_logging_args, setup_console_logging
+import shutil
+import subprocess
+import os
+from pathlib import Path
 
 try:
     import docker
@@ -29,14 +33,33 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    args = parse_args()
-    setup_console_logging(args, logger)
-    client = _get_client(args)
-    remove_containers(client)
-    whitelisted_repos = _get_whitelisted_repos(args)
-    safe_image_cleanup(client, whitelisted_repos)
-    remove_volumes(client)
-    logger.info('Docker image cleanup is done.')
+    try:
+        args = parse_args()
+        setup_console_logging(args, logger)
+        client = _get_client(args)
+        remove_containers(client)
+        whitelisted_repos = _get_whitelisted_repos(args)
+        safe_image_cleanup(client, whitelisted_repos)
+        remove_volumes(client)
+        logger.info('Docker image cleanup is done.')
+    except CorruptedDockerStore:
+        if os.geteuid() == 0:
+            _remove_docker_store()
+        else:
+            logger.debug(
+                "Could not remove the docker store"
+                "because running non root priviliges!"
+            )
+            raise
+
+
+class CorruptedDockerStore(Exception):
+    """This is due to an issue with Red Hat fork installetion which has
+    modification on how the images are stored with a non-standard reference.
+    The solution for this is to delete the /var/lib/docker files and let docker
+    rebuild them.
+    https://github.com/moby/moby/issues/25921
+    """
 
 
 def parse_args():
@@ -339,6 +362,29 @@ def _safe_rm(client, image_id, force=None):
     except ImageNotFoundException:
         logger.debug('Image was already removed.')
         pass
+    except NotFound:
+        raise CorruptedDockerStore(
+            "Detected corrupted docker store.\n"
+            "This is happening because of Red Hat installation that manage "
+            "the Docker Store differently and causing this issue."
+        )
+
+
+def _remove_docker_store():
+    """This function removes brutally docker store which can not
+    be erased from the API. It is usually caused by incompability of
+    docker versions during upgrades.
+    """
+    logger.debug("Trying to stop docker service")
+    subprocess.run(["systemctl", "stop", "docker"], shell=False, check=True)
+    logger.debug("Docker service stopped successfully")
+    logger.debug("Deleting docker store")
+    docker_store_path = Path("/var/lib/docker")
+    map(shutil.rmtree, [str(subdir) for subdir in docker_store_path.iterdir()])
+    logger.debug("Docker store has been deleted successfully")
+    logger.debug("Trying to start docker service")
+    subprocess.run(["systemctl", "start", "docker"], shell=False, check=True)
+    logger.debug("Docker service started successfully")
 
 
 def setupLogging(level=logging.INFO):
