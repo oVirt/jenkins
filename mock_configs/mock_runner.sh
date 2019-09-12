@@ -155,6 +155,22 @@ extract_repo_url_from_mock_conf() {
     grep -oP '(?<=^baseurl=).*$' "$conf_file" | head -n1
 }
 
+extract_chroot_setup_cmd_from_mock_conf() {
+    local conf_file="${1:?}"
+    local output ret
+
+    output="$(grep "^config_opts\['chroot_setup_cmd'\]" "$conf_file")"
+    ret=$?
+
+    if [[ $ret -eq 0 ]]; then
+        echo "$output"
+    elif [[ $ret -eq 1 ]]; then
+        return 0
+    else
+        return $ret
+    fi
+}
+
 try_proxy() {
     local mock_conf_file="${1?}"
     local proxy repo_url
@@ -264,6 +280,7 @@ gen_mock_config() {
         last_gen_repo_name \
         ci_distro \
         ci_stage
+    local chroot_setup_cmd
 
     base_conf="$(get_base_conf "$MOCK_CONF_DIR" "$chroot")"
     tmp_conf="$(get_temp_conf "$chroot" "$dist_label")"
@@ -303,10 +320,11 @@ EOH
     fi
 
     repos=($(get_data_from_file "$script" repos "$dist_label"))
+    chroot_setup_cmd="$(extract_chroot_setup_cmd_from_mock_conf "$base_conf")"
     # if we use custom repos, we don't want to mess with existing cached
     # chroots so we change the root param to have that info too
-    if [[ "${#repos[@]}" -ne 0 || "${#packages[@]}" -ne 0 ]]; then
-        repos_md5=($(echo "${repos[@]}" "${packages[@]}" | sort | md5sum ))
+    if [[ "${#repos[@]}" -ne 0 || "${#packages[@]}" -ne 0 || -n "${chroot_setup_cmd}" ]]; then
+        repos_md5=($(echo "${repos[@]}" "${packages[@]}" "${chroot_setup_cmd}" | sort | md5sum ))
         tmp_chroot="${chroot}-${repos_md5[0]}"
     else
         tmp_chroot="$chroot"
