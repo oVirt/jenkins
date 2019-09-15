@@ -17,7 +17,7 @@ DEFAULT_MOCK_ENV=el7
 # Environment variables set by authentication systems, that point to files that
 # need to be made available inside the mock environment to enable authentication
 # inheritance
-readonly AUTH_ENV_VARS=(KRB5CCNAME SSH_AUTH_SOCK)
+readonly AUTH_ENV_VARS=(KRB5CCNAME SSH_AUTH_SOCK SSL_CLIENT_KEY_FILE)
 # Hardwired env vars we always copy into the mock env
 readonly HW_ENV_VARS=(
     GIT_COMMITTER_{NAME,EMAIL} "${AUTH_ENV_VARS[@]}" SSH_AUTH_USER
