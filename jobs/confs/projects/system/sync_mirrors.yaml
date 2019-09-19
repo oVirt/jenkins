@@ -26,6 +26,7 @@
       - 'mock-copr-fc28'
       - 'mock-copr-fc29'
       - 'mock-copr-fc30'
+      - 'centos-sclo-rh-release'
     arch: x86_64
     jobs:
       - 'system-sync_mirrors-{repo}-{arch}'
