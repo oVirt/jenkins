@@ -7,8 +7,6 @@
           branch: master
       - '4.3':
           branch: ovirt-engine-extension-aaa-jdbc-1.1
-      - '4.2':
-          branch: ovirt-engine-extension-aaa-jdbc-1.1
     stage:
       - check-patch
     distro:

@@ -7,14 +7,11 @@
           branch: master
       - '4.3':
           branch: master
-      - '4.2':
-          branch: master
     stage: check-patch
     distro:
       - el7
       - fc29
     exclude:
-      - { version: '4.2', distro: fc29 }
       - { version: '4.3', distro: fc29 }
     arch: x86_64
     jobs:

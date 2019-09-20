@@ -7,8 +7,6 @@
           branch: master
       - '4.3':
           branch: ovirt-engine-extension-aaa-misc-1.0
-      - '4.2':
-          branch: ovirt-engine-extension-aaa-misc-1.0
     stage:
       - check-patch
     distro:

@@ -8,8 +8,6 @@
           branch: master
       - '4.3':
           branch: sdk_4.3
-      - '4.2':
-          branch: sdk_4.2
     distro:
       - el7
       - fc29
@@ -21,7 +19,6 @@
       - s390x:
           node-filter: s390x
     exclude:
-      - { version: '4.2', distro: fc29 }
       - { version: '4.3', distro: fc29 }
       - {                 arch: s390x,   distro: el7, }
       - {                 arch: ppc64le, distro: fc29, }

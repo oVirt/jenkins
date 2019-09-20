@@ -12,7 +12,6 @@
       - el7
       - fc29
     exclude:
-      - { version: '4.2', distro: fc29 }
       - { version: '4.3', distro: fc29 }
     arch: x86_64
     jobs:
@@ -26,8 +25,6 @@
           branch: master
       - '4.3':
           branch: sdk_4.3
-      - '4.2':
-          branch: sdk_4.2
     jobs:
       - 'java-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
 
@@ -40,8 +37,6 @@
       - master:
           branch: sdk_3.6
       - '4.3':
-          branch: sdk_3.6
-      - '4.2':
           branch: sdk_3.6
     jobs:
       - 'ovirt-engine-sdk-java_{version}_build-artifacts-{distro}-{arch}'
@@ -56,7 +51,5 @@
           branch: master
       - '4.3':
           branch: sdk_4.3
-      - '4.2':
-          branch: sdk_4.2
     jobs:
       - 'java-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'

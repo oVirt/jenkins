@@ -7,8 +7,6 @@
           branch: master
       - '4.3':
           branch: ovirt-engine-extension-aaa-ldap-1.3
-      - '4.2':
-          branch: ovirt-engine-extension-aaa-ldap-1.3
     stage:
       - check-patch
     distro:
