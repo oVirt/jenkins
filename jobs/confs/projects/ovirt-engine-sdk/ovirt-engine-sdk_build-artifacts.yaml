@@ -3,13 +3,14 @@
     project: ovirt-engine-sdk
     trigger: on-change
     version:
-      - 'master':
+      - '4.3':
           branch: sdk_3.6
     stage:
       - check-merged
       - check-patch
     distro:
       - el7
+      - fc29
     arch:
       - x86_64
       - ppc64le:
@@ -44,8 +45,6 @@
     stage: build-artifacts
     project: ovirt-engine-sdk
     version:
-      - master:
-          branch: sdk_3.6
       - '4.3':
           branch: sdk_3.6
     distro:
