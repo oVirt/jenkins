@@ -104,6 +104,7 @@
       - ovirt-release
       - ovirt-setup-lib
       - ovirt-system-tests
+      - ovirt-vmconsole
       - py2exe-py2.7
       - python-windows
       - pywin32-py2.7
