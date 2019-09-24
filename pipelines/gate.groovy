@@ -213,7 +213,7 @@ def build_is_related_to_gate(build, releases_set) {
     return gate_deployments != '__none__' \
         && (
             gate_deployments.is(null)
-            || releases_set.intersect(gate_deployments.split as Set)
+            || releases_set.intersect(gate_deployments.split() as Set)
         )
 }
 
