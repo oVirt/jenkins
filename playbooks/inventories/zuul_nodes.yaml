@@ -12,6 +12,7 @@ all:
             zuul_jobs_project: ovirt-zuul-config
             zuul_projects:
               - jenkins
+              - ovirt-system-tests
         staging:
           hosts:
             jenkins-staging.phx.ovirt.org:
