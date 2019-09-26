@@ -13,12 +13,7 @@ sub-stages:
             stage: check-patch
       runif:
         file-changed:
-          - jobs/confs/shell-scripts/collect_artifacts.sh
-          - jobs/confs/yaml/templates/standard-stage.yaml
-          - jobs/confs/shell-scripts/cleanup_slave.sh
           - jobs/confs/shell-scripts/global_setup*
-          - scripts/docker_cleanup.py
-          - date/Dockerfiles/*
           - data/slave-repos/*
           - mock_configs/*
           - scripts/*.py
@@ -72,5 +67,19 @@ sub-stages:
           - automation/*.{{ substage }}.*
   - update_images
   - dummy-rpm
+  - docker-build-test:
+      arch:
+        - x86_64:
+            distro: [el7, fc28, fc29, fc30, fcraw]
+        - ppc64le:
+            distro: el7
+      runif:
+        file-changed:
+          - scripts/docker_cleanup.py
+          - data/Dockerfiles/*
+          - jobs/confs/shell-scripts/collect_artifacts.sh
+          - jobs/confs/yaml/templates/standard-stage.yaml
+          - jobs/confs/shell-scripts/cleanup_slave.sh
+          - automation/check-patch.{{ substage }}.*
 release-branches:
   'master': 'dummy-master'

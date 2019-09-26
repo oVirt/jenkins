@@ -14,13 +14,6 @@ main() {
     local changed_files
     changed_files="$(python3 $usrc changed-files)"
 
-    # These are the files which are involved with the containers flow
-    local containers_flow="Dockerfiles|collect_artifacts.sh|standard-stage.yaml|cleanup_slave.sh|docker_cleanup.py"
-    if grep -qE "(${containers_flow})" <<< "$changed_files"; then
-        if is_docker_test_arch; then
-            test_docker_container
-        fi
-    fi
     if grep -q '^mock_configs/' <<< "$changed_files"; then
         test_standard_ci "$@"
     fi
@@ -115,14 +108,6 @@ test_rpmbuild() {
     source automation/build-artifacts.dummy-rpm.sh
 
     build_dummy_rpm
-}
-
-test_docker_container() {
-    # Build a dummy container and run it
-    # we also tag it with exported-artifacts to test the export
-    local export_tag="exported-artifacts"
-    docker build -t check_patch_container:$export_tag data/Dockerfiles/
-    docker run check_patch_container:$export_tag
 }
 
 #shellcheck disable=2154
