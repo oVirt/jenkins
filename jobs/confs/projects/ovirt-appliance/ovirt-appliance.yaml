@@ -15,7 +15,7 @@
       - check-patch
       - check-merged
     trigger: 'on-change'
-    node-filter: el7
+    node-filter: 'el7 && 80gb-disk'
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
