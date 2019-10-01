@@ -7,8 +7,6 @@
           branch: master
       - '4.3':
           branch: ovirt-iso-uploader-4.3
-      - '4.2':
-          branch: ovirt-iso-uploader-4.2
     stage:
       - check-patch
       - check-merged
@@ -17,7 +15,6 @@
       - fc29
     exclude:
       - { version: '4.3', distro: fc29 }
-      - { version: '4.2', distro: fc29 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -41,7 +38,6 @@
     <<: *base-params
     name: ovirt-iso-uploader_build-artifacts-manual-any
     version:
-      - '4.2'
       - '4.3'
       - 'master'
     jobs:
