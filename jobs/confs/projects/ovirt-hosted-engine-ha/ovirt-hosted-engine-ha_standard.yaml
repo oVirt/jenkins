@@ -3,8 +3,6 @@
     project: ovirt-hosted-engine-ha
     trigger: on-change
     version:
-      - master:
-          branch: master
       - '4.3':
           branch: v2.3.z
       - '4.2':
@@ -43,6 +41,5 @@
     version:
       - '4.3'
       - '4.2'
-      - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
