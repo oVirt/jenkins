@@ -86,6 +86,7 @@
       - ovirt-engine-metrics
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
+      - ovirt-engine-sdk
       - ovirt-engine-ui-extensions
       - ovirt-engine-wildfly
       - ovirt-engine-yarn
