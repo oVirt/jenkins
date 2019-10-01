@@ -37,7 +37,6 @@
     <<: *base-params
     name: vdsm-jsonrpc-java_build-artifacts-manual-any
     version:
-      - '4.2'
       - '4.3'
       - 'master'
     jobs:
