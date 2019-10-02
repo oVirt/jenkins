@@ -1,3 +1,4 @@
+---
 - project: &base-commons
     name: 'ovirt-release-commons'
     project: ovirt-release
@@ -10,14 +11,16 @@
           branch: ovirt-4.2
     distro:
       - el7
+      - el8
+      - fc30
       - fc29
-      - fcraw
     exclude:
-      - { version: '4.3', distro: fcraw }
-      - { version: '4.3', distro: fc29 }
-      - { version: '4.2', distro: fcraw }
-      - { version: '4.2', distro: fc29 }
-
+      - {version: '4.3', distro: el8}
+      - {version: '4.3', distro: fc29}
+      - {version: '4.3', distro: fc30}
+      - {version: '4.2', distro: el8}
+      - {version: '4.2', distro: fc29}
+      - {version: '4.2', distro: fc30}
 
 - project:
     <<: *base-commons
