@@ -26,6 +26,14 @@
       - 'mock-copr-fc29'
       - 'mock-copr-fc30'
       - 'centos-sclo-rh-release'
+      - 'glusterfs-3.12-7.6-el7'
+      - 'centos-updates-7.6-el7'
+      - 'centos-base-7.6-el7'
+      - 'centos-extras-7.6-el7'
+      - 'centos-ovirt-4.2-7.6-el7'
+      - 'centos-qemu-ev-release-7.6-el7'
+      - 'centos-opstools-release-7.6-el7'
+      - 'centos-sclo-rh-release-7.6-el7'
     arch: x86_64
     jobs:
       - 'system-sync_mirrors-{repo}-{arch}'
