@@ -1,32 +1,14 @@
 // gate.groovy - System patch gating job
 import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper
 import groovy.json.JsonOutput
+import groovy.transform.Field
+
+@Field def project_lib
+@Field def stdci_runner_lib
 
 def on_load(loader){
-    // Copy methods from loader to this script
-    metaClass.run_jjb_script = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'run_jjb_script', args)
-    }
-    metaClass.checkout_jenkins_repo = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
-    }
-    // Need to specify positional arguments explicitly due to a bug in Jenkins
-    // where ...args syntax passes only the 1st argument.
-    metaClass.checkout_repo = {
-        repo_name, refspec='heads/refs/master', url=null, head=null, clone_dir_name=null ->
-        loader.metaClass.invokeMethod(
-            loader, 'checkout_repo',
-            [repo_name, refspec, url, head, clone_dir_name])
-    }
-    metaClass.load_code = {
-        code_file, load_as=null -> loader.metaClass.invokeMethod(
-            loader, 'load_code', [code_file, load_as]
-        )
-    }
-    hook_caller = loader.load_code('libs/stdci_hook_caller.groovy', this)
-    hook_caller = loader.hook_caller
-    project_lib = loader.load_code('libs/stdci_project.groovy', this)
-    stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy', this)
+    project_lib = loader.load_code('libs/stdci_project.groovy')
+    stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy')
 }
 
 def loader_main(loader) {

@@ -1,31 +1,16 @@
 // dummy_change-queue-tester - Dummy change queue tests
 //
-def project_lib
-def ost_project
+import groovy.transform.Field
+
+@Field def project_lib
+
+@Field def ost_project
 
 def on_load(loader) {
-    // Copy methods from loader to this script
-    metaClass.checkout_jenkins_repo = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
-    }
-    metaClass.make_extra_sources = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'make_extra_sources', args)
-    }
-    metaClass.run_jjb_script = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'run_jjb_script', args)
-    }
-    metaClass.checkout_repo = {
-        repo_name, refspec='refs/heads/master', url=null, head=null,
-        clone_dir_name=null -> loader.metaClass.invokeMethod(
-            loader, 'checkout_repo',
-            [repo_name, refspec, url, head, clone_dir_name])
-    }
+    project_lib = loader.load_code('libs/stdci_project.groovy')
 
-    metaClass.load_code = { code_file, load_as=null ->
-        loader.metaClass.invokeMethod(
-            loader, 'load_code', [code_file, load_as])
-    }
-    project_lib = load_code('libs/stdci_project.groovy', this)
+    run_jjb_script = loader.&run_jjb_script
+    checkout_jenkins_repo = loader.&checkout_jenkins_repo
 }
 
 def get_ost_project() {

@@ -1,23 +1,15 @@
 // project.groovy - Groovy library for interacting with STDCI project
 //
+import groovy.transform.Field
+
+@Field def checkout_repo
+@Field def modify_build_parameter
 
 def on_load(loader) {
-    // Copy methods from loader to this script
-    // Need to specify positional arguments explicitly due to a bug in Jenkins
-    // where ...args syntax passes only the 1st argument.
-    metaClass.checkout_repo = {
-        repo_name, refspec='refs/heads/master',
-        url=null, head=null, clone_dir_name=null ->
-        loader.metaClass.invokeMethod(
-            loader, 'checkout_repo',
-            [repo_name, refspec, url, head, clone_dir_name]
-        )
-    }
-    metaClass.modify_build_parameter = { key, value ->
-        loader.metaClass.invokeMethod(
-            loader, 'modify_build_parameter', [key, value]
-        )
-    }
+    def build_params_lib = loader.load_code('libs/build_params.groovy')
+
+    checkout_repo = loader.&checkout_repo
+    modify_build_parameter = build_params_lib.&modify_build_parameter
 }
 
 class Project implements Serializable {

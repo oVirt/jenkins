@@ -1,8 +1,11 @@
 // stdci_hook_caller.groovy - Function for calling hooks from pipelines
 //
+import groovy.transform.Field
+
+@Field def hooks
 
 def on_load(loader) {
-    hooks = loader.load_code('libs/stdci_hooks.groovy', this)
+    hooks = loader.load_code('libs/stdci_hooks.groovy')
 }
 
 def withHook(String hook_name, Closure hooked_code) {

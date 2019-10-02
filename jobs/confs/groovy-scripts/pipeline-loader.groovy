@@ -1,6 +1,8 @@
 // pipeline-loader.groovy - Generic starting point for pipelines. Loads
 //                          the actual pipeline code from the 'jenkins' repo
 //
+import groovy.transform.Field
+
 def pipeline
 
 timestamps {
@@ -41,12 +43,17 @@ timestamps {
     }
 }
 
-def load_code(String code_file, def load_as=null) {
-    def code = load(code_file)
-    if(code.metaClass.respondsTo(code, 'on_load')) {
-        code.on_load(load_as ?: this)
+@Field def loaded_code = [:]
+
+def load_code(String code_file) {
+    if(!(code_file in loaded_code)) {
+        def code = load(code_file)
+        if(code.metaClass.respondsTo(code, 'on_load')) {
+            code.on_load(this)
+        }
+        loaded_code[code_file] = code
     }
-    return code
+    return loaded_code[code_file]
 }
 
 def checkout_jenkins_repo() {

@@ -1,10 +1,15 @@
 // stdci_runner.groovy - Pipeline wrapper for mock_runner
 //
 import org.jenkinsci.plugins.workflow.cps.CpsScript
+import groovy.transform.Field
 
-def project_lib
-def stdci_summary_lib
-def node_lib
+@Field def project_lib
+@Field def stdci_summary_lib
+@Field def node_lib
+
+@Field def run_jjb_script
+@Field def checkout_jenkins_repo
+@Field def withHook
 
 class TestFailedRef implements Serializable {
     // Flag used to indicate that the actual test failed and not something else
@@ -14,25 +19,14 @@ class TestFailedRef implements Serializable {
 }
 
 def on_load(loader) {
-    metaClass.run_jjb_script = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'run_jjb_script', args)
-    }
-    metaClass.checkout_jenkins_repo = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
-    }
-    // Need to specify positional arguments explicitly due to a bug in Jenkins
-    // where ...args syntax passes only the 1st argument.
-    metaClass.checkout_repo = {
-        repo_name, refspec='heads/refs/master', url=null, head=null, clone_dir_name=null ->
-        loader.metaClass.invokeMethod(
-            loader, 'checkout_repo',
-            [repo_name, refspec, url, head, clone_dir_name])
-    }
-    hook_caller = loader.hook_caller
+    project_lib = loader.load_code('libs/stdci_project.groovy')
+    stdci_summary_lib = loader.load_code('libs/stdci_summary.groovy')
+    node_lib = loader.load_code('libs/stdci_node.groovy')
+    def hook_caller = loader.load_code('libs/stdci_hook_caller.groovy')
+
+    run_jjb_script = loader.&run_jjb_script
+    checkout_jenkins_repo = loader.&checkout_jenkins_repo
     withHook = hook_caller.&withHook
-    project_lib = loader.project_lib
-    stdci_summary_lib = loader.load_code('libs/stdci_summary.groovy', this)
-    node_lib = loader.load_code('libs/stdci_node.groovy', this)
 }
 
 def run_std_ci_jobs(Map named_args) {

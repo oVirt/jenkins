@@ -3,8 +3,9 @@
 
 import hudson.model.StringParameterValue
 import org.jenkinsci.plugins.workflow.steps.MissingContextVariableException
+import groovy.transform.Field
 
-def default_template
+@Field def default_template
 
 def on_load(loader) {
     // Default template must be loaded here because it's the only place where

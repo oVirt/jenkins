@@ -3,42 +3,25 @@
 
 import hudson.model.ParametersAction
 import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper
+import groovy.transform.Field
 
-def project_lib
-def stdci_runner_lib
-
-String std_ci_stage
-def project
-def jobs
-def queues
-def previous_build
-Boolean wait_for_previous_build
+@Field def project_lib
+@Field def stdci_runner_lib
 
 def on_load(loader){
-    // Copy methods from loader to this script
-    metaClass.run_jjb_script = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'run_jjb_script', args)
-    }
-    metaClass.checkout_jenkins_repo = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
-    }
-    // Need to specify positional arguments explicitly due to a bug in Jenkins
-    // where ...args syntax passes only the 1st argument.
-    metaClass.checkout_repo = {
-        repo_name, refspec='heads/refs/master', url=null, head=null, clone_dir_name=null ->
-        loader.metaClass.invokeMethod(
-            loader, 'checkout_repo',
-            [repo_name, refspec, url, head, clone_dir_name])
-    }
-    metaClass.load_code = {
-        code_file, load_as=null -> loader.metaClass.invokeMethod(
-            loader, 'load_code', [code_file, load_as]
-        )
-    }
-    hook_caller = loader.load_code('libs/stdci_hook_caller.groovy', this)
-    project_lib = loader.load_code('libs/stdci_project.groovy', this)
-    stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy', this)
+    project_lib = loader.load_code('libs/stdci_project.groovy')
+    stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy')
+    def build_params_lib = loader.load_code('libs/build_params.groovy')
+
+    modify_build_parameter = build_params_lib.&modify_build_parameter
 }
+
+@Field String std_ci_stage
+@Field def project
+@Field def jobs
+@Field def queues
+@Field def previous_build
+@Field Boolean wait_for_previous_build
 
 def loader_main(loader) {
     stage('Detecting STD-CI jobs') {
@@ -101,7 +84,7 @@ def loader_main(loader) {
             if(previous_build.result == null) {
                 wait_for_previous_build = true
             } else {
-                copy_previos_build_artifacts()
+                copy_previos_build_artifacts(previous_build)
             }
         }
     }
@@ -117,7 +100,7 @@ def main() {
                         return previous_build.result != null
                     }
                     node(env?.LOADER_NODE_LABEL) {
-                        copy_previos_build_artifacts()
+                        copy_previos_build_artifacts(previous_build)
                     }
                 } else {
                     echo "Done already."
@@ -199,23 +182,6 @@ def set_gerrit_automerge(project, stage_name) {
             )
         }
     }
-}
-
-@NonCPS
-def modify_build_parameter(String key, String value) {
-    def build = currentBuild.rawBuild
-    def params_list = new ArrayList<StringParameterValue>()
-    params_list.add(new StringParameterValue(key, value))
-    def new_params_action = null
-    def old_params_action = build.getAction(ParametersAction.class)
-    if (old_params_action != null) {
-        // We need to keep old params
-        build.actions.remove(old_params_action)
-        new_params_action = old_params_action.createUpdated(params_list)
-    } else {
-        new_params_action = new ParametersAction(params_list)
-    }
-    build.actions.add(new_params_action)
 }
 
 @NonCPS
@@ -403,7 +369,7 @@ def find_oldest_same_build(std_ci_stage, project) {
     return new RunWrapper(same_builds.last(), false)
 }
 
-def copy_previos_build_artifacts() {
+def copy_previos_build_artifacts(previous_build) {
     if(previous_build.result != 'SUCCESS') {
         error 'Previous build failed'
     }

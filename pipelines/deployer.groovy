@@ -1,28 +1,14 @@
 // deployer.groovy - Jenkins pipeline script for deploying packages to
 //                   repos hosted on OpenShift
 //
-def on_load(loader) {
-    // Copy methods from loader to this script
-    metaClass.checkout_repo = {
-        repo_name, refspec='refs/heads/master', url=null, head=null,
-        clone_dir_name=null -> loader.metaClass.invokeMethod(
-            loader, 'checkout_repo',
-            [repo_name, refspec, url, head, clone_dir_name])
-    }
-    metaClass.checkout_jenkins_repo = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
-    }
-    metaClass.run_jjb_script = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'run_jjb_script', args)
-    }
+import groovy.transform.Field
 
-    metaClass.load_code = { code_file, load_as=null ->
-        loader.metaClass.invokeMethod(
-            loader, 'load_code', [code_file, load_as])
-    }
-    hook_caller = loader.load_code('libs/stdci_hook_caller.groovy', this)
-    project_lib = load_code('libs/stdci_project.groovy', this)
-    stdci_runner_lib = load_code('libs/stdci_runner.groovy', this)
+@Field def project_lib
+@Field def stdci_runner_lib
+
+def on_load(loader) {
+    project_lib = loader.load_code('libs/stdci_project.groovy')
+    stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy')
 }
 
 def loader_main(loader) {

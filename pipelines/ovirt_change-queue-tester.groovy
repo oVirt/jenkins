@@ -1,36 +1,19 @@
 // ovirt_change-queue-tester - Change queue tests for oVirt
 //
-def project_lib
-def stdci_runner_lib
+import groovy.transform.Field
 
-def ovirt_release
-def ost_project
+@Field def project_lib
+@Field def stdci_runner_lib
+
+@Field def ovirt_release
+@Field def ost_project
 
 
 def on_load(loader) {
-    // Copy methods from loader to this script
-    metaClass.checkout_repo = {
-        repo_name, refspec='refs/heads/master', url=null, head=null,
-        clone_dir_name=null -> loader.metaClass.invokeMethod(
-            loader, 'checkout_repo',
-            [repo_name, refspec, url, head, clone_dir_name])
-    }
-    metaClass.checkout_jenkins_repo = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
-    }
-    metaClass.run_jjb_script = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'run_jjb_script', args)
-    }
+    project_lib = loader.load_code('libs/stdci_project.groovy')
+    stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy')
 
     ovirt_release = get_queue_ovirt_release()
-
-    metaClass.load_code = { code_file, load_as=null ->
-        loader.metaClass.invokeMethod(
-            loader, 'load_code', [code_file, load_as])
-    }
-    hook_caller = loader.hook_caller
-    project_lib = load_code('libs/stdci_project.groovy', this)
-    stdci_runner_lib = load_code('libs/stdci_runner.groovy', this)
 }
 
 def extra_load_change_data_py(change_list_var, mirrors_var) {

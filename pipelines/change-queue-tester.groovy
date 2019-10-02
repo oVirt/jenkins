@@ -1,36 +1,17 @@
 // change-queue-tester - Test pipeline for change queues
 //
-def test_functions
+import groovy.transform.Field
+
+@Field def test_functions
 
 def on_load(loader) {
-    // Copy methods from loader to this script
-    metaClass.checkout_repo = {
-        repo_name, refspec='refs/heads/master', url=null, head=null,
-        clone_dir_name=null -> loader.metaClass.invokeMethod(
-            loader, 'checkout_repo',
-            [repo_name, refspec, url, head, clone_dir_name])
-    }
-    metaClass.checkout_jenkins_repo = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'checkout_jenkins_repo', args)
-    }
-    metaClass.run_jjb_script = { ...args ->
-        loader.metaClass.invokeMethod(loader, 'run_jjb_script', args)
-    }
-
-    // Need to copy 'load_code' in order to allow the actual
-    // *.groovy file with the tests to use it.
-    metaClass.load_code = { code_file, load_as=null ->
-        loader.metaClass.invokeMethod(
-            loader, 'load_code', [code_file, load_as])
-    }
-    hook_caller = loader.load_code('libs/stdci_hook_caller.groovy', this)
     // Every change queue tester job is supposed to have another *.groovy file
     // that contains the actual testing functions
     def tf_file = env.JOB_NAME.replaceFirst(
         '^(.*?)(-[^-]*)?(_change-queue-tester)$', '$1$3.groovy'
     )
     print "Loading change queue test functions from: $tf_file"
-    test_functions = loader.load_code(tf_file, this)
+    test_functions = loader.load_code(tf_file)
 }
 
 def loader_main(loader) {
