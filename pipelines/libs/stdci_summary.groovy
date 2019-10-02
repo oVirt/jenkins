@@ -5,9 +5,11 @@ import hudson.model.StringParameterValue
 import org.jenkinsci.plugins.workflow.steps.MissingContextVariableException
 import groovy.transform.Field
 
+@Field def loader_node
 @Field def default_template
 
 def on_load(loader) {
+    loader_node = loader.&loader_node
     // Default template must be loaded here because it's the only place where
     // we have access to 'jenkins/' dir.
     default_template = get_template()
@@ -94,7 +96,7 @@ def generate_summary(
         archiveArtifacts artifacts: summary_file
     } catch(MissingContextVariableException) {
         if(allocate_node) {
-            node(env?.LOADER_NODE_LABEL) {
+            loader_node() {
                 writeFile([file: summary_file, text: summary])
                 archiveArtifacts artifacts: summary_file
             }

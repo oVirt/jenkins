@@ -22,14 +22,14 @@ def loader_main(loader) {
 }
 
 def main() {
-    node(env?.LOADER_NODE_LABEL) {
+    loader_node() {
         stage('loading code') {
             dir("exported-artifacts") { deleteDir() }
             def checkoutData = checkout_jenkins_repo()
             if(checkoutData.CODE_FROM_EVENT) {
                 echo "Code loaded from STDCI repo event"
             }
-            if (!env?.LOADER_NODE_LABEL?.endsWith('-container')) {
+            if (!env?.NODE_IS_EPHEMERAL?.toBoolean()) {
                 run_jjb_script('cleanup_slave.sh')
                 run_jjb_script('global_setup.sh')
             }
@@ -66,7 +66,7 @@ def main() {
                 pipeline.main()
             }
         }
-        if (!env?.LOADER_NODE_LABEL?.endsWith('-container')) {
+        if (!env?.NODE_IS_EPHEMERAL?.toBoolean()) {
             run_jjb_script('global_setup_apply.sh')
         }
     }
@@ -76,6 +76,15 @@ def main() {
     ) {
         withEnv(['RUNNING_IN_LOADER=true']) {
             pipeline.main()
+        }
+    }
+}
+
+def loader_node(Closure code) {
+    node(env?.LOADER_NODE_LABEL) {
+        def node_is_ephemeral = env?.LOADER_NODE_LABEL?.endsWith('-container')
+        withEnv(["NODE_IS_EPHEMERAL=$node_is_ephemeral"]) {
+            code()
         }
     }
 }

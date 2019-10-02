@@ -5,11 +5,14 @@ import hudson.model.ParametersAction
 import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper
 import groovy.transform.Field
 
+@Field def loader_node
+
 def on_load(loader){
     project_lib = loader.load_code('libs/stdci_project.groovy')
     stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy')
     def build_params_lib = loader.load_code('libs/build_params.groovy')
 
+    loader_node = loader.&loader_node
     modify_build_parameter = build_params_lib.&modify_build_parameter
 }
 
@@ -96,7 +99,7 @@ def main() {
                         echo "Waiting for build ${previous_build.number} to finish"
                         return previous_build.result != null
                     }
-                    node(env?.LOADER_NODE_LABEL) {
+                    loader_node() {
                         copy_previos_build_artifacts(previous_build)
                     }
                 } else {

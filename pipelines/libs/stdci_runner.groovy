@@ -5,6 +5,7 @@ import groovy.transform.Field
 
 @Field def run_jjb_script
 @Field def checkout_jenkins_repo
+@Field def loader_node
 @Field def withHook
 
 class TestFailedRef implements Serializable {
@@ -22,6 +23,7 @@ def on_load(loader) {
 
     run_jjb_script = loader.&run_jjb_script
     checkout_jenkins_repo = loader.&checkout_jenkins_repo
+    loader_node = loader.&loader_node
     withHook = hook_caller.&withHook
 }
 
@@ -47,7 +49,7 @@ def run_std_ci_jobs(project, jobs, mirrors=null, extra_sources=null) {
         }
         parallel branches
     } else {
-        node(env?.LOADER_NODE_LABEL) {
+        loader_node() {
             report.no_jobs()
         }
     }
