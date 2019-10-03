@@ -3,10 +3,6 @@
 import org.jenkinsci.plugins.workflow.cps.CpsScript
 import groovy.transform.Field
 
-@Field def project_lib
-@Field def stdci_summary_lib
-@Field def node_lib
-
 @Field def run_jjb_script
 @Field def checkout_jenkins_repo
 @Field def withHook

@@ -2,8 +2,6 @@
 //
 import groovy.transform.Field
 
-@Field def test_functions
-
 def on_load(loader) {
     // Every change queue tester job is supposed to have another *.groovy file
     // that contains the actual testing functions

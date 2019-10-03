@@ -2,9 +2,6 @@
 //
 import groovy.transform.Field
 
-@Field def project_lib
-@Field def stdci_runner_lib
-
 @Field def ovirt_release
 @Field def ost_project
 

@@ -3,9 +3,6 @@ import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper
 import groovy.json.JsonOutput
 import groovy.transform.Field
 
-@Field def project_lib
-@Field def stdci_runner_lib
-
 def on_load(loader){
     project_lib = loader.load_code('libs/stdci_project.groovy')
     stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy')

@@ -2,8 +2,6 @@
 //
 import groovy.transform.Field
 
-@Field def project_lib
-
 @Field def ost_project
 
 def on_load(loader) {
