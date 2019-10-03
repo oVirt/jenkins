@@ -9,7 +9,10 @@ timestamps {
     node(env?.LOADER_NODE_LABEL) {
         stage('loading code') {
             dir("exported-artifacts") { deleteDir() }
-            checkout_jenkins_repo()
+            def checkoutData = checkout_jenkins_repo()
+            if(checkoutData.CODE_FROM_EVENT) {
+                echo "Code loaded from STDCI repo event"
+            }
             if (!env?.LOADER_NODE_LABEL?.endsWith('-container')) {
                 run_jjb_script('cleanup_slave.sh')
                 run_jjb_script('global_setup.sh')
@@ -57,12 +60,22 @@ def load_code(String code_file) {
 }
 
 def checkout_jenkins_repo() {
-    def url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
-    return checkout_repo(
+    String url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
+    String configured_url = env.STDCI_SCM_URL ?: "${url_prefix}/jenkins"
+    String event_url = "https://${env.GERRIT_NAME}/${env.GERRIT_PROJECT}"
+    String refspec = env.STDCI_SCM_REFSPEC ?: 'refs/heads/master'
+    def code_from_event = false
+    if(configured_url == event_url) {
+        refspec = env.GERRIT_REFSPEC
+        code_from_event = true
+    }
+    def checkoutData = checkout_repo(
         repo_name: 'jenkins',
-        refspec: env.STDCI_SCM_REFSPEC ?: 'refs/heads/master',
-        url: env.STDCI_SCM_URL ?: "${url_prefix}/jenkins"
+        refspec: refspec,
+        url: configured_url,
     )
+    checkoutData.CODE_FROM_EVENT = code_from_event
+    return checkoutData
 }
 
 def checkout_repo(
