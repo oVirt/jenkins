@@ -111,13 +111,20 @@
             _sources_table: "{{ sources_table|default(
               lookup('file', zuul.executor.log_root + '/source_table.txt')
             ) }}"
+            job_params:
+              CHECKED_COMMITS: "{{ _sources_table }}"
+              STD_CI_CLONE_URL: "https://{{ zuul.project.canonical_name }}"
+              STD_CI_REFSPEC: "{{ zuul.ref }}"
+              STD_CI_CHANGE_URL: "{{ zuul.change_url }}"
           command: |
             ssh localhost -p {{ jenkins_master_ssh_port | quote }} \
               -o StrictHostKeyChecking=no \
               -o UserKnownHostsFile=/dev/null \
               -o ServerAliveInterval=300 \
               build -s \
-              -p CHECKED_COMMITS={{ _sources_table | quote | quote }} \
+              {% for var, val in job_params.items() %}
+                -p {{var}}={{ val | quote | quote }} \
+              {% endfor %}
               {{ job_name | quote }}
           register: build_output
       always:
