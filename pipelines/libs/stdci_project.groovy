@@ -88,7 +88,11 @@ def get_project_from_gerrit() {
         // Change is not merged. Initialize whitelist checking function
         project.check_whitelist = {
             def whitelist_sh = readFile("jenkins/scripts/whitelist_filter.sh")
-            def is_whitelisted = sh returnStatus: true, script: whitelist_sh
+            def is_whitelisted = sh(
+                label: 'whitelist_filter.sh',
+                returnStatus: true,
+                script: whitelist_sh,
+            )
             return is_whitelisted == 0
         }
         return project
@@ -107,7 +111,7 @@ def get_generic_queue_build_args(
 ) {
     def json_file = "${queue}_build_args.json"
     withEnv(['PYTHONPATH=jenkins']) {
-        sh """\
+        def get_generic_queue_build_args = """\
             #!/usr/bin/env python
             from os import environ
             from scripts.change_queue import JenkinsChangeQueueClient
@@ -125,6 +129,7 @@ def get_generic_queue_build_args(
             change.set_current_build_from_env()
             jcqc.add(change).as_pipeline_build_step_json('${json_file}')
         """.stripIndent()
+        sh label: 'get_generic_queue_build_args', script: get_generic_queue_build_args
     }
     def build_args = readJSON(file: json_file)
     return build_args
@@ -241,6 +246,7 @@ def update_project_upstream_sources(Project project) {
     dir(project.clone_dir_name) {
         sshagent(['std-ci-git-push-credentials']) {
             def ret = sh(
+                label: 'usrc.py update',
                 returnStatus: true,
                 script: """
                 echo "Updating upstream sources."
@@ -265,7 +271,11 @@ def update_project_upstream_sources(Project project) {
 def is_gerrit_change_merged() {
     // Check if the change is merged. Requires Gerrit Trigger env params!
     def change_merged_sh = readFile("jenkins/scripts/check_if_merged.sh")
-    def is_merged = sh returnStatus: true, script: change_merged_sh
+    def is_merged = sh(
+        label: 'check_if_merged.sh',
+        returnStatus: true,
+        script: change_merged_sh
+    )
     return is_merged == 0
 }
 
