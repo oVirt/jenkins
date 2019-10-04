@@ -1,0 +1,1 @@
+../jobs/confs/groovy-scripts/pipeline-loader.groovy

@@ -5,7 +5,23 @@ import groovy.transform.Field
 
 def pipeline
 
-timestamps {
+if(env.RUNNING_IN_LOADER?.toBoolean()) {
+    // This code runs if this file was loaded as pipeline
+    return this
+} else {
+    // This code runs if this file was embedded directly as the script of a
+    // pipeline job, it is the only part of this file that cannot be reloaded
+    // dynamically
+    timestamps { main() }
+}
+
+def loader_main(loader) {
+    // Since this script can also be used as a pipeline, we need to define this
+    // function so that the main() function runs outside of the loader node and
+    // can allocate its own loader node
+}
+
+def main() {
     node(env?.LOADER_NODE_LABEL) {
         stage('loading code') {
             dir("exported-artifacts") { deleteDir() }
@@ -18,21 +34,37 @@ timestamps {
                 run_jjb_script('global_setup.sh')
             }
             dir('jenkins') {
-                def pipeline_file = get_pipeline_for_job(env.JOB_NAME)
+                def pipeline_file
+                if(
+                    checkoutData.CODE_FROM_EVENT
+                    && !(env.RUNNING_IN_LOADER?.toBoolean())
+                    && loader_was_modified()
+                ) {
+                    echo "Going to reload the pipeline loader"
+                    pipeline_file = 'pipeline-loader.groovy'
+                } else {
+                    pipeline_file = get_pipeline_for_job(env.JOB_NAME)
+                }
                 if(pipeline_file == null) {
                     error "Could not find a matching pipeline for this job"
                 }
                 echo "Loading pipeline script: '${pipeline_file}'"
                 dir('pipelines') {
-                    pipeline = load_code(pipeline_file)
+                    withEnv(['RUNNING_IN_LOADER=true']) {
+                        pipeline = load_code(pipeline_file)
+                    }
                 }
             }
         }
         echo "Launching pipeline script"
         if(pipeline.metaClass.respondsTo(pipeline, 'loader_main')) {
-            pipeline.loader_main(this)
+            withEnv(['RUNNING_IN_LOADER=true']) {
+                pipeline.loader_main(this)
+            }
         } else {
-            pipeline.main()
+            withEnv(['RUNNING_IN_LOADER=true']) {
+                pipeline.main()
+            }
         }
         if (!env?.LOADER_NODE_LABEL?.endsWith('-container')) {
             run_jjb_script('global_setup_apply.sh')
@@ -42,7 +74,9 @@ timestamps {
         pipeline.metaClass.respondsTo(pipeline, 'loader_main') &&
         pipeline.metaClass.respondsTo(pipeline, 'main')
     ) {
-        pipeline.main()
+        withEnv(['RUNNING_IN_LOADER=true']) {
+            pipeline.main()
+        }
     }
 }
 
@@ -139,6 +173,20 @@ def checkout_repo(Map named_args) {
     } else {
         return checkout_repo(named_args.repo_name)
     }
+}
+
+def loader_was_modified() {
+    def result = sh(
+        label: 'pipeline-loader diff check',
+        returnStatus: true,
+        script: '''\
+            usrc="$WORKSPACE/jenkins/scripts/usrc.py"
+            [[ -x "$usrc" ]] || usrc="$WORKSPACE/jenkins/scripts/usrc_local.py"
+
+            "$usrc" --log -d changed-files | grep 'pipeline-loader.groovy$'
+        '''
+    )
+    return (result == 0)
 }
 
 def run_jjb_script(script_name) {
