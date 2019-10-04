@@ -235,9 +235,7 @@ def checkout_repo(
             ]
         )
         sshagent(['std-ci-git-push-credentials']) {
-            sh """
-                WORKSPACE="\${WORKSPACE:-\$(dirname \$PWD)}"
-
+            sh label: 'usrc.py get', script: """
                 usrc="\$WORKSPACE/jenkins/scripts/usrc.py"
                 [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/scripts/usrc_local.py"
 
@@ -300,11 +298,8 @@ def loader_was_modified() {
 
 def run_jjb_script(script_name) {
     def script_path = "jenkins/jobs/confs/shell-scripts/$script_name"
-    echo "Running JJB script: ${script_path}"
     def script = readFile(script_path)
-    withEnv(["WORKSPACE=${pwd()}"]) {
-        sh script
-    }
+    sh label: script_name, script: script
 }
 
 @NonCPS
