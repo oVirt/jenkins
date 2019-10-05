@@ -96,18 +96,23 @@ def load_code(String code_file) {
 def checkout_jenkins_repo() {
     String url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
     String configured_url = env.STDCI_SCM_URL ?: "${url_prefix}/jenkins"
+    def jenkins_urls = \
+        ([configured_url] as Set) \
+        + ((env.STDCI_SCM_URL_ALIASES?.split() ?: []) as Set)
     String event_url = \
         env.STD_CI_CLONE_URL ?: "https://${env.GERRIT_NAME}/${env.GERRIT_PROJECT}"
     String refspec = env.STDCI_SCM_REFSPEC ?: 'refs/heads/master'
+    String url = configured_url
     def code_from_event = false
-    if(configured_url == event_url) {
+    if(event_url in jenkins_urls) {
         refspec = env.STD_CI_REFSPEC ?: env.GERRIT_REFSPEC
+        url = event_url
         code_from_event = true
     }
     def checkoutData = checkout_repo(
         repo_name: 'jenkins',
         refspec: refspec,
-        url: configured_url,
+        url: url,
     )
     checkoutData.CODE_FROM_EVENT = code_from_event
     return checkoutData

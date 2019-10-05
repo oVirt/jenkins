@@ -28,6 +28,7 @@
       - default-wrapper
     default-scm-url-prefix: https://gerrit.ovirt.org
     stdci-scm-url: https://gerrit.ovirt.org/jenkins
+    stdci-scm-url-aliases: http://zuul01.phx.ovirt.org/git/jenkins
     stdci-scm-refspec: refs/heads/master
     clone-dir-name: ''
     trigger-schedule: '@midnight'
