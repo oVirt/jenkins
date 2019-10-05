@@ -30,4 +30,16 @@
 
               repo_url:branch:refspec
 
+      - string:
+          name: STD_CI_CLONE_URL
+          description: A Git repo URL of the project that is being tested
+      - string:
+          name: STD_CI_REFSPEC
+          description: Refspec to the Git commit that is mainly being tested
+      - string:
+          name: STD_CI_CHANGE_URL
+          description: |
+            URL to UI showing the change being testd, this is mostly for
+            display/logging purposes
+
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
