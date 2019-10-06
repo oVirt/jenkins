@@ -27,13 +27,10 @@ sub-stages:
           - automation/check-patch.environment.yaml*
           - automation/build-artifacts.dummy-rpm.*
   - jenkins-jobs:
-      stages:
-        - check-patch:
-            runif:
-              file-changed:
-                - jobs/*
-                - automation/*.jenkins-jobs.*
-        - check-merged
+      runif:
+        file-changed:
+          - jobs/*
+          - automation/*.jenkins-jobs.*
   - build-stdci-container:
       runif:
         file-changed:

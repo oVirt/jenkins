@@ -2,10 +2,7 @@
 
 JJB_PROJECTS_FOLDER="${JJB_PROJECTS_FOLDER:?must be defined in Jenkins instance}"
 
-source scripts/mk_refspec_include.sh
-
 run_jjb() {
-    mk_refspec_include
     jenkins-jobs --allow-empty "$@"
 }
 

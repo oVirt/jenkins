@@ -13,7 +13,6 @@ JENKINS_URL="${JENKINS_URL:?must be provided in secrets file}"
 # We're just gonna assume this script runs when $PWD is the project root since
 # its essentially meant to be triggered by STDCI
 source scripts/jjb_diff.sh
-source scripts/mk_refspec_include.sh
 source automation/stdci_venv.sh
 
 main() {
@@ -110,7 +109,6 @@ get_deleted_jobs() {
 
 run_jjb() {
     local conf_file success=1
-    mk_refspec_include
     conf_file="$(mktemp -t .jenkinsjobsrc.XXXXX)"
     get_jjb_conf_file > "$conf_file"
     # Telling JJB where to find the CA trust bundle if it needs to use SSL
