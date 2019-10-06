@@ -4,6 +4,7 @@
     email-recipients: 'infra@ovirt.org'
     email-tag: 'oVirt CI staging'
     project-pattern: '.*'
+    loader-node-label: ''
     jobs:
       - 'standard-enqueue'
 
@@ -12,6 +13,7 @@
     queue-name:
       - dummy-master
       - dummy-1.0
+    loader-node-label: ''
     jobs:
       - '{queue-name}_change-queue'
       - '{queue-name}_change-queue-tester'

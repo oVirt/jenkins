@@ -11,19 +11,10 @@
           days-to-keep: 14
           artifact-num-to-keep: 60
       - inject:
-          properties-content: |
-            SCM_NOTIFICATION_CREDENTIALS=''
-            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
-            STDCI_SCM_URL={stdci-scm-url}
-            STDCI_SCM_REFSPEC={stdci-scm-refspec}
-            STD_CI_STAGE=poll-upstream-sources
-            STD_CI_CLONE_URL=https://{gerrit-server}/{gerrit-subpath}{project}.git
-            STD_VERSION={branch}
-            CLONE_DIR_NAME={clone-dir-name}
-            GIT_AUTHOR_NAME={git-config-name}
-            GIT_AUTHOR_EMAIL={git-config-email}
-            GIT_COMMITTER_NAME={git-config-name}
-            GIT_COMMITTER_EMAIL={git-config-email}
+          properties-content: !include-raw:
+            - includes/pipeline-env-inject.inc
+            - includes/poll-pipeline-env-inject.inc
+            - includes/gerrit-poll-pipeline-env-inject.inc
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
 
 - job-template:
@@ -38,17 +29,8 @@
           days-to-keep: 14
           artifact-num-to-keep: 60
       - inject:
-          properties-content: |
-            SCM_NOTIFICATION_CREDENTIALS=''
-            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
-            STDCI_SCM_URL={stdci-scm-url}
-            STDCI_SCM_REFSPEC={stdci-scm-refspec}
-            STD_CI_STAGE='poll-upstream-sources'
-            STD_CI_CLONE_URL='https://github.com/{org}/{project}.git'
-            STD_VERSION={branch}
-            CLONE_DIR_NAME={clone-dir-name}
-            GIT_AUTHOR_NAME={git-config-name}
-            GIT_AUTHOR_EMAIL={git-config-email}
-            GIT_COMMITTER_NAME={git-config-name}
-            GIT_COMMITTER_EMAIL={git-config-email}
+          properties-content: !include-raw:
+            - includes/pipeline-env-inject.inc
+            - includes/poll-pipeline-env-inject.inc
+            - includes/gh-poll-pipeline-env-inject.inc
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy

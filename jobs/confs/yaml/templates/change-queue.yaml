@@ -11,14 +11,8 @@
       - build-discarder:
           days-to-keep: 14
       - inject:
-          properties-content: |
-            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
-            STDCI_SCM_URL={stdci-scm-url}
-            STDCI_SCM_REFSPEC={stdci-scm-refspec}
-            GIT_AUTHOR_NAME={git-config-name}
-            GIT_AUTHOR_EMAIL={git-config-email}
-            GIT_COMMITTER_NAME={git-config-name}
-            GIT_COMMITTER_EMAIL={git-config-email}
+          properties-content: !include-raw:
+            - includes/pipeline-env-inject.inc
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
 
 - job-template:
@@ -29,12 +23,6 @@
       - build-discarder:
           days-to-keep: 14
       - inject:
-          properties-content: |
-            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
-            STDCI_SCM_URL={stdci-scm-url}
-            STDCI_SCM_REFSPEC={stdci-scm-refspec}
-            GIT_AUTHOR_NAME={git-config-name}
-            GIT_AUTHOR_EMAIL={git-config-email}
-            GIT_COMMITTER_NAME={git-config-name}
-            GIT_COMMITTER_EMAIL={git-config-email}
+          properties-content: !include-raw:
+            - includes/pipeline-env-inject.inc
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy

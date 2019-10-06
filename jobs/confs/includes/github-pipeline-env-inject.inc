@@ -1,0 +1,1 @@
+SCM_NOTIFICATION_CREDENTIALS={github-auth-id}

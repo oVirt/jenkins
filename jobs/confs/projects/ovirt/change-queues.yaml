@@ -4,6 +4,7 @@
     email-recipients: 'infra@ovirt.org'
     email-tag: 'oVirt CI'
     project-pattern: '.*'
+    loader-node-label: ''
     jobs:
       - 'standard-enqueue'
 
@@ -14,6 +15,7 @@
       - ovirt-4.3
     deploy-user: deploy-ovirt-experimental
     deploy-host: resources.ovirt.org
+    loader-node-label: ''
     jobs:
       - '{queue-name}_change-queue'
       - '{queue-name}_change-queue-tester'

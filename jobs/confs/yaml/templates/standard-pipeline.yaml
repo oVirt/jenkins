@@ -9,18 +9,9 @@
       - github:
           url: 'https://github.com/{org}/{project}'
       - inject:
-          properties-content: |
-            SCM_NOTIFICATION_CREDENTIALS={github-auth-id}
-            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
-            STDCI_SCM_URL={stdci-scm-url}
-            STDCI_SCM_URL_ALIASES={stdci-scm-url-aliases}
-            STDCI_SCM_REFSPEC={stdci-scm-refspec}
-            CLONE_DIR_NAME={clone-dir-name}
-            GIT_AUTHOR_NAME={git-config-name}
-            GIT_AUTHOR_EMAIL={git-config-email}
-            GIT_COMMITTER_NAME={git-config-name}
-            GIT_COMMITTER_EMAIL={git-config-email}
-            LOADER_NODE_LABEL={loader-node-label}
+          properties-content: !include-raw:
+            - includes/github-pipeline-env-inject.inc
+            - includes/pipeline-env-inject.inc
     triggers:
       - github-pull-request: &github-pull-trigger-base
           org-list:
@@ -164,16 +155,7 @@
           days-to-keep: 14
           artifact-num-to-keep: 60
       - inject:
-          properties-content: |
-            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
-            STDCI_SCM_URL={stdci-scm-url}
-            STDCI_SCM_URL_ALIASES={stdci-scm-url-aliases}
-            STDCI_SCM_REFSPEC={stdci-scm-refspec}
-            GIT_AUTHOR_NAME={git-config-name}
-            GIT_AUTHOR_EMAIL={git-config-email}
-            GIT_COMMITTER_NAME={git-config-name}
-            GIT_COMMITTER_EMAIL={git-config-email}
-            LOADER_NODE_LABEL={loader-node-label}
+          properties-content: !include-raw: includes/pipeline-env-inject.inc
     parameters:
       - string:
           name: STD_CI_CLONE_URL
@@ -204,19 +186,9 @@
           days-to-keep: 14
           artifact-num-to-keep: 60
       - inject:
-          properties-content: |
-            GERRIT_TRIGGER_CI_VOTE_LABEL=''
-            SCM_NOTIFICATION_CREDENTIALS=''
-            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
-            STDCI_SCM_URL={stdci-scm-url}
-            STDCI_SCM_URL_ALIASES={stdci-scm-url-aliases}
-            STDCI_SCM_REFSPEC={stdci-scm-refspec}
-            CLONE_DIR_NAME={clone-dir-name}
-            GIT_AUTHOR_NAME={git-config-name}
-            GIT_AUTHOR_EMAIL={git-config-email}
-            GIT_COMMITTER_NAME={git-config-name}
-            GIT_COMMITTER_EMAIL={git-config-email}
-            LOADER_NODE_LABEL={loader-node-label}
+          properties-content: !include-raw:
+            - includes/gerrit-pipeline-env-inject.inc
+            - includes/pipeline-env-inject.inc
     triggers:
       - gerrit:
           server-name: '{gerrit-server}'
@@ -255,19 +227,9 @@
           days-to-keep: 14
           artifact-num-to-keep: 60
       - inject:
-          properties-content: |
-            GERRIT_TRIGGER_CI_VOTE_LABEL=''
-            SCM_NOTIFICATION_CREDENTIALS=''
-            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
-            STDCI_SCM_URL={stdci-scm-url}
-            STDCI_SCM_URL_ALIASES={stdci-scm-url-aliases}
-            STDCI_SCM_REFSPEC={stdci-scm-refspec}
-            CLONE_DIR_NAME={clone-dir-name}
-            GIT_AUTHOR_NAME={git-config-name}
-            GIT_AUTHOR_EMAIL={git-config-email}
-            GIT_COMMITTER_NAME={git-config-name}
-            GIT_COMMITTER_EMAIL={git-config-email}
-            LOADER_NODE_LABEL={loader-node-label}
+          properties-content: !include-raw:
+            - includes/gerrit-pipeline-env-inject.inc
+            - includes/pipeline-env-inject.inc
     triggers:
       - gerrit:
           server-name: '{gerrit-server}'
@@ -303,18 +265,9 @@
           days-to-keep: 14
           artifact-num-to-keep: 60
       - inject:
-          properties-content: |
-            DEFAULT_SCM_URL_PREFIX={default-scm-url-prefix}
-            STDCI_SCM_URL={stdci-scm-url}
-            STDCI_SCM_URL_ALIASES={stdci-scm-url-aliases}
-            STDCI_SCM_REFSPEC={stdci-scm-refspec}
-            CLONE_DIR_NAME={clone-dir-name}
-            GIT_AUTHOR_NAME={git-config-name}
-            GIT_AUTHOR_EMAIL={git-config-email}
-            GIT_COMMITTER_NAME={git-config-name}
-            GIT_COMMITTER_EMAIL={git-config-email}
-            LOADER_NODE_LABEL={loader-node-label}
-            STD_CI_STAGE=build-artifacts
+          properties-content: !include-raw:
+            - includes/pipeline-env-inject.inc
+            - includes/build-pipeline-env-inject.inc
     parameters:
       - string:
           name: STD_CI_CLONE_URL

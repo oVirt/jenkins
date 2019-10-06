@@ -1,0 +1,1 @@
+STD_CI_STAGE=build-artifacts
