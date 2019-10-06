@@ -8,3 +8,4 @@ GIT_AUTHOR_EMAIL={git-config-email}
 GIT_COMMITTER_NAME={git-config-name}
 GIT_COMMITTER_EMAIL={git-config-email}
 LOADER_NODE_LABEL={loader-node-label}
+OPENSHIFT_PROJECT={openshift-project}
