@@ -35,23 +35,3 @@
     abort-on-update: ''
     loader-node-label: 'loader-container'
     openshift-project: stdci-production
-
-- defaults:
-    description: |
-      This job is automatically updated by jenkins job builder, any manual
-      change will be lost in the next update. If you want to make permanent
-      changes, check out the <a href="http://gerrit.ovirt.org/gitweb?p=jenkins.git;a=tree;h=refs/heads/master;hb=refs/heads/master">
-      jenkins</a> repo.
-    name: create-rpms
-    project-type: freestyle
-    concurrent: false
-    # to enable the throttle plugin, you also need to set concurrent: true
-    git-server: 'gerrit.ovirt.org'
-    gerrit-server: 'gerrit.ovirt.org'
-    arch: x86_64
-    distro: el7
-    properties:
-      - default-properties
-    wrappers:
-      - default-wrapper
-      - workspace-cleanup
