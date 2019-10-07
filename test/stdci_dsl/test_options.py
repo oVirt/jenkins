@@ -8,12 +8,12 @@ from scripts.stdci_dsl.options.defaults import apply_default_options
 from scripts.stdci_dsl.options.defaults.values import DefaultValue
 from scripts.stdci_dsl.job_thread import JobThread
 from scripts.stdci_dsl.options.normalize import (
-    _render_template, _resolve_stdci_yaml_config, _resolve_stdci_list_config,
+    _resolve_stdci_yaml_config, _resolve_stdci_list_config,
     _resolve_stdci_script, _normalize_repos_config, _normalize_mounts_config,
     RepoConfig, MountConfig, _resolve_changed_files,
     _resolve_stdci_runif_conditions, ConfigurationSyntaxError,
     _normalize_reporting_config, _normalize_runtime_requirements,
-    _normalize_timeout
+    _normalize_timeout,
 )
 
 
@@ -440,21 +440,6 @@ def test_normalize_runtime_requirements_exception(thread, exception):
 def test_normalize_repos_config(thread, expected, stdci_project_dir):
     res = _normalize_repos_config(str(stdci_project_dir), thread)
     assert res == expected
-
-
-@pytest.mark.parametrize(
-    "thread,templates,expected",
-    [
-        (
-            JobThread('check-patch', 'default', 'el7', 'x86_64', {}),
-            '{{ stage }}.{{ substage }}.{{ distro }}.{{ arch }}',
-            'check-patch.default.el7.x86_64'
-        )
-    ]
-)
-def test_render_template(thread, templates, expected):
-    out = _render_template(thread, templates)
-    assert out == expected
 
 
 @pytest.mark.parametrize(

@@ -12,7 +12,6 @@ from fnmatch import fnmatch
 from itertools import product
 from copy import copy
 from six import string_types, iteritems, iterkeys
-from jinja2.sandbox import SandboxedEnvironment
 from yaml import safe_load
 import py
 
@@ -21,7 +20,9 @@ from ..options.defaults import DefaultValue
 from ..options.defaults.values import (
     DEFAULT_REPORTING, DEFAULT_RUNTIME_REQUIREMENTS
 )
+from .base import ConfigurationSyntaxError, render_template
 from ..syntax_utils import remove_case_and_signs
+from .containers import Containers
 
 from ...usrc import get_modified_files
 
@@ -29,10 +30,6 @@ from ...usrc import get_modified_files
 logger = logging.getLogger(__name__)
 RepoConfig = namedtuple('RepoConfig', 'name,url')
 MountConfig = namedtuple('MountConfig', 'src,dst')
-
-
-class ConfigurationSyntaxError(Exception):
-    pass
 
 
 class ConfigurationNotFound(Exception):
@@ -65,7 +62,7 @@ def normalize(project, threads):
                 continue
         # We need to render scripts_directory here because it takes effect
         # when resolving paths for option(s) configuration file(s).
-        thread_options_with_scdir = _render_template(
+        thread_options_with_scdir = render_template(
             thread, thread.options.get('scriptsdirectory', '')
         )
         thread_with_scdir = thread.with_modified(
@@ -96,8 +93,14 @@ def normalize(project, threads):
         normalized_thread = thread_with_scdir.with_modified(
             options=normalized_options
         )
+
+        option_classes = (Containers,)
+        option_instances = (oc() for oc in option_classes)
+        for opt in option_instances:
+            normalized_thread = opt.normalize(normalized_thread)
+
         logger.debug(
-            'Normalized thread_with_scdir options: %s', normalized_options
+            'Normalized thread options: %s', normalized_options
         )
         yield normalized_thread
 
@@ -451,7 +454,7 @@ def _verify_render_conditions(thread, conditions):
                 'At: {0}. Condition must be a string! Not {1}'
                 .format(condition, type(condition))
             )
-        yield _render_template(thread, condition)
+        yield render_template(thread, condition)
 
 
 CONDITION_RESOLVERS = {
@@ -503,7 +506,7 @@ def _resolve_stdci_script(project, thread):
     if isinstance(script_paths, string_types):
         script_paths = [script_paths]
 
-    rendered_paths = (_render_template(thread, path) for path in script_paths)
+    rendered_paths = (render_template(thread, path) for path in script_paths)
     path_prefix = _get_path_prefix(thread, 'script')
     found_script = _get_first_file(project, path_prefix, rendered_paths)
     if not (found_script or thread.options['ignore_if_missing_script']):
@@ -567,7 +570,7 @@ def _resolve_stdci_yum_config(project, thread, option):
         yum_config_paths = [yum_config_paths]
 
     rendered_paths = (
-        _render_template(thread, path) for path in yum_config_paths
+        render_template(thread, path) for path in yum_config_paths
     )
     path_prefix = _get_path_prefix(thread, option)
     found_config = _get_first_file(project, path_prefix, rendered_paths)
@@ -636,7 +639,7 @@ def _resolve_stdci_list_config(project, thread, option):
     if isinstance(config_paths, string_types):
         config_paths = [config_paths]
 
-    rendered_paths = (_render_template(thread, path) for path in config_paths)
+    rendered_paths = (render_template(thread, path) for path in config_paths)
     path_prefix = _get_path_prefix(thread, option)
     try:
         with stdci_load(str(project/path_prefix), rendered_paths) as f:
@@ -699,7 +702,7 @@ def _resolve_stdci_yaml_config(project, thread, option):
         config_paths = [config_paths]
 
     rendered_paths = (
-        _render_template(thread, template) for template in config_paths
+        render_template(thread, template) for template in config_paths
     )
     path_prefix = _get_path_prefix(thread, option)
     try:
@@ -716,28 +719,6 @@ def _resolve_stdci_yaml_config(project, thread, option):
             raise ConfigurationNotFound(msg)
         # We couldn't find the config but it was default value.
         return {}
-
-
-def _render_template(thread, template):
-    """Render given iterable of templates in a sandboxed environment.
-
-    :param JobThread thread:   JobThread instance the templates refer to
-    :param template:           Template we need to render.
-
-    :returns: Rendered template(s)
-    """
-    sandbox = SandboxedEnvironment()
-    rendered = (
-        sandbox.from_string(template).render(
-            stage=thread.stage,
-            substage=thread.substage,
-            distro=thread.distro,
-            arch=thread.arch
-        )
-    )
-    if not isinstance(rendered, str):
-        rendered = rendered.encode('ascii', 'ignore')
-    return rendered
 
 
 def _write_to_tmpfile(string, suffix=''):

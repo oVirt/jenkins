@@ -115,6 +115,7 @@ def test_get_threads_with_globals(project_dir):
                 'ignore_if_missing_script': True,
                 'reporting': {'style': 'default', },
                 'timeout': 10800,
+                'containers': [],
                 DepthLevel: 1
             }
         )
@@ -154,6 +155,7 @@ def test_get_threads(project_dir):
                 'ignore_if_missing_script': True,
                 'reporting': {'style': 'default', },
                 'timeout': 10800,
+                'containers': [],
                 DepthLevel: 1
             }
         )
@@ -189,6 +191,7 @@ def test_get_threads(project_dir):
                         'runtimerequirements': {'r': 'r'},
                         'reporting': {'style': 'default'},
                         'timeout': '3h',
+                        'containers': [],
                     }
                 ),
                 JobThread(
@@ -200,6 +203,7 @@ def test_get_threads(project_dir):
                         'runtimerequirements': {'r': 'r'},
                         'reporting': {'style': 'default'},
                         'timeout': '3h',
+                        'containers': [],
                     }
                 ),
                 JobThread(
@@ -211,10 +215,11 @@ def test_get_threads(project_dir):
                         'upstreamsources': {'u': 's'},
                         'reporting': {'style': 'default'},
                         'timeout': '4h',
+                        'containers': [],
                     }
                 ),
                 JobThread(
-                    'check-patch', 'default', 'el7', 'x86_64',
+                    'check-patch', 'default', 'el8', 'x86_64',
                     {
                         'script': 's',
                         'runtimerequirements': {'r': 'r'},
@@ -222,6 +227,10 @@ def test_get_threads(project_dir):
                         'upstreamsources': {'u': 's'},
                         'reporting': {'style': 'classic'},
                         'timeout': '3h',
+                        'containers': [{
+                            'image': 'docker.io/centos:8',
+                            'args': ['s'],
+                        }],
                     }
                 ),
             ],
@@ -237,6 +246,7 @@ def test_get_threads(project_dir):
                 '    u: s\n'
                 'jobs:\n'
                 '- arch: x86_64\n'
+                '  containers: []\n'
                 '  distro: fc25\n'
                 '  release_branches:\n'
                 '    r: b\n'
@@ -249,6 +259,7 @@ def test_get_threads(project_dir):
                 '  substage: default\n'
                 '  timeout: 3h\n'
                 '- arch: x86_64\n'
+                '  containers: []\n'
                 '  distro: fc26\n'
                 '  release_branches:\n'
                 '    r: b\n'
@@ -261,6 +272,7 @@ def test_get_threads(project_dir):
                 '  substage: default\n'
                 '  timeout: 3h\n'
                 '- arch: x86_64\n'
+                '  containers: []\n'
                 '  distro: el7\n'
                 '  release_branches:\n'
                 '    r: b\n'
@@ -273,7 +285,11 @@ def test_get_threads(project_dir):
                 '  substage: default\n'
                 '  timeout: 4h\n'
                 '- arch: x86_64\n'
-                '  distro: el7\n'
+                '  containers:\n'
+                '  - args:\n'
+                '    - s\n'
+                '    image: docker.io/centos:8\n'
+                '  distro: el8\n'
                 '  release_branches:\n'
                 '    r: b\n'
                 '  reporting:\n'

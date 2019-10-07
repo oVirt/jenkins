@@ -263,7 +263,8 @@ def _pipeline_dict_formatter(threads, global_options, template=None):
             'runtime_reqs': thread.options['runtimerequirements'],
             'release_branches': thread.options['releasebranches'],
             'reporting': thread.options['reporting'],
-            'timeout': thread.options['timeout']
+            'timeout': thread.options['timeout'],
+            'containers': thread.options['containers'],
         } for thread in threads
     ]
     return safe_dump(data, default_flow_style=False)

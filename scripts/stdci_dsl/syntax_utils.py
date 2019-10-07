@@ -50,6 +50,13 @@ _KEY_NAME_TRANSLATIONS = {
     'nest': 'supportnestinglevel',
     'beabletorun': 'supportnestinglevel',
     'abletorun': 'supportnestinglevel',
+    'container': 'containers',
+    'arguments': 'args',
+    'argument': 'args',
+    'arg': 'args',
+    'entrypoint': 'command',
+    'workingdirectory': 'workingdir',
+    'workdir': 'workingdir',
 }
 
 
