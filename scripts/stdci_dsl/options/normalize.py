@@ -91,6 +91,7 @@ def normalize(project, threads):
         normalized_options['repos'] = repos
         normalized_options['packages'] = packages
         normalized_options['reporting'] = reporting
+        normalized_options['timeout'] = timeout
         normalized_options['runtimerequirements'] = runtime_requirements
         normalized_thread = thread_with_scdir.with_modified(
             options=normalized_options
@@ -271,7 +272,7 @@ def _normalize_timeout(thread):
         logger.debug('Timeout config found: {0}{1}'.format(timeout, unit))
     except ValueError:
         raise ConfigurationSyntaxError(
-            'Error reding timeout. Check your configuration')
+            'Error reading timeout. Check your configuration')
     unit_translation = _TIMEOUT_UNIT_TRANSLATIONS[unit]
     if unit_translation == 's':
         return int(timeout)

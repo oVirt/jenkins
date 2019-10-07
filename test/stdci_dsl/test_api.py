@@ -114,7 +114,7 @@ def test_get_threads_with_globals(project_dir):
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
                 'ignore_if_missing_script': True,
                 'reporting': {'style': 'default', },
-                'timeout': '3h',
+                'timeout': 10800,
                 DepthLevel: 1
             }
         )
@@ -153,7 +153,7 @@ def test_get_threads(project_dir):
                 'packages': ['pkg1', 'pkg2', 'pkg3'],
                 'ignore_if_missing_script': True,
                 'reporting': {'style': 'default', },
-                'timeout': '3h',
+                'timeout': 10800,
                 DepthLevel: 1
             }
         )
