@@ -7,9 +7,22 @@ from os import environ
 from collections import namedtuple
 from six import iteritems
 from base64 import b64decode
-from paramiko.client import SSHClient
 from socket import timeout
 from subprocess import CalledProcessError
+
+try:
+    from paramiko.client import SSHClient
+
+    def requires_paramiko(fun):
+        return fun
+
+except ImportError:
+    def requires_paramiko(fun):
+        def not_implemented(*args, **kwargs):
+            raise NotImplementedError(
+                'Function not available because Paramiko is missing'
+            )
+        return not_implemented
 
 
 class GerritServer(namedtuple('_GerritServer', ('host', 'port', 'schema'))):
@@ -21,7 +34,8 @@ class GerritServer(namedtuple('_GerritServer', ('host', 'port', 'schema'))):
             schema=env['GERRIT_SCHEME'],
         )
 
-    def run_ssh_command(self, command, cmd_input=None):  # noqa - ignore mccabe
+    @requires_paramiko  # noqa - ignore mccabe
+    def run_ssh_command(self, command, cmd_input=None):
         """Run an SSH command against the Gerrit server
 
         :param str command: The Gerrit command to run and its arguments
