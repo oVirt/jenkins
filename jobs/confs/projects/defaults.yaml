@@ -29,7 +29,7 @@
     default-scm-url-prefix: https://gerrit.ovirt.org
     stdci-scm-url: https://gerrit.ovirt.org/jenkins
     stdci-scm-url-aliases: http://zuul01.phx.ovirt.org/git/jenkins
-    stdci-scm-refspec: refs/heads/master
+    stdci-scm-refspec: !include: includes/stdci-scm-refspec.inc
     clone-dir-name: ''
     trigger-schedule: '@midnight'
     # Due to a bug in JJB, this value must be an empty string to indicate false

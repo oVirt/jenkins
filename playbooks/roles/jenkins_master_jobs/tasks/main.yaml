@@ -4,6 +4,12 @@
     that:
       - 'master_name is defined'
 
+- name: Generate REFSPEC JJB include file
+  delegate_to: localhost
+  command: ../../scripts/mk_refspec_include.sh
+  args:
+    chdir: "{{ jenkins_jobs_yaml_source }}"
+
 - name: Gather plugin information
   jenkins_ssh_cli_facts:
     gather_subset: '!all,plugins'

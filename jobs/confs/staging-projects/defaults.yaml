@@ -27,7 +27,7 @@
     default-scm-url-prefix: https://gerrit-staging.phx.ovirt.org
     stdci-scm-url: https://gerrit.ovirt.org/jenkins
     stdci-scm-url-aliases: http://zuul-staging.phx.ovirt.org/git/jenkins
-    stdci-scm-refspec: refs/heads/master
+    stdci-scm-refspec: !include: includes/stdci-scm-refspec.inc
     gerrit-subpath: ''
     clone-dir-name: ''
     trigger-schedule: '@daily'
