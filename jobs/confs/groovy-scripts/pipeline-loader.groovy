@@ -136,19 +136,29 @@ def checkout_repo(
     if(clone_dir_name == null) {
         clone_dir_name = repo_name
     }
+    def extra_remotes = []
+    if(refspec.matches('^[A-Fa-f0-9]+$')) {
+        // If we were given a Git SHA as a refspec, we need to ensure the
+        // remote branches are fetched, because fetch with a Git SHA only works
+        // if that commit was already fetched via fetching one of the branches
+        extra_remotes += [[
+            refspec: "+refs/heads/*:refs/remotes/origin/*",
+            url: url
+        ]]
+    }
     dir(clone_dir_name) {
         checkoutData = checkout(
             changelog: false, poll: false, scm: [
                 $class: 'GitSCM',
                 branches: [[name: head]],
-                userRemoteConfigs: [[
+                userRemoteConfigs: extra_remotes + [[
                     refspec: "+${refspec}:myhead",
                     url: url
                 ]],
                 extensions: [
                     [$class: 'CleanBeforeCheckout'],
                     [$class: 'PerBuildTag'],
-                    [$class: 'CloneOption', timeout: 20],
+                    [$class: 'CloneOption', timeout: 20, honorRefspec: true],
                     [$class: 'UserIdentity',
                         email: env.GIT_AUTHOR_NAME,
                         name: env.GIT_AUTHOR_EMAIL
