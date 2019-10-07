@@ -926,10 +926,10 @@ finalize() {
         makedir "$FINAL_LOGS_DIR"
         echo "Collecting mock logs"
         sync
-        xargs -r mv -v -t "$FINAL_LOGS_DIR" <<<"$logs"
+        xargs -r cp -r -v -t "$FINAL_LOGS_DIR" <<<"$logs"
         echo "##########################################################"
     fi
-    rmdir "$LOGS_DIR"
+    rm -rf "$LOGS_DIR"
     rm -rf "$MR_TEMP_DIR"
 }
 
