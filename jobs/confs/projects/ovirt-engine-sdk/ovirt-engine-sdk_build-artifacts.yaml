@@ -29,8 +29,6 @@
     name: python-ovirt-engine-sdk4_checks
     project: ovirt-engine-sdk
     version:
-      - master:
-          branch: master
       - '4.3':
           branch: sdk_4.3
     distro:
@@ -59,8 +57,6 @@
     stage: build-artifacts
     project: ovirt-engine-sdk
     version:
-      - master:
-          branch: master
       - '4.3':
           branch: sdk_4.3
     distro:
