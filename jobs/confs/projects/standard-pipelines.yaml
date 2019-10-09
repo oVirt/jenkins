@@ -68,6 +68,7 @@
     gerrit-server: 'gerrit.ovirt.org'
     project:
       - changequeue-status
+      - cockpit-ovirt
       - engine-db-query
       - fabric-ovirt
       - imgbased
