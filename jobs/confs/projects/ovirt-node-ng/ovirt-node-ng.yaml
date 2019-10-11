@@ -44,12 +44,14 @@
     version:
       - master:
           branch: master
-      - 4.3:
+      - '4.3':
           branch: ovirt-4.3
     stage: build-artifacts
     distro:
       - el7
       - fc30
+    exclude:
+      - { version: '4.3', distro: fc30 }
     trigger: 'timed'
     trigger-times: 'H H(5-8) * * *'
     arch:
