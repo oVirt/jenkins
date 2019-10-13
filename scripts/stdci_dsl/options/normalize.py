@@ -23,6 +23,7 @@ from ..options.defaults.values import (
 from .base import ConfigurationSyntaxError, render_template
 from ..syntax_utils import remove_case_and_signs
 from .containers import Containers
+from .podspecs import PodSpecs
 
 from ...usrc import get_modified_files
 
@@ -94,7 +95,7 @@ def normalize(project, threads):
             options=normalized_options
         )
 
-        option_classes = (Containers,)
+        option_classes = (Containers, PodSpecs)
         option_instances = (oc() for oc in option_classes)
         for opt in option_instances:
             normalized_thread = opt.normalize(normalized_thread)

@@ -116,6 +116,7 @@ def test_get_threads_with_globals(project_dir):
                 'reporting': {'style': 'default', },
                 'timeout': 10800,
                 'containers': [],
+                'podspecs': [],
                 DepthLevel: 1
             }
         )
@@ -156,6 +157,7 @@ def test_get_threads(project_dir):
                 'reporting': {'style': 'default', },
                 'timeout': 10800,
                 'containers': [],
+                'podspecs': [],
                 DepthLevel: 1
             }
         )
@@ -192,6 +194,7 @@ def test_get_threads(project_dir):
                         'reporting': {'style': 'default'},
                         'timeout': '3h',
                         'containers': [],
+                        'podspecs': [],
                     }
                 ),
                 JobThread(
@@ -204,6 +207,7 @@ def test_get_threads(project_dir):
                         'reporting': {'style': 'default'},
                         'timeout': '3h',
                         'containers': [],
+                        'podspecs': [],
                     }
                 ),
                 JobThread(
@@ -216,6 +220,7 @@ def test_get_threads(project_dir):
                         'reporting': {'style': 'default'},
                         'timeout': '4h',
                         'containers': [],
+                        'podspecs': [],
                     }
                 ),
                 JobThread(
@@ -231,6 +236,12 @@ def test_get_threads(project_dir):
                             'image': 'docker.io/centos:8',
                             'args': ['s'],
                         }],
+                        'podspecs': [
+                            'apiVersion: v1\n'
+                            'kind: Pod\n'
+                            'spec:\n'
+                            '  foo\n',
+                        ]
                     }
                 ),
             ],
@@ -248,6 +259,7 @@ def test_get_threads(project_dir):
                 '- arch: x86_64\n'
                 '  containers: []\n'
                 '  distro: fc25\n'
+                '  podspecs: []\n'
                 '  release_branches:\n'
                 '    r: b\n'
                 '  reporting:\n'
@@ -261,6 +273,7 @@ def test_get_threads(project_dir):
                 '- arch: x86_64\n'
                 '  containers: []\n'
                 '  distro: fc26\n'
+                '  podspecs: []\n'
                 '  release_branches:\n'
                 '    r: b\n'
                 '  reporting:\n'
@@ -274,6 +287,7 @@ def test_get_threads(project_dir):
                 '- arch: x86_64\n'
                 '  containers: []\n'
                 '  distro: el7\n'
+                '  podspecs: []\n'
                 '  release_branches:\n'
                 '    r: b\n'
                 '  reporting:\n'
@@ -290,6 +304,8 @@ def test_get_threads(project_dir):
                 '    - s\n'
                 '    image: docker.io/centos:8\n'
                 '  distro: el8\n'
+                '  podspecs:\n'
+                '  - "apiVersion: v1\\nkind: Pod\\nspec:\\n  foo\\n"\n'
                 '  release_branches:\n'
                 '    r: b\n'
                 '  reporting:\n'
