@@ -23,7 +23,6 @@
       - 'fedora-base-fc30'
       - 'fedora-updates-fc30'
       - 'mock-copr-el7'
-      - 'mock-copr-fc28'
       - 'mock-copr-fc29'
       - 'mock-copr-fc30'
       - 'centos-sclo-rh-release'
