@@ -88,9 +88,20 @@ def loader_main(loader) {
             }
         }
     }
+    // If any of the threads use containers, we need to keep the loader node,
+    // so we call main() from here instead of letting pipeline_loader call it
+    // after releasing the node
+    if(jobs.podspecs.any()) {
+        return main()
+    }
 }
 
+@Field Boolean main_done_already = false
+
 def main() {
+    // Allow skipping main() if it was already called once
+    if(main_done_already) { return }
+    main_done_already = true
     if(std_ci_stage == 'build-artifacts') {
         stage('Downloading existing build') {
             if(previous_build != null) {
@@ -201,7 +212,10 @@ def get_stage_github() {
 
 def get_std_ci_job_properties(project, String std_ci_stage) {
     def stdci_job_properties = "jobs_for_${std_ci_stage}.yaml"
-    withEnv(['PYTHONPATH=jenkins']) {
+    withEnv([
+        'PYTHONPATH=jenkins',
+        "POD_NAME_PREFIX=${env.JOB_BASE_NAME}-${env.BUILD_NUMBER}",
+    ]) {
         sh """\
             #!/usr/bin/env python
             import yaml

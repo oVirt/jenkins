@@ -26,6 +26,15 @@ sub-stages:
           - automation/check-patch.repos*
           - automation/check-patch.environment.yaml*
           - automation/build-artifacts.dummy-rpm.*
+  - container-runner-test:
+      container:
+        image: docker.io/centos:7
+        args: ['echo', 'Hollow world from container!']
+      runif:
+        file-changed:
+          - pipelines/standard-stage.groovy
+          - pipelines/libs/*
+          - scripts/stdci_dsl/*
   - jenkins-jobs:
       stages:
         - check-patch:

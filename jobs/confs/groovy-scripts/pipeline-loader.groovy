@@ -128,7 +128,7 @@ def loader_node(Closure code) {
                   nodeSelector:
                     type: vm
                     zone: ci
-                  serviceAccount: jenkins-slave
+                  serviceAccount: jenkins-loader-node
             """.stripIndent()
         ) {
             node(pod_label) {

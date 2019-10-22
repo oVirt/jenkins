@@ -56,6 +56,14 @@ def run_std_ci_jobs(project, jobs, mirrors=null, extra_sources=null) {
 }
 
 def mk_std_ci_runner(report, project, job, mirrors=null, extra_sources=null) {
+    if(job.podspecs) {
+        return mk_openshift_std_ci_runner(report, project, job, mirrors, extra_sources)
+    } else {
+        return mk_mock_std_ci_runner(report, project, job, mirrors, extra_sources)
+    }
+}
+
+def mk_mock_std_ci_runner(report, project, job, mirrors=null, extra_sources=null) {
     return {
         report.status('PENDING', 'Allocating runner node')
         String node_label = get_std_ci_node_label(project, job)
@@ -66,6 +74,89 @@ def mk_std_ci_runner(report, project, job, mirrors=null, extra_sources=null) {
         }
         node(node_label) {
             run_std_ci_on_node(report, project, job, mirrors, extra_sources)
+        }
+    }
+}
+
+def mk_openshift_std_ci_runner(report, project, job, mirrors=null, extra_sources=null) {
+    return {
+        run_std_ci_in_pods(report, project, job, mirrors, extra_sources)
+    }
+}
+
+def wait_pod_phase(pod, wait_on_phases, label) {
+    return sh(
+        label: label,
+        returnStdout: true,
+        script: """#!/bin/bash
+            tout=2
+            while :; do
+                coproc \
+                    timeout \$tout \
+                    oc get -w '$pod' -o go-template=\$'{{.status.phase}}\\n'
+                read phase <&"\${COPROC[0]}"
+                echo "Current phase: \$phase" 1>&2
+                case "\$phase" in
+                        ${wait_on_phases.join('|')})
+                            echo "Waiting (up to \$tout secs)" 1>&2 ;;
+                        *)
+                            kill -INT \$COPROC_PID; echo "\$phase"; exit;;
+                esac
+                wait \$COPROC_PID
+                if [[ \$tout -lt 10 ]]; then
+                    tout=\$((tout * 2))
+                fi
+            done
+        """,
+    ).trim()
+}
+
+def run_std_ci_in_pods(report, project, job, mirrors=null, extra_sources=null) {
+    Boolean success = false
+    Boolean test_failed = false
+    job.podspecs.each { podspec ->
+        report.status('PENDING', 'Allocating POD')
+        def pod = sh(
+            label: 'Create POD',
+            returnStdout: true,
+            script: "oc create -o name -f - <<'EOPOD'\n$podspec\nEOPOD"
+        ).trim()
+        echo "Running in POD: $pod"
+        try {
+            timeout(time: env.STDCI_POD_START_TIMEOUT ?: 3600, unit: 'SECONDS') {
+                wait_pod_phase(pod, ['Pending'], "Waiting for POD to start")
+            }
+            report.status('PENDING', 'Running test')
+            sh(label: "Running POD", script: "oc logs -f '$pod'")
+            // Wait until the pod finishes, we do not enforce a timeout here,
+            // because the STDCI DSL should already inject timeout configuration
+            // into the POD itself
+            def phase = wait_pod_phase(
+                pod, ['Pending', 'Running'], "Waiting for POD to terminate"
+            )
+            if(phase == 'Succeeded') {
+                success = true
+            } else {
+                if(phase == 'Failed') {
+                    test_failed = true
+                }
+                error "Pod: '${pod}' failed"
+            }
+        } finally {
+            // We user returnStatus here to avoid throwing an exception if the
+            // POD is not there or we fail from other reason
+            sh(
+                label: 'Remove POD',
+                returnStatus: true,
+                script: "oc delete '$pod'"
+            )
+            if(success) {
+                report.status('SUCCESS', 'Test is successful')
+            } else if (test_failed) {
+                report.status('FAILURE', 'Test script failed')
+            } else {
+                report.status('ERROR', 'Testing system error')
+            }
         }
     }
 }
