@@ -140,7 +140,7 @@
         - '{project}_{suite_type}-suite-{version}'
 
 - project:
-    <<: *system-tests-common
+    <<: *system-tests-big-common
     name: openshift-on-ovirt-suite
     suite_type: openshift-on-ovirt
     project: 'ovirt-system-tests'
