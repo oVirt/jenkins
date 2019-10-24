@@ -289,6 +289,113 @@ class TestPodSpecs:
                 )],
             }
         ),
+        (
+            {
+                'containers': [
+                    {'image': 'ici1', 'args': ['icc1']},
+                    {'image': 'ici2', 'args': ['icc2'], 'workingdir': '/wd1'},
+                    {'image': 'cimg1', 'args': ['ccmd1']},
+                ],
+            },
+            {},
+            {
+                'containers': [
+                    {'image': 'ici1', 'args': ['icc1']},
+                    {'image': 'ici2', 'args': ['icc2'], 'workingdir': '/wd1'},
+                    {'image': 'cimg1', 'args': ['ccmd1']},
+                ],
+                'podspecs': [dedent(
+                    '''\
+                    apiVersion: v1
+                    kind: Pod
+                    metadata:
+                      generateName: st.sbst.dst.a-r
+                    spec:
+                      containers:
+                      - args:
+                        - ccmd1
+                        env:
+                        - name: STD_CI_STAGE
+                          value: st
+                        - name: STD_CI_SUBSTAGE
+                          value: sbst
+                        - name: STD_CI_DISTRO
+                          value: Dst
+                        - name: STD_CI_ARCH
+                          value: a_r
+                        image: cimg1
+                        imagePullPolicy: IfNotPresent
+                        name: main
+                        resources:
+                          limits:
+                            memory: 2Gi
+                          requests:
+                            memory: 2Gi
+                        tty: true
+                        volumeMounts:
+                        - mountPath: /workspace
+                          name: workspace
+                        workingDir: /workspace
+                      initContainers:
+                      - args:
+                        - icc1
+                        env:
+                        - name: STD_CI_STAGE
+                          value: st
+                        - name: STD_CI_SUBSTAGE
+                          value: sbst
+                        - name: STD_CI_DISTRO
+                          value: Dst
+                        - name: STD_CI_ARCH
+                          value: a_r
+                        image: ici1
+                        imagePullPolicy: IfNotPresent
+                        name: ic0
+                        resources:
+                          limits:
+                            memory: 2Gi
+                          requests:
+                            memory: 2Gi
+                        tty: true
+                        volumeMounts:
+                        - mountPath: /workspace
+                          name: workspace
+                        workingDir: /workspace
+                      - args:
+                        - icc2
+                        env:
+                        - name: STD_CI_STAGE
+                          value: st
+                        - name: STD_CI_SUBSTAGE
+                          value: sbst
+                        - name: STD_CI_DISTRO
+                          value: Dst
+                        - name: STD_CI_ARCH
+                          value: a_r
+                        image: ici2
+                        imagePullPolicy: IfNotPresent
+                        name: ic1
+                        resources:
+                          limits:
+                            memory: 2Gi
+                          requests:
+                            memory: 2Gi
+                        tty: true
+                        volumeMounts:
+                        - mountPath: /workspace
+                          name: workspace
+                        workingDir: /wd1
+                      nodeSelector:
+                        type: vm
+                        zone: ci
+                      restartPolicy: Never
+                      volumes:
+                      - emptyDir: {}
+                        name: workspace
+                    '''
+                )],
+            }
+        ),
     ])
     def test_normalize(self, options, env, expected, monkeypatch):
         option_object = PodSpecs()

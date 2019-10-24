@@ -36,6 +36,24 @@ sub-stages:
           - pipelines/standard-stage.groovy
           - pipelines/libs/*
           - scripts/stdci_dsl/*
+  - init-containers-test:
+      containers:
+        - image: centos/s2i-base-centos7
+          args:
+          - bash
+          - -exc
+          - |
+            git init .
+            git fetch --tags --progress "$STD_CI_CLONE_URL" +refs/heads/*:refs/remotes/origin/*
+            git fetch --tags --progress "$STD_CI_CLONE_URL" +"$STD_CI_REFSPEC":myhead
+            git checkout myhead
+        - docker.io/centos:7
+      runif:
+        file-changed:
+          - pipelines/standard-stage.groovy
+          - pipelines/libs/*
+          - scripts/stdci_dsl/*
+          - automation/*.{{ substage }}.*
   - jenkins-jobs:
       stages:
         - check-patch:

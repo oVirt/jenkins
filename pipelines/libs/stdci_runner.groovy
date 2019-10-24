@@ -119,7 +119,11 @@ def run_std_ci_in_pods(report, project, job, mirrors=null, extra_sources=null) {
         def pod = sh(
             label: 'Create POD',
             returnStdout: true,
-            script: "oc create -o name -f - <<'EOPOD'\n$podspec\nEOPOD"
+            script: """#!/bin/bash
+                echo "Creating POD with the following configuration" 1>&2
+                echo "=============================================" 1>&2
+                tee /dev/stderr <<'EOPOD' | oc create -o name -f - \n$podspec\nEOPOD
+            """
         ).trim()
         echo "Running in POD: $pod"
         try {

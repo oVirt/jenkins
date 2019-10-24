@@ -5,7 +5,7 @@ __metaclass__ = type
 """
 import os
 import re
-from yaml import dump
+from yaml import dump, Dumper
 from itertools import chain
 
 
@@ -43,10 +43,11 @@ class PodSpecs:
                     'volumes': [{'name': 'workspace', 'emptyDir': {}}],
                 }
             }
+            self._add_init_containers(containers, podspec)
             self._add_resouce_settings(thread.options, podspec)
             self._add_timeout_option(thread.options, podspec)
             self._add_env_vars(thread, podspec)
-            podspecs = [dump(podspec, default_flow_style=False)]
+            podspecs = [dump(podspec, Dumper=PodConfigDumper)]
         new_options = thread.options.copy()
         new_options['podspecs'] = podspecs
         return thread.with_modified(options=new_options)
@@ -85,6 +86,19 @@ class PodSpecs:
             if prop.lower() in container_opt:
                 cont_spec[prop] = container_opt[prop.lower()]
         return cont_spec
+
+    def _add_init_containers(self, containers, podspec):
+        """Add initContainers configuration for the POD
+
+        :param list containers: The value of the containers option from the
+                                JobThread
+        """
+        init_containers = [
+            self._mk_container_spec(container_opt, 'ic{}'.format(idx))
+            for idx, container_opt in enumerate(containers[:-1])
+        ]
+        if init_containers:
+            podspec['spec']['initContainers'] = init_containers
 
     def _add_resouce_settings(self, options, podspec):
         """Add HW resource settings to a podspec
@@ -150,3 +164,19 @@ class PodSpecs:
         )
         for container in all_containers:
             container.update(kwargs)
+
+
+class PodConfigDumper(Dumper):
+    """Custom YAML dumper for dumping POD data.
+
+    This is implemented mostly to prevent having YAML anchors on the output
+    stream. But other option are included along the way
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs['default_flow_style'] = False
+        super(PodConfigDumper, self).__init__(
+            *args, **kwargs
+        )
+
+    def ignore_aliases(self, data):
+        return True
