@@ -215,6 +215,7 @@ def get_std_ci_job_properties(project, String std_ci_stage) {
     withEnv([
         'PYTHONPATH=jenkins',
         "POD_NAME_PREFIX=${env.JOB_BASE_NAME}-${env.BUILD_NUMBER}",
+        "STD_CI_JOB_KEY=${env.BUILD_TAG}",
     ]) {
         sh """\
             #!/usr/bin/env python

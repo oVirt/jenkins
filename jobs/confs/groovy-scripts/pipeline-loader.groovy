@@ -2,6 +2,8 @@
 //                          the actual pipeline code from the 'jenkins' repo
 //
 import groovy.transform.Field
+import java.security.MessageDigest
+import java.security.SecureRandom
 
 def pipeline
 
@@ -22,6 +24,7 @@ def loader_main(loader) {
 }
 
 def main() {
+    env.STD_CI_JOB_UID = get_job_uid()
     loader_node() {
         stage('loading code') {
             dir("exported-artifacts") { deleteDir() }
@@ -125,6 +128,10 @@ def loader_node(Closure code) {
                           memory: 500Mi
                         requests:
                           memory: 500Mi
+                  securityContext:
+                    runAsUser: ${env.STD_CI_JOB_UID}
+                    runAsGroup: ${env.STD_CI_JOB_UID}
+                    fsGroup: ${env.STD_CI_JOB_UID}
                   nodeSelector:
                     type: vm
                     zone: ci
@@ -319,4 +326,16 @@ def get_pipeline_for_job(name) {
             return match.replaceAll(value)
         }
     }
+}
+
+@NonCPS
+def get_job_uid(job_key=null) {
+    int job_uid = 2**31 - 1
+    job_uid -= (new SecureRandom()).next(24) % 100000 * 10000
+    if(job_key) {
+        byte[] digest = MessageDigest.getInstance("SHA-1").digest(job_key.bytes)
+        int uid_part = new BigInteger(1, digest[-8..-1] as byte[]) % 10000
+        job_uid -= uid_part
+    }
+    return job_uid
 }

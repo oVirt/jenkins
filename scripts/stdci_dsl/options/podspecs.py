@@ -7,6 +7,9 @@ import os
 import re
 from yaml import dump, Dumper
 from itertools import chain
+from random import randrange
+from struct import unpack_from
+from hashlib import sha1
 
 
 class PodSpecs:
@@ -18,6 +21,12 @@ class PodSpecs:
 
         Function output also depends on the following environment variables:
         - POD_NAME_PREFIX:   If set, used as a prefix to the POD name
+        - STD_CI_POD_ACCT:   If set, used as the name of the service account to
+                             use for the POD
+        - STD_CI_JOB_KEY:    If set - its a string that is used to calculate
+                             the UID of the POD so its unique for unique values
+                             of this string
+        - STD_CI_JOB_UID:    If set - used as the UID the POD runs with
 
         A set of environment variables specified by _CONTIANER_HW_ENV_VARS are
         also passed as-is to the POD containers if found in the environment.
@@ -28,6 +37,7 @@ class PodSpecs:
         podspecs = []
         containers = thread.options.get('containers')
         if containers:
+            pod_uid = self._get_pod_uid()
             podspec = {
                 'apiVersion': 'v1',
                 'kind': 'Pod',
@@ -41,6 +51,14 @@ class PodSpecs:
                     'nodeSelector': {'type': 'vm', 'zone': 'ci'},
                     'restartPolicy': 'Never',
                     'volumes': [{'name': 'workspace', 'emptyDir': {}}],
+                    'serviceAccount': os.environ.get(
+                        'STD_CI_POD_ACCT', 'jenkins-slave-privileged'
+                    ),
+                    'securityContext': {
+                        'runAsUser': pod_uid,
+                        'runAsGroup': pod_uid,
+                        'fsGroup': pod_uid,
+                    },
                 }
             }
             self._add_init_containers(containers, podspec)
@@ -107,7 +125,6 @@ class PodSpecs:
         runtimerequirements = options.get('runtimerequirements', {})
         if runtimerequirements.get('supportnestinglevel', 0) > 0:
             podspec['spec']['nodeSelector'] = {'model': 'r620'}
-            podspec['spec']['securityContext'] = {'privileged': True}
             memory = '14Gi'
         self._update_containers(podspec, resources={
                 'limits': {'memory': memory},
@@ -153,6 +170,21 @@ class PodSpecs:
         timeout = options.get('timeout', 'unlimited')
         if timeout != 'unlimited':
             podspec['spec']['activeDeadlineSeconds'] = timeout
+
+    def _get_pod_uid(self):
+        """Get a UID for the POD to run in"""
+        if 'STD_CI_JOB_UID' in os.environ:
+            pod_uid = int(os.environ['STD_CI_JOB_UID'])
+        else:
+            pod_uid = 2**31 - 1 - randrange(0, 100000) * 10000
+            if 'STD_CI_JOB_KEY' in os.environ:
+                job_key_dg = \
+                    sha1(os.environ['STD_CI_JOB_KEY'].encode('utf-8'))
+                # Take last 8 bytes of digest modulo 10000 and add to UID
+                pod_uid -= int(
+                    unpack_from('>Q', job_key_dg.digest(), -8)[0] % 10000
+                )
+        return pod_uid
 
     def _update_containers(self, podspec, **kwargs):
         """Update a podspec structure in place to add the options given in
