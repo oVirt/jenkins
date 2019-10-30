@@ -16,8 +16,6 @@
       - 'centos-qemu-ev-testing-el7'
       - 'centos-qemu-ev-release-el7'
       - 'centos-kvm-common-el7'
-      - 'fedora-base-fc28'
-      - 'fedora-updates-fc28'
       - 'fedora-base-fc29'
       - 'fedora-updates-fc29'
       - 'fedora-base-fc30'
