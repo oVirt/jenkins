@@ -34,7 +34,11 @@
   gather_facts: no
   vars:
     base_image: quay.io/pod_utils/repoman-repo-centos7
-    _repo_name: "{{ repo_name|default(lookup('env', 'REPO_NAME')) }}"
+    _repo_name: "{{
+      (repo_name|default(lookup('env', 'REPO_NAME')))
+      |lower
+      |regex_replace('[^-a-z0-9]+', '-')
+    }}"
     _repoman_sources: "{{
       repoman_sources|default(lookup('env', 'REPOMAN_SOURCES'))
     }}"
