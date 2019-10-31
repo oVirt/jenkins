@@ -84,5 +84,19 @@ sub-stages:
           - jobs/confs/yaml/templates/standard-stage.yaml
           - jobs/confs/shell-scripts/cleanup_slave.sh
           - automation/check-patch.{{ substage }}.*
+  - python3-tests:
+      stage: check-patch
+      arch:
+        - x86_64:
+            distro: [el7, el8, fc29, fc30, fcraw]
+        - ppc64le:
+            distro: [el7, el8]
+        - s390x:
+            distro: [fc29, fc30]
+      runif:
+        file-changed:
+          - scripts/*.py
+          - test3/*
+          - automation/check-patch.{{ substage }}.*
 release-branches:
   'master': 'dummy-master'
