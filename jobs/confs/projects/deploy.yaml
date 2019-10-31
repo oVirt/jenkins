@@ -2,5 +2,7 @@
     name: repo-deploy-jobs
     repo-name:
       - gated-dummy-master
+      - gated-ovirt-master
+      - gated-ovirt-4.3
     jobs:
       - "deploy-to-{repo-name}"
