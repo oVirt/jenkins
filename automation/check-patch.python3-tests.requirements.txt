@@ -10,3 +10,4 @@ pytest
 six
 wcwidth
 zipp
+PyYAML
