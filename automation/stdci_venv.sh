@@ -93,7 +93,7 @@ stdci_venv::_ensure_exists() {
     fi
     echo "Creating Python virtualenv"
     rm -rf "${venv_path}"
-    virtualenv --python="$venv_python" "$venv_path" || return 1
+    "$venv_python" -m virtualenv --python="$venv_python" "$venv_path" || return 1
     if source "$venv_path/bin/activate"; then
         if
             pip install --upgrade pip \
