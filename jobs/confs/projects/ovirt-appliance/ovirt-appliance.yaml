@@ -16,6 +16,10 @@
       - x86_64
     distro:
       - el7
+      - el8
+    exclude:
+      - { version: '4.3', distro: el8 }
+      - { version: 'master', distro: el7 }
     node-filter: 'el7 && 80gb-disk'
     email-to: 'yturgema@redhat.com'
     jobs:
