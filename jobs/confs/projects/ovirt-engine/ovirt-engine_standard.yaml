@@ -3,8 +3,6 @@
     project: ovirt-engine
     trigger: on-change
     version:
-      - master:
-          branch: master
       - '4.2':
           branch: ovirt-engine-4.2
       - '4.3':
@@ -13,11 +11,6 @@
           branch: ovirt-engine-4.3.5.z
     distro:
       - el7
-      - fc29
-    exclude:
-      - { version: '4.2', distro: fc29 }
-      - { version: '4.3', distro: fc29 }
-      - { version: '4.3.5.z', distro: fc29 }
     arch: x86_64
 
 - project:
