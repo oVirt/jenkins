@@ -16,6 +16,7 @@
       - 'centos-updates-el7'
       - 'centos-extras-el7'
       - 'epel-el7'
+      - 'epel-el7-s390x'
       - 'glusterfs-3.12-el7'
       - 'glusterfs-5-el7'
       - 'glusterfs-6-el7'
