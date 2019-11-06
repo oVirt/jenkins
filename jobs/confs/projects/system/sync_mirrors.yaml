@@ -1,17 +1,6 @@
 - project:
     name: system-sync_mirrors
     repo:
-      - 'sac-gluster-ansible-el8'
-      - 'centos-base-el8'
-      - 'centos-appstream-el8'
-      - 'centos-extras-el8'
-      - 'centos-powertools-el8'
-      - 'epel-el8'
-      - 'ovirt-master-epel-testing-el8'
-      - 'ovirt-master-glusterfs-6-el8'
-      - 'ovirt-master-glusterfs-6-noarch-el8'
-      - 'ovirt-master-virtio-win-latest-el8'
-      - 'ovirt-master-copr-sbonazzo-collection-el8'
       - 'centos-base-el7'
       - 'centos-updates-el7'
       - 'centos-extras-el7'
