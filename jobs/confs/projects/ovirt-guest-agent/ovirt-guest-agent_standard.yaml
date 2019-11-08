@@ -11,7 +11,6 @@
       - check-patch
     distro:
       - el7
-      - fc29
       - fc30
     arch: x86_64
     jobs:

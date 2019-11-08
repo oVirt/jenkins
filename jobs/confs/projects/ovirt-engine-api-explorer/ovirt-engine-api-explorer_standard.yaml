@@ -10,7 +10,6 @@
     stage: check-patch
     distro:
       - el7
-      - fc29
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'

@@ -10,17 +10,10 @@
       - check-patch
     distro:
       - el7
-      - fc29
     arch:
       - x86_64
       - ppc64le:
           node-filter: ppc64le
-      - s390x:
-          node-filter: s390x
-    exclude:
-      - { version: '4.3', distro: fc29 }
-      - { arch: s390x,   distro: el7 }
-      - { arch: ppc64le, distro: fc29 }
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
 
@@ -33,7 +26,6 @@
           branch: sdk_4.3
     distro:
       - el7
-      - fc29
     jobs:
         - 'python-ovirt-engine-sdk4_{version}_{stage}-{distro}-{arch}'
 
@@ -47,7 +39,6 @@
           branch: sdk_3.6
     distro:
       - el7
-      - fc29
     jobs:
       - 'ovirt-engine-sdk_{version}_build-artifacts-{distro}-{arch}'
 
@@ -61,7 +52,6 @@
           branch: sdk_4.3
     distro:
       - el7
-      - fc29
     jobs:
         - 'python-ovirt-engine-sdk4_{version}_build-artifacts-{distro}-{arch}'
         - 'python-ovirt-engine-sdk4_{version}_{stage}-on-demand-{distro}-{arch}'

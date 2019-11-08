@@ -6,7 +6,6 @@
         - master:
             branch: master
       distro:
-        - fc29
         - el7
       trigger: 'on-change'
       arch: x86_64

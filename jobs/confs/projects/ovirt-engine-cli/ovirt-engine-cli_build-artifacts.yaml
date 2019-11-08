@@ -8,7 +8,6 @@
     stage: build-artifacts
     distro:
       - el7
-      - fc29
     arch: x86_64
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'

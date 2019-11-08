@@ -13,13 +13,10 @@
       - el7
       - el8
       - fc30
-      - fc29
     exclude:
       - {version: '4.3', distro: el8}
-      - {version: '4.3', distro: fc29}
       - {version: '4.3', distro: fc30}
       - {version: '4.2', distro: el8}
-      - {version: '4.2', distro: fc29}
       - {version: '4.2', distro: fc30}
 
 - project:
