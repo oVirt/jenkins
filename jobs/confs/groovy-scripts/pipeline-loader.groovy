@@ -161,7 +161,11 @@ def checkout_jenkins_repo() {
     String refspec = env.STDCI_SCM_REFSPEC ?: 'refs/heads/master'
     String url = configured_url
     def code_from_event = false
+    List extra_remotes = []
     if(event_url in jenkins_urls) {
+        // Use extra_remotes to also fetch the unchanged code so we can
+        // calculate diff
+        extra_remotes = mk_git_remotes(refspec, url, 'older_head')
         refspec = env.STD_CI_REFSPEC ?: env.GERRIT_REFSPEC
         url = event_url
         code_from_event = true
@@ -170,6 +174,7 @@ def checkout_jenkins_repo() {
         repo_name: 'jenkins',
         refspec: refspec,
         url: url,
+        extra_remotes: extra_remotes,
     )
     checkoutData.CODE_FROM_EVENT = code_from_event
     return checkoutData
@@ -180,7 +185,8 @@ def checkout_repo(
     String refspec='refs/heads/master',
     String url=null,
     String head=null,
-    String clone_dir_name=null
+    String clone_dir_name=null,
+    List extra_remotes=null
 ) {
     def checkoutData
     if(url == null) {
@@ -193,25 +199,13 @@ def checkout_repo(
     if(clone_dir_name == null) {
         clone_dir_name = repo_name
     }
-    def extra_remotes = []
-    if(refspec.matches('^[A-Fa-f0-9]+$')) {
-        // If we were given a Git SHA as a refspec, we need to ensure the
-        // remote branches are fetched, because fetch with a Git SHA only works
-        // if that commit was already fetched via fetching one of the branches
-        extra_remotes += [[
-            refspec: "+refs/heads/*:refs/remotes/origin/*",
-            url: url
-        ]]
-    }
+    def remotes = mk_git_remotes(refspec, url, 'myhead') + (extra_remotes ?: [])
     dir(clone_dir_name) {
         checkoutData = checkout(
             changelog: false, poll: false, scm: [
                 $class: 'GitSCM',
                 branches: [[name: head]],
-                userRemoteConfigs: extra_remotes + [[
-                    refspec: "+${refspec}:myhead",
-                    url: url
-                ]],
+                userRemoteConfigs: remotes,
                 extensions: [
                     [$class: 'CleanBeforeCheckout'],
                     [$class: 'PerBuildTag'],
@@ -237,11 +231,28 @@ def checkout_repo(
     return checkoutData
 }
 
+def mk_git_remotes(String refspec, String url, String head_name=null) {
+    def extra_remotes = []
+    if(refspec.matches('^[A-Fa-f0-9]+$')) {
+        // If we were given a Git SHA as a refspec, we need to ensure the
+        // remote branches are fetched, because fetch with a Git SHA only works
+        // if that commit was already fetched via fetching one of the branches
+        extra_remotes += [
+            [refspec: "+refs/heads/*:refs/remotes/origin/*", url: url]
+        ]
+    }
+    if(head_name == null) {
+        head_name = refspec
+    }
+    return extra_remotes + [[refspec: "+${refspec}:$head_name", url: url]]
+}
+
 def checkout_repo(Map named_args) {
     if('refspec' in named_args) {
         return checkout_repo(
-            named_args.repo_name, named_args.refspec,
-            named_args.url, named_args.head
+            named_args.repo_name, named_args.refspec, named_args.url,
+            named_args.head, named_args.clone_dir_name,
+            named_args.extra_remotes,
         )
     } else {
         return checkout_repo(named_args.repo_name)
@@ -252,12 +263,13 @@ def loader_was_modified() {
     def result = sh(
         label: 'pipeline-loader diff check',
         returnStatus: true,
-        script: '''\
-            usrc="$WORKSPACE/jenkins/scripts/usrc.py"
-            [[ -x "$usrc" ]] || usrc="$WORKSPACE/jenkins/scripts/usrc_local.py"
+        script: """\
+            usrc="\$WORKSPACE/jenkins/scripts/usrc.py"
+            [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/scripts/usrc_local.py"
 
-            "$usrc" --log -d changed-files | grep 'pipeline-loader.groovy$'
-        '''
+            "\$usrc" --log -d changed-files HEAD older_head |\
+                grep 'pipeline-loader.groovy\$'
+        """
     )
     return (result == 0)
 }
