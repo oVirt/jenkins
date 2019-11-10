@@ -11,3 +11,5 @@ six
 wcwidth
 zipp
 PyYAML
+dockerfile-parse
+mock
