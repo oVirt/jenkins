@@ -37,7 +37,7 @@ except ImportError:
 UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
 UPSTREAM_SOURCES_PATH = os.path.join('automation', UPSTREAM_SOURCES_FILE)
 CACHE_NAME = 'usrc'
-POLICIES = ('tagged', 'latest')
+POLICIES = ('static', 'tagged', 'latest')
 TagObject = namedtuple('TagObject', ['commit', 'annotated', 'name'])
 logger = logging.getLogger(__name__)
 
@@ -453,6 +453,14 @@ class GitUpstreamSource(object):
         """Look for the most up-to-date commit or tag of the upstream source
            depending on the user request.
 
+        Currently supported policies:
+
+            - 'latest': will update to the latest HEAD in the referenced branch
+            - 'tagged': will updated to the latest tagged commit in the
+                        referenced branch. When combined with 'tag_filter',
+                        can follow tags of a specified glob pattern.
+            - 'static': disable auto update.
+
         :returns: A new GitUpstreamSource instance representing the updated
             source. If self is already pointing to the most updated commit
             or tag, returns self
@@ -474,6 +482,14 @@ class GitUpstreamSource(object):
                     self.tag_filter, self.annotated_tag_only
                 )
         return self
+
+    def _update_policy_static(self):
+        """Just return the current commit.
+
+        :returns: the current referenced commit.
+        :rtype: str
+        """
+        return self.commit
 
     def _update_policy_latest(self):
         """Look for the most up-to-date commit of the upstream source

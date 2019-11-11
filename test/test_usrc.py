@@ -959,6 +959,16 @@ class TestGitUpstreamSource(object):
         assert max_mock.call_count == 0
         assert _get_tags_ret == commit
 
+    def test_update_policy_static(self):
+        gus = GitUpstreamSource(
+            url='https://gerrit.ovirt.org/some-project',
+            branch='master',
+            commit='commit',
+            update_policy='static'
+        )
+        ret = gus._update_policy_static()
+        assert ret == 'commit'
+
     def test_rev_parse_returns_an_str(
         self, upstream_scenarios_for_tests, tmpdir, monkeypatch
     ):
