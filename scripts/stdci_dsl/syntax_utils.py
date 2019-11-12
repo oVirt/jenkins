@@ -16,6 +16,9 @@ def remove_case_and_signs(key):
 
 
 _KEY_NAME_TRANSLATIONS = {
+    'decorate': 'decorate',
+    'decoratecontainers': 'decorate',
+    'decoratecontainer': 'decorate',
     'distro': 'distro',
     'distros': 'distro',
     'distribution': 'distro',

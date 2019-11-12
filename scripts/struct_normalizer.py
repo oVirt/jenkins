@@ -221,3 +221,22 @@ def normalize_value(ctx, value, to):
     :returns: Whatever the `to` function returns
     """
     return to(ctx, value)
+
+
+def all_of(*normalizers):
+    """Chain normalization functions together
+
+    :param list normalizers: A list of two or more normalization functions
+                             that should be a applied to a value
+    :rtype: function
+    :returns: A normalization function that calls all the given normalization
+              functions in a chain, generating a value that is normalized by
+              all of them.
+    """
+    def normalizer(ctx, value):
+        for nrmfun in normalizers:
+            value = normalize_value(ctx, value, to=nrmfun)
+        return value
+    for nrmfun in normalizers:
+        normalizer = wraps(nrmfun)(normalizer)
+    return normalizer

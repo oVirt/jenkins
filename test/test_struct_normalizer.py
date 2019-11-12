@@ -8,7 +8,7 @@ except ImportError:
 
 from scripts.struct_normalizer import (
     DataNormalizationError, normalize_value, scalar, list_of, map_with,
-    normalize_option, mandatory, fallback_option,
+    normalize_option, mandatory, fallback_option, all_of,
 )
 
 
@@ -304,3 +304,16 @@ def test_map_with(a_ctx, options, value, expected):
     else:
         output = normalize_value(a_ctx, value, to=map_with(**options))
         assert output == expected
+
+
+@pytest.mark.parametrize('normalizers,value,expected', [
+    ([], 1, 1),
+    ([fake_norm], 2, norm(2)),
+    ([fake_norm] * 2, 3, norm(norm(3))),
+    ([fake_norm] * 3, 4, norm(norm(norm(4)))),
+])
+def test_all_of(mcwrap, a_ctx, normalizers, value, expected):
+    normalizers = [mcwrap(norfun) for norfun in normalizers]
+    output = normalize_value(a_ctx, value, to=all_of(*normalizers))
+    assert output == expected
+    assert all(norfun.call_count == 1 for norfun in normalizers)

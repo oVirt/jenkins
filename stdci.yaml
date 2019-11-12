@@ -54,6 +54,15 @@ sub-stages:
           - pipelines/libs/*
           - scripts/stdci_dsl/*
           - automation/*.{{ substage }}.*
+  - decorate-test:
+      container: docker.io/centos:7
+      decorate-container: True
+      runif:
+        file-changed:
+          - pipelines/standard-stage.groovy
+          - pipelines/libs/*
+          - scripts/stdci_dsl/*
+          - automation/*.{{ substage }}.*
   - jenkins-jobs:
       stages:
         - check-patch:

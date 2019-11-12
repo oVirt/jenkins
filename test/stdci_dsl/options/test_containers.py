@@ -89,6 +89,42 @@ class TestContainers:
             {'script': 'script.sh', 'containers': [{'image': {}}]},
             DataNormalizationError('Invalid container image given'),
         ),
+        ({
+            'script': 'script.sh',
+            'containers': 'docker.io/fedora:30',
+            'decorate': True,
+        }, {
+            'script': 'script.sh',
+            'decorate': True,
+            'containers': [
+                {
+                    'image': 'centos/s2i-base-centos7',
+                    'args': [
+                        'bash',
+                        '-exc',
+                        # note: below is one big string passed as a single
+                        #       argument to bash
+                        'git init . && '
+                        'git fetch --tags --progress "$STD_CI_CLONE_URL"'
+                            ' +refs/heads/*:refs/remotes/origin/* && '
+                        'git fetch --tags --progress "$STD_CI_CLONE_URL"'
+                            ' +"$STD_CI_REFSPEC":myhead && '
+                        'git checkout myhead && '
+                        '{ chmod ug+x script.sh || :; }'
+                    ],
+                },
+                {'image': 'docker.io/fedora:30', 'args': ['script.sh']},
+            ]
+        }),
+        ({
+            'script': 'script.sh',
+            'containers': [],
+            'decorate': True,
+        }, {
+            'script': 'script.sh',
+            'decorate': True,
+            'containers': []
+        }),
     ])
     def test_normalize(self, options, expected):
         option_object = Containers()
