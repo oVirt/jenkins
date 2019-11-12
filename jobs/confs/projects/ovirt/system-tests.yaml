@@ -85,7 +85,7 @@
     version:
       - master:
           chroot_distro: el7
-    email-to: mperina@redhat.com,omachace@redhat.com
+    email-to: mperina@redhat.com,omachace@redhat.com,mnecas@redhat.com
     jobs:
       - '{project}_{suite_type}-suite-{version}'
 
