@@ -7,7 +7,7 @@ from scripts.usrc import (
     commit_upstream_sources_update, GitProcessError, GitUpstreamSource,
     generate_update_commit_message, git_ls_files, git_read_file, ls_all_files,
     files_diff, get_modified_files, get_files_to_links_map, GitFile,
-    UnkownDestFormatError,
+    UnkownDestFormatError, set_upstream_source_entries, modify_entries_main
 )
 from textwrap import dedent
 from types import GeneratorType
@@ -1590,3 +1590,175 @@ def test_get_modified_files_links(
         u'link2', u'new_ds_file', u'broken_link',
         u'automation/upstream_sources.yaml', u'changing_link', u'link_to_file'
     ])
+
+
+@pytest.mark.parametrize('usrc,usrc_to_set,expected', (
+    (
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1'),
+            GitUpstreamSource(url='u2', branch='b2', commit='c2'),
+        ),
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1u'),
+        ),
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1u'),
+            GitUpstreamSource(url='u2', branch='b2', commit='c2'),
+        ),
+    ),
+    (
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1'),
+            GitUpstreamSource(url='u2', branch='b2', commit='c2'),
+        ),
+        (
+            GitUpstreamSource(url='u3', branch='b3', commit='c3'),
+        ),
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1'),
+            GitUpstreamSource(url='u2', branch='b2', commit='c2'),
+            GitUpstreamSource(url='u3', branch='b3', commit='c3'),
+        ),
+    ),
+    (
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1'),
+            GitUpstreamSource(url='u2', branch='b2', commit='c2'),
+            GitUpstreamSource(url='u3', branch='b3', commit='c3'),
+        ),
+        (
+            GitUpstreamSource(url='u3', branch='b3', commit='c3'),
+            GitUpstreamSource(url='u1', branch='b1', commit='c1u'),
+        ),
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1u'),
+            GitUpstreamSource(url='u2', branch='b2', commit='c2'),
+            GitUpstreamSource(url='u3', branch='b3', commit='c3'),
+        ),
+    ),
+    (
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1'),
+        ),
+
+        (
+            GitUpstreamSource(url='u1', branch='b2', commit='c2'),
+        ),
+
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1'),
+            GitUpstreamSource(url='u1', branch='b2', commit='c2'),
+        ),
+    ),
+    (
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1'),
+            GitUpstreamSource(url='u2', branch='b2', commit='c2'),
+            GitUpstreamSource(url='u3', branch='b3', commit='c3'),
+        ),
+        tuple(),
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1'),
+            GitUpstreamSource(url='u2', branch='b2', commit='c2'),
+            GitUpstreamSource(url='u3', branch='b3', commit='c3'),
+        ),
+    ),
+    (
+        tuple(),
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1'),
+        ),
+        (
+            GitUpstreamSource(url='u1', branch='b1', commit='c1'),
+        ),
+    ),
+))
+def test_set_upstream_source_entries(usrc, usrc_to_set, expected):
+    ret = tuple(set_upstream_source_entries(usrc, usrc_to_set))
+    assert len(ret) == len(expected)
+    for usrc_expected, usrc_returned in zip(expected, ret):
+        assert usrc_expected.url == usrc_returned.url
+        assert usrc_expected.branch == usrc_returned.branch
+        assert usrc_expected.commit == usrc_returned.commit
+
+
+@pytest.mark.parametrize(
+    'usrc_orig,usrc_modify,should_commit',
+(
+    (  # update one, append one
+        (
+            GitUpstreamSource('u', 'b', 'commit'),
+            GitUpstreamSource('u1', 'b1', 'commit'),
+        ),
+        (
+            '{"url": "u1", "branch": "b1", "commit": "updated_commit"}',
+            '{"url": "u3", "branch": "b3", "commit": "new_commit"}',
+        ),
+        False
+    ),
+    (  # append two
+        (GitUpstreamSource('u', 'b', 'commit'),),
+        (
+            '{"url": "u1", "branch": "b1", "commit": "updated_commit"}',
+            '{"url": "u3", "branch": "b3", "commit": "new_commit"}',
+        ),
+        False
+    ),
+    (  # update one, append one, commit
+        (
+            GitUpstreamSource('u', 'b', 'commit'),
+            GitUpstreamSource('u1', 'b1', 'commit')
+        ),
+        (
+            '{"url": "u1", "branch": "b1", "commit": "updated_commit"}',
+            '{"url": "u3", "branch": "b3", "commit": "new_commit"}',
+        ),
+        True
+    ),
+    (  # append two, commit
+        tuple(),
+        (
+            '{"url": "u1", "branch": "b1", "commit": "updated_commit"}',
+            '{"url": "u3", "branch": "b3", "commit": "new_commit"}',
+        ),
+        True
+    ),
+))
+def test_modify_entries(monkeypatch, usrc_orig, usrc_modify, should_commit):
+    entry_property = MagicMock()
+    entry_property.__iter__ = MagicMock(return_value=iter(usrc_modify))
+    mock_args = MagicMock(
+        entries=entry_property, commit=should_commit
+    )
+    mock_load_usrc = MagicMock(return_value=usrc_orig)
+    monkeypatch.setattr('scripts.usrc.load_upstream_sources', mock_load_usrc)
+    mock_save_usrc = MagicMock()
+    monkeypatch.setattr('scripts.usrc.save_upstream_sources', mock_save_usrc)
+    mock_commit_usrc = MagicMock()
+    monkeypatch.setattr(
+        'scripts.usrc.commit_upstream_sources_update', mock_commit_usrc
+    )
+    mock_set_upstream_source_entries = MagicMock(
+        return_value=sentinel.some_entries
+    )
+    monkeypatch.setattr(
+        'scripts.usrc.set_upstream_source_entries',
+        mock_set_upstream_source_entries
+    )
+    modify_entries_main(mock_args)
+    assert mock_load_usrc.call_count == 1
+    assert mock_args.entries.__iter__.call_count == 1
+    mock_save_usrc.assert_called_with(sentinel.some_entries)
+    if should_commit:
+        mock_commit_usrc.assert_called_once_with(sentinel.some_entries)
+    else:
+        mock_commit_usrc.assert_not_called
+
+
+def test_modify_entries_parser_error():
+    mock_args = MagicMock(entries=['{{}'])
+    base_exception_msg = \
+        'Exception while trying parse one of the upstream sources:\n'
+    with pytest.raises(yaml.parser.ParserError) as excinfo:
+        modify_entries_main(mock_args)
+    assert base_exception_msg in str(excinfo.value)

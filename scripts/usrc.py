@@ -17,7 +17,7 @@ from socket import gethostbyname, gethostname
 from subprocess import Popen, CalledProcessError, STDOUT, PIPE
 from six import string_types, iteritems, viewkeys, itervalues
 from six.moves import zip, reduce
-from collections import Iterable, Mapping, Set, namedtuple
+from collections import Iterable, Mapping, Set, namedtuple, OrderedDict
 from itertools import chain, tee
 from traceback import format_exception
 from textwrap import dedent
@@ -90,6 +90,31 @@ def parse_args():
     )
     update_parser.set_defaults(handler=update_main)
     update_parser.add_argument(
+        '--commit', action='store_true',
+        help=(
+            'Commit the upstream_sources.yaml change locally.'
+            ' This will create a branch called "commit_branch" and commit'
+            ' the upstream_sources.yaml change into it. The branch will be'
+            ' overwritten if it already exists'
+        )
+    )
+    modify_entries_parser = subparsers.add_parser(
+        'modify-entries',
+        help='Update or create new upstream source entries',
+        description=(
+            'Specify multiple, IFS separated, upstream source entries in a'
+            ' form of JSON or YAML. If an upstream source with the same repo'
+            ' url and branch exists, it will be replaced in place with the new'
+            ' one. Otherwise, the new entries will be appeneded in the same'
+            ' order as they were specified at the end of the config.'
+        ),
+    )
+    modify_entries_parser.add_argument(
+        'entries', type=str, nargs='+',
+        help='IFS separated upstream source entries'
+    )
+    modify_entries_parser.set_defaults(handler=modify_entries_main)
+    modify_entries_parser.add_argument(
         '--commit', action='store_true',
         help=(
             'Commit the upstream_sources.yaml change locally.'
@@ -201,6 +226,50 @@ def changed_files_main(args):
         args.new_commit, args.old_commit, args.resolve_links
     ):
         print(file_name)
+
+
+def modify_entries_main(args):
+    usrc = load_upstream_sources()
+    usrc_to_set = (
+        GitUpstreamSource.from_yaml_struct(yaml.safe_load(entry))
+        for entry in args.entries
+    )
+    modified_entries = set_upstream_source_entries(usrc, usrc_to_set)
+    save_upstream_sources(modified_entries)
+    if args.commit:
+        commit_upstream_sources_update(modified_entries)
+
+
+def set_upstream_source_entries(usrc_orig, usrc_to_set):
+    """Set upstream source entries in the upstream_sources config
+
+    :param Iterable usrc_orig: The original GitUpstreamSource objects. Objects
+                               in this iterable will be overwritten by those
+                               provided to set.
+    :param Iterable usrc_to_set: GitUpstreamSource objects to set. If one
+                                 exists already in `usrc`, it will be replaced.
+                                 Otherwise, it will be appended to the end of
+                                 the list.
+
+    :returns: Tuple of the modified GitUpstreamSource objects.
+    """
+    def usrc_to_key(usrc):
+        return (usrc.url, usrc.branch)
+
+    try:
+        sources_to_set = OrderedDict(
+            (usrc_to_key(usrc), usrc) for usrc in usrc_to_set
+        )
+    except yaml.parser.ParserError as parser_error:
+        raise yaml.parser.ParserError(
+            'Exception while trying parse one of the upstream sources:\n'
+            '{details}'.format(details=str(parser_error))
+        )
+    modified_sources = tuple(
+        sources_to_set.pop(usrc_to_key(usrc), usrc) for usrc in usrc_orig
+    )
+    new_sources = tuple(sources_to_set.values())
+    return modified_sources + new_sources
 
 
 class GitUpstreamSource(object):
