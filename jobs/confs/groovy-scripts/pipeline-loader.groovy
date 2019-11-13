@@ -92,6 +92,14 @@ def loader_node(Closure code) {
             "docker.io/ovirtinfra/el7-loader-node:e786721a956a3e261142d6ff7614117e3f6f302b"
         def image = env.LOADER_IMAGE ?: default_image
         def pod_label = env.BUILD_TAG
+        if(pod_label.length() > 63) {
+            // Limit label length by shortening `poll-upstream-sources` to `poll`
+            pod_label = pod_label.replace('poll-upstream-sources', 'poll')
+        }
+        if(pod_label.length() > 63) {
+            // If label is still too long, just take the last 63 characters
+            pod_label = pod_label[-63..-1]
+        }
         podTemplate(
             // Default to the cloud defined by the OpenShift Jenkins image
             cloud: env.CONTAINER_CLOUD ?: 'openshift',
