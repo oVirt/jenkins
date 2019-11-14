@@ -13,6 +13,8 @@ all:
         jenkins-caching-virt-agent-centos7:
           upstream_image:
             quay.io/pod_utils/jenkins-caching-virtualization-agent:master
+        centos7:
+          upstream_image: docker.io/centos:7
     custom_images:
       hosts:
         stdci-jenkins-master:
