@@ -160,6 +160,10 @@ def load_code(String code_file) {
     return loaded_code[code_file]
 }
 
+// We're going to save the jenkins repo checkout SHA because we may need this
+// information later if we're also running a job for the jenkins repo itself
+@Field String jenkins_checkout_sha
+
 def checkout_jenkins_repo() {
     String url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
     String configured_url = env.STDCI_SCM_URL ?: "${url_prefix}/jenkins"
@@ -186,6 +190,9 @@ def checkout_jenkins_repo() {
         url: url,
         extra_remotes: extra_remotes,
     )
+    if ('GIT_COMMIT' in checkoutData) {
+        jenkins_checkout_sha = checkoutData.GIT_COMMIT
+    }
     checkoutData.CODE_FROM_EVENT = code_from_event
     return checkoutData
 }
@@ -237,6 +244,13 @@ def checkout_repo(
                 "\$usrc" --log -d get
             """
         }
+    }
+    if(!('GIT_COMMIT' in checkoutData) && jenkins_checkout_sha != null) {
+        // We found out there are some cases when running jobs for the jenkins
+        // repo itself where the checkout data does not include the GIT_COMMIT
+        // when checking it out a 2nd time. So we fill-in the data from the
+        // first time we checked it out.
+        checkoutData.GIT_COMMIT = jenkins_checkout_sha
     }
     return checkoutData
 }
