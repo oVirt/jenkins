@@ -99,6 +99,8 @@ def loader_node(Closure code) {
         if(pod_label.length() > 63) {
             // If label is still too long, just take the last 63 characters
             pod_label = pod_label[-63..-1]
+            // Make sure the first character is an alpha numeric character'
+            pod_label = pod_label.replaceFirst('^[^a-zA-Z0-9]*', '')
         }
         podTemplate(
             // Default to the cloud defined by the OpenShift Jenkins image
