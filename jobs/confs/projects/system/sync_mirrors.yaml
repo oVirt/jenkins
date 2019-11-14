@@ -5,7 +5,6 @@
       - 'centos-updates-el7'
       - 'centos-extras-el7'
       - 'epel-el7'
-      - 'epel-el7-s390x'
       - 'glusterfs-3.12-el7'
       - 'glusterfs-5-el7'
       - 'glusterfs-6-el7'
@@ -34,6 +33,14 @@
       - 'centos-opstools-release-7.6-el7'
       - 'centos-sclo-rh-release-7.6-el7'
     arch: x86_64
+    jobs:
+      - 'system-sync_mirrors-{repo}-{arch}'
+
+- project:
+    name: system-sync_mirrors-s390x
+    repo:
+      - 'epel-s390x-el7'
+    arch: s390x
     jobs:
       - 'system-sync_mirrors-{repo}-{arch}'
 
