@@ -87,57 +87,7 @@ def loader_node(Closure code) {
     if(env.LOADER_NODE_LABEL?.endsWith('-container')) {
         // If the requested node label is for a container we're going to mostly
         // ignore it and just allocate a container in K8s
-
-        // Default image value is based on what is in use as the code is being
-        // written, to maintain compatibility, over time we should migrate to a
-        // default value that is defined in JJB.
-        def default_image = \
-            "docker.io/ovirtinfra/el7-loader-node:e786721a956a3e261142d6ff7614117e3f6f302b"
-        def image = env.LOADER_IMAGE ?: default_image
-        def pod_label = env.BUILD_TAG
-        if(pod_label.length() > 63) {
-            // Limit label length by shortening `poll-upstream-sources` to `poll`
-            pod_label = pod_label.replace('poll-upstream-sources', 'poll')
-        }
-        if(pod_label.length() > 63) {
-            // If label is still too long, just take the last 63 characters
-            pod_label = pod_label[-63..-1]
-            // Make sure the first character is an alpha numeric character'
-            pod_label = pod_label.replaceFirst('^[^a-zA-Z0-9]*', '')
-        }
-        podTemplate(
-            // Default to the cloud defined by the OpenShift Jenkins image
-            cloud: env.CONTAINER_CLOUD ?: 'openshift',
-            // Specify POD label manually to support older K8s plugin versions
-            label: pod_label,
-            yaml: """\
-                apiVersion: v1
-                kind: Pod
-                metadata:
-                  namespace: "${env.OPENSHIFT_PROJECT}"
-                  labels:
-                    podType: "loader-node"
-                spec:
-                  containers:
-                    - name: jnlp
-                      image: "${image}"
-                      imagePullPolicy: "IfNotPresent"
-                      tty: true
-                      resources:
-                        limits:
-                          memory: 500Mi
-                        requests:
-                          memory: 500Mi
-                  securityContext:
-                    runAsUser: ${env.STD_CI_JOB_UID}
-                    runAsGroup: ${env.STD_CI_JOB_UID}
-                    fsGroup: ${env.STD_CI_JOB_UID}
-                  nodeSelector:
-                    type: vm
-                    zone: ci
-                  serviceAccount: jenkins-loader-node
-            """.stripIndent()
-        ) {
+        loader_pod_spec() { pod_label ->
             node(pod_label) {
                 withEnv(["NODE_IS_EPHEMERAL=true"]) {
                     code()
@@ -152,6 +102,66 @@ def loader_node(Closure code) {
             }
         }
     }
+}
+
+def loader_pod_spec(code) {
+    // Default image value is based on what is in use as the code is being
+    // written, to maintain compatibility, over time we should migrate to a
+    // default value that is defined in JJB.
+    def default_image = \
+        "docker.io/ovirtinfra/el7-loader-node:e786721a956a3e261142d6ff7614117e3f6f302b"
+    def image = env.LOADER_IMAGE ?: default_image
+    def pod_label = pod_label_from(env.BUILD_TAG)
+    podTemplate(
+        // Default to the cloud defined by the OpenShift Jenkins image
+        cloud: env.CONTAINER_CLOUD ?: 'openshift',
+        // Specify POD label manually to support older K8s plugin versions
+        label: pod_label,
+        yaml: """\
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              namespace: "${env.OPENSHIFT_PROJECT}"
+              labels:
+                podType: "loader-node"
+            spec:
+              containers:
+                - name: jnlp
+                  image: "${image}"
+                  imagePullPolicy: "IfNotPresent"
+                  tty: true
+                  resources:
+                    limits:
+                      memory: 500Mi
+                    requests:
+                      memory: 500Mi
+              securityContext:
+                runAsUser: ${env.STD_CI_JOB_UID}
+                runAsGroup: ${env.STD_CI_JOB_UID}
+                fsGroup: ${env.STD_CI_JOB_UID}
+              nodeSelector:
+                type: vm
+                zone: ci
+              serviceAccount: jenkins-loader-node
+        """.stripIndent()
+    ) {
+        code(pod_label)
+    }
+}
+
+def pod_label_from(str) {
+    def pod_label = str
+    if(pod_label.length() > 63) {
+        // Limit label length by shortening `poll-upstream-sources` to `poll`
+        pod_label = pod_label.replace('poll-upstream-sources', 'poll')
+    }
+    if(pod_label.length() > 63) {
+        // If label is still too long, just take the last 63 characters
+        pod_label = pod_label[-63..-1]
+        // Make sure the first character is an alpha numeric character'
+        pod_label = pod_label.replaceFirst('^[^a-zA-Z0-9]*', '')
+    }
+    return pod_label
 }
 
 @Field def loaded_code = [:]
