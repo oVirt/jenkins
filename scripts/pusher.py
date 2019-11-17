@@ -640,7 +640,7 @@ def check_if_similar_patch_pushed(push_details):
     msg_param = 'message:{checksum}'.format(checksum=checksum)
     output = gerrit_cli(
         push_details,
-        'query', '--format=JSON', 'status:open', project_param, msg_param
+        'query', '--format=JSON', project_param, msg_param
     )
     return (
         output

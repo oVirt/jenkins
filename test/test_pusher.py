@@ -620,7 +620,7 @@ def test_check_if_similar_patch_pushed(monkeypatch, push_details):
     assert popen.called
     assert list(popen.call_args[0][0]) == [
         'ssh', '-p', '29418', 'user@gerrit.server',
-        'gerrit', 'query', '--format=JSON', 'status:open',
+        'gerrit', 'query', '--format=JSON',
         'project:some_project', 'message:some-md5-checksum',
     ]
     assert get_patch_header.called
