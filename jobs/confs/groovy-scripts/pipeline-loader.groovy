@@ -117,33 +117,21 @@ def loader_pod_spec(code) {
         cloud: env.CONTAINER_CLOUD ?: 'openshift',
         // Specify POD label manually to support older K8s plugin versions
         label: pod_label,
-        yaml: """\
-            apiVersion: v1
-            kind: Pod
-            metadata:
-              namespace: "${env.OPENSHIFT_PROJECT}"
-              labels:
-                podType: "loader-node"
-            spec:
-              containers:
-                - name: jnlp
-                  image: "${image}"
-                  imagePullPolicy: "IfNotPresent"
-                  tty: true
-                  resources:
-                    limits:
-                      memory: 500Mi
-                    requests:
-                      memory: 500Mi
-              securityContext:
-                runAsUser: ${env.STD_CI_JOB_UID}
-                runAsGroup: ${env.STD_CI_JOB_UID}
-                fsGroup: ${env.STD_CI_JOB_UID}
-              nodeSelector:
-                type: vm
-                zone: ci
-              serviceAccount: jenkins-loader-node
-        """.stripIndent()
+        namespace: env.OPENSHIFT_PROJECT,
+        nodeSelector: 'type=vm,zone=ci',
+        serviceAccount: 'jenkins-loader-node',
+        runAsUser: env.STD_CI_JOB_UID,
+        runAsGroup: env.STD_CI_JOB_UID,
+        containers: [
+            containerTemplate(
+                name: 'jnlp',
+                image: image,
+                alwaysPullImage: false,
+                ttyEnabled: true,
+                resourceLimitMemory: '500Mi',
+                resourceRequestMemory: '500Mi',
+            )
+        ],
     ) {
         code(pod_label)
     }
