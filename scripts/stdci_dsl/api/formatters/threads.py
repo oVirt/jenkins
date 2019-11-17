@@ -266,6 +266,7 @@ def _pipeline_dict_formatter(threads, global_options, template=None):
             'timeout': thread.options['timeout'],
             'containers': thread.options['containers'],
             'podspecs': thread.options['podspecs'],
+            'decorate': thread.options.get('decorate', False),
         } for thread in threads
     ]
     return safe_dump(data, default_flow_style=False)

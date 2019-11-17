@@ -27,6 +27,8 @@ class PodSpecs:
                              the UID of the POD so its unique for unique values
                              of this string
         - STD_CI_JOB_UID:    If set - used as the UID the POD runs with
+        - EXPORTED_ARTIFACTS_HOST: If set, and the POD is decorated, contins
+                             The IP of an NFS server to upload artifacts into
 
         A set of environment variables specified by _CONTIANER_HW_ENV_VARS are
         also passed as-is to the POD containers if found in the environment.
@@ -65,6 +67,7 @@ class PodSpecs:
             self._add_resouce_settings(thread.options, podspec)
             self._add_timeout_option(thread.options, podspec)
             self._add_env_vars(thread, podspec)
+            self._add_artifacts_volume(thread, podspec)
             podspecs = [dump(podspec, Dumper=PodConfigDumper)]
         new_options = thread.options.copy()
         new_options['podspecs'] = podspecs
@@ -186,16 +189,50 @@ class PodSpecs:
                 )
         return pod_uid
 
+    def _add_artifacts_volume(self, thread, podspec):
+        """Mount the artifacts volume to the POD if it is decorated and the
+        artifacts server address is set in the environment
+        """
+        if not thread.options.get('decorate', False):
+            return
+        if 'EXPORTED_ARTIFACTS_HOST' not in os.environ:
+            return
+        podspec['spec'].setdefault('volumes', []).append({
+            'name': 'exported-artifacts',
+            'nfs': {
+                'path': self._artifacts_path(thread),
+                'server': os.environ['EXPORTED_ARTIFACTS_HOST'],
+            }
+        })
+        for container in self._all_containers(podspec):
+            container.setdefault('volumeMounts', []).append({
+                'name': 'exported-artifacts',
+                'mountPath': '/exported-artifacts',
+            })
+
     def _update_containers(self, podspec, **kwargs):
         """Update a podspec structure in place to add the options given in
         kwargs to all containers
         """
-        all_containers = chain(
+        for container in self._all_containers(podspec):
+            container.update(kwargs)
+
+    def _all_containers(self, podspec):
+        return chain(
             podspec['spec'].get('containers', []),
             podspec['spec'].get('initContainers', [])
         )
-        for container in all_containers:
-            container.update(kwargs)
+
+    def _artifacts_path(self, thread):
+        """Get the patch for the thread's artifacts on the server
+        """
+        if(thread.substage == 'default'):
+            thread_dir = '.'.join((thread.stage, thread.distro, thread.arch))
+        else:
+            thread_dir = '.'.join(
+                (thread.stage, thread.substage, thread.distro, thread.arch)
+            )
+        return os.path.join('/exported-artifacts', thread_dir)
 
 
 class PodConfigDumper(Dumper):

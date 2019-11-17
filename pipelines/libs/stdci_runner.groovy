@@ -114,6 +114,10 @@ def wait_pod_phase(pod, wait_on_phases, label) {
 def run_std_ci_in_pods(report, project, job, mirrors=null, extra_sources=null) {
     Boolean success = false
     Boolean test_failed = false
+    sh(
+        label: 'Creating results directory',
+        script: "umask 0007; mkdir -p /exported-artifacts/${get_job_dir(job)}"
+    )
     job.podspecs.each { podspec ->
         report.status('PENDING', 'Allocating POD')
         def pod = sh(
@@ -122,7 +126,10 @@ def run_std_ci_in_pods(report, project, job, mirrors=null, extra_sources=null) {
             script: """#!/bin/bash
                 echo "Creating POD with the following configuration" 1>&2
                 echo "=============================================" 1>&2
-                tee /dev/stderr <<'EOPOD' | oc create -o name -f - \n$podspec\nEOPOD
+                cat <<'EOPOD' |\n$podspec\nEOPOD
+                ${pod_nfs_patch(job)} |
+                tee /dev/stderr |
+                oc create -o name -f -
             """
         ).trim()
         echo "Running in POD: $pod"
@@ -147,6 +154,13 @@ def run_std_ci_in_pods(report, project, job, mirrors=null, extra_sources=null) {
                 error "Pod: '${pod}' failed"
             }
         } finally {
+            report.status('PENDING', 'Collecting results')
+            dir('/exported-artifacts') {
+                archiveArtifacts allowEmptyArchive: true, \
+                    artifacts: "${get_job_dir(job)}/**"
+                junit keepLongStdio: true, allowEmptyResults: true, \
+                    testResults: "${get_job_dir(job)}/**/*xml"
+            }
             // We user returnStatus here to avoid throwing an exception if the
             // POD is not there or we fail from other reason
             sh(
@@ -163,6 +177,26 @@ def run_std_ci_in_pods(report, project, job, mirrors=null, extra_sources=null) {
             }
         }
     }
+}
+
+def pod_nfs_patch(job) {
+    // We patch-in the NFS server address in case we changed the
+    // loader node since the YAML was generated
+    //
+    if((!job.decorate) || (!env.EXPORTED_ARTIFACTS_HOST)) {
+        return 'cat'
+    }
+    return [
+        "oc patch --local -f - -o yaml -p '{",
+            '"spec": {"volumes": [{',
+                '"name": "exported-artifacts",',
+                '"nfs": {',
+                    '"server": "' + env.EXPORTED_ARTIFACTS_HOST +'",',
+                    '"path": "/exported-artifacts/' + get_job_dir(job) +'"',
+                '}',
+            '}]}',
+        "}'",
+    ].join()
 }
 
 def get_job_dir(job) {

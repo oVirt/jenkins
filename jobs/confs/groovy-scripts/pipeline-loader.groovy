@@ -25,7 +25,7 @@ def loader_main(loader) {
 
 def main() {
     env.STD_CI_JOB_UID = get_job_uid()
-    loader_node() {
+    loader_node(enable_nfs: (env.LOADER_ENABLE_NFS?.toBoolean() ?: true)) {
         stage('loading code') {
             dir("exported-artifacts") { deleteDir() }
             def checkoutData = checkout_jenkins_repo()
@@ -83,14 +83,43 @@ def main() {
     }
 }
 
-def loader_node(Closure code) {
+def loader_node(Map options=null, Closure code) {
     if(env.LOADER_NODE_LABEL?.endsWith('-container')) {
         // If the requested node label is for a container we're going to mostly
         // ignore it and just allocate a container in K8s
-        loader_pod_spec() { pod_label ->
-            node(pod_label) {
-                withEnv(["NODE_IS_EPHEMERAL=true"]) {
-                    code()
+        if(options?.enable_nfs) {
+            loader_pod_nfs_spec() { pod_label ->
+                node(pod_label) {
+                    String pod_ip
+                    container('nfs-server') {
+                        def uid = env.STD_CI_JOB_UID
+                        pod_ip = sh(
+                            label: 'Set NFS share permissions',
+                            returnStdout: true,
+                            script: """
+                                chown $uid:$uid /exported-artifacts
+                                chmod 6770 /exported-artifacts
+                                # print POD IP
+                                ip --oneline addr | sed -nr \\
+                                    -e '/^[0-9]+: lo/d' \\
+                                    -e 's/^[0-9]+: .* inet ([0-9\\.]+)\\/.*\$/\\1/p;T;q'
+                            """
+                        ).trim()
+                    }
+                    withEnv([
+                        "NODE_IS_EPHEMERAL=true",
+                        "EXPORTED_ARTIFACTS_HOST=$pod_ip",
+                    ]) {
+                        code()
+                    }
+                }
+            }
+        } else {
+            loader_pod_spec() { pod_label ->
+                node(pod_label) {
+                    withEnv(["NODE_IS_EPHEMERAL=true"]) {
+                        code()
+                    }
                 }
             }
         }
@@ -128,12 +157,51 @@ def loader_pod_spec(code) {
                 image: image,
                 alwaysPullImage: false,
                 ttyEnabled: true,
-                resourceLimitMemory: '500Mi',
-                resourceRequestMemory: '500Mi',
+                resourceLimitMemory: '384Mi',
+                resourceRequestMemory: '384Mi',
             )
         ],
     ) {
         code(pod_label)
+    }
+}
+
+def loader_pod_nfs_spec(code) {
+    def default_nfs_image = 'quay.io/pod_utils/nfs-server:20191212'
+    def nfs_image = env.LOADER_NFS_IMAGE ?: default_nfs_image
+    def pod_label = pod_label_from("${env.BUILD_TAG}-nfs")
+    loader_pod_spec() { other_label ->
+        podTemplate(
+            // Default to the cloud defined by the OpenShift Jenkins image
+            cloud: env.CONTAINER_CLOUD ?: 'openshift',
+            // Specify POD label manually to support older K8s plugin versions
+            label: pod_label,
+            namespace: env.OPENSHIFT_PROJECT,
+            containers: [
+                containerTemplate(
+                    name: 'nfs-server',
+                    image: nfs_image,
+                    alwaysPullImage: false,
+                    ttyEnabled: true,
+                    resourceLimitMemory: '128Mi',
+                    resourceRequestMemory: '128Mi',
+                    privileged: true,
+                    // Need to be root the export volumes over NFS
+                    runAsUser: '0',
+                    runAsGroup: env.STD_CI_JOB_UID,
+                    ports: [
+                        portMapping(name: 'nfs', containerPort: 2049),
+                        portMapping(name: 'mountd', containerPort: 20048),
+                        portMapping(name: 'rpcbind', containerPort: 111)
+                    ]
+                )
+            ],
+            volumes: [
+                emptyDirVolume(mountPath: '/exported-artifacts')
+            ],
+        ) {
+            code(pod_label)
+        }
     }
 }
 

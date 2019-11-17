@@ -490,6 +490,73 @@ class TestPodSpecs:
                 )],
             }
         ),
+        (
+            {
+                'containers': [{'image': 'cimg1', 'args': ['ccmd1', 'carg1']}],
+                'decorate': True,
+            },
+            {
+                'EXPORTED_ARTIFACTS_HOST': '1.2.3.4',
+            },
+            12345,
+            {
+                'containers': [{'image': 'cimg1', 'args': ['ccmd1', 'carg1']}],
+                'decorate': True,
+                'podspecs': [dedent(
+                    '''\
+                    apiVersion: v1
+                    kind: Pod
+                    metadata:
+                      generateName: st.sbst.dst.a-r
+                    spec:
+                      containers:
+                      - args:
+                        - ccmd1
+                        - carg1
+                        env:
+                        - name: STD_CI_STAGE
+                          value: st
+                        - name: STD_CI_SUBSTAGE
+                          value: sbst
+                        - name: STD_CI_DISTRO
+                          value: Dst
+                        - name: STD_CI_ARCH
+                          value: a_r
+                        image: cimg1
+                        imagePullPolicy: IfNotPresent
+                        name: main
+                        resources:
+                          limits:
+                            memory: 2Gi
+                          requests:
+                            memory: 2Gi
+                        tty: true
+                        volumeMounts:
+                        - mountPath: /workspace
+                          name: workspace
+                        - mountPath: /exported-artifacts
+                          name: exported-artifacts
+                        workingDir: /workspace
+                      nodeSelector:
+                        type: vm
+                        zone: ci
+                      restartPolicy: Never
+                      securityContext:
+                        fsGroup: 2024033647
+                        runAsGroup: 2024033647
+                        runAsUser: 2024033647
+                      serviceAccount: jenkins-slave-privileged
+                      volumes:
+                      - emptyDir: {}
+                        name: workspace
+                      - name: exported-artifacts
+                        nfs:
+                          path: /exported-artifacts/st.sbst.Dst.a_r
+                          server: 1.2.3.4
+                    '''
+                )],
+            }
+        ),
     ])
     def test_normalize(self, options, rnd, env, expected, monkeypatch):
         option_object = PodSpecs()
@@ -510,3 +577,13 @@ class TestPodSpecs:
             assert randrange.call_count == 1
             assert randrange.call_args == call(0, 100000)
         assert out.options == expected
+
+    @pytest.mark.parametrize('stage,substage,distro,arch,expected', [
+        ('st', 'sbst', 'dst', 'ar', '/exported-artifacts/st.sbst.dst.ar'),
+        ('st', 'default', 'dst', 'ar', '/exported-artifacts/st.dst.ar'),
+    ])
+    def test_artifacts_path(self, stage, substage, distro, arch, expected):
+        option_object = PodSpecs()
+        jt = JobThread(stage, substage, distro, arch, {})
+        out = option_object._artifacts_path(jt)
+        assert out == expected
