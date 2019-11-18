@@ -381,7 +381,7 @@ class TestPodSpecs:
             {
                 'containers': [
                     {'image': 'ici1', 'args': ['icc1']},
-                    {'image': 'ici2', 'args': ['icc2'], 'workingdir': '/wd1'},
+                    {'image': 'ici2', 'args': ['icc2'], 'workingDir': '/wd1'},
                     {'image': 'cimg1', 'args': ['ccmd1']},
                 ],
             },
@@ -390,7 +390,7 @@ class TestPodSpecs:
             {
                 'containers': [
                     {'image': 'ici1', 'args': ['icc1']},
-                    {'image': 'ici2', 'args': ['icc2'], 'workingdir': '/wd1'},
+                    {'image': 'ici2', 'args': ['icc2'], 'workingDir': '/wd1'},
                     {'image': 'cimg1', 'args': ['ccmd1']},
                 ],
                 'podspecs': [dedent(
@@ -553,6 +553,73 @@ class TestPodSpecs:
                         nfs:
                           path: /exported-artifacts/st.sbst.Dst.a_r
                           server: 1.2.3.4
+                    '''
+                )],
+            }
+        ),
+        (
+            {
+                'containers': [{
+                    'image': 'cimg1',
+                    'args': ['ccmd1', 'carg1'],
+                    'securityContext': { 'runAsUser': '0' },
+                }],
+            },
+            {},
+            12345,
+            {
+                'containers': [{
+                    'image': 'cimg1',
+                    'args': ['ccmd1', 'carg1'],
+                    'securityContext': { 'runAsUser': '0' },
+                }],
+                'podspecs': [dedent(
+                    '''\
+                    apiVersion: v1
+                    kind: Pod
+                    metadata:
+                      generateName: st.sbst.dst.a-r
+                    spec:
+                      containers:
+                      - args:
+                        - ccmd1
+                        - carg1
+                        env:
+                        - name: STD_CI_STAGE
+                          value: st
+                        - name: STD_CI_SUBSTAGE
+                          value: sbst
+                        - name: STD_CI_DISTRO
+                          value: Dst
+                        - name: STD_CI_ARCH
+                          value: a_r
+                        image: cimg1
+                        imagePullPolicy: IfNotPresent
+                        name: main
+                        resources:
+                          limits:
+                            memory: 2Gi
+                          requests:
+                            memory: 2Gi
+                        securityContext:
+                          runAsUser: '0'
+                        tty: true
+                        volumeMounts:
+                        - mountPath: /workspace
+                          name: workspace
+                        workingDir: /workspace
+                      nodeSelector:
+                        type: vm
+                        zone: ci
+                      restartPolicy: Never
+                      securityContext:
+                        fsGroup: 2024033647
+                        runAsGroup: 2024033647
+                        runAsUser: 2024033647
+                      serviceAccount: jenkins-slave-privileged
+                      volumes:
+                      - emptyDir: {}
+                        name: workspace
                     '''
                 )],
             }

@@ -63,6 +63,18 @@ sub-stages:
           - pipelines/libs/*
           - scripts/stdci_dsl/*
           - automation/*.{{ substage }}.*
+  - secure-container-test:
+      container:
+        image: quay.io/pod_utils/am_i
+        args: root
+        securityContext:
+          runAsUser: 0
+      runif:
+        file-changed:
+          - pipelines/standard-stage.groovy
+          - pipelines/libs/*
+          - scripts/stdci_dsl/*
+          - automation/*.{{ substage }}.*
   - jenkins-jobs:
       stages:
         - check-patch:

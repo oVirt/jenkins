@@ -216,6 +216,7 @@ def get_std_ci_job_properties(project, String std_ci_stage) {
         'PYTHONPATH=jenkins',
         "POD_NAME_PREFIX=${env.JOB_BASE_NAME}-${env.BUILD_NUMBER}",
         "STD_CI_JOB_KEY=${env.BUILD_TAG}",
+        "CI_SECURE_IMAGES=${env.CI_SECURE_IMAGES ?: 'quay.io/pod_utils/am_i'}",
     ]) {
         sh """\
             #!/usr/bin/env python

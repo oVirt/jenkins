@@ -9,7 +9,9 @@ except ImportError:
 
 from scripts.struct_normalizer import normalize_value, DataNormalizationError
 from scripts.stdci_dsl.options import base
-from scripts.stdci_dsl.options.base import render_template, template_string
+from scripts.stdci_dsl.options.base import (
+    render_template, template_string, map_with_cased_keys
+)
 from scripts.stdci_dsl.job_thread import JobThread
 
 
@@ -53,3 +55,25 @@ def test_template_string(monkeypatch, a_thread, else_, value, expected):
             call(a_thread, expected),
             call(a_thread, expected).mark('rendered'),
         ]
+
+
+def test_map_with_cased_keys(a_thread):
+    def normfun(thread, value):
+        return getattr(sentinel, value)
+
+    options = {
+        'FirstKey': normfun,
+        'SecondKey': normfun,
+        'thirdkey': normfun,
+    }
+    input_map = {
+        'firstkey': 'first_value',
+        'thirdkey': 'third_value',
+    }
+    expected = {
+        'FirstKey': sentinel.first_value,
+        'thirdkey': sentinel.third_value,
+    }
+    out = \
+        normalize_value(a_thread, input_map, to=map_with_cased_keys(**options))
+    assert out == expected

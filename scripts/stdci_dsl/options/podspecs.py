@@ -103,9 +103,7 @@ class PodSpecs:
             ],
             'workingDir': '/workspace',
         }
-        for prop in ('image', 'command', 'args', 'workingDir'):
-            if prop.lower() in container_opt:
-                cont_spec[prop] = container_opt[prop.lower()]
+        cont_spec.update(container_opt)
         return cont_spec
 
     def _add_init_containers(self, containers, podspec):
