@@ -6,7 +6,13 @@ import groovy.transform.Field
 def on_load(loader){
     project_lib = loader.load_code('libs/stdci_project.groovy')
     stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy')
+    dsl_lib = loader.load_code('libs/stdci_dsl.groovy')
 }
+
+@Field def available_suits
+@Field def available_threads
+@Field def build_thread_params
+@Field def system_test_project
 
 def loader_main(loader) {
     stage('Analyzing patches') {
@@ -20,14 +26,12 @@ def loader_main(loader) {
             refspec: gate_info.st_project?.refspec ?: 'refs/heads/master',
         )
         println("System tests project: ${system_test_project.name}")
-        // Global Var.
-        available_suits = get_all_suits(system_test_project)
-        def available_suits_list = "Found ${available_suits.size()} test suit(s):"
-        available_suits_list += available_suits.collect { "\n- ${it}" }.join()
-        print(available_suits_list)
-        def build_list = "Will run ${build_thread_params.size()} build(s):"
-        build_list += build_thread_params.collect { "\n- ${it[2]}" }.join()
-        print(build_list)
+
+        project_lib.checkout_project(system_test_project)
+        available_suits = get_available_suits(system_test_project.clone_dir_name)
+        available_threads = get_available_threads(system_test_project.clone_dir_name)
+
+        print_builds(build_thread_params)
     }
 }
 
@@ -48,8 +52,17 @@ def main() {
             "\n- ${release}:${builds_list}"
         }.join()
         print(releases_list)
-        run_test_threads(releases_to_test, available_suits)
+        run_test_threads(
+            system_test_project, releases_to_test, available_suits,
+            available_threads
+        )
     }
+}
+
+def print_builds(build_thread_params) {
+    def build_list = "Will run ${build_thread_params.size()} build(s):"
+    build_list += build_thread_params.collect { "\n- ${it[2]}" }.join()
+    print(build_list)
 }
 
 def create_build_threads(build_thread_params, releases_to_test) {
@@ -82,36 +95,49 @@ def create_build_thread(job_run_spec, releases, releases_to_test) {
 def create_gate_info() {
     def gate_info_json = "gate_info.json"
     withEnv(['PYTHONPATH=jenkins']) {
-        sh """\
-            #!/usr/bin/env python
-            import json
-            from os import environ
-            from scripts.ost_build_resolver import create_gate_info
-            gate_info = create_gate_info(
-                environ['CHECKED_COMMITS'],
-                environ['SYSTEM_QUEUE_PREFIX'],
-                environ['SYSTEM_TESTS_PROJECT'],
-            )
+        sh(
+            label: 'Analyse tested patches',
+            script: """\
+                #!/usr/bin/env python
+                import json
+                from os import environ
+                from scripts.ost_build_resolver import create_gate_info
+                gate_info = create_gate_info(
+                    environ['CHECKED_COMMITS'],
+                    environ['SYSTEM_QUEUE_PREFIX'],
+                    environ['SYSTEM_TESTS_PROJECT'],
+                )
 
-            with open('${gate_info_json}', 'w') as f:
-                json.dump(gate_info, f)
-        """.stripIndent()
+                with open('${gate_info_json}', 'w') as f:
+                    json.dump(gate_info, f)
+            """.stripIndent()
+        )
     }
     def gate_info = readJSON file: gate_info_json
     return gate_info
 }
 
 @NonCPS
-def get_test_threads(releases_to_test, available_suits) {
+def get_test_threads(releases_to_test, available_suits, available_threads) {
     def suit_types_to_use = (env?.SYSTEM_TEST_SUIT_TYPES ?: 'basic').tokenize()
     return releases_to_test.collectMany { release, builds ->
-        suit_types_to_use.findResults { suit_type ->
+        suit_types_to_use.collectMany { suit_type ->
+            def extra_sources = builds.collect { "jenkins:${it}\n"}.join('')
+            String suit = "${suit_type}_suite_${release}"
+            def threads = available_threads.findResults { thread ->
+                if(thread.substage == suit) {
+                    thread.extra_sources = extra_sources
+                    return thread
+                }
+            }
+            if(!(threads.isEmpty())) {
+                return threads
+            }
             // script has to be of type `String` so looking it up in the
             // `available_suits` Set will work
-            String script = "${suit_type}_suite_${release}.sh"
+            String script = "${suit}.sh"
             if(script in available_suits) {
-                def extra_sources = builds.collect { "jenkins:${it}\n"}.join('')
-                return [
+                return [[
                     'stage': "${suit_type}-suit-${release}",
                     'substage': 'default',
                     'distro': 'el7',
@@ -125,33 +151,52 @@ def get_test_threads(releases_to_test, available_suits) {
                     'reporting': ['style': 'stdci'],
                     'timeout': '3h',
                     'extra_sources' : extra_sources
-                ]
+                ]]
             }
+            return []
         }
     }
 }
 
-def run_test_threads(releases_to_test, available_suits) {
-    def test_threads = get_test_threads(releases_to_test, available_suits)
+def run_test_threads(
+    system_test_project, releases_to_test, available_suits, available_threads
+) {
+    def test_threads = get_test_threads(
+        releases_to_test, available_suits, available_threads
+    )
     def threads_list = "Will run the following test suits:"
-    threads_list += test_threads.collect { "\n - ${it.stage}" }.join()
+    threads_list += test_threads.collect {
+        "\n - ${stdci_runner_lib.get_job_name(it)}"
+    }.join()
     print(threads_list)
     def mirrors = mk_mirrors_conf(releases_to_test)
     print("Will use the following mirrors configuration:\n$mirrors")
-    stdci_runner_lib.run_std_ci_jobs(
+    stdci_runner_lib.run_std_ci_jobs_with_loader(
         project: system_test_project,
         jobs: test_threads,
         mirrors: mirrors,
     )
 }
 
-def get_all_suits(system_test_project) {
-    project_lib.checkout_project(system_test_project)
+def get_available_suits(path) {
     def all_suits
-    dir(system_test_project.name) {
+    dir(path) {
         all_suits = findFiles(glob: 'automation/*_suite_*.sh').name as Set
     }
+    def available_suits_list = "Found ${all_suits.size()} test suit(s):"
+    available_suits_list += all_suits.collect { "\n- ${it}" }.join()
+    print(available_suits_list)
     return all_suits
+}
+
+def get_available_threads(path) {
+    threads = dsl_lib.parse(path, 'gate').jobs
+    def thread_list = "Found ${threads.size()} test thread(s):"
+    thread_list += threads.collect { thread ->
+        "\n- ${stdci_runner_lib.get_job_name(thread)}"
+    }.join()
+    print(thread_list)
+    return threads
 }
 
 def wait_for_merged_packages(releases_to_test) {

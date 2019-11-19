@@ -36,6 +36,20 @@ def run_std_ci_jobs(Map named_args) {
     )
 }
 
+def run_std_ci_jobs_with_loader(Map named_args) {
+    // A version of run_std_ci_jobs that allocates a loader node to run with if
+    // its needed, only named args are supported
+    if(named_args?.jobs?.podspecs.any()) {
+        // If we need to run PODs, allocate a node to manage them
+        loader_node(enable_nfs: true) {
+            checkout_jenkins_repo()
+            stdci_runner_lib.run_std_ci_jobs(named_args)
+        }
+    } else {
+        stdci_runner_lib.run_std_ci_jobs(named_args)
+    }
+}
+
 def run_std_ci_jobs(project, jobs, mirrors=null, extra_sources=null) {
     def branches = [:]
     def report = new PipelineReporter(this, project)
