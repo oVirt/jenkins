@@ -10,6 +10,7 @@ import groovy.transform.Field
 def on_load(loader){
     project_lib = loader.load_code('libs/stdci_project.groovy')
     stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy')
+    dsl_lib = loader.load_code('libs/stdci_dsl.groovy')
     def build_params_lib = loader.load_code('libs/build_params.groovy')
 
     loader_node = loader.&loader_node
@@ -42,17 +43,17 @@ def loader_main(loader) {
                 cp automation/check-patch.yaml .stdci.yaml
             """
         }
-        job_properties = get_std_ci_job_properties(project, std_ci_stage)
-        jobs = get_std_ci_jobs(job_properties)
+        job_properties = dsl_lib.parse(project.clone_dir_name, std_ci_stage)
+        jobs = job_properties.jobs
         queues = get_std_ci_queues(project, job_properties)
         save_gate_info(job_properties.is_gated_project, queues)
         if(!queues.empty && std_ci_stage != 'build-artifacts') {
             // If we need to submit the change the queues, make sure we
             // generate builds
-            build_job_properties = get_std_ci_job_properties(
-                project, 'build-artifacts'
+            def build_job_properties = dsl_lib.parse(
+                project.clone_dir_name, 'build-artifacts'
             )
-            jobs += get_std_ci_jobs(build_job_properties)
+            jobs += build_job_properties.jobs
         }
         stdci_runner_lib.remove_blacklisted_jobs(jobs)
         if(jobs.empty) {
@@ -210,65 +211,13 @@ def get_stage_github() {
     return null
 }
 
-def get_std_ci_job_properties(project, String std_ci_stage) {
-    def stdci_job_properties = "jobs_for_${std_ci_stage}.yaml"
-    withEnv([
-        'PYTHONPATH=jenkins',
-        "POD_NAME_PREFIX=${env.JOB_BASE_NAME}-${env.BUILD_NUMBER}",
-        "STD_CI_JOB_KEY=${env.BUILD_TAG}",
-        "CI_SECURE_IMAGES=${env.CI_SECURE_IMAGES ?: 'quay.io/pod_utils/am_i'}",
-    ]) {
-        sh """\
-            #!/usr/bin/env python
-            import yaml
-            from scripts.stdci_dsl.api import (
-                get_formatted_threads, setupLogging
-            )
-            from scripts.zuul_helpers import is_gated_project
-
-            setupLogging()
-            stdci_config = get_formatted_threads(
-                'pipeline_dict', '${project.clone_dir_name}', '${std_ci_stage}'
-            )
-
-            # Inject gating info into STDCI config
-            stdci_config_parsed = yaml.safe_load(stdci_config)
-            stdci_config_parsed['is_gated_project'] = \
-                is_gated_project('${project.clone_dir_name}')
-            stdci_config = yaml.safe_dump(
-                stdci_config_parsed, default_flow_style=False
-            )
-
-            with open('${stdci_job_properties}', 'w') as conf:
-                conf.write(stdci_config)
-        """.stripIndent()
-    }
-    def cfg = readYaml file: stdci_job_properties
-    return cfg
-}
-
-def get_std_ci_jobs(Map job_properties) {
-    return job_properties.get('jobs')
-}
-
-def get_std_ci_global_options(Map job_properties) {
-    return job_properties.get('global_config')
-}
-
-def get_std_ci_queues(project, Map job_properties) {
+def get_std_ci_queues(project, job_properties) {
     if(get_stage_name() != 'check-merged') {
         // Only Enqueue on actual merge/push events
         return []
     }
     print "Checking if change should be enqueued"
-    def branch_queue_map = \
-        get_std_ci_global_options(job_properties).get("release_branches")
-    def o = branch_queue_map.get(project.branch, [])
-    if (o in Collection) {
-        return o.collect { it as String } as Set
-    } else {
-        return [o as String]
-    }
+    return job_properties.get_queues(project.branch)
 }
 
 def enqueue_change(project, queues) {
