@@ -21,7 +21,7 @@ from scripts.stdci_logging import add_logging_args, setup_console_logging
 
 
 STDCI_STAGES = ('check-patch', 'check-merged', 'build-artifacts',
-                'poll-upstream-sources')
+                'poll-upstream-sources', 'gate')
 
 
 logger = logging.getLogger(__name__)

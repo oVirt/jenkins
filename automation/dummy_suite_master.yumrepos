@@ -1,7 +1,7 @@
 # dummy_suit_master.yumrepos - Yum configuration file for dummy_suit_master
 #
 [main]
-cachedir = /var/cache/yum/$basearch/$releasever
+cachedir = /tmp/yum_cache/$basearch/$releasever
 keepcache = 0
 reposdir = /dev/null
 sslverify = false

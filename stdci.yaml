@@ -147,5 +147,11 @@ sub-stages:
           - scripts/*.py
           - test3/*
           - automation/check-patch.{{ substage }}.*
+  - dummy_suite_master:
+      stage: gate
+      script:
+        from-file: "automation/{{ substage }}.sh"
+      container: docker.io/centos:7
+      decorate: true
 release-branches:
   'master': 'dummy-master'
