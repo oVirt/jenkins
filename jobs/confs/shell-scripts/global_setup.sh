@@ -270,7 +270,7 @@ extra_packages() {
     # packages common for all distros
     local package_list=(
         git mock sed bash procps-ng createrepo_c
-        distribution-gpg-keys librbd1
+        distribution-gpg-keys librbd1 selinux-policy
     )
     if [[ -e '/usr/bin/dnf' ]]; then
         # Fedora-specific packages
