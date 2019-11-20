@@ -156,6 +156,10 @@ def run_std_ci_in_pods(report, project, job, mirrors=null, extra_sources=null) {
         } finally {
             report.status('PENDING', 'Collecting results')
             dir('/exported-artifacts') {
+                dir("${get_job_dir(job)}/pod_logs") { sh(
+                    label: "Collect POD logs",
+                    script: "$env.WORKSPACE/jenkins/scripts/podlogs.sh '$pod'"
+                ) }
                 archiveArtifacts allowEmptyArchive: true, \
                     artifacts: "${get_job_dir(job)}/**"
                 junit keepLongStdio: true, allowEmptyResults: true, \
