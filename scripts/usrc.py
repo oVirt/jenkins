@@ -93,7 +93,8 @@ def parse_args():
         description='Upstream source dependency handling tool'
     )
     add_logging_args(parser)
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(dest='COMMAND')
+    subparsers.required = True
     get_parser = subparsers.add_parser(
         'get', help='Download upstream sources',
         description=(

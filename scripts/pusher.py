@@ -109,7 +109,7 @@ def main():
     except IOError as e:
         logger.exception('%s: %s', e.strerror, e.filename)
     except Exception as e:
-        logger.exception("%s", e.message)
+        logger.exception("%s", e.args[0])
     return 1
 
 
@@ -118,7 +118,8 @@ def parse_args():
         description='Tool for automated pushing of patches to SCMs'
     )
     add_logging_args(parser)
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(dest='COMMAND')
+    subparsers.required = True
     push_parser = subparsers.add_parser(
         'push', help='Push commit in $CWD',
         description='Push the local commit into the appropriate remote SCM',
