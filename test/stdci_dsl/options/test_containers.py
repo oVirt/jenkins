@@ -116,7 +116,8 @@ class TestContainers:
                         'git fetch --tags --progress "$STD_CI_CLONE_URL"'
                             ' +"$STD_CI_REFSPEC":myhead && '
                         'git checkout myhead && '
-                        '{ chmod ug+x script.sh || :; }'
+                        '{ chmod ug+x script.sh || :; } && '
+                        '{ mv -vf /exported-artifacts/extra_sources . || :; }'
                     ],
                 },
                 {'image': 'docker.io/fedora:30', 'args': ['script.sh']},

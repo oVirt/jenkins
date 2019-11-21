@@ -94,7 +94,8 @@ class Containers:
                     'git fetch --tags --progress "$STD_CI_CLONE_URL"'
                         ' +"$STD_CI_REFSPEC":myhead && '
                     'git checkout myhead && '
-                    '{ chmod ug+x ' + thread.options['script'] + ' || :; }'
+                    '{ chmod ug+x ' + thread.options['script'] + ' || :; } && '
+                    '{ mv -vf /exported-artifacts/extra_sources . || :; }'
                 ],
             }
             return [checkout_container] + cont_list

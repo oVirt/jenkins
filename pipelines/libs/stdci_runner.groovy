@@ -128,10 +128,16 @@ def wait_pod_phase(pod, wait_on_phases, label) {
 def run_std_ci_in_pods(report, project, job, mirrors=null, extra_sources=null) {
     Boolean success = false
     Boolean test_failed = false
+    String job_dir = get_job_dir(job)
     sh(
         label: 'Creating results directory',
-        script: "umask 0007; mkdir -p /exported-artifacts/${get_job_dir(job)}"
+        script: "umask 0007; mkdir -p /exported-artifacts/$job_dir"
     )
+    if(extra_sources && job.decorate) {
+        writeFile file: "/exported-artifacts/$job_dir/extra_sources", \
+            text: extra_sources
+        println "extra_sources file was created"
+    }
     job.podspecs.each { podspec ->
         report.status('PENDING', 'Allocating POD')
         def pod = sh(
@@ -170,14 +176,14 @@ def run_std_ci_in_pods(report, project, job, mirrors=null, extra_sources=null) {
         } finally {
             report.status('PENDING', 'Collecting results')
             dir('/exported-artifacts') {
-                dir("${get_job_dir(job)}/pod_logs") { sh(
+                dir("$job_dir/pod_logs") { sh(
                     label: "Collect POD logs",
                     script: "$env.WORKSPACE/jenkins/scripts/podlogs.sh '$pod'"
                 ) }
                 archiveArtifacts allowEmptyArchive: true, \
-                    artifacts: "${get_job_dir(job)}/**"
+                    artifacts: "$job_dir/**"
                 junit keepLongStdio: true, allowEmptyResults: true, \
-                    testResults: "${get_job_dir(job)}/**/*xml"
+                    testResults: "$job_dir/**/*xml"
             }
             // We user returnStatus here to avoid throwing an exception if the
             // POD is not there or we fail from other reason
