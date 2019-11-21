@@ -27,6 +27,7 @@ setuptools.setup(
             'usrc = scripts.usrc:main',
             'pusher = scripts.pusher:main',
             'mirror_client = scripts.mirror_client:main',
+            'decorate = scripts.decorate:decorate',
         ]
     }
 )
