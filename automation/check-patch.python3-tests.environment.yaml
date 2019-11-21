@@ -1,0 +1,6 @@
+- name: PIPENV_CACHE_DIR
+  value: /var/host_cache/stdci_pipenv_cache
+  # Force LANG to a sane value inside the chroot because python3 requires an
+  # environment with UTF-8 support
+- name: LANG
+  value: en_US.UTF-8

@@ -6,7 +6,7 @@ from textwrap import dedent
 import dockerfile_parse
 import pytest
 from dockerfile_parse import constants as dfp_constants
-from mock import MagicMock, call, sentinel
+from unittest.mock import MagicMock, call, sentinel
 
 from scripts import dockerfile_utils
 from scripts.dockerfile_utils import (DecoratedCmd, Decorator,

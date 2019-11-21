@@ -1,7 +1,5 @@
 #!/bin/bash -xe
 
-source automation/stdci_venv.sh
-
 PYTHON_3_TESTS_DIR=test3
 
 main() {
@@ -9,12 +7,21 @@ main() {
         echo "ERROR: Could not find python3"
         return 1
     fi
-    stdci_venv::activate "$0"
+    setup_pipenv
+    pipenv sync --dev
     run_tests
 }
 
+setup_pipenv() {
+    PATH="/usr/local/bin:$PATH"
+    python3 -m pip --cache-dir="$PIPENV_CACHE_DIR" install pipenv
+}
+
 run_tests() {
-    python3 -m pytest -vvv "${PYTHON_3_TESTS_DIR}"
+    pipenv run py.test \
+        -vvv \
+        --junitxml="exported-artifacts/pipenv-pytest.junit.xml" \
+        "${PYTHON_3_TESTS_DIR}"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
