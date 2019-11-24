@@ -269,8 +269,8 @@ extra_packages() {
     # Add extra packages we need for STDCI
     # packages common for all distros
     local package_list=(
-        git mock sed bash procps-ng createrepo_c
-        distribution-gpg-keys librbd1 selinux-policy
+        git mock sed bash procps-ng createrepo_c distribution-gpg-keys librbd1
+        selinux-policy container-selinux
     )
     if [[ -e '/usr/bin/dnf' ]]; then
         # Fedora-specific packages
@@ -278,7 +278,7 @@ extra_packages() {
         if can_sudo dnf; then
             package_list+=(
                 firewalld haveged libvirt qemu-kvm python3-paramiko
-                nosync libselinux-utils kmod
+                nosync libselinux-utils kmod rpm-plugin-selinux
             )
             # Workaround for the following FC30 bug
             # https://bugzilla.redhat.com/show_bug.cgi?id=1724305
