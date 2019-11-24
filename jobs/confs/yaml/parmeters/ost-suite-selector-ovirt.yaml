@@ -18,5 +18,6 @@
             - ansible
             - performance
             - network
+            - basic-vagrant
             - compat-4.1
             - compat-4.2
