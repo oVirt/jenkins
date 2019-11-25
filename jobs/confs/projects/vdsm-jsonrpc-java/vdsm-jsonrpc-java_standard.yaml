@@ -6,7 +6,7 @@
       - master:
           branch: master
       - '4.3':
-          branch: master
+          branch: ovirt-4.3
     stage: check-patch
     distro:
       - el7
