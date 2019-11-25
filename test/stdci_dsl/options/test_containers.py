@@ -104,21 +104,8 @@ class TestContainers:
             'decorate': True,
             'containers': [
                 {
-                    'image': 'centos/s2i-base-centos7',
-                    'args': [
-                        'bash',
-                        '-exc',
-                        # note: below is one big string passed as a single
-                        #       argument to bash
-                        'git init . && '
-                        'git fetch --tags --progress "$STD_CI_CLONE_URL"'
-                            ' +refs/heads/*:refs/remotes/origin/* && '
-                        'git fetch --tags --progress "$STD_CI_CLONE_URL"'
-                            ' +"$STD_CI_REFSPEC":myhead && '
-                        'git checkout myhead && '
-                        '{ chmod ug+x script.sh || :; } && '
-                        '{ mv -vf /exported-artifacts/extra_sources . || :; }'
-                    ],
+                    'image': 'quay.io/bkorren/stdci-tools:mb201911251538',
+                    'args': ['decorate'],
                 },
                 {'image': 'docker.io/fedora:30', 'args': ['script.sh']},
             ]

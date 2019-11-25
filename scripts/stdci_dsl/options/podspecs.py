@@ -158,6 +158,7 @@ class PodSpecs:
             {'name': 'STD_CI_SUBSTAGE', 'value': thread.substage},
             {'name': 'STD_CI_DISTRO', 'value': thread.distro},
             {'name': 'STD_CI_ARCH', 'value': thread.arch},
+            {'name': 'STD_CI_SCRIPT', 'value': thread.options['script']},
         ] + [
             {'name': var, 'value': os.environ[var]}
             for var in self._CONTIANER_HW_ENV_VARS

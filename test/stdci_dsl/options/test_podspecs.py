@@ -30,11 +30,13 @@ class TestPodSpecs:
         ),
         (
             {
+                'script': 'script1.sh',
                 'containers': [{'image': 'cimg1', 'args': ['ccmd1', 'carg1']}],
             },
             {},
             12345,
             {
+                'script': 'script1.sh',
                 'containers': [{'image': 'cimg1', 'args': ['ccmd1', 'carg1']}],
                 'podspecs': [dedent(
                     '''\
@@ -56,6 +58,8 @@ class TestPodSpecs:
                           value: Dst
                         - name: STD_CI_ARCH
                           value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
                         image: cimg1
                         imagePullPolicy: IfNotPresent
                         name: main
@@ -87,12 +91,14 @@ class TestPodSpecs:
         ),
         (
             {
+                'script': 'script1.sh',
                 'containers': [{'image': 'cimg2', 'args': ['ccmd2']}],
                 'timeout': 3600,
             },
             {},
             56780,
             {
+                'script': 'script1.sh',
                 'containers': [{'image': 'cimg2', 'args': ['ccmd2']}],
                 'timeout': 3600,
                 'podspecs': [dedent(
@@ -115,6 +121,8 @@ class TestPodSpecs:
                           value: Dst
                         - name: STD_CI_ARCH
                           value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
                         image: cimg2
                         imagePullPolicy: IfNotPresent
                         name: main
@@ -146,6 +154,7 @@ class TestPodSpecs:
         ),
         (
             {
+                'script': 'script1.sh',
                 'containers': [
                     {'image': 'cimg1', 'args': ['ccmd1', 'carg1']}
                 ],
@@ -154,6 +163,7 @@ class TestPodSpecs:
             {},
             12345,
             {
+                'script': 'script1.sh',
                 'containers': [
                     {'image': 'cimg1', 'args': ['ccmd1', 'carg1']}
                 ],
@@ -178,6 +188,8 @@ class TestPodSpecs:
                           value: Dst
                         - name: STD_CI_ARCH
                           value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
                         image: cimg1
                         imagePullPolicy: IfNotPresent
                         name: main
@@ -208,6 +220,7 @@ class TestPodSpecs:
         ),
         (
             {
+                'script': 'script1.sh',
                 'containers': [
                     {'image': 'cimg1', 'args': ['ccmd1', 'carg1']}
                 ],
@@ -236,6 +249,7 @@ class TestPodSpecs:
             },
             12345,
             {
+                'script': 'script1.sh',
                 'containers': [
                     {'image': 'cimg1', 'args': ['ccmd1', 'carg1']}
                 ],
@@ -260,6 +274,8 @@ class TestPodSpecs:
                           value: Dst
                         - name: STD_CI_ARCH
                           value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
                         - name: STD_CI_CLONE_URL
                           value: the_url
                         - name: STD_CI_REFSPEC
@@ -320,6 +336,7 @@ class TestPodSpecs:
         ),
         (
             {
+                'script': 'script1.sh',
                 'containers': [{'image': 'cimg1', 'args': ['ccmd1', 'carg1']}],
             },
             {
@@ -327,6 +344,7 @@ class TestPodSpecs:
             },
             None,
             {
+                'script': 'script1.sh',
                 'containers': [{'image': 'cimg1', 'args': ['ccmd1', 'carg1']}],
                 'podspecs': [dedent(
                     '''\
@@ -348,6 +366,8 @@ class TestPodSpecs:
                           value: Dst
                         - name: STD_CI_ARCH
                           value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
                         image: cimg1
                         imagePullPolicy: IfNotPresent
                         name: main
@@ -379,6 +399,7 @@ class TestPodSpecs:
         ),
         (
             {
+                'script': 'script1.sh',
                 'containers': [
                     {'image': 'ici1', 'args': ['icc1']},
                     {'image': 'ici2', 'args': ['icc2'], 'workingDir': '/wd1'},
@@ -388,6 +409,7 @@ class TestPodSpecs:
             {},
             12345,
             {
+                'script': 'script1.sh',
                 'containers': [
                     {'image': 'ici1', 'args': ['icc1']},
                     {'image': 'ici2', 'args': ['icc2'], 'workingDir': '/wd1'},
@@ -412,6 +434,8 @@ class TestPodSpecs:
                           value: Dst
                         - name: STD_CI_ARCH
                           value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
                         image: cimg1
                         imagePullPolicy: IfNotPresent
                         name: main
@@ -437,6 +461,8 @@ class TestPodSpecs:
                           value: Dst
                         - name: STD_CI_ARCH
                           value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
                         image: ici1
                         imagePullPolicy: IfNotPresent
                         name: ic0
@@ -461,6 +487,8 @@ class TestPodSpecs:
                           value: Dst
                         - name: STD_CI_ARCH
                           value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
                         image: ici2
                         imagePullPolicy: IfNotPresent
                         name: ic1
@@ -492,6 +520,7 @@ class TestPodSpecs:
         ),
         (
             {
+                'script': 'script1.sh',
                 'containers': [{'image': 'cimg1', 'args': ['ccmd1', 'carg1']}],
                 'decorate': True,
             },
@@ -500,6 +529,7 @@ class TestPodSpecs:
             },
             12345,
             {
+                'script': 'script1.sh',
                 'containers': [{'image': 'cimg1', 'args': ['ccmd1', 'carg1']}],
                 'decorate': True,
                 'podspecs': [dedent(
@@ -522,6 +552,8 @@ class TestPodSpecs:
                           value: Dst
                         - name: STD_CI_ARCH
                           value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
                         image: cimg1
                         imagePullPolicy: IfNotPresent
                         name: main
@@ -559,6 +591,7 @@ class TestPodSpecs:
         ),
         (
             {
+                'script': 'script1.sh',
                 'containers': [{
                     'image': 'cimg1',
                     'args': ['ccmd1', 'carg1'],
@@ -568,6 +601,7 @@ class TestPodSpecs:
             {},
             12345,
             {
+                'script': 'script1.sh',
                 'containers': [{
                     'image': 'cimg1',
                     'args': ['ccmd1', 'carg1'],
@@ -593,6 +627,8 @@ class TestPodSpecs:
                           value: Dst
                         - name: STD_CI_ARCH
                           value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
                         image: cimg1
                         imagePullPolicy: IfNotPresent
                         name: main
