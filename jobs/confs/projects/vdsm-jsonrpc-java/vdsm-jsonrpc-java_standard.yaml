@@ -10,6 +10,9 @@
     stage: check-patch
     distro:
       - el7
+      - fc30
+    exclude:
+      - { version: '4.3', distro: fc30 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
@@ -36,5 +39,7 @@
     version:
       - '4.3'
       - 'master'
+    exclude:
+      - { version: '4.3', distro: fc30 }
     jobs:
       - '{project}_any_build-artifacts-manual'
