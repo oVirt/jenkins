@@ -138,6 +138,11 @@ def run_std_ci_in_pods(report, project, job, mirrors=null, extra_sources=null) {
             text: extra_sources
         println "extra_sources file was created"
     }
+    if(mirrors && job.decorate) {
+        writeFile file: "/exported-artifacts/$job_dir/mirrors.yaml", \
+            text: mirrors
+        println "mirrors.yaml file was created"
+    }
     job.podspecs.each { podspec ->
         report.status('PENDING', 'Allocating POD')
         def pod = sh(
