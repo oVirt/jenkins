@@ -23,15 +23,44 @@ from traceback import format_exception
 from textwrap import dedent
 from pprint import pformat
 from operator import or_
-from functools import cmp_to_key
+from functools import cmp_to_key, wraps
 try:
     from pusher import (
         DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
     )
 except ImportError:
-    from .pusher import (
-        DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
-    )
+    try:
+        from .pusher import (
+            DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
+        )
+    except (ImportError, ValueError):
+        # avoid edge case
+        DEFAULT_PUSH_MAP = \
+            'THIS FEATURE IS DISABLED BECAUSE PUSHER WAS NOT IMPORTED'
+
+
+def only_if_imported_any(*modules):
+    """A decorator that disables functions if some module was not imported.
+
+    This decorator can be used to disable and raise an exception if a function
+    that requires a certain module to be imported was called but the module was
+    not imported.
+
+    :params str modules: The modules to check for being imported. If at least
+                         one module of the provided ones was imported, we're ok
+    """
+    def original_or_error(func):
+        @wraps(func)
+        def error(*args, **kwargs):
+            print(sys.modules)
+            raise RuntimeError(
+                '{fname} is disabled because none of {modules} were imported.'
+                .format(fname=func.__name__, modules=modules)
+            )
+        if (not modules) or (set(modules) & set(sys.modules)):
+            return func
+        return error
+    return original_or_error
 
 
 UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
@@ -386,6 +415,7 @@ class GitUpstreamSource(object):
             'checkout', self.commit, '-f',
         )
 
+    @only_if_imported_any('pusher', 'scripts.pusher')
     def _branch_format_handler(self, push_map, **kwargs):
         """Get the upstream source to branch
 

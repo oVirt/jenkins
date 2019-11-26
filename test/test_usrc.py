@@ -7,12 +7,14 @@ from scripts.usrc import (
     commit_upstream_sources_update, GitProcessError, GitUpstreamSource,
     generate_update_commit_message, git_ls_files, git_read_file, ls_all_files,
     files_diff, get_modified_files, get_files_to_links_map, GitFile,
-    UnkownDestFormatError, set_upstream_source_entries, modify_entries_main
+    UnkownDestFormatError, set_upstream_source_entries, modify_entries_main,
+    only_if_imported_any
 )
 from textwrap import dedent
 from types import GeneratorType
 from hashlib import md5
 import os
+import inspect
 from subprocess import CalledProcessError
 from six import iteritems
 from six.moves import map, builtins
@@ -1762,3 +1764,30 @@ def test_modify_entries_parser_error():
     with pytest.raises(yaml.parser.ParserError) as excinfo:
         modify_entries_main(mock_args)
     assert base_exception_msg in str(excinfo.value)
+
+
+@pytest.mark.parametrize('modules,should_raise', (
+    (
+        ('some-module', 'pytest'), False
+    ),
+    (
+        ('no-such-module', 'no-such-module-2'), True
+    ),
+    (
+        tuple(), False
+    )
+))
+def test_only_if_imported_any(modules, should_raise):
+    @only_if_imported_any(*modules)
+    def test_function(arg1, arg2, arg3): return 'test-result'
+    assert test_function.__name__ == 'test_function'
+    if should_raise:
+            with pytest.raises(RuntimeError) as excinfo:
+                test_function(1, 2, 3)
+            assert str(excinfo.value) == (
+                'test_function is disabled because none of {0}'
+                ' were imported.'
+                .format(modules)
+            )
+    else:
+        assert test_function(1, 2, 3) == 'test-result'
