@@ -4,7 +4,7 @@
     description: Trigger system gating job in Jenkins
     pre-run: zuul-playbooks/expose_source.yaml
     run: zuul-playbooks/trigger_gate_job.yaml
-    timeout: 9000
+    timeout: 10800
     extra-vars:
       report_via: custom
       source_host: zuul01.phx.ovirt.org
