@@ -1,0 +1,114 @@
+# cleanup_deploy_resources.yaml - Cleanup k8s resources used to deploy
+# repositories rpms + images.
+# Usage:
+#     ansible-playbook playbooks/cleanup_deploy_resources.yaml
+#
+# Mandatory variable:
+# This playbook requires single value to be passed to it in order to work.
+# The values can be provided via the '-e' command-line argument, via an
+# inventory file or via environment variables. When environment variables are
+# used, their names are capitalized versions of the variable names listed here.
+# - repo_name       - Specifies the name of the repository we're deleting old
+#                     resources from, the name is going to be used as part
+#                     of the names of OpenShift resources,
+#                     so it must is a legal DNS name (E.g.
+#                     cannot include underscores).
+# Optional variables:
+# - cleanup_policy  - Specifies how many days to keep. default are 14 days.
+#
+# The cleanup policy is:
+# 1) Latest resources are never cleaned up
+# 2) The newest resource which is X days older or more won't be cleaned up
+# either. where X is the day defined in the environment variable.
+#
+# Prerquisites for running:
+# * You need to have `oc` installed and logged in to OpenShift and set to use
+#   the namespace you want to have things installed in.
+# * You need to install Ansible as instructed in the README.md file
+#
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: true
+  vars:
+    default_cleanup_policy: 14
+    _repo_name: "{{
+      (repo_name|default(lookup('env', 'REPO_NAME')))
+      |lower
+      |regex_replace('[^-a-z0-9]+', '-')
+    }}"
+    _cleanup_policy: "{{
+      lookup('env', 'CLEANUP_POLICY')
+      |default(default_cleanup_policy, true)
+      |int
+    }}"
+    k8s_kind_list:
+      - Route
+      - Service
+      - Deployment
+      - ImageStreamTag
+  tasks:
+    - name: Check for mandatory input
+      assert:
+        that:
+          - _repo_name|string
+
+    - name: Detect OpenShift project
+      tags: always
+      set_fact:
+        openshift_project:
+          "{{ lookup('pipe', oc_bin | default('oc') + ' project -q') }}"
+
+    - name: Query k8s objects from k8s_kind_list
+      k8s_facts:
+        kind: "{{ item }}"
+        api_version: v1
+        namespace: "{{ openshift_project }}"
+      register: k8s_list
+      loop: "{{ k8s_kind_list }}"
+
+    - name: Extract the object names, date and types from output.
+      set_fact:
+        k8s_names: "{{
+          (
+          item.resources
+          | map(attribute='metadata.name')
+          | map('regex_replace','^(' + _repo_name + ')*[-:]([0-9]+)$','\\2')
+          | map('int')
+          | zip(
+          item.resources | map(attribute='metadata.name'),
+          [item.item] * item.resources | length
+          )
+          | sort(attribute=0)
+          | list
+          | selectattr(
+              0, 'lessthan',(ansible_date_time['epoch']|int) - (86400 * _cleanup_policy|int)
+          )
+          | rejectattr(0, 'equalto', 0)
+          | list
+          )[:-1]
+        }}"
+      loop: "{{ k8s_list.results }}"
+      register: k8s_result
+
+    - name: Print the resources to be deleted.
+      debug:
+        msg:
+        - "will delete: {{ item[2] }}/{{ item[1] }}"
+      loop: "{{
+        k8s_result.results
+        |map(attribute='ansible_facts.k8s_names')
+        |flatten(levels=1)
+      }}"
+
+    - name: Delete resources
+      k8s:
+        api_version: v1
+        kind: "{{ item[2] }}"
+        state: absent
+        namespace: "{{ openshift_project }}"
+        name: "{{ item[1] }}"
+      loop: "{{
+        k8s_result.results
+        |map(attribute='ansible_facts.k8s_names')
+        |flatten(levels=1)
+      }}"

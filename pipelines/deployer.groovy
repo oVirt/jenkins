@@ -6,6 +6,8 @@ import groovy.transform.Field
 def on_load(loader) {
     project_lib = loader.load_code('libs/stdci_project.groovy')
     stdci_runner_lib = loader.load_code('libs/stdci_runner.groovy')
+    def email_notify_lib = loader.load_code('libs/email_notify.groovy')
+    email_notify = email_notify_lib.&email_notify
 }
 
 def loader_main(loader) {
@@ -101,26 +103,6 @@ def deploy_to(repo_name, repoman_sources, flatten_layers) {
             jobs: jobs,
         )
     }
-}
-
-def email_notify(status, recipients='infra@ovirt.org') {
-    emailext(
-        subject: "[oVirt Jenkins] ${env.JOB_NAME}" +
-            " - Build #${env.BUILD_NUMBER} - ${status}!",
-        body: [
-            "Build: ${env.BUILD_URL}",
-            "Build Name: ${currentBuild.displayName}",
-            "Build Status: ${status}",
-            "Gerrit change: ${params.GERRIT_CHANGE_URL}",
-            "- title: ${params.GERRIT_CHANGE_SUBJECT}",
-            "- project: ${params.GERRIT_PROJECT}",
-            "- branch: ${params.GERRIT_BRANCH}",
-            "- author: ${params.GERRIT_CHANGE_OWNER_NAME}" +
-            " <${params.GERRIT_CHANGE_OWNER_EMAIL}>",
-        ].join("\n"),
-        to: recipients,
-        mimeType: 'text/plain'
-    )
 }
 
 // We need to return 'this' so the actual pipeline job can invoke functions from

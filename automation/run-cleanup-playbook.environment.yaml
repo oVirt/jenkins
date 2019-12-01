@@ -1,0 +1,20 @@
+- name: 'PLAYBOOK'
+  value: cleanup_container_resources
+- name: 'INVENTORY'
+  value: blank
+- name: 'APISERVER'
+  value: https://shift.ovirt.org:8443
+- name: 'PROJECT'
+  valueFrom:
+    runtimeEnv: 'OPENSHIFT_PROJECT'
+- name: 'TOKEN'
+  valueFrom:
+    secretKeyRef:
+      name: 'openshift-deploy-serviceaccount'
+      key: 'token'
+- name: 'REPO_NAME'
+  valueFrom:
+    runtimeEnv: 'REPO_NAME'
+- name: 'CLEANUP_POLICY'
+  valueFrom:
+    runtimeEnv: 'CLEANUP_POLICY'

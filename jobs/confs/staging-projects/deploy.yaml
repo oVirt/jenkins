@@ -2,7 +2,8 @@
     name: repo-deploy-jobs
     repo-name:
       - gated-dummy-master
+    cleanup-policy: 1
     image_flatten_schedule:
       'H * * * *'
     jobs:
-      - "deploy-to-{repo-name}"
+      - "{repo_name}_standard_repo_jobs"

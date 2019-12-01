@@ -35,7 +35,7 @@
     publishers:
       - email-infra
 
-- job-template:
+- job-template: &deploy-container-template
     name: 'deploy-to-{repo-name}'
     project-type: pipeline
     quiet-period: 0
@@ -58,3 +58,17 @@
             List of newline-separated repoman sources to get packages to deploy
             from
     dsl: !include-raw-escape: groovy-scripts/pipeline-loader.groovy
+
+- job-template:
+    <<: *deploy-container-template
+    name: 'cleanup-{repo-name}'
+    triggers:
+      - timed: "@midnight"
+    parameters: ''
+
+- job-group:
+    name: "{repo_name}_standard_repo_jobs"
+    cleanup-policy: 14
+    jobs:
+      - "deploy-to-{repo-name}"
+      - "cleanup-{repo-name}"
