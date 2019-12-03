@@ -76,6 +76,7 @@
       - infra-docs
       - infra-puppet
       - ioprocess
+      - java-client-kubevirt
       - jenkins
       - mom
       - nsis-simple-service-plugin
