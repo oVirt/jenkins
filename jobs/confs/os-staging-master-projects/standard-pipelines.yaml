@@ -14,7 +14,6 @@
     abort-on-update: true
     org: kubevirt-ci-stage
     project:
-      - common-templates
       - containerized-data-importer
       - kubernetes-device-plugins
       - kubevirt
