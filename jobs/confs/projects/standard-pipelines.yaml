@@ -126,7 +126,6 @@
     org: nmstate
     project:
       - nmstate
-      - kubernetes-nmstate
     jobs:
       - '{org}_{project}_standard-gh-jobs'
 
