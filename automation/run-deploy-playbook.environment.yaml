@@ -2,6 +2,8 @@
   value: deploy_to_container
 - name: 'INVENTORY'
   value: blank
+- name: 'PB_ARGS'
+  value: '-e build_node_selector={"type":"vm","zone":"ci"}'
 - name: 'APISERVER'
   value: https://shift.ovirt.org:8443
 - name: 'PROJECT'
