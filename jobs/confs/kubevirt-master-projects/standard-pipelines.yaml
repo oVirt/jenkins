@@ -18,7 +18,6 @@
     project:
       - ansible-kubevirt-modules
       - bridge-marker
-      - cluster-network-addons-operator
       - containerized-data-importer
       - hyperconverged-cluster-operator
       - kubernetes-device-plugins
