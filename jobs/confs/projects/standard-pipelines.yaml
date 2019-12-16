@@ -97,6 +97,7 @@
       - ovirt-hosted-engine-ha
       - ovirt-hosted-engine-setup
       - ovirt-imageio
+      - ovirt-iso-uploader
       - ovirt-jboss-modules-maven-plugin
       - ovirt-js-dependencies
       - ovirt-lldp-labeler
