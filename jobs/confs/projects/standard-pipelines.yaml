@@ -84,6 +84,7 @@
       - ovirt-appliance
       - ovirt-dwh
       - ovirt-engine
+      - ovirt-engine-api-explorer
       - ovirt-engine-dashboard
       - ovirt-engine-metrics
       - ovirt-engine-nodejs
