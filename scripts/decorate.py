@@ -11,6 +11,7 @@ import stat
 from argparse import Namespace
 from pathlib import Path
 import logging
+from subprocess import run
 
 from scripts.git_utils import git
 from scripts.stdci_logging import setup_console_logging
@@ -20,6 +21,8 @@ from scripts.mirror_client import mirrors_from_uri, inject_yum_mirrors_file
 EXPORTED_ARTIFACTS = "exported-artifacts"
 EXTRA_SOURCES = 'extra_sources'
 MIRRORS_YAML = 'mirrors.yaml'
+DEFAULT_CI_SECRET_KEYS='/var/lib/ci-secrets/ci-secret-keys.txt'
+GPG_TMP_HOME='/var/tmp/gpghome'
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +30,7 @@ logger = logging.getLogger(__name__)
 def decorate():
     setup_logging()
     clone_source_code()
+    decrypt_secrets()
     inject_extra_sources()
     script = ensure_executable_script()
     if script is None:
@@ -59,6 +63,29 @@ def usrc_get():
     except SystemExit as e:
         if e.code != 0:
             raise RuntimeError(f'{usrc.__name__} exited with error: {e.code}')
+
+def decrypt_secrets():
+    secret_keys_file = os.environ.get('CI_SECRET_KEYS', DEFAULT_CI_SECRET_KEYS)
+    gpg_home = Path(GPG_TMP_HOME)
+    gpg_home.mkdir(parents=True, exist_ok=True)
+    run([
+        'gpg2',
+        '--homedir', str(gpg_home),
+        '--batch',
+        '--import', secret_keys_file
+    ])
+    cwd = Path()
+    for gpg_file in cwd.glob('**/*.gpg'):
+        result = run([
+            'gpg2',
+            '--homedir', str(gpg_home),
+            '--batch',
+            str(gpg_file)
+        ])
+        if result.returncode == 0:
+            logger.info('Successfully decrypted %s', str(gpg_file))
+        else:
+            logger.info('Failed to decrypt %s', str(gpg_file))
 
 def ensure_executable_script():
     script = os.environ.get('STD_CI_SCRIPT')

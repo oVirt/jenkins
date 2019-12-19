@@ -126,6 +126,8 @@ def gitrepo(tmpdir, git, git_at, git_config_at, symlinkto):
                     if file.check(link=1):
                         repogit('rm', fname)
                     file.mksymlinkto(fcontents)
+                elif isinstance(fcontents, bytes):
+                    file.write_binary(fcontents, ensure=True)
                 else:
                     file.write(fcontents, ensure=True)
                 repogit('add', fname)

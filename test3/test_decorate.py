@@ -8,6 +8,7 @@ from glob import glob
 import os
 from textwrap import dedent
 import py
+from subprocess import run, PIPE
 
 from scripts.decorate import decorate
 
@@ -63,7 +64,86 @@ def mirrors_cfg(exported_artifacts, request):
     return request.param
 
 @pytest.fixture
-def upstream(gitrepo, yumrepos_normal):
+def encrypt(tmpdir, monkeypatch):
+    gpg_homedir = tmpdir.ensure('user_gpghome', dir=True)
+    keys_dir = py.path.local(__file__).dirpath('fixtures')
+    keys_file = str(keys_dir / 'ci_test_keys.txt')
+    secret_keys_file = str(keys_dir / 'ci_test_secret_keys.txt')
+    ci_key_address = 'ci-test@ovirt.org'
+    monkeypatch.setenv('CI_SECRET_KEYS', secret_keys_file)
+
+    run(
+        [
+            'gpg2',
+            '--homedir', str(gpg_homedir),
+            '--batch',
+            '--import', keys_file
+        ],
+        check=True,
+    )
+
+    def _encrypt(data):
+        return run(
+            [
+                'gpg2',
+                '--homedir', str(gpg_homedir),
+                '--recipient', ci_key_address,
+                '--batch',
+                '--trust-model=always',
+                '--encrypt'
+            ],
+            stdout=PIPE,
+            input=data.encode(),
+            check=True,
+        ).stdout
+
+    return _encrypt
+
+def test_encrypt(encrypt, tmpdir):
+    gpg_homedir = tmpdir.ensure('gpghome', dir=True)
+    secret_keys_file = os.getenv('CI_SECRET_KEYS')
+    plain_text = 'Some secret here\n'
+    encrypted_blob = encrypt(plain_text)
+    run(
+        [
+            'gpg2',
+            '--homedir', str(gpg_homedir),
+            '--batch',
+            '--import', secret_keys_file
+        ],
+        check=True,
+    )
+    decrypted = run(
+        [
+            'gpg2',
+            '--homedir', str(gpg_homedir),
+            '--batch',
+        ],
+        stdout=PIPE,
+        input=encrypted_blob,
+        check=True,
+    ).stdout.decode()
+    assert decrypted == plain_text
+
+    enc_file = tmpdir / 'enc_file.gpg'
+    enc_file.write_binary(encrypt(plain_text))
+    dec_file = tmpdir / 'enc_file'
+    assert not dec_file.exists()
+    run(
+        [
+            'gpg2',
+            '--homedir', str(gpg_homedir),
+            '--batch',
+            str(enc_file)
+        ],
+        check=True,
+    )
+    assert dec_file.exists()
+    assert dec_file.read_binary().decode() == plain_text
+
+
+@pytest.fixture
+def upstream(gitrepo, yumrepos_normal, encrypt):
     return gitrepo(
         'upstream',
         {
@@ -74,12 +154,16 @@ def upstream(gitrepo, yumrepos_normal):
                 'automation/script1.sh': 'some script',
                 'automation/script1.yumrepos': yumrepos_normal,
                 'automation/script1.more.yumrepos': yumrepos_normal,
+                'automation/script1.secret.yumrepos.gpg':
+                    encrypt(yumrepos_normal),
             },
         },
     )
 
 @pytest.fixture
-def downstream(gitrepo, upstream, git_last_sha, yumrepos_normal, monkeypatch):
+def downstream(
+    gitrepo, upstream, git_last_sha, yumrepos_normal, monkeypatch, encrypt
+):
     sha = git_last_sha(upstream)
     repo = gitrepo(
         'downstream',
@@ -98,6 +182,10 @@ def downstream(gitrepo, upstream, git_last_sha, yumrepos_normal, monkeypatch):
                         branch: master
                     """
                 ).lstrip().format(upstream=str(upstream), sha=sha),
+                'secret1.gpg': encrypt('Nasty big secret'),
+                '.hidden.gpg': encrypt('"Hidden" secret'),
+                'garbage.gpg': '-- garbage data --',
+                'dir1/secret2.gpg': encrypt('Juicy secret'),
             },
         },
     )
@@ -121,6 +209,7 @@ def workspace(monkeypatch, tmpdir):
         True,
         {
             'automation/script1.more.yumrepos',
+            'automation/script1.secret.yumrepos',
             'automation/script1.yumrepos',
             'automation/script1.yumrepos.el7',
         },
@@ -131,6 +220,7 @@ def workspace(monkeypatch, tmpdir):
         True,
         {
             'automation/script1.more.yumrepos',
+            'automation/script1.secret.yumrepos',
             'automation/script1.yumrepos',
             'automation/script1.yumrepos.el8',
         },
@@ -141,6 +231,7 @@ def workspace(monkeypatch, tmpdir):
         True,
         {
             'automation/script1.more.yumrepos',
+            'automation/script1.secret.yumrepos',
             'automation/script1.yumrepos',
         },
     ),
@@ -159,14 +250,22 @@ def test_decorate(
         monkeypatch.setenv('STD_CI_SCRIPT', std_ci_script)
         monkeypatch.setenv('STD_CI_DISTRO', std_ci_distro)
     expected_files = [
-        'automation',
+        '.hidden',
+        '.hidden.gpg',
         'automation/script1.more.yumrepos',
+        'automation/script1.secret.yumrepos',
+        'automation/script1.secret.yumrepos.gpg',
         'automation/script1.sh',
         'automation/script1.yumrepos',
         'automation/script1.yumrepos.el7',
         'automation/script1.yumrepos.el8',
         'automation/upstream_sources.yaml',
+        'dir1/secret2',
+        'dir1/secret2.gpg',
         'ds_file.txt',
+        'garbage.gpg',
+        'secret1',
+        'secret1.gpg',
         'us_file1.txt',
         'us_file2.txt',
     ]
@@ -177,17 +276,26 @@ def test_decorate(
         exp_injected_files = set()
     all_yumrepos = {
         'automation/script1.more.yumrepos',
+        'automation/script1.secret.yumrepos',
         'automation/script1.yumrepos',
         'automation/script1.yumrepos.el7',
         'automation/script1.yumrepos.el8',
     }
-    assert sorted(glob('**', recursive=True)) == []
+    # Ensure $CWD is empty before we begin
+    assert list(os.walk('.')) == [('.', [], [])]
 
     decorate()
 
-    assert sorted(glob('**', recursive=True)) == expected_files
+    found_files = sorted(
+        os.path.join(path, file)[2:]
+        for path, _, files in os.walk('.') if not path.startswith('./.git')
+        for file in files
+    )
+    assert found_files == expected_files
     assert exp_script_executable == \
         os.access(str(workspace/'automation'/'script1.sh'), os.X_OK)
+    assert (workspace/'secret1').read() == 'Nasty big secret'
+    assert (workspace/'dir1'/'secret2').read() == 'Juicy secret'
     es_out = workspace/'extra_sources'
     if extra_sources:
         assert es_out.exists()

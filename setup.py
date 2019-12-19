@@ -6,7 +6,7 @@ import setuptools
 
 setuptools.setup(
     name="stdci_tools",
-    version="0.0.1",
+    version="0.0.2",
     author="oVirt CI team",
     author_email="infra@ovirt.org",
     description="oVirt Standard-CI tools",
