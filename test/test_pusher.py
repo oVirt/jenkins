@@ -616,12 +616,14 @@ def test_check_if_similar_patch_pushed(monkeypatch, push_details):
     monkeypatch.setattr('scripts.pusher.Popen', popen)
     get_patch_header = MagicMock(side_effect=('some-md5-checksum',))
     monkeypatch.setattr('scripts.pusher.get_patch_header', get_patch_header)
-    out = check_if_similar_patch_pushed(push_details)
+    branch = 'master'
+    out = check_if_similar_patch_pushed(push_details, branch)
     assert popen.called
     assert list(popen.call_args[0][0]) == [
         'ssh', '-p', '29418', 'user@gerrit.server',
         'gerrit', 'query', '--format=JSON',
         'project:some_project', 'message:some-md5-checksum',
+        'branch:{}'.format(branch)
     ]
     assert get_patch_header.called
     assert get_patch_header.call_args == call('x-md5')

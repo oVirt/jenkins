@@ -344,7 +344,7 @@ def push_to_scm(
     logger.info("Would push to: '%s'", push_details.push_url)
     if push_details.host_key:
         add_key_to_known_hosts(push_details.host_key)
-    if if_not_exists and check_if_similar_patch_pushed(push_details):
+    if if_not_exists and check_if_similar_patch_pushed(push_details, dst_branch):
         logger.info('Found similar patch in SCM server, not pushing')
         return
     if direct:
@@ -618,17 +618,21 @@ def parse_yaml_to_list(yaml_object):
     return list(chain.from_iterable(str(x).split() for x in yaml_object))
 
 
-def check_if_similar_patch_pushed(push_details):
+def check_if_similar_patch_pushed(push_details, branch):
     """
     Check if same patch has already been pushed
 
     :param PushDetails push_details: Details about where we're pushing the
                                      patch to
 
+    :param: str branch: The branch that the change would be pushed to.
+        Required since the same change, which will produce the same checksum,
+        can be sent to multiple branches.
+
     Avoiding push of patches that had already been pushed and hadn't been
     merged yet.  These patches has a md5 checksum hash in the commit message.
-    It'll check wether the current sources file md5 hash is part of commit
-    message of a patch that had already been pushed
+    It'll check whether the current sources file md5 hash is part of commit
+    message of a patch that had already been pushed to branch.
 
     :rtype: boolean
     :returns: True if patch exists and false if not
@@ -638,9 +642,10 @@ def check_if_similar_patch_pushed(push_details):
         re.sub('^/?(.*?)(.git)?$', '\\1', urlparse(push_details.push_url).path)
     project_param = "project:{project}".format(project=project)
     msg_param = 'message:{checksum}'.format(checksum=checksum)
+    branch_param = 'branch:{branch}'.format(branch=branch)
     output = gerrit_cli(
         push_details,
-        'query', '--format=JSON', project_param, msg_param
+        'query', '--format=JSON', project_param, msg_param, branch_param
     )
     return (
         output
