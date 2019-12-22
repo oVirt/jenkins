@@ -1,5 +1,6 @@
 import builtins
 import os
+from subprocess import CalledProcessError
 from textwrap import dedent
 
 import dockerfile_parse
@@ -16,7 +17,7 @@ from scripts.dockerfile_utils import (DecoratedCmd, Decorator,
                                       get_dfps,
                                       get_nvr_tag_from_inspect_struct,
                                       get_old_images_and_floating_refs,
-                                      get_update, update, main)
+                                      get_update, update, main, run_command)
 
 
 def test_get_nvr_tag_from_inspect_struct():
@@ -363,3 +364,8 @@ def test_base_image_update_full_run(monkeypatch, tmpdir):
 
     main(['parent-image-update', str(input_dockerfile_path)])
     assert input_dockerfile_path.read() == expected_dockerfile_content
+
+
+def test_run_command_which_fails_should_raise():
+    with pytest.raises(CalledProcessError):
+        run_command(['false'])

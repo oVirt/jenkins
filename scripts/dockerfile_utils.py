@@ -534,7 +534,7 @@ def run_command(cmd):
         uuid
     )
 
-    out = run(cmd, stdout=PIPE, stderr=PIPE, encoding='utf-8')
+    out = run(cmd, stdout=PIPE, stderr=PIPE, encoding='utf-8', check=True)
     logger.debug(
         'Command %s\n STDOUT: %s\n STDERR: %s\n',
         uuid,
