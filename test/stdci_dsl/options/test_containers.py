@@ -104,7 +104,7 @@ class TestContainers:
             'decorate': True,
             'containers': [
                 {
-                    'image': 'quay.io/bkorren/stdci-tools:mb201911251538',
+                    'image': 'quay.io/bkorren/stdci-tools:mb201912221511',
                     'args': ['decorate'],
                 },
                 {'image': 'docker.io/fedora:30', 'args': ['script.sh']},

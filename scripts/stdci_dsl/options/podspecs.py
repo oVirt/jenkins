@@ -68,6 +68,7 @@ class PodSpecs:
             self._add_timeout_option(thread.options, podspec)
             self._add_env_vars(thread, podspec)
             self._add_artifacts_volume(thread, podspec)
+            self._add_secrets_volume(thread, podspec)
             podspecs = [dump(podspec, Dumper=PodConfigDumper)]
         new_options = thread.options.copy()
         new_options['podspecs'] = podspecs
@@ -208,6 +209,20 @@ class PodSpecs:
                 'name': 'exported-artifacts',
                 'mountPath': '/exported-artifacts',
             })
+
+    def _add_secrets_volume(self, thread, podspec):
+        """Mount the CI secrets to the POD if its decorated"""
+        if not thread.options.get('decorate', False):
+            return
+        podspec['spec'].setdefault('volumes', []).append({
+            'name': 'ci-secret-keys', 'secret': { 'secretName': 'ci-keyring' },
+        })
+        # We're just going to assume that the first initContainer exists and is
+        # the decorating container. If we get an exception it means we
+        # introduced a bug somewhere that we need to fix
+        podspec['spec']['initContainers'][0]['volumeMounts'].append(
+            {'name': 'ci-secret-keys', 'mountPath': '/var/lib/ci-secrets'}
+        )
 
     def _update_containers(self, podspec, **kwargs):
         """Update a podspec structure in place to add the options given in

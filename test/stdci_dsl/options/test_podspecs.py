@@ -521,7 +521,10 @@ class TestPodSpecs:
         (
             {
                 'script': 'script1.sh',
-                'containers': [{'image': 'cimg1', 'args': ['ccmd1', 'carg1']}],
+                'containers': [
+                    {'image': 'tools-container', 'args': ['decorate']},
+                    {'image': 'cimg1', 'args': ['ccmd1', 'carg1']},
+                ],
                 'decorate': True,
             },
             {
@@ -530,7 +533,10 @@ class TestPodSpecs:
             12345,
             {
                 'script': 'script1.sh',
-                'containers': [{'image': 'cimg1', 'args': ['ccmd1', 'carg1']}],
+                'containers': [
+                    {'image': 'tools-container', 'args': ['decorate']},
+                    {'image': 'cimg1', 'args': ['ccmd1', 'carg1']},
+                ],
                 'decorate': True,
                 'podspecs': [dedent(
                     '''\
@@ -569,6 +575,37 @@ class TestPodSpecs:
                         - mountPath: /exported-artifacts
                           name: exported-artifacts
                         workingDir: /workspace
+                      initContainers:
+                      - args:
+                        - decorate
+                        env:
+                        - name: STD_CI_STAGE
+                          value: st
+                        - name: STD_CI_SUBSTAGE
+                          value: sbst
+                        - name: STD_CI_DISTRO
+                          value: Dst
+                        - name: STD_CI_ARCH
+                          value: a_r
+                        - name: STD_CI_SCRIPT
+                          value: script1.sh
+                        image: tools-container
+                        imagePullPolicy: IfNotPresent
+                        name: ic0
+                        resources:
+                          limits:
+                            memory: 2Gi
+                          requests:
+                            memory: 2Gi
+                        tty: true
+                        volumeMounts:
+                        - mountPath: /workspace
+                          name: workspace
+                        - mountPath: /exported-artifacts
+                          name: exported-artifacts
+                        - mountPath: /var/lib/ci-secrets
+                          name: ci-secret-keys
+                        workingDir: /workspace
                       nodeSelector:
                         type: vm
                         zone: ci
@@ -585,6 +622,9 @@ class TestPodSpecs:
                         nfs:
                           path: /exported-artifacts/st.sbst.Dst.a_r
                           server: 1.2.3.4
+                      - name: ci-secret-keys
+                        secret:
+                          secretName: ci-keyring
                     '''
                 )],
             }

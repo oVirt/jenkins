@@ -82,7 +82,7 @@ class Containers:
         """
         if thread.options.get('decorate', False) and cont_list:
             checkout_container = {
-                'image': 'quay.io/bkorren/stdci-tools:mb201911251538',
+                'image': 'quay.io/bkorren/stdci-tools:mb201912221511',
                 'args': ['decorate'],
             }
             return [checkout_container] + cont_list
