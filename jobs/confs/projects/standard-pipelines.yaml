@@ -82,6 +82,7 @@
       - nsis-simple-service-plugin
       - otopi
       - ovirt-appliance
+      - ovirt-demo-tool
       - ovirt-dwh
       - ovirt-engine
       - ovirt-engine-api-explorer
