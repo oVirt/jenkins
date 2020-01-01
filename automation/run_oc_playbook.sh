@@ -23,7 +23,7 @@ OC_VERSION="${OC_VERSION:-v3.11.0-0cbc58b}"
 
 main() {
     setup
-    run_oc_playbook
+    run_oc_playbook "$@"
 }
 
 run_oc_playbook() {
@@ -31,6 +31,7 @@ run_oc_playbook() {
     local inventory="playbooks/inventories/${INVENTORY}.yaml"
     local pb_args
 
+    # shellcheck disable=SC2153
     read -a pb_args <<<"$PB_ARGS"
     ansible-playbook "$playbook" -i "$inventory" -v "${pb_args[@]}" "$@"
 }
@@ -44,7 +45,8 @@ setup() {
 }
 
 skip_proxy_for_apiserver() {
-    # Make sure we don't try to access OpenShift vi a proxy
+    # Make sure we don't try to access OpenShift via a proxy
+    # shellcheck disable=SC2154
     if [[ $http_proxy ]]; then
         if [[ $no_proxy ]]; then
             no_proxy="$no_proxy,"
@@ -68,16 +70,17 @@ get_oc_bin() {
     if [[ $UID -eq 0 ]] && [[ -d /var/host_cache ]]; then
         export OC_BIN_HOME=/var/host_cache/stdci_oc_bin
     else
-        export OC_BIN_HOME="$(mktemp -d oc_bin_home.XXXXXX --tmpdir)"
+        OC_BIN_HOME="$(mktemp -d oc_bin_home.XXXXXX --tmpdir)"
+        export OC_BIN_HOME
     fi
     mkdir -p "$OC_BIN_HOME"
 
     safe_download -d sha256 \
         -s CHECKSUM_FILE \
         -a extract_oc_bin \
-        $OC_BIN_HOME/package.lock \
+        "$OC_BIN_HOME/package.lock" \
         "$dl_url" \
-        $OC_BIN_HOME/package.tgz
+        "$OC_BIN_HOME/package.tgz"
 
     if [[ -x "$OC_BIN_HOME/oc" ]]; then
         [[ "$PATH" == "$OC_BIN_HOME" ]] ||
@@ -101,7 +104,7 @@ extract_oc_bin() {
 oc_login() {
     KUBECONFIG="$(mktemp kubeconfig.XXXXXX --tmpdir)"
     export KUBECONFIG
-    oc login "$APISERVER" --token="$TOKEN"
+    (set +x; echo oc login >&2; oc login "$APISERVER" --token="$TOKEN")
 }
 
 ansible_config() {
