@@ -13,6 +13,7 @@ all:
             zuul_projects:
               - jenkins
               - ovirt-system-tests
+              - infra-docs
         staging:
           hosts:
             jenkins-staging.phx.ovirt.org:
