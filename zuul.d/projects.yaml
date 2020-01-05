@@ -7,10 +7,14 @@
         - ost-gate
     gate-patch-emulator: *ost_gate_jobs
 
-- project:
+- project-template:
+    name: jenkins-gated-project
     gate-patch: &jenkins_gate_jobs
+      queue: jenkins
       jobs:
-        - run-gate-job:
-            vars:
-              job_name: jenkins_gate
+        - jenkins-gate
     gate-patch-emulator: *jenkins_gate_jobs
+
+- project:
+    templates:
+      - jenkins-gated-project

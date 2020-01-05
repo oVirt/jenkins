@@ -27,3 +27,9 @@
     parent: run-gate-job
     vars:
       job_name: ovirt-system-tests_gate
+
+- job:
+    name: jenkins-gate
+    parent: run-gate-job
+    vars:
+      job_name: jenkins_gate
