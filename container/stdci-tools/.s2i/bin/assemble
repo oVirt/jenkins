@@ -1,0 +1,16 @@
+#!/bin/bash -ex
+# S2i assemble script override - install the `oc` binary and then launch the
+# image's built-in script
+#
+(
+    # We need to be in the source directory so that run_oc_playbookd.sh can access
+    # safe_download.sh
+    cd /tmp/src
+    source scripts/run_oc_playbook.sh
+
+    export OC_BIN_HOME="$APP_ROOT/bin"
+    get_oc_bin
+    rm -f "$OC_BIN_HOME/package.tgz"
+)
+
+/usr/libexec/s2i/assemble

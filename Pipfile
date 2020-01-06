@@ -10,6 +10,8 @@ ipython = "*"
 [packages]
 stdci-tools = {editable = true,path = "."}
 dockerfile-parse = "*"
+ansible = "<=2.8"
+openshift = "*"
 
 [requires]
 python_version = "3"

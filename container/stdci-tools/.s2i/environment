@@ -1,2 +1,4 @@
 ENABLE_PIPENV=True
 PIPENV_VERBOSITY=-1
+ANSIBLE_STDOUT_CALLBACK=yaml
+ANSIBLE_INVENTORY=/workspace/playbooks/inventories/main

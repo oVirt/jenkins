@@ -1,0 +1,13 @@
+# inventories/main/hosts.yaml - Main inventory (main file)
+#
+# This inventory is meant to be shared by all playbooks in this repository and
+# eventually replace all other, smaller inventory file. We merge data into this
+# repository as part of making playbooks run inside the tools container which
+# uses this inventory by default.
+#
+---
+all:
+  vars:
+    build_node_selector:
+      type: vm
+      zone: ci

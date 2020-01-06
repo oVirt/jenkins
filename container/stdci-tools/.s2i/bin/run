@@ -1,6 +1,8 @@
 #!/bin/bash
+# Override the s2i base image run script to go to sleep instead of trying to
+# invoke a Django or a Flask app. This enables it to run as a sidecar in a
+# Jenkins slave POD.
+#
 source /opt/app-root/etc/generate_container_user
 
-set -e
-
-pipenv shell
+exec /usr/bin/sleep inf
