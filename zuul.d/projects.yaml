@@ -10,7 +10,7 @@
 - project-template:
     name: jenkins-gated-project
     gate-patch: &jenkins_gate_jobs
-      queue: jenkins
+      queue: dummy
       jobs:
         - jenkins-gate
     gate-patch-emulator: *jenkins_gate_jobs
