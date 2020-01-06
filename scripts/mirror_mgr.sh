@@ -28,12 +28,16 @@
 MIRRORS_MP_BASE="${MIRRORS_MP_BASE:-/var/www/html/repos}"
 MIRRORS_HTTP_BASE="${MIRRORS_HTTP_BASE:-http://mirrors.phx.ovirt.org/repos}"
 MIRRORS_CACHE="${MIRRORS_CACHE:-$HOME/mirrors_cache}"
+YUM_PATH="/yum/"
+MIRRORS_BASE_PREFIX="${MIRRORS_MP_BASE}${YUM_PATH}"
+REPOQUERY_HTTP_BASE="${MIRRORS_HTTP_BASE}${YUM_PATH}"
 
 MAX_LOCK_ATTEMPTS=120
 LOCK_WAIT_INTERVAL=5
 LOCK_BASE="$HOME"
 
 OLD_MD_TO_KEEP=100
+MAX_AGE=14
 
 HTTP_SELINUX_TYPE="httpd_sys_content_t"
 HTTP_FILE_MODE=644
@@ -76,6 +80,9 @@ cmd_resync_yum_mirror() {
     else
         echo "Local mirror seems to be up to date"
     fi
+
+    mirror_cleanup "$repo_name"
+
     # failsafe - if we don't have a latest.txt file, create the snapshot
     # even if the mirror wasn't updated
     [[ $sync_needed || ! -f "$(latest_file $repo_name yum)" ]] &&
@@ -368,6 +375,123 @@ release_lock() {
 die() {
     echo "$@" >&2
     exit 1
+}
+
+mirror_cleanup() {
+    # Main flow of mirrors cleanup.
+    # At first, the snapshots to-be-kept are located, including the hardcoded
+    # ones. Then repoquery is being run against each snapshot, and an
+    # associative array is being filled with the packages that should be kept.
+    # After that, packages which are not referenced by any snapshot are
+    # deleted, and lastly old snapshots are deleted as well.
+    #
+    local repo="${1:?}"
+    local pkgs_file="referenced_pkgs.txt"
+    recent_snapshots=$(find_recent_snapshots "${MIRRORS_BASE_PREFIX}${repo}")
+    hardcoded_snapshot=$(get_repo_slaves_snapshots "$repo")
+    if [[ ! "${recent_snapshots}" == *"$hardcoded_snapshot"* ]]; then
+        recent_snapshots+="$hardcoded_snapshot"
+    fi
+    find_referenced_pkgs "$recent_snapshots" "$pkgs_file"
+    rm_unreferenced_pkgs "${MIRRORS_BASE_PREFIX}${repo}" "$pkgs_file"
+    rm_old_snapshots "${MIRRORS_BASE_PREFIX}${repo}" "$recent_snapshots"
+    rm "$pkgs_file"
+}
+
+get_repo_slaves_snapshots() {
+    # Extracting the hardcoded snapshots from the files
+    # under data/slave-repos
+    #
+    local repo_name="${1:?}"
+    git_grep_output=$(git --git-dir=jenkins/.git --work-tree=jenkins/ \
+        grep ${REPOQUERY_HTTP_BASE})
+    for line in ${git_grep_output}; do
+        if [[ $line == *"$repo_name"* ]]; then
+            suffix="${line##*yum/}"
+            snapshot="${MIRRORS_BASE_PREFIX}${suffix}"
+            break
+        fi
+    done
+    echo $'\n'${snapshot}
+
+}
+
+rm_old_snapshots() {
+    # Removing the snapshots that were not added to
+    # the list of snapshots we want to keep
+    #
+    local repo_dir="${1:?}"
+    local p_recent_snapshots="${2:?}"
+    local all_snapshots=($(find ${repo_dir} -mindepth 1 -maxdepth 1 -type d ! \
+        \( -name "base" -o -name ".*" \)))
+    for snapshot in "${all_snapshots[@]}"; do
+        if [[ ! "$p_recent_snapshots" == *"$snapshot"* ]]; then
+            rm -rf "$snapshot"
+        fi
+    done
+}
+
+rm_unreferenced_pkgs() {
+    # Removing the unreferenced packages.
+    # In this function, packages that are not referenced by one or more of the
+    # to-be-kept snapshots (and are not found in repoquery's results),
+    # would get deleted
+    #
+    local repo_dir="${1:?}"
+    local rpms_file="${2:?}"
+    local all_rpms_file="all_pkgs.txt"
+    local for_removal="pkgs_for_removal.txt"
+    find "${repo_dir}/base" -name "*.rpm" > "$all_rpms_file"
+    if grep -F -w -v -f \
+    <(cat "$rpms_file") <(cat "$all_rpms_file") > "$for_removal"; then
+        cat "$for_removal" | xargs rm
+    fi
+    rm "$all_rpms_file" "$for_removal"
+}
+
+find_recent_snapshots() {
+    # Find snapshots that should be kept, according to the following:
+    # 1. All snapshots that are younger than ${MAX_AGE} days, should be saved
+    # 2. If there are no snapshots matching the first criteria, then
+    #    the most recent one is taken.
+    #
+    local repo="${1:?}"
+    local fresh_snapshots=$(find ${repo} -mindepth 1 -maxdepth 1 -type d \
+        -mtime -${MAX_AGE} ! \( -name "base" -o -name ".*" \))
+    if [[ -z "$fresh_snapshots" ]]; then
+        local all_snapshots=($(find ${repo} -mindepth 1 -maxdepth 1 -type d \
+            ! \( -name "base" -o -name ".*" \)))
+        IFS=$'\n'
+        sorted=($(sort <<<"${all_snapshots[*]}"))
+        unset IFS
+        fresh_snapshots=${sorted[-1]}
+    fi
+
+    echo "$fresh_snapshots"
+}
+
+find_referenced_pkgs() {
+    # Once the should-be-kept snapshots are found,
+    # run repoquery against each one of them, to capture all
+    # the referenced packages.
+    # An associative array is used to make sure there are no
+    # duplicate packages in the referenced pakcages array.
+    #
+    local recent_snapshots_list="${1:?}"
+    local ref_pkgs="${2:?}"
+    local repoquery_result="repoquery_result.txt"
+    local exists=1
+    for snapshot in ${recent_snapshots_list}; do
+        local snapshot_suffix=${snapshot#$MIRRORS_BASE_PREFIX}
+        local repoquery_cmd="repoquery \
+            --repofrompath=this,${REPOQUERY_HTTP_BASE}${snapshot_suffix} \
+            --repoid=this -a --qf %{relativepath} \
+            --archlist=s390x,s390,ppc64le,ppc64,x86_64,i686,noarch"
+        $repoquery_cmd >> "$repoquery_result" || continue
+
+    done
+    cat "$repoquery_result" | sort -u | xargs -n1 > "$ref_pkgs"
+    rm "$repoquery_result"
 }
 
 main "$@"
