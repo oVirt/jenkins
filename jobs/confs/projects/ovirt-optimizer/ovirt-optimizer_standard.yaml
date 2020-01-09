@@ -11,6 +11,9 @@
       - check-patch
     distro:
       - el7
+      - el8
+    exclude:
+      - { version: '4.3', distro: el8 }
     arch: x86_64
     jobs:
       - '{project}_{version}_{stage}-{distro}-{arch}'
