@@ -29,7 +29,7 @@ def loader_main(loader) {
 
         project_lib.checkout_project(system_test_project)
         available_suits = get_available_suits(system_test_project.clone_dir_name)
-        available_threads = get_available_threads(system_test_project.clone_dir_name)
+        available_threads = get_available_threads(system_test_project)
 
         print_builds(build_thread_params)
     }
@@ -189,8 +189,14 @@ def get_available_suits(path) {
     return all_suits
 }
 
-def get_available_threads(path) {
-    threads = dsl_lib.parse(path, 'gate').jobs
+def get_available_threads(system_test_project) {
+    def threads
+    withEnv([
+        "STD_CI_CLONE_URL=${system_test_project.clone_url}",
+        "STD_CI_REFSPEC=${system_test_project.refspec}",
+    ]) {
+        threads = dsl_lib.parse(system_test_project.clone_dir_name, 'gate').jobs
+    }
     def thread_list = "Found ${threads.size()} test thread(s):"
     thread_list += threads.collect { thread ->
         "\n- ${stdci_runner_lib.get_job_name(thread)}"

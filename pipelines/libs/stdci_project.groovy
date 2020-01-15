@@ -46,12 +46,13 @@ def checkout_project(Project project) {
 }
 
 def new_project(Map init_params) {
-    init_params.branch = init_params.get('branch', 'master')
-    init_params.refspec = init_params.get('refspec', 'refs/heads/master')
-    init_params.clone_dir_name = init_params.get(
-        'clone_dir_name', init_params.name)
-    init_params.rerun_url = init_params.get(
-        'rerun_url', "${env.BUILD_URL}/rebuild")
+    init_params.branch = init_params.branch ?: 'master'
+    url_prefix = env.DEFAULT_SCM_URL_PREFIX ?: 'https://gerrit.ovirt.org'
+    default_url = "${url_prefix}/${init_params.name}"
+    init_params.clone_url = init_params.clone_url ?: default_url
+    init_params.refspec = init_params.refspec ?: 'refs/heads/master'
+    init_params.clone_dir_name = init_params.clone_dir_name ?: init_params.name
+    init_params.rerun_url = init_params.rerun_url ?: "${env.BUILD_URL}/rebuild"
     return new Project(init_params)
 }
 
