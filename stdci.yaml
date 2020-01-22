@@ -153,5 +153,10 @@ sub-stages:
         from-file: "automation/{{ substage }}.sh"
       container: docker.io/centos:7
       decorate: true
+  - toolbox-python-sanity:
+      runif:
+        file-changed:
+          - scripts/ci_toolbox/*
+          - automation/check-patch.{{ substage }}.*
 release-branches:
   'master': 'dummy-master'
