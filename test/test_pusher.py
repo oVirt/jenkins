@@ -12,7 +12,7 @@ except ImportError:
     from mock import MagicMock, call
 import logging
 
-from scripts.pusher import (
+from stdci_tools.pusher import (
     push_to_scm, get_push_details, parse_push_details_struct, PushDetails,
     get_remote_url_from_ws, get_patch_header, add_key_to_known_hosts,
     PushMapError, PushMapMatchError, PushMapSyntaxError, PushMapIOError,
@@ -275,7 +275,7 @@ def mock_check_pushed(monkeypatch):
     _mock_check_pushed.set_return = set_return
     _mock_check_pushed.set_return(False)
     monkeypatch.setattr(
-        'scripts.pusher.check_if_similar_patch_pushed', _mock_check_pushed
+        'stdci_tools.pusher.check_if_similar_patch_pushed', _mock_check_pushed
     )
     return _mock_check_pushed
 
@@ -364,7 +364,7 @@ def test_push_gerrit_set_ssh_key(
 ):
     mock_add_pkey = MagicMock()
     monkeypatch.setattr(
-        'scripts.pusher.add_key_to_known_hosts', mock_add_pkey
+        'stdci_tools.pusher.add_key_to_known_hosts', mock_add_pkey
     )
     monkeypatch.chdir(str(local_repo_patch))
     push_to_scm('master', gerrit_push_map)
@@ -613,9 +613,9 @@ def test_check_if_similar_patch_pushed(monkeypatch, push_details):
     poll = MagicMock(side_effect=(0,))
     process = MagicMock(communicate=communicate, poll=poll)
     popen = MagicMock(side_effect=(process,))
-    monkeypatch.setattr('scripts.pusher.Popen', popen)
+    monkeypatch.setattr('stdci_tools.pusher.Popen', popen)
     get_patch_header = MagicMock(side_effect=('some-md5-checksum',))
-    monkeypatch.setattr('scripts.pusher.get_patch_header', get_patch_header)
+    monkeypatch.setattr('stdci_tools.pusher.get_patch_header', get_patch_header)
     branch = 'master'
     out = check_if_similar_patch_pushed(push_details, branch)
     assert popen.called
@@ -704,7 +704,7 @@ def test_get_patch_header(
 ])
 def test_patch_header_is_true(monkeypatch, header_value, expected):
     get_patch_header = MagicMock(side_effect=cycle((header_value,)))
-    monkeypatch.setattr('scripts.pusher.get_patch_header', get_patch_header)
+    monkeypatch.setattr('stdci_tools.pusher.get_patch_header', get_patch_header)
     out = patch_header_is_true('a_patch_header', 'a_commit_ref')
     assert get_patch_header.called
     assert get_patch_header.call_args == \
@@ -773,10 +773,10 @@ def test_merge_to_scm(monkeypatch, can_merge, push_details):
     can_merge_to_scm = MagicMock(side_effect=(can_merge,))
     read_push_details = MagicMock(side_effect=(push_details,))
     gerrit_cli = MagicMock()
-    monkeypatch.setattr('scripts.pusher.git_rev_parse', git_rev_parse)
-    monkeypatch.setattr('scripts.pusher.can_merge_to_scm', can_merge_to_scm)
-    monkeypatch.setattr('scripts.pusher.read_push_details', read_push_details)
-    monkeypatch.setattr('scripts.pusher.gerrit_cli', gerrit_cli)
+    monkeypatch.setattr('stdci_tools.pusher.git_rev_parse', git_rev_parse)
+    monkeypatch.setattr('stdci_tools.pusher.can_merge_to_scm', can_merge_to_scm)
+    monkeypatch.setattr('stdci_tools.pusher.read_push_details', read_push_details)
+    monkeypatch.setattr('stdci_tools.pusher.gerrit_cli', gerrit_cli)
     merge_to_scm('/push/map/path', 'a_commit_ref', 'a_header')
     assert can_merge_to_scm.called
     assert can_merge_to_scm.call_args == \
@@ -809,8 +809,8 @@ def test_get_patch_owner(monkeypatch, push_details):
         {"rowCount":1}
         '''
     ).lstrip(),))
-    monkeypatch.setattr('scripts.pusher.git_rev_parse', git_rev_parse)
-    monkeypatch.setattr('scripts.pusher.gerrit_cli', gerrit_cli)
+    monkeypatch.setattr('stdci_tools.pusher.git_rev_parse', git_rev_parse)
+    monkeypatch.setattr('stdci_tools.pusher.gerrit_cli', gerrit_cli)
     out = get_patch_owner(push_details, 'some_git_ref')
     assert git_rev_parse.called
     assert git_rev_parse.call_args == call('some_git_ref')
@@ -828,8 +828,8 @@ def test_get_no_patch_owner(monkeypatch, push_details):
         {"rowCount":0}
         '''
     ).lstrip(),))
-    monkeypatch.setattr('scripts.pusher.git_rev_parse', git_rev_parse)
-    monkeypatch.setattr('scripts.pusher.gerrit_cli', gerrit_cli)
+    monkeypatch.setattr('stdci_tools.pusher.git_rev_parse', git_rev_parse)
+    monkeypatch.setattr('stdci_tools.pusher.gerrit_cli', gerrit_cli)
     out = get_patch_owner(push_details, 'some_git_ref')
     assert git_rev_parse.called
     assert git_rev_parse.call_args == call('some_git_ref')
@@ -863,7 +863,7 @@ def test_get_no_patch_owner(monkeypatch, push_details):
 ])
 def test_gerrit_user_in_group(monkeypatch, push_details, lsm_out, expected):
     gerrit_cli = MagicMock(side_effect=(lsm_out,))
-    monkeypatch.setattr('scripts.pusher.gerrit_cli', gerrit_cli)
+    monkeypatch.setattr('stdci_tools.pusher.gerrit_cli', gerrit_cli)
     out = gerrit_user_in_group(push_details, 'user2', 'a_group')
     assert gerrit_cli.called
     assert gerrit_cli.call_args == call(
@@ -899,16 +899,16 @@ def test_can_merge_to_scm(has_hdr, u_in_group, u_in_file, exp, monkeypatch):
     )
     read_push_details = MagicMock(side_effect=(push_details,))
     monkeypatch.setattr(
-        'scripts.pusher.add_key_to_known_hosts', add_key_to_known_hosts
+        'stdci_tools.pusher.add_key_to_known_hosts', add_key_to_known_hosts
     )
     monkeypatch.setattr(
-        'scripts.pusher.patch_header_is_true', patch_header_is_true
+        'stdci_tools.pusher.patch_header_is_true', patch_header_is_true
     )
     monkeypatch.setattr(
-        'scripts.pusher.gerrit_user_in_group', gerrit_user_in_group
+        'stdci_tools.pusher.gerrit_user_in_group', gerrit_user_in_group
     )
-    monkeypatch.setattr('scripts.pusher.get_patch_owner', get_patch_owner)
-    monkeypatch.setattr('scripts.pusher.read_push_details', read_push_details)
+    monkeypatch.setattr('stdci_tools.pusher.get_patch_owner', get_patch_owner)
+    monkeypatch.setattr('stdci_tools.pusher.read_push_details', read_push_details)
     if has_hdr is None:
         check_header = None
     else:

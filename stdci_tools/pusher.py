@@ -14,12 +14,8 @@ from itertools import chain
 from six import iteritems, string_types
 from six.moves.urllib.parse import urlparse
 from subprocess import Popen, CalledProcessError, PIPE
-try:
-    from stdci_logging import add_logging_args, setup_console_logging
-    from git_utils import git, GitProcessError, git_rev_parse
-except ImportError:
-    from .stdci_logging import add_logging_args, setup_console_logging
-    from .git_utils import git, GitProcessError, git_rev_parse
+from scripts.stdci_logging import add_logging_args, setup_console_logging
+from scripts.git_utils import git, GitProcessError, git_rev_parse
 
 
 logger = logging.getLogger(__name__)

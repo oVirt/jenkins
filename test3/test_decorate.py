@@ -10,7 +10,7 @@ from textwrap import dedent
 import py
 from subprocess import run, PIPE
 
-from scripts.decorate import decorate
+from stdci_tools.decorate import decorate
 
 @pytest.fixture
 def exported_artifacts(tmpdir, monkeypatch):

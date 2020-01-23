@@ -46,7 +46,7 @@ generate_old_xmls() {
             --branch $branch_name --reference "$project_folder/.git" \
             "file:///$project_folder" jenkins \
         && cd jenkins \
-        && "$project_folder/scripts/usrc.py" -v get \
+        && usrc -v get \
         && (
             [[ ! -d "$confs_dir" ]] \
             || generate_jobs_xml "$confs_dir" "$old_xmls_dir"

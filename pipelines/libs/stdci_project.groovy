@@ -254,8 +254,8 @@ def update_project_upstream_sources(Project project) {
                 LOGDIR="exported-artifacts/usrc_update_logs"
                 mkdir -p "\$LOGDIR"
 
-                usrc="\$WORKSPACE/jenkins/scripts/usrc.py"
-                [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/scripts/usrc_local.py"
+                usrc="\$WORKSPACE/jenkins/stdci_tools/usrc.py"
+                [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/stdci_tools/usrc_local.py"
 
                 "\$usrc" --log="\$LOGDIR/update_${project.name}.log" update --commit
                 "\$usrc" --log="\$LOGDIR/get_${project.name}.log" get

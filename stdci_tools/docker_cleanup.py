@@ -7,11 +7,18 @@ import sys
 import re
 from copy import copy
 from six import iterkeys, iteritems
-from stdci_logging import add_logging_args, setup_console_logging
 import shutil
 import subprocess
 import os
 from pathlib import Path
+
+try:
+    from scripts.stdci_logging import add_logging_args, setup_console_logging
+except ImportError:
+    # If we failed to find our scripts module, then try to add this script's
+    # parent directory to sys.path
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+    from scripts.stdci_logging import add_logging_args, setup_console_logging
 
 try:
     import docker

@@ -54,7 +54,7 @@ cleanup_docker () {
     fi
 
     sudo -n systemctl start docker || return 1
-    sudo -n "${WORKSPACE}/jenkins/scripts/docker_cleanup.py" \
+    sudo -n "${WORKSPACE}/jenkins/stdci_tools/docker_cleanup.py" \
         --debug --whitelist "${whitelisted_repos[@]}" || return 1
     return 0
 }

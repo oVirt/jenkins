@@ -471,7 +471,8 @@ def invoke_pusher(Map options=[:], project, String cmd) {
             script: """
                 logs_dir="exported-artifacts/pusher_logs"
                 mkdir -p "\$logs_dir"
-                ${env.WORKSPACE}/jenkins/scripts/pusher.py \
+                PYTHONPATH="\${PYTHONPATH:+\$PYTHONPATH:}${env.WORKSPACE}/jenkins" \
+                    ${env.WORKSPACE}/jenkins/stdci_tools/pusher.py \
                     --verbose --log="\$logs_dir/pusher_${cmd}.log" \
                     ${cmd} ${options.get('args', []).join(' ')}
             """,

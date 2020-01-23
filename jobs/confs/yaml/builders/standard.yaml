@@ -69,7 +69,7 @@
             mkdir -p "$LOGDIR"
 
             cd "$PROJECT"
-            "$WORKSPACE"/jenkins/scripts/pusher.py \
+            "$WORKSPACE"/jenkins/stdci_tools/pusher.py \
                 --log="$LOGDIR/can_merge_{project}.log" \
                 -v \
                 can_merge

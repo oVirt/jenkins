@@ -1,5 +1,5 @@
 import pytest
-from scripts import usrc_data_extractor as ude
+from stdci_tools import usrc_data_extractor as ude
 
 
 @pytest.mark.parametrize('repo_url,expected_project_name', (

@@ -119,7 +119,7 @@ sub-stages:
             distro: el7
       runif:
         file-changed:
-          - scripts/docker_cleanup.py
+          - stdci_tools/docker_cleanup.py
           - data/Dockerfiles/*
           - jobs/confs/shell-scripts/collect_artifacts.sh
           - jobs/confs/yaml/templates/standard-stage.yaml
@@ -137,6 +137,7 @@ sub-stages:
       runif:
         file-changed:
           - scripts/*.py
+          - stdci_tools/*.py
           - test3/*
           - automation/check-patch.{{ substage }}.*
   - dummy_suite_master:

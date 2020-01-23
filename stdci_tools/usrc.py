@@ -416,7 +416,7 @@ class GitUpstreamSource(object):
             'checkout', self.commit, '-f',
         )
 
-    @only_if_imported_any('pusher', 'scripts.pusher')
+    @only_if_imported_any('pusher', 'stdci_tools.pusher')
     def _branch_format_handler(self, push_map, **kwargs):
         """Get the upstream source to branch
 

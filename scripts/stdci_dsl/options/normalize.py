@@ -25,7 +25,7 @@ from ..syntax_utils import remove_case_and_signs
 from .containers import Containers
 from .podspecs import PodSpecs
 
-from ...usrc import get_modified_files
+from stdci_tools.usrc import get_modified_files
 
 
 logger = logging.getLogger(__name__)

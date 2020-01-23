@@ -7,12 +7,12 @@ main() {
     rm -rf exported-artifacts
     mkdir exported-artifacts
 
-    local usrc="scripts/usrc.py"
-    [[ -x "$usrc" ]] || usrc="scripts/usrc_local.py"
+    local usrc
+    usrc="$(type -P usrc)"
 
     # dispatch tests according to what changed in git
     local changed_files
-    changed_files="$(python3 $usrc changed-files)"
+    changed_files="$(python3 "$usrc" changed-files)"
 
     if grep -q '^mock_configs/' <<< "$changed_files"; then
         test_standard_ci "$@"

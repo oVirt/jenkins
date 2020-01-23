@@ -18,9 +18,9 @@ from dockerfile_parse import DockerfileParser
 from dockerfile_parse import constants as dfp_constants
 
 try:
-    from stdci_logging import add_logging_args, setup_console_logging
+    from scripts.stdci_logging import add_logging_args, setup_console_logging
 except ImportError:
-    from .stdci_logging import add_logging_args, setup_console_logging
+    from stdci_logging import add_logging_args, setup_console_logging
 
 logger = logging.getLogger(__name__)
 

@@ -8,16 +8,14 @@ import pytest
 from dockerfile_parse import constants as dfp_constants
 from unittest.mock import MagicMock, call, sentinel
 
-from scripts import dockerfile_utils
-from scripts.dockerfile_utils import (DecoratedCmd, Decorator,
-                                      FailedToGetLatestVersionError,
-                                      FailedToParseDecoratorError,
-                                      ImageAndFloatingRef, UpdateAction,
-                                      get_decorated_commands, get_decorator,
-                                      get_dfps,
-                                      get_nvr_tag_from_inspect_struct,
-                                      get_old_images_and_floating_refs,
-                                      get_update, update, main, run_command)
+from stdci_tools import dockerfile_utils
+from stdci_tools.dockerfile_utils import (
+    DecoratedCmd, Decorator, FailedToGetLatestVersionError,
+    FailedToParseDecoratorError, ImageAndFloatingRef, UpdateAction,
+    get_decorated_commands, get_decorator, get_dfps,
+    get_nvr_tag_from_inspect_struct, get_old_images_and_floating_refs,
+    get_update, update, main, run_command
+)
 
 
 def test_get_nvr_tag_from_inspect_struct():

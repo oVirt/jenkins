@@ -2,14 +2,6 @@
 """test_usrc.py - Tests for usrc.py
 """
 import pytest
-from scripts.usrc import (
-    get_upstream_sources, update_upstream_sources,
-    commit_upstream_sources_update, GitProcessError, GitUpstreamSource,
-    generate_update_commit_message, git_ls_files, git_read_file, ls_all_files,
-    files_diff, get_modified_files, get_files_to_links_map, GitFile,
-    UnkownDestFormatError, set_upstream_source_entries, modify_entries_main,
-    only_if_imported_any
-)
 from textwrap import dedent
 from types import GeneratorType
 from hashlib import md5
@@ -24,8 +16,17 @@ try:
     from unittest.mock import MagicMock, call, sentinel
 except ImportError:
     from mock import MagicMock, call, sentinel
+
 from scripts.git_utils import git_rev_parse
-from scripts import usrc
+from stdci_tools import usrc
+from stdci_tools.usrc import (
+    get_upstream_sources, update_upstream_sources,
+    commit_upstream_sources_update, GitProcessError, GitUpstreamSource,
+    generate_update_commit_message, git_ls_files, git_read_file, ls_all_files,
+    files_diff, get_modified_files, get_files_to_links_map, GitFile,
+    UnkownDestFormatError, set_upstream_source_entries, modify_entries_main,
+    only_if_imported_any
+)
 
 
 class TestGitProcessError(object):
@@ -805,7 +806,7 @@ class TestGitUpstreamSource(object):
     def test_ls_files(self, monkeypatch):
         git_ls_files = MagicMock(side_effect=(sentinel.some_files,))
         fetch = MagicMock()
-        monkeypatch.setattr('scripts.usrc.git_ls_files', git_ls_files)
+        monkeypatch.setattr('stdci_tools.usrc.git_ls_files', git_ls_files)
         gus = GitUpstreamSource('git://url.of/repo', 'a_branch', 'a_commit')
         gus._fetch = fetch
         out = gus.ls_files()
@@ -1403,8 +1404,8 @@ def test_ls_all_files(monkeypatch):
         'file3.txt': (1234, 'file3_hash'),
         'overriden2.txt': (1234, 'overriding_hash2'),
     },))
-    monkeypatch.setattr('scripts.usrc.load_upstream_sources', load_usrc)
-    monkeypatch.setattr('scripts.usrc.git_ls_files', git_ls_files)
+    monkeypatch.setattr('stdci_tools.usrc.load_upstream_sources', load_usrc)
+    monkeypatch.setattr('stdci_tools.usrc.git_ls_files', git_ls_files)
     out = ls_all_files('some_commit')
     assert load_usrc.called
     assert load_usrc.call_args == call('some_commit')
@@ -1445,8 +1446,8 @@ def test_files_diff():
 def test_get_modified_files(monkeypatch):
     ls_all_files = MagicMock(side_effect=lambda x: getattr(sentinel, x))
     files_diff = MagicMock(side_effect=(sentinel.a_diff,))
-    monkeypatch.setattr('scripts.usrc.ls_all_files', ls_all_files)
-    monkeypatch.setattr('scripts.usrc.files_diff', files_diff)
+    monkeypatch.setattr('stdci_tools.usrc.ls_all_files', ls_all_files)
+    monkeypatch.setattr('stdci_tools.usrc.files_diff', files_diff)
     out = get_modified_files('new_commit', 'old_commit')
     assert ls_all_files.call_count == 2
     assert call('new_commit') in ls_all_files.call_args_list
@@ -1515,10 +1516,10 @@ def test_get_modified_files_resolve_links(
     ls_all_files = MagicMock(side_effect=lambda x: getattr(sentinel, x))
     files_diff = MagicMock(side_effect=lambda x, y: diff)
     get_files_to_links_map = MagicMock(side_effect=lambda x, y: links_map)
-    monkeypatch.setattr('scripts.usrc.ls_all_files', ls_all_files)
-    monkeypatch.setattr('scripts.usrc.files_diff', files_diff)
+    monkeypatch.setattr('stdci_tools.usrc.ls_all_files', ls_all_files)
+    monkeypatch.setattr('stdci_tools.usrc.files_diff', files_diff)
     monkeypatch.setattr(
-        'scripts.usrc.get_files_to_links_map', get_files_to_links_map
+        'stdci_tools.usrc.get_files_to_links_map', get_files_to_links_map
     )
     out = get_modified_files('new_commit', 'old_commit', resolve_links=True)
     assert set(out) == expected
@@ -1733,18 +1734,18 @@ def test_modify_entries(monkeypatch, usrc_orig, usrc_modify, should_commit):
         entries=entry_property, commit=should_commit
     )
     mock_load_usrc = MagicMock(return_value=usrc_orig)
-    monkeypatch.setattr('scripts.usrc.load_upstream_sources', mock_load_usrc)
+    monkeypatch.setattr('stdci_tools.usrc.load_upstream_sources', mock_load_usrc)
     mock_save_usrc = MagicMock()
-    monkeypatch.setattr('scripts.usrc.save_upstream_sources', mock_save_usrc)
+    monkeypatch.setattr('stdci_tools.usrc.save_upstream_sources', mock_save_usrc)
     mock_commit_usrc = MagicMock()
     monkeypatch.setattr(
-        'scripts.usrc.commit_upstream_sources_update', mock_commit_usrc
+        'stdci_tools.usrc.commit_upstream_sources_update', mock_commit_usrc
     )
     mock_set_upstream_source_entries = MagicMock(
         return_value=sentinel.some_entries
     )
     monkeypatch.setattr(
-        'scripts.usrc.set_upstream_source_entries',
+        'stdci_tools.usrc.set_upstream_source_entries',
         mock_set_upstream_source_entries
     )
     modify_entries_main(mock_args)

@@ -15,7 +15,7 @@ from subprocess import run
 
 from scripts.git_utils import git
 from scripts.stdci_logging import setup_console_logging
-from scripts import usrc
+from stdci_tools import usrc
 from scripts.mirror_client import mirrors_from_uri, inject_yum_mirrors_file
 
 EXPORTED_ARTIFACTS = "exported-artifacts"

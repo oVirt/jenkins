@@ -309,8 +309,8 @@ def checkout_repo(
         )
         sshagent(['std-ci-git-push-credentials']) {
             sh label: 'usrc.py get', script: """
-                usrc="\$WORKSPACE/jenkins/scripts/usrc.py"
-                [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/scripts/usrc_local.py"
+                usrc="\$WORKSPACE/jenkins/stdci_tools/usrc.py"
+                [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/stdci_tools/usrc_local.py"
 
                 "\$usrc" --log -d get
             """
@@ -359,8 +359,8 @@ def loader_was_modified() {
         label: 'pipeline-loader diff check',
         returnStatus: true,
         script: """\
-            usrc="\$WORKSPACE/jenkins/scripts/usrc.py"
-            [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/scripts/usrc_local.py"
+            usrc="\$WORKSPACE/jenkins/stdci_tools/usrc.py"
+            [[ -x "\$usrc" ]] || usrc="\$WORKSPACE/jenkins/stdci_tools/usrc_local.py"
 
             "\$usrc" --log -d changed-files HEAD older_head |\
                 grep 'pipeline-loader.groovy\$'
