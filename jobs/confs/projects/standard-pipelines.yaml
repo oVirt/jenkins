@@ -121,6 +121,7 @@
       - safelease
       - vcredist-x86
       - vdsm
+      - vdsm-jsonrpc-java
     jobs:
       - '{project}_standard-gerrit-jobs'
 
