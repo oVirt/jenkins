@@ -88,14 +88,6 @@ sub-stages:
         file-changed:
           - container/*
           - automation/*.{{ substage }}.*
-  - minishift_fixture:
-      runif:
-        file-changed:
-          - scripts/object_utils.py
-          - sysscripts/minishift_fixture.py
-          - automation/*.{{ substage }}.*
-      runtime-requirements:
-        host-os: same
   - playbooks:
       runif:
         file-changed:
