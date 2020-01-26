@@ -17,7 +17,7 @@ try:
 except ImportError:
     from mock import MagicMock, call, sentinel
 
-from scripts.git_utils import git_rev_parse
+from stdci_libs.git_utils import git_rev_parse
 from stdci_tools import usrc
 from stdci_tools.usrc import (
     get_upstream_sources, update_upstream_sources,

@@ -111,8 +111,8 @@ def load_change_data() {
             #!/usr/bin/env python
             from __future__ import print_function
             import yaml
-            from scripts.change_queue import JenkinsTestedChangeList
-            from scripts.mirror_client import mirrors_from_environ
+            from stdci_libs.change_queue import JenkinsTestedChangeList
+            from stdci_libs.mirror_client import mirrors_from_environ
 
             JenkinsTestedChangeList.setup_logging()
             cl = JenkinsTestedChangeList.load_from_artifact()
@@ -196,7 +196,7 @@ def report_test_results(result) {
     withEnv(['PYTHONPATH=jenkins']) {
         sh """\
             #!/usr/bin/env python
-            from scripts.change_queue import JenkinsTestedChangeList
+            from stdci_libs.change_queue import JenkinsTestedChangeList
 
             JenkinsTestedChangeList.setup_logging()
             cl = JenkinsTestedChangeList.load_from_artifact()

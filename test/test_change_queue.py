@@ -15,10 +15,10 @@ try:
 except ImportError:
     from mock import MagicMock, call, sentinel
 
-from scripts.change_queue import ChangeQueue, ChangeQueueWithDeps, \
+from stdci_libs.change_queue import ChangeQueue, ChangeQueueWithDeps, \
     JenkinsChangeQueueObject, JenkinsChangeQueue, ChangeQueueWithStreams, \
     JenkinsTestedChangeList
-from scripts.jenkins_objects import NotInJenkins
+from stdci_libs.jenkins_objects import NotInJenkins
 
 
 def _enlist_state(state):

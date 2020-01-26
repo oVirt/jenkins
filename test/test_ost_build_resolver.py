@@ -7,14 +7,14 @@ try:
 except ImportError:
     from mock import MagicMock, call, sentinel
 
-from scripts.ost_build_resolver import (
+from stdci_libs.ost_build_resolver import (
     get_project_name, get_release_queues,
     create_build_jobs, unique_patches_per_release, patch_object,
     create_job_spec, get_patch_sha, create_patch_object,
     create_pipeline_thread_name, create_gate_info, find_last_patch
 )
-from scripts import ost_build_resolver
-from scripts.jenkins_objects import JobRunSpec
+from stdci_libs import ost_build_resolver
+from stdci_libs.jenkins_objects import JobRunSpec
 
 
 @pytest.fixture(scope='function')

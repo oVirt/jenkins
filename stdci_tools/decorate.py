@@ -13,10 +13,10 @@ from pathlib import Path
 import logging
 from subprocess import run
 
-from scripts.git_utils import git
-from scripts.stdci_logging import setup_console_logging
+from stdci_libs.git_utils import git
+from stdci_libs.stdci_logging import setup_console_logging
 from stdci_tools import usrc
-from scripts.mirror_client import mirrors_from_uri, inject_yum_mirrors_file
+from stdci_libs.mirror_client import mirrors_from_uri, inject_yum_mirrors_file
 
 EXPORTED_ARTIFACTS = "exported-artifacts"
 EXTRA_SOURCES = 'extra_sources'

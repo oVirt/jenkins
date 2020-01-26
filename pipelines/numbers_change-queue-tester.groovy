@@ -98,8 +98,8 @@ def run_tests_py() {
     prepare_python_env()
     sh """\
         #!/usr/bin/env python
-        from scripts.change_queue import JenkinsTestedChangeList
-        from scripts.jenkins_objects import JenkinsObject
+        from stdci_libs.change_queue import JenkinsTestedChangeList
+        from stdci_libs.jenkins_objects import JenkinsObject
         import logging
         from six.moves import range
 
@@ -159,7 +159,7 @@ def report_test_results(result) {
     withEnv(['PYTHONPATH=jenkins']) {
         sh """\
             #!/usr/bin/env python
-            from scripts.change_queue import JenkinsTestedChangeList
+            from stdci_libs.change_queue import JenkinsTestedChangeList
 
             JenkinsTestedChangeList.setup_logging()
             cl = JenkinsTestedChangeList.load_from_artifact()

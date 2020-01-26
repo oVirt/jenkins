@@ -1,1 +1,1 @@
-../stdci_logging.py
+../../stdci_libs/stdci_logging.py

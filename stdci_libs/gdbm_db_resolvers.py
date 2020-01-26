@@ -12,7 +12,7 @@ import argparse
 try:
     from resolver_base import ResolverKeyError
 except ImportError:
-    from scripts.resolver_base import ResolverKeyError
+    from stdci_libs.resolver_base import ResolverKeyError
 
 
 class gdbm_resolver:

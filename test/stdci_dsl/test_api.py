@@ -3,18 +3,18 @@
 
 import pytest
 
-from scripts.stdci_dsl.job_thread import JobThread
-from scripts.stdci_dsl.api import (
+from stdci_libs.stdci_dsl.job_thread import JobThread
+from stdci_libs.stdci_dsl.api import (
     get_threads, RuntimeEnvDefinition,
     NoThreadForEnv, get_threads_with_globals
 )
-from scripts.stdci_dsl.api.formatters.threads import (
+from stdci_libs.stdci_dsl.api.formatters.threads import (
     _pipeline_dict_formatter, _conf_checker_terse_formatter, format_table,
     _conf_checker_verbose_formatter, trim_zero, trim_str, trim_str_end,
     trim_path, TrimFunctionValueError
 )
-from scripts.stdci_dsl.options.normalize import RepoConfig
-from scripts.nested_config import DepthLevel
+from stdci_libs.stdci_dsl.options.normalize import RepoConfig
+from stdci_libs.nested_config import DepthLevel
 
 @pytest.fixture(scope='function')
 def project_dir(tmpdir):

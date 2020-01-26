@@ -10,7 +10,7 @@ from xdg.BaseDirectory import xdg_config_home
 try:
     from resolver_base import ResolverKeyError
 except ImportError:
-    from scripts.resolver_base import ResolverKeyError
+    from stdci_libs.resolver_base import ResolverKeyError
 
 
 def main():

@@ -6,7 +6,7 @@ try:
 except ImportError:
     from mock import MagicMock, create_autospec, sentinel, call
 
-from scripts.struct_normalizer import (
+from stdci_libs.struct_normalizer import (
     DataNormalizationError, normalize_value, scalar, list_of, map_with,
     normalize_option, mandatory, fallback_option, all_of,
 )

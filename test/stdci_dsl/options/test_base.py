@@ -7,12 +7,12 @@ try:
 except ImportError:
     from mock import MagicMock, create_autospec, sentinel, call
 
-from scripts.struct_normalizer import normalize_value, DataNormalizationError
-from scripts.stdci_dsl.options import base
-from scripts.stdci_dsl.options.base import (
+from stdci_libs.struct_normalizer import normalize_value, DataNormalizationError
+from stdci_libs.stdci_dsl.options import base
+from stdci_libs.stdci_dsl.options.base import (
     render_template, template_string, map_with_cased_keys
 )
-from scripts.stdci_dsl.job_thread import JobThread
+from stdci_libs.stdci_dsl.job_thread import JobThread
 
 
 @pytest.mark.parametrize(

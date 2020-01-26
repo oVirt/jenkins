@@ -2,13 +2,13 @@
 """test_ci_env_client.py - Tests for secrets_file.py
 """
 import pytest
-from scripts import ci_env_client
-from scripts.ci_env_client import (
+from stdci_libs import ci_env_client
+from stdci_libs.ci_env_client import (
     serve_request,
     secret_key_ref_provider,
     gen_env_vars_from_requests,
 )
-from scripts.resolver_base import ResolverKeyError
+from stdci_libs.resolver_base import ResolverKeyError
 try:
     from mock import MagicMock, call
 except ImportError:

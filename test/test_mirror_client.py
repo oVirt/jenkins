@@ -19,7 +19,7 @@ try:
 except ImportError:
     from mock import MagicMock, call, sentinel
 
-from scripts.mirror_client import (
+from stdci_libs.mirror_client import (
     inject_yum_mirrors, inject_yum_mirrors_str, mirrors_from_http,
     mirrors_from_file, mirrors_from_data_url, mirrors_from_uri,
     parse_mirror_includes, merge_mirrors, mirrors_from_environ,
@@ -354,15 +354,15 @@ def test_mirrors_from_uri_http(monkeypatch):
     mirrors_from_data_url = MagicMock(side_effect=[sentinel.data_mirrors])
     normalize_mirror_urls = MagicMock(side_effect=identity)
     parse_mirror_includes = MagicMock(side_effect=identity)
-    monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
+    monkeypatch.setattr("stdci_libs.mirror_client.mirrors_from_http",
                         mirrors_from_http)
-    monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
+    monkeypatch.setattr("stdci_libs.mirror_client.mirrors_from_file",
                         mirrors_from_file)
-    monkeypatch.setattr("scripts.mirror_client.mirrors_from_data_url",
+    monkeypatch.setattr("stdci_libs.mirror_client.mirrors_from_data_url",
                         mirrors_from_data_url)
-    monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
+    monkeypatch.setattr("stdci_libs.mirror_client.normalize_mirror_urls",
                         normalize_mirror_urls)
-    monkeypatch.setattr("scripts.mirror_client.parse_mirror_includes",
+    monkeypatch.setattr("stdci_libs.mirror_client.parse_mirror_includes",
                         parse_mirror_includes)
     http_url = 'http://mirrors.example.com'
     out = mirrors_from_uri(http_url)
@@ -391,15 +391,15 @@ def test_mirrors_from_uri_file(monkeypatch, in_path, passed_path):
     mirrors_from_data_url = MagicMock(side_effect=[sentinel.data_mirrors])
     normalize_mirror_urls = MagicMock(side_effect=identity)
     parse_mirror_includes = MagicMock(side_effect=identity)
-    monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
+    monkeypatch.setattr("stdci_libs.mirror_client.mirrors_from_http",
                         mirrors_from_http)
-    monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
+    monkeypatch.setattr("stdci_libs.mirror_client.mirrors_from_file",
                         mirrors_from_file)
-    monkeypatch.setattr("scripts.mirror_client.mirrors_from_data_url",
+    monkeypatch.setattr("stdci_libs.mirror_client.mirrors_from_data_url",
                         mirrors_from_data_url)
-    monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
+    monkeypatch.setattr("stdci_libs.mirror_client.normalize_mirror_urls",
                         normalize_mirror_urls)
-    monkeypatch.setattr("scripts.mirror_client.parse_mirror_includes",
+    monkeypatch.setattr("stdci_libs.mirror_client.parse_mirror_includes",
                         parse_mirror_includes)
     out = mirrors_from_uri(in_path)
     assert out == sentinel.file_mirrors
@@ -418,15 +418,15 @@ def test_mirrors_from_uri_data(monkeypatch):
     mirrors_from_data_url = MagicMock(side_effect=[sentinel.data_mirrors])
     normalize_mirror_urls = MagicMock(side_effect=identity)
     parse_mirror_includes = MagicMock(side_effect=identity)
-    monkeypatch.setattr("scripts.mirror_client.mirrors_from_http",
+    monkeypatch.setattr("stdci_libs.mirror_client.mirrors_from_http",
                         mirrors_from_http)
-    monkeypatch.setattr("scripts.mirror_client.mirrors_from_file",
+    monkeypatch.setattr("stdci_libs.mirror_client.mirrors_from_file",
                         mirrors_from_file)
-    monkeypatch.setattr("scripts.mirror_client.mirrors_from_data_url",
+    monkeypatch.setattr("stdci_libs.mirror_client.mirrors_from_data_url",
                         mirrors_from_data_url)
-    monkeypatch.setattr("scripts.mirror_client.normalize_mirror_urls",
+    monkeypatch.setattr("stdci_libs.mirror_client.normalize_mirror_urls",
                         normalize_mirror_urls)
-    monkeypatch.setattr("scripts.mirror_client.parse_mirror_includes",
+    monkeypatch.setattr("stdci_libs.mirror_client.parse_mirror_includes",
                         parse_mirror_includes)
     data_url = 'data:application/json:{"foo": "bar"}'
     out = mirrors_from_uri(data_url)
@@ -549,7 +549,7 @@ def test_merge_mirrors(a, b, expected):
 
 def test_mirrors_from_environ(monkeypatch):
     mirrors_from_uri = MagicMock(side_effect=[sentinel.some_mirrors])
-    monkeypatch.setattr("scripts.mirror_client.mirrors_from_uri",
+    monkeypatch.setattr("stdci_libs.mirror_client.mirrors_from_uri",
                         mirrors_from_uri)
     monkeypatch.setenv('CI_MIRRORS_URL', 'some_mirrors_uri')
     out = mirrors_from_environ()

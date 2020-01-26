@@ -30,10 +30,10 @@ def parse(String source_dir, String std_ci_stage) {
             script: """\
                 #!/usr/bin/env python
                 import yaml
-                from scripts.stdci_dsl.api import (
+                from stdci_libs.stdci_dsl.api import (
                     get_formatted_threads, setupLogging
                 )
-                from scripts.zuul_helpers import is_gated_project
+                from stdci_libs.zuul_helpers import is_gated_project
 
                 setupLogging()
                 stdci_config = get_formatted_threads(

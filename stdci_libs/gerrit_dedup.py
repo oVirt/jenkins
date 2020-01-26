@@ -2,7 +2,7 @@
 """gerrit_dedup.py - Helper script for de-duplicating Gerrit users
 """
 from __future__ import absolute_import, print_function
-from scripts.gerrit import GerritServer
+from stdci_libs.gerrit import GerritServer
 import argparse
 
 

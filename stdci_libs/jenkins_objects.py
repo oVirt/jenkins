@@ -12,7 +12,18 @@ from contextlib import contextmanager
 from itertools import chain
 import json
 import logging
+from six import BytesIO
+from importlib import import_module
 
+try:
+    from cPickle import Unpickler
+except ImportError:
+    # On python 3 we need our own subclass of the Unpickler so we can override
+    # the find_class method
+    # We cannot do this in Python3 sine cPickle.Unpickler is not a class in
+    # Python2.
+    class Unpickler(cPickle.Unpickler):
+        pass
 
 class JobRunSpec(namedtuple('_JobRunSpec', ('job_name', 'params'))):
     """Class representing a specification for running a Jenkins job"""
@@ -187,6 +198,31 @@ class BuildsList(list):
             json.dump(self.as_dict_list(), fil)
 
 
+def _find_global(mod_name, cls):
+    """Find a python class and import it - used to override cPickle's
+    built-in mechanism for doing this in order to handle moving STDCI's
+    librtaries
+    """
+    mod_name = mod_name.replace('scripts.', 'stdci_libs.')
+    mod = import_module(mod_name)
+    return mod.__dict__[cls]
+
+
+def _cpickle_loads(pkl_str):
+    """A replacement for cPickle.loads that overrides the find_global
+    attribute (Or find_class in Python3)
+    """
+    pk = Unpickler(BytesIO(pkl_str))
+    if hasattr(pk, 'find_class'):
+        # This is the method name in Python3
+        pk.find_class = _find_global
+    else:
+        # hasattr doe not really work on the cPickle objects in Python2, so we
+        # just assume we're in python2 if hasattr returned false
+        pk.find_global = _find_global
+    return pk.load()
+
+
 class JenkinsObject(object):
     """Base class for objects that run inside Jenkins
     """
@@ -197,7 +233,7 @@ class JenkinsObject(object):
         """Convert a string that supposedly came from a job parameter into a
         change object
         """
-        return cPickle.loads(decompress(b64decode(param_str.encode('utf8'))))
+        return _cpickle_loads(decompress(b64decode(param_str.encode('utf8'))))
 
     @staticmethod
     def object_to_param_str(change):
@@ -231,7 +267,7 @@ class JenkinsObject(object):
         fd = None
         try:
             fd = BZ2File(path.join(cls.ARTIFACTS_DIR, artifact_file))
-            return cPickle.loads(fd.read())
+            return _cpickle_loads(fd.read())
         except IOError as e:
             # errno 2 is 'No such file or directory'
             if e.errno == 2 and fallback_cls is not None:

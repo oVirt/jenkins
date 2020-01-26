@@ -101,7 +101,7 @@ def create_gate_info() {
                 #!/usr/bin/env python
                 import json
                 from os import environ
-                from scripts.ost_build_resolver import create_gate_info
+                from stdci_libs.ost_build_resolver import create_gate_info
                 gate_info = create_gate_info(
                     environ['CHECKED_COMMITS'],
                     environ['SYSTEM_QUEUE_PREFIX'],

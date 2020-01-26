@@ -32,8 +32,8 @@
           from os import environ
 
           sys.path.append('jenkins')
-          from scripts.change_queue import JenkinsChangeQueueClient
-          from scripts.change_queue.changes import NumberChange
+          from stdci_libs.change_queue import JenkinsChangeQueueClient
+          from stdci_libs.change_queue.changes import NumberChange
 
           change = NumberChange(
               id=environ['BUILD_ID'],

@@ -15,9 +15,9 @@ import struct
 from termios import TIOCGWINSZ
 from fcntl import ioctl
 sys.path.insert(1, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from scripts.stdci_dsl.api import get_formatted_threads
-from scripts.stdci_dsl.parser import CONFIG_FILES
-from scripts.stdci_logging import add_logging_args, setup_console_logging
+from stdci_libs.stdci_dsl.api import get_formatted_threads
+from stdci_libs.stdci_dsl.parser import CONFIG_FILES
+from stdci_libs.stdci_logging import add_logging_args, setup_console_logging
 
 
 STDCI_STAGES = ('check-patch', 'check-merged', 'build-artifacts',

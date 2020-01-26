@@ -9,9 +9,9 @@ except ImportError:
 from textwrap import dedent
 from six import iteritems
 
-from scripts.stdci_dsl.job_thread import JobThread
-from scripts.stdci_dsl.options.podspecs import PodSpecs
-from scripts.stdci_dsl.options import podspecs
+from stdci_libs.stdci_dsl.job_thread import JobThread
+from stdci_libs.stdci_dsl.options.podspecs import PodSpecs
+from stdci_libs.stdci_dsl.options import podspecs
 
 
 class TestPodSpecs:

@@ -15,7 +15,7 @@ setuptools.setup(
         "A set of tools and scripts used by the oVirt Standard-CI system"
     ),
     long_description_content_type="text/markdown",
-    packages=['stdci_tools'],
+    packages=['stdci_tools', 'stdci_libs'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -26,7 +26,7 @@ setuptools.setup(
         'console_scripts': [
             'usrc = stdci_tools.usrc:main',
             'pusher = stdci_tools.pusher:main',
-            'mirror_client = scripts.mirror_client:main',
+            'mirror_client = stdci_libs.mirror_client:main',
             'decorate = stdci_tools.decorate:decorate',
         ]
     }

@@ -13,7 +13,7 @@ from jinja2 import Environment, PackageLoader
 
 from .changes import DisplayableChangeWrapper, ChangeInStreamWrapper, \
     ChangeWithBuildsWrapper
-from scripts.jenkins_objects import JenkinsObject, JobRunSpec, BuildsList
+from stdci_libs.jenkins_objects import JenkinsObject, JobRunSpec, BuildsList
 
 
 logger = logging.getLogger(__name__)

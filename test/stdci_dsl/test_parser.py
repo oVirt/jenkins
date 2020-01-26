@@ -1,7 +1,7 @@
 #!/bin/env python
 
 import pytest
-from scripts.stdci_dsl.parser import (
+from stdci_libs.stdci_dsl.parser import (
     normalize_config_values, normalize_config_keys
 )
 

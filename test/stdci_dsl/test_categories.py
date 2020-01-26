@@ -1,8 +1,8 @@
 #!/bin/env python
 
 import pytest
-from scripts.stdci_dsl.categories import apply_default_categories
-from scripts.stdci_dsl.job_thread import JobThread
+from stdci_libs.stdci_dsl.categories import apply_default_categories
+from stdci_libs.stdci_dsl.job_thread import JobThread
 
 
 @pytest.mark.parametrize(

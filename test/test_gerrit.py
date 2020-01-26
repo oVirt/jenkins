@@ -11,7 +11,7 @@ try:
 except ImportError:
     from mock import MagicMock, call
 
-from scripts.gerrit import GerritPatchset
+from stdci_libs.gerrit import GerritPatchset
 
 
 class TestGerritPatchset(object):

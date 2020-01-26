@@ -9,11 +9,11 @@ try:
     from secrets_resolvers import ci_secrets_file_resolver, load_secret_data
     from gdbm_db_resolvers import gdbm_resolver
 except ImportError:
-    from scripts.resolver_base import ResolverKeyError
-    from scripts.secrets_resolvers import (
+    from stdci_libs.resolver_base import ResolverKeyError
+    from stdci_libs.secrets_resolvers import (
         ci_secrets_file_resolver, load_secret_data
     )
-    from scripts.gdbm_db_resolvers import gdbm_resolver
+    from stdci_libs.gdbm_db_resolvers import gdbm_resolver
 
 
 def gen_env_vars_from_requests(requests, providers):

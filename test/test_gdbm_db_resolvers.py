@@ -2,10 +2,10 @@
 """test_gdbm_db_resolvers.py - Tests for gdbm_db_resolvers.py
 """
 import pytest
-from scripts.gdbm_db_resolvers import (
+from stdci_libs.gdbm_db_resolvers import (
     gdbm_resolver, is_key_safe, gen_gdbm_from_dict
 )
-from scripts.resolver_base import ResolverKeyError
+from stdci_libs.resolver_base import ResolverKeyError
 
 
 @pytest.fixture

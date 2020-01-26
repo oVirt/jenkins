@@ -2,12 +2,12 @@
 """test_automation_options.py - Tests module for automation_options.py"""
 
 import pytest
-from scripts.stdci_dsl.options.globals import _get_global_options
-from scripts.stdci_dsl.options.parser_utils import get_merged_options
-from scripts.stdci_dsl.options.defaults import apply_default_options
-from scripts.stdci_dsl.options.defaults.values import DefaultValue
-from scripts.stdci_dsl.job_thread import JobThread
-from scripts.stdci_dsl.options.normalize import (
+from stdci_libs.stdci_dsl.options.globals import _get_global_options
+from stdci_libs.stdci_dsl.options.parser_utils import get_merged_options
+from stdci_libs.stdci_dsl.options.defaults import apply_default_options
+from stdci_libs.stdci_dsl.options.defaults.values import DefaultValue
+from stdci_libs.stdci_dsl.job_thread import JobThread
+from stdci_libs.stdci_dsl.options.normalize import (
     _resolve_stdci_yaml_config, _resolve_stdci_list_config,
     _resolve_stdci_script, _normalize_repos_config, _normalize_mounts_config,
     RepoConfig, MountConfig, _resolve_changed_files,
@@ -936,7 +936,7 @@ def test_get_global_options_cfg(threads, expected):
 )
 def test_resolve_changed_files(modified, conditions, expected, monkeypatch):
     monkeypatch.setattr(
-        'scripts.stdci_dsl.options.normalize.MODIFIED_FILES',
+        'stdci_libs.stdci_dsl.options.normalize.MODIFIED_FILES',
         {'project': modified},
     )
     thread = JobThread('a', 'b', 'c', 'd', {})
@@ -1257,7 +1257,7 @@ def test_resolve_stdci_runif_conditions(
     thread, modified_files, expected, monkeypatch
 ):
     monkeypatch.setattr(
-        'scripts.stdci_dsl.options.normalize.MODIFIED_FILES',
+        'stdci_libs.stdci_dsl.options.normalize.MODIFIED_FILES',
         {'project': modified_files}
     )
     out = _resolve_stdci_runif_conditions('project', thread, thread.options)
@@ -1274,7 +1274,7 @@ def test_resolve_stdci_runif_conditions(
 )
 def test_resolve_changed_files_exceptions(conditions, monkeypatch):
     monkeypatch.setattr(
-        'scripts.stdci_dsl.options.normalize.MODIFIED_FILES',
+        'stdci_libs.stdci_dsl.options.normalize.MODIFIED_FILES',
         {'project': []}
     )
     thread = JobThread('a', 'b', 'c', 'd', {})

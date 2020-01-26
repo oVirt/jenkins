@@ -1,11 +1,11 @@
 #!/bin/env python
 
 import pytest
-from scripts.nested_config import (
+from stdci_libs.nested_config import (
     _dfs, _merge_vectors, _cartesian_multiplication, _dedup, _aggregate,
     gen_vectors, _merge_options_wrapper, DepthLevel,
 )
-from scripts.stdci_dsl.parser import (
+from stdci_libs.stdci_dsl.parser import (
     normalize_config_values, normalize_config_keys
 )
 try:
@@ -121,7 +121,7 @@ def test_dfs(data_in, categories, expected, monkeypatch):
     def _merge_wrapper(a, b, c):
         return mock_merge_options(b, c)
     monkeypatch.setattr(
-        'scripts.nested_config._merge_options_wrapper', _merge_wrapper
+        'stdci_libs.nested_config._merge_options_wrapper', _merge_wrapper
     )
     out = list(
         _dfs(data=data_in, merge_options=mock_merge_options,
@@ -342,7 +342,7 @@ def test_dedup(vectors, expected):
 def test_aggregate(vectors, expected, monkeypatch):
     _mock_merge_wrapper = MagicMock(return_value={'merged options': None})
     monkeypatch.setattr(
-        'scripts.nested_config._merge_options_wrapper', _mock_merge_wrapper
+        'stdci_libs.nested_config._merge_options_wrapper', _mock_merge_wrapper
     )
     assert sorted(
         list(_aggregate(vectors, mock_merge_options)),
@@ -430,7 +430,7 @@ def test_gen_vectors(data_in, categories, expected, monkeypatch):
     def _mock_merge_wrapper(a, b ,c):
         return mock_merge_options(b, c)
     monkeypatch.setattr(
-        'scripts.nested_config._merge_options_wrapper', _mock_merge_wrapper
+        'stdci_libs.nested_config._merge_options_wrapper', _mock_merge_wrapper
     )
     assert sorted(
         list(gen_vectors(data_in, mock_merge_options, categories)),
@@ -476,7 +476,7 @@ def test_gen_vectors(data_in, categories, expected, monkeypatch):
 def test_merge_vectors(vector1, vector2, expected, monkeypatch):
     mock_merge_options = MagicMock(return_value={'merged options': None})
     monkeypatch.setattr(
-        'scripts.nested_config._merge_options_wrapper', mock_merge_options
+        'stdci_libs.nested_config._merge_options_wrapper', mock_merge_options
     )
     assert _merge_vectors(vector1, vector2, mock_merge_options) == expected
 
@@ -520,7 +520,7 @@ def test_merge_options_wrapper(first, second, monkeypatch):
 def test_merge_options_dfs_calls(monkeypatch):
     mock_merge_options = MagicMock(return_value={'merged options': None})
     monkeypatch.setattr(
-        'scripts.nested_config._merge_options_wrapper', mock_merge_options
+        'stdci_libs.nested_config._merge_options_wrapper', mock_merge_options
     )
     simple_data = {
         'packages': 'p3',

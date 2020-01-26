@@ -466,7 +466,7 @@ get_mount_conf() {
 gen_mirrors_conf() {
     local mirrors_url="${1?}"
     local scripts_path
-    scripts_path="$(dirname "$(which "$0")")/../scripts"
+    scripts_path="$(dirname "$(which "$0")")/../stdci_libs"
 
     echo "import sys"
     echo "sys.path.append('$scripts_path')"
@@ -487,9 +487,8 @@ gen_environ_conf() {
     local dist_label="${1?}"
     local script="${2?}"
 
-    local base_dir scripts_path gdbm_db
-    base_dir="$(dirname "$(which "$0")")/.."
-    scripts_path="${base_dir}/scripts"
+    local scripts_path gdbm_db
+    scripts_path="$(dirname "$(which "$0")")/../stdci_libs"
     gdbm_db=$(mktemp --tmpdir="$MR_TEMP_DIR" "gdbm_db.XXX")
 
     # Generate GDBM database from `$env`
@@ -499,9 +498,9 @@ gen_environ_conf() {
     echo "if isfile('$gdbm_db'):"
     echo "    import sys"
     echo "    from yaml import safe_load"
-    echo "    sys.path.append('$base_dir')"
+    echo "    sys.path.append('$scripts_path')"
     echo "    try:"
-    echo "        from scripts.ci_env_client import ("
+    echo "        from ci_env_client import ("
     echo "            load_providers, gen_env_vars_from_requests"
     echo "        )"
     echo "        providers = load_providers("
@@ -625,7 +624,7 @@ inject_ci_mirrors() {
         scripts_path \
         distro
 
-    scripts_path="$(dirname "$(which "$0")")/../scripts"
+    scripts_path="$(dirname "$(which "$0")")/../stdci_libs"
     mock_cfg="${mock_cfg_path##*/}"
     mock_logs_dir="${mock_cfg%.*}"
     distro="${mock_logs_dir##*.}"

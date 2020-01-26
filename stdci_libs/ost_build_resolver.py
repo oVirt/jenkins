@@ -7,9 +7,9 @@ from collections import namedtuple
 import os
 import logging
 from xdg.BaseDirectory import xdg_cache_home
-from scripts.git_utils import git
-from scripts.stdci_dsl.api import get_threads_with_globals
-from scripts.jenkins_objects import JobRunSpec
+from stdci_libs.git_utils import git
+from stdci_libs.stdci_dsl.api import get_threads_with_globals
+from stdci_libs.jenkins_objects import JobRunSpec
 from hashlib import sha1
 from six import itervalues, iteritems, string_types
 from functools import partial

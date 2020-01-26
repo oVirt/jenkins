@@ -226,8 +226,8 @@ def get_queue_build_args(queue, builds) {
     withEnv(['PYTHONPATH=jenkins', "BUILDS_LIST=${JsonOutput.toJson(builds)}"]) {
         sh """\
             #!/usr/bin/env python
-            from scripts.change_queue import JenkinsChangeQueueClient
-            from scripts.change_queue.changes import GerritMergedChange
+            from stdci_libs.change_queue import JenkinsChangeQueueClient
+            from stdci_libs.change_queue.changes import GerritMergedChange
 
             jcqc = JenkinsChangeQueueClient('${queue}')
             change = GerritMergedChange.from_jenkins_env()

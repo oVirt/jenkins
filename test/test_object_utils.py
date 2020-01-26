@@ -7,7 +7,7 @@ try:
 except ImportError:
     from mock import sentinel
 
-from scripts.object_utils import object_with_defaults, \
+from stdci_libs.object_utils import object_with_defaults, \
     object_with_cast_attrs, object_witp_opt_attrs, object_proxy
 
 

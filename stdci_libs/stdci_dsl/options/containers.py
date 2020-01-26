@@ -5,7 +5,7 @@ __metaclass__ = type
 import os
 from fnmatch import fnmatchcase
 
-from scripts.struct_normalizer import (
+from stdci_libs.struct_normalizer import (
     normalize_value, map_with, list_of, scalar, mandatory, fallback_option,
     all_of
 )

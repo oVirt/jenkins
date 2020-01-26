@@ -29,7 +29,7 @@ filter_secret_data() {
         # or if STD_VERSION or PROJECT are not set
         return 0
     fi
-    python "$WORKSPACE"/jenkins/scripts/secrets_resolvers.py \
+    python "$WORKSPACE"/jenkins/stdci_libs/secrets_resolvers.py \
         -f "${CI_SECRETS_FILE}" \
         filter "${PROJECT}" "${STD_VERSION}" > \
         "$WORKSPACE"/std_ci_secrets.yaml || failed=1

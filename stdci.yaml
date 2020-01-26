@@ -16,7 +16,7 @@ sub-stages:
           - jobs/confs/shell-scripts/global_setup*
           - data/slave-repos/*
           - mock_configs/*
-          - scripts/*.py
+          - stdci_libs/*.py
           - test/*.py
           - date/dummy.spec
           - conftest.py
@@ -136,7 +136,7 @@ sub-stages:
             distro: [fc29, fc30]
       runif:
         file-changed:
-          - scripts/*.py
+          - stdci_libs/*.py
           - stdci_tools/*.py
           - test3/*
           - automation/check-patch.{{ substage }}.*

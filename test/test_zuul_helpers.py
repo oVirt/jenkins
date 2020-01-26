@@ -9,10 +9,10 @@ try:
 except ImportError:
     from mock import MagicMock
 
-from scripts.zuul_helpers import (
+from stdci_libs.zuul_helpers import (
     is_gated_project, merge_project_yaml, is_gated_project_entry
 )
-from scripts import zuul_helpers
+from stdci_libs import zuul_helpers
 
 
 @pytest.fixture

@@ -15,7 +15,7 @@ def on_load(loader) {
 
 def extra_load_change_data_py(change_list_var, mirrors_var) {
     return """\
-        from scripts.mirror_client import ovirt_tested_as_mirrors
+        from stdci_libs.mirror_client import ovirt_tested_as_mirrors
 
         ${mirrors_var}.update(ovirt_tested_as_mirrors('${ovirt_release}'))
     """.stripIndent()
@@ -101,7 +101,7 @@ def inject_mirrors(path, file_pattern, mirrors=null) {
             sh """\
                 #!/usr/bin/env python
                 # Try to inject CI mirrors
-                from scripts.mirror_client import (
+                from stdci_libs.mirror_client import (
                     inject_yum_mirrors_file_by_pattern,
                     mirrors_from_uri, setupLogging
                 )

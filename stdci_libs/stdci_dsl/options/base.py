@@ -6,7 +6,7 @@ from collections import Mapping
 
 from jinja2.sandbox import SandboxedEnvironment
 
-from scripts.struct_normalizer import (
+from stdci_libs.struct_normalizer import (
     normalize_value, scalar, DataNormalizationError, normalize_option,
     map_with, all_of
 )

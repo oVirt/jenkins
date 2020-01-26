@@ -1,9 +1,9 @@
 import pytest
-from scripts.secrets_resolvers import (
+from stdci_libs.secrets_resolvers import (
     ci_secrets_file_resolver,
     filter_secret_data,
 )
-from scripts.resolver_base import ResolverKeyError
+from stdci_libs.resolver_base import ResolverKeyError
 
 
 @pytest.fixture

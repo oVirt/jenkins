@@ -11,9 +11,9 @@ from textwrap import wrap
 from threading import Lock
 from os import environ
 
-from scripts.object_utils import object_witp_opt_attrs, object_proxy
-from scripts.gerrit import GerritPatchset
-from scripts.jenkins_objects import BuildsList
+from stdci_libs.object_utils import object_witp_opt_attrs, object_proxy
+from stdci_libs.gerrit import GerritPatchset
+from stdci_libs.jenkins_objects import BuildsList
 
 
 class DisplayableChange(object_witp_opt_attrs):

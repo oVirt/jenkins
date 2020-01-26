@@ -10,7 +10,7 @@ import re
 from os import path
 import json
 
-from scripts.jenkins_objects import JenkinsObject, NotInJenkins, JobRunSpec, \
+from stdci_libs.jenkins_objects import JenkinsObject, NotInJenkins, JobRunSpec, \
     BuildPtr, BuildsList
 
 

@@ -115,8 +115,8 @@ def get_generic_queue_build_args(
         def get_generic_queue_build_args = """\
             #!/usr/bin/env python
             from os import environ
-            from scripts.change_queue import JenkinsChangeQueueClient
-            from scripts.change_queue.changes import (
+            from stdci_libs.change_queue import JenkinsChangeQueueClient
+            from stdci_libs.change_queue.changes import (
                 GitMergedChange, GerritMergedChange
             )
 

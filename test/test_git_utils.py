@@ -4,7 +4,7 @@
 from textwrap import dedent
 from subprocess import CalledProcessError
 import pytest
-from scripts.git_utils import GitProcessError, git_rev_parse, InvalidGitRef
+from stdci_libs.git_utils import GitProcessError, git_rev_parse, InvalidGitRef
 try:
     from unittest.mock import MagicMock, call, sentinel
 except ImportError:

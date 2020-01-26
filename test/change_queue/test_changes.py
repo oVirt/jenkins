@@ -7,7 +7,7 @@ try:
 except ImportError:
     from mock import MagicMock, sentinel
 
-from scripts.change_queue.changes import DisplayableChange, \
+from stdci_libs.change_queue.changes import DisplayableChange, \
     DisplayableChangeWrapper, ChangeInStream, ChangeInStreamWrapper, \
     GerritMergedChange, GitMergedChange
 

@@ -3,7 +3,7 @@
 modules to use and a function to apply default category values on a given
 list of JobThread objects."""
 
-from scripts.stdci_dsl.job_thread import JobThread
+from stdci_libs.stdci_dsl.job_thread import JobThread
 
 
 def apply_default_categories(threads, current_stage=None):

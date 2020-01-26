@@ -69,7 +69,7 @@ def run_queue_action_py(upstreamBuild) {
             #!/usr/bin/env python
             import sys
 
-            from scripts.change_queue import JenkinsChangeQueue
+            from stdci_libs.change_queue import JenkinsChangeQueue
 
             JenkinsChangeQueue.setup_logging()
             with JenkinsChangeQueue.persist_in_artifacts() as cq:

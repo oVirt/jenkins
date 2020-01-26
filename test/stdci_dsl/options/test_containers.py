@@ -3,10 +3,10 @@
 """
 import pytest
 from six import iteritems
-from scripts.stdci_dsl.job_thread import JobThread
-from scripts.stdci_dsl.options.base import ConfigurationSyntaxError
-from scripts.stdci_dsl.options.containers import Containers
-from scripts.struct_normalizer import DataNormalizationError
+from stdci_libs.stdci_dsl.job_thread import JobThread
+from stdci_libs.stdci_dsl.options.base import ConfigurationSyntaxError
+from stdci_libs.stdci_dsl.options.containers import Containers
+from stdci_libs.struct_normalizer import DataNormalizationError
 
 
 class TestContainers:
