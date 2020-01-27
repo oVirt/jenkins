@@ -150,5 +150,6 @@ sub-stages:
         file-changed:
           - scripts/ci_toolbox/*
           - automation/check-patch.{{ substage }}.*
+          - mock_configs/epel-7-x86_64*.cfg
 release-branches:
   'master': 'dummy-master'
