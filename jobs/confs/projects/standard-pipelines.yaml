@@ -20,6 +20,7 @@
       - ovirt-ansible-repositories
       - ovirt-ansible-shutdown-env
       - ovirt-ansible-vm-infra
+      - ovirt-cockpit-sso
       - ovirt-engine-sdk-go
       - ovirt-openshift-extensions
       - ovirt-web-ui
