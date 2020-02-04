@@ -88,6 +88,7 @@
       - ovirt-engine
       - ovirt-engine-api-explorer
       - ovirt-engine-dashboard
+      - ovirt-engine-extension-aaa-jdbc
       - ovirt-engine-metrics
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
