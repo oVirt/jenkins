@@ -112,6 +112,7 @@
       - ovirt-provider-ovn
       - ovirt-release
       - ovirt-setup-lib
+      - ovirt-scheduler-proxy
       - ovirt-system-tests
       - ovirt-vmconsole
       - py2exe-py2.7
