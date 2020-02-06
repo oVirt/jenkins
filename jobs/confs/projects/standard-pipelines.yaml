@@ -122,7 +122,6 @@
       - releng-tools
       - repoman
       - safelease
-      - vcredist-x86
       - vdsm
       - vdsm-jsonrpc-java
     jobs:
