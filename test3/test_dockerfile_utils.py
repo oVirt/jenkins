@@ -14,7 +14,7 @@ from stdci_tools.dockerfile_utils import (
     FailedToParseDecoratorError, ImageAndFloatingRef, UpdateAction,
     get_decorated_commands, get_decorator, get_dfps,
     get_nvr_tag_from_inspect_struct, get_old_images_and_floating_refs,
-    get_update, update, main, run_command
+    get_update, update, main, run_command, add_registry_if_needed
 )
 
 
@@ -327,6 +327,10 @@ def test_base_image_update_full_run(monkeypatch, tmpdir):
 
         #@follow_tag(ubi8-minimal:8-released)
         FROM ubi8-minimal:8-released
+        RUN echo hi
+
+        #@follow_tag(quay.io/rh-osbs/ubi8-minimal:8-released)
+        FROM ubi8-minimal:8-released
 
         RUN echo hello
         """
@@ -340,6 +344,10 @@ def test_base_image_update_full_run(monkeypatch, tmpdir):
 
         #@follow_tag(ubi8-minimal:8-released)
         FROM ubi8-minimal:8.0-204
+        RUN echo hi
+
+        #@follow_tag(quay.io/rh-osbs/ubi8-minimal:8-released)
+        FROM quay.io/rh-osbs/ubi8-minimal:8.0-204
 
         RUN echo hello
         """
@@ -367,3 +375,24 @@ def test_base_image_update_full_run(monkeypatch, tmpdir):
 def test_run_command_which_fails_should_raise():
     with pytest.raises(CalledProcessError):
         run_command(['false'])
+
+
+@pytest.mark.parametrize('floating_ref, nvr_tag, expected', [
+    (
+        'registry.com/rh-osbs/cnv-hco-bundle-registry:v2.2.0',
+        'cnv-hco-bundle-registry:v2.2.0-274',
+        'registry.com/rh-osbs/cnv-hco-bundle-registry:v2.2.0-274'
+    ),
+    (
+        'cnv-hco-bundle-registry:v2.2.0',
+        'cnv-hco-bundle-registry:v2.2.0-274',
+        'cnv-hco-bundle-registry:v2.2.0-274'
+    ),
+    (
+        'registry.com/cnv-hco-bundle-registry:v2.2.0',
+        'cnv-hco-bundle-registry:v2.2.0-274',
+        'registry.com/cnv-hco-bundle-registry:v2.2.0-274'
+    )
+])
+def test_add_registry_if_needed(floating_ref, nvr_tag, expected):
+    assert add_registry_if_needed(floating_ref, nvr_tag) == expected

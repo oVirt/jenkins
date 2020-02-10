@@ -376,8 +376,30 @@ def get_latest_image(floating_ref, lookup_registry=''):
     """
     logger.info('Getting the latest version of %s', floating_ref)
     inspect = skopeo_inspect(join(lookup_registry, floating_ref))
+    nvr_tag = get_nvr_tag_from_inspect_struct(json.loads(inspect))
 
-    return get_nvr_tag_from_inspect_struct(json.loads(inspect))
+    return add_registry_if_needed(floating_ref, nvr_tag)
+
+
+def add_registry_if_needed(floating_ref, nvr_tag):
+    """Add a registry prefix to a tag
+
+    If a floating reference had a registry prefix in it, we should
+    add it to the nvr_tag. This way the image reference that will
+    be injected to the FROM instruction will have the same registry
+    as the floating reference.
+
+    :param str floating_ref: A floating reference as appears in the decorator
+    :param str nvr_tag: The nvr tag the was found in the image that was pointed
+        by floating_ref
+    :rtype: str
+    """
+    if '/' not in floating_ref:
+        return nvr_tag
+
+    prefix = floating_ref.rsplit('/', 1)[0]
+
+    return join(prefix, nvr_tag)
 
 
 def get_nvr_tag_from_inspect_struct(struct):
