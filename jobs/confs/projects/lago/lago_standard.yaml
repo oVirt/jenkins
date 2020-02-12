@@ -7,6 +7,7 @@
             branch: master
       distro:
         - el7
+        - el8
       trigger: 'on-change'
       arch: x86_64
       with-deploy: never
@@ -20,7 +21,11 @@
     <<: *lago_common
     name: lago_check-patch_standard
     stage: 'check-patch'
-    node-filter: '(nested) && {distro}'
+    distro:
+      - el7:
+          node-filter: '(nested) && {distro}'
+      - el8:
+          node-filter: '(nested) && fc30'
     jobs:
       - '{project}_{version}_github_check-patch-{distro}-{arch}'
 
