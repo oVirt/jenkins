@@ -11,6 +11,7 @@ main() {
     setup_os_repos
     mk_wokspace_dirs
     release_rpms || failed=true
+    replace_rmmod_in_container || failed=true
     extra_packages || failed=true
     user_configuration || failed=true
     nested_kvm || failed=true
@@ -487,9 +488,26 @@ log() {
     if [[ ${#FUNCNAME[@]} -gt 1 ]]; then
         prefix="global_setup[${FUNCNAME[1]}]"
     else
-        prefix="global_setup"
+        prefix="global_ssetupetup"
     fi
     echo "$prefix $level: $message"
 }
 
+replace_rmmod_in_container() {
+    if [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]]; then
+        ## create empty rmmod executable,
+        ## will prevent firewalld in container to remove
+        ## modules from the node
+        verify_packages "kmod"
+        rmmod_location="$(which rmmod)"
+	rmmod_new_location="$(which rmmod)_orig"
+        if can_sudo "mv"; then
+            if [ -f "$rmmod_location" ]; then
+                sudo -n mv "$rmmod_location"  "$rmmod_new_location"
+                sudo -n touch "$rmmod_location"
+                sudo -n chmod 755 "$rmmod_location"
+            fi
+        fi
+    fi
+}
 main "@$"
