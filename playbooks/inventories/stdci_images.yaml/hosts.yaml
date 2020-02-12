@@ -29,3 +29,9 @@ all:
           base_images:
             - jenkins-caching-virt-agent-centos7
           image_source: container/el7-runner-node
+        stdci-tools:
+          base_images:
+            - ubi8-python-36
+          image_source: container/stdci-tools
+          base_image_tags:
+            ubi8-python-36: registry.redhat.io/ubi8/python-36:latest

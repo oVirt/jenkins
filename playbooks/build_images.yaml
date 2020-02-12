@@ -79,7 +79,7 @@
         cumulative_base_tag: "{{
           base_images
           |map('extract', base_image_tags)
-          |map('regex_replace', '^(([^/:]+)/)?([^/:]+)(:([^/:]+))?$', '\\5')
+          |map('regex_replace', '^(([^/:]+)/){0,2}([^/:]+)(:([^/:]+))?$', '\\5')
           |join('-')
         }}"
         image_tag: "{{ '%s-%.7s'|format(
@@ -106,9 +106,9 @@
             |ternary('dockerStrategy', 'sourceStrategy')
           }}:
             from:
-              kind: ImageStreamTag
+              kind: "{{ 'DockerImage' if '/' in base_image else 'ImageStreamTag' }}"
               name: "{{ base_image }}"
-              namespace: "{{ openshift_project }}"
+              namespace: "{{ '' if '/' in base_image else openshift_project }}"
         build_strategy: "{{ build_strategy_str|from_yaml }}"
       k8s:
         state: present
@@ -133,26 +133,62 @@
               type: Binary
             strategy: "{{ build_strategy }}"
 
+    - name: Check if to build the image
+      delegate_to: 127.0.0.1
+      vars:
+        buildconfig: "{{ inventory_hostname }}-{{image_tag}}"
+      k8s_facts:
+        namespace: "{{ openshift_project }}"
+        kind: Build
+        label_selectors:
+          - "buildconfig = {{ inventory_hostname }}-{{image_tag}}"
+      register:
+        previous_builds
+
     - name: Build the image
       delegate_to: 127.0.0.1
       tags: build
       vars:
         buildconfig: "{{ inventory_hostname }}-{{image_tag}}"
-      command:
-        argv:
-          - "{{ oc_bin|default('oc') }}"
-          - start-build
-          - "{{ buildconfig }}"
-          - "--from-dir={{ image_source_path }}"
-          - --follow
-          - --wait
+      block:
+        - name: Create source archive temp file
+          tempfile:
+            suffix: '.tar.gz'
+          register: source_archive
+          changed_when: false
+
+        - name: Create image sources archive
+          command:
+            argv:
+              - tar
+              - cvhzf
+              - "{{ source_archive.path }}"
+              - .
+            chdir: "{{ image_source_path }}"
+            warn: False
+          changed_when: false
+
+        - name: Build the image
+          command:
+            argv:
+              - "{{ oc_bin|default('oc') }}"
+              - start-build
+              - "{{ buildconfig }}"
+              - "--from-archive={{ source_archive.path }}"
+              - --follow
+              - --wait
+
+      always:
+        - name: Delete image source archive
+          file:
+            path: "{{ source_archive.path }}"
+            state: absent
+          changed_when: false
       when:
-        - query(
-            'k8s',
-            namespace=openshift_project,
-            kind='Build',
-            label_selector="buildconfig=" + buildconfig,
-          )|length == 0
+        - |
+          previous_builds.resources
+          | selectattr('status.phase', 'eq', 'Complete')
+          | list | length <= 0
 
     - name: Tag merged image
       delegate_to: 127.0.0.1

@@ -109,6 +109,8 @@ sub-stages:
         file-changed:
           - container/*
           - automation/*.{{ substage }}.*
+          - playbooks/build_images.yaml
+          - playbooks/inventories/stdci_images.yaml/*
   - update_images
   - dummy-rpm
   - docker-build-test:
