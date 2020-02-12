@@ -1280,6 +1280,7 @@ class BlockFormatter(logging.Formatter):
     """A log formatter that knows how to handle text blocks that are embedded
     in the log object
     """
+
     def format(self, record):
         """Called by the logging.Handler object to do the actual log formatting
 
@@ -1351,6 +1352,7 @@ class ExceptionSpreader(BlockFormatter):
     """A log formatter that takes care of properly formatting exception objects
     if they are attached to logs
     """
+
     def format(self, record):
         """Called by the logging.Handler object to do the actual log formatting
 
@@ -1380,6 +1382,7 @@ class ExceptionHider(BlockFormatter):
     """A log formatter that ensures that exception objects are not dumped into
     the logs
     """
+
     def format(self, record):
         """Called by the logging.Handler object to do the actual log formatting
 
