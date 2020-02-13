@@ -4,3 +4,8 @@ python3-pip
 python3-certifi
 git
 gnupg2
+libffi
+libffi-devel
+openssl
+openssl-devel
+openssl-libs

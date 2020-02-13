@@ -3,3 +3,9 @@ python36-virtualenv
 python36-pip
 python36-certifi
 git
+gnupg2
+libffi
+libffi-devel
+openssl
+openssl-devel
+openssl-libs

@@ -5,7 +5,7 @@ from __future__ import absolute_import, print_function
 import argparse
 import sys
 import os
-from os.path import normpath, join, dirname
+from os.path import normpath, join, dirname, abspath
 import logging
 import logging.handlers
 import yaml
@@ -25,12 +25,13 @@ from pprint import pformat
 from operator import or_
 from functools import cmp_to_key, wraps
 try:
-    from pusher import (
+    from stdci_tools.pusher import (
         DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
     )
-except ImportError:
+except ImportError as e:
+    sys.path.append(dirname(dirname(abspath(normpath(__file__)))))
     try:
-        from .pusher import (
+        from stdci_tools.pusher import (
             DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
         )
     except (ImportError, ValueError):
@@ -52,7 +53,8 @@ def only_if_imported_any(*modules):
     def original_or_error(func):
         @wraps(func)
         def error(*args, **kwargs):
-            print(sys.modules)
+            # print(sys.modules)
+            print(sys.path)
             raise RuntimeError(
                 '{fname} is disabled because none of {modules} were imported.'
                 .format(fname=func.__name__, modules=modules)
