@@ -135,6 +135,12 @@ def parse_args(args=None):
         action='store_true',
         help='Do not update anything, just print what will be updated'
     )
+    parent_image_update_parser.add_argument(
+        '--flat-nested-repositories',
+        action='store_true',
+        help='Flat nested repositories (replace / with -) for the images that'
+             ' were discovered'
+    )
 
     return parser.parse_args(args=args)
 
@@ -148,12 +154,18 @@ def parent_image_update_main(args):
             update_dockerfiles(
                 dfps,
                 args.lookup_registry,
-                args.dry_run
+                args.dry_run,
+                args.flat_nested_repositories
             )
         )
 
 
-def update_dockerfiles(dfps, lookup_registry='', dry_run=False):
+def update_dockerfiles(
+    dfps,
+    lookup_registry='',
+    dry_run=False,
+    flat_nested_repositories=False,
+):
     """Update the parent images in a Dockerfile
 
     The overall flow:
@@ -177,6 +189,8 @@ def update_dockerfiles(dfps, lookup_registry='', dry_run=False):
         pulling image information.
     :param bool dry_run: If true, don't update the Dockerfiles,
         just return what will be updated
+    :param flat_nested_repositories: If true, nested repositories will be
+        flatten. For example "cnv/virt-api" will become "cnv-virt-api".
     :return:
     """
     dfp_to_oiaft = {
@@ -193,7 +207,11 @@ def update_dockerfiles(dfps, lookup_registry='', dry_run=False):
         for entry in oiafts
     )
 
-    latest_images = get_latest_images(all_floating_refs, lookup_registry)
+    latest_images = get_latest_images(
+        all_floating_refs,
+        lookup_registry,
+        flat_nested_repositories
+    )
 
     results = [
         update(dfp, update_plan, latest_images, dry_run)
@@ -348,12 +366,16 @@ def get_decorator(value):
     )
 
 
-def get_latest_images(all_floating_refs, lookup_registry=''):
+def get_latest_images(
+    all_floating_refs, lookup_registry='', flat_nested_repositories=False
+):
     """Get the latest images for a list of floating tags
 
     :param iterable all_floating_refs:
     :param str lookup_registry: The registry that will be used for the lookup
         of images
+    :param bool flat_nested_repositories: If true flat nested repositories in
+        the discovered images
     :rtype: dict
     """
     floating_refs = set(all_floating_refs)
@@ -361,22 +383,33 @@ def get_latest_images(all_floating_refs, lookup_registry=''):
     floating_refs.discard(None)
 
     return {
-        floating_ref: get_latest_image(floating_ref, lookup_registry)
+        floating_ref: get_latest_image(
+            floating_ref,
+            lookup_registry,
+            flat_nested_repositories
+        )
         for floating_ref in floating_refs
     }
 
 
-def get_latest_image(floating_ref, lookup_registry=''):
+def get_latest_image(
+    floating_ref, lookup_registry='', flat_nested_repositories=False
+):
     """Get the latest nvr from a floating ref
 
     :param str floating_ref
     :param str lookup_registry: The registry that will be used
         for the lookup.
+    :param bool flat_nested_repositories: If true flat nested repositories in
+        the discovered image
     :return:
     """
     logger.info('Getting the latest version of %s', floating_ref)
     inspect = skopeo_inspect(join(lookup_registry, floating_ref))
-    nvr_tag = get_nvr_tag_from_inspect_struct(json.loads(inspect))
+    nvr_tag = get_nvr_tag_from_inspect_struct(
+        json.loads(inspect),
+        flat_nested_repositories
+    )
 
     return add_registry_if_needed(floating_ref, nvr_tag)
 
@@ -402,7 +435,7 @@ def add_registry_if_needed(floating_ref, nvr_tag):
     return join(prefix, nvr_tag)
 
 
-def get_nvr_tag_from_inspect_struct(struct):
+def get_nvr_tag_from_inspect_struct(struct, flat_nested_repositories=False):
     """Get the nvr tag of a component from it's inspect struct
 
     An inspect struct is the parsed output of 'skopeo inspect'
@@ -418,6 +451,8 @@ def get_nvr_tag_from_inspect_struct(struct):
     nvr tag -> ubi8-minimal:8.1-279
 
     :param dict struct: Information about a container image
+    :param bool flat_nested_repositories: If true flat nested repositories in
+        the discovered image. Will transform "cnv/virt-api" to "cnv-virt-api".
     :rtype: str
     """
     labels = struct.get('Labels')
@@ -440,6 +475,9 @@ def get_nvr_tag_from_inspect_struct(struct):
             'The following labels, for image {}, were not set or empty'
             .format(missing_labels)
         )
+
+    if flat_nested_repositories:
+        required_labels['name'] = required_labels['name'].replace('/', '-')
 
     return '{name}:{version}-{release}'.format(**required_labels)
 

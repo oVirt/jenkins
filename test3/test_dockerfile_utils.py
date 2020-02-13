@@ -18,19 +18,43 @@ from stdci_tools.dockerfile_utils import (
 )
 
 
-def test_get_nvr_tag_from_inspect_struct():
-    name = 'virt-api'
-    version = 'v2.1.0'
-    release = '1'
-    expected = '{}:{}-{}'.format(name, version, release)
-    inspect = {
-        'Labels': {
-            'name': name,
-            'version': version,
-            'release': release
-        }
-    }
-    assert get_nvr_tag_from_inspect_struct(inspect) == expected
+@pytest.mark.parametrize('inspect, flat, expected', [
+    (
+        {
+            'Labels': {
+                'name': 'virt-api',
+                'version': 'v2.1.0',
+                'release': '1',
+            }
+        },
+        False,
+        'virt-api:v2.1.0-1'
+    ),
+    (
+        {
+            'Labels': {
+                'name': 'cnv/virt-api',
+                'version': 'v2.1.0',
+                'release': '1',
+            }
+        },
+        False,
+        'cnv/virt-api:v2.1.0-1'
+    ),
+    (
+        {
+            'Labels': {
+                'name': 'cnv/virt-api',
+                'version': 'v2.1.0',
+                'release': '1',
+            }
+        },
+        True,
+        'cnv-virt-api:v2.1.0-1'
+    )
+])
+def test_get_nvr_tag_from_inspect_struct(inspect, flat, expected):
+    assert get_nvr_tag_from_inspect_struct(inspect, flat) == expected
 
 
 @pytest.mark.parametrize('struct', [
@@ -318,57 +342,97 @@ def test_update_dry_run():
     assert dfp.parent_images == old_parent_images
 
 
-def test_base_image_update_full_run(monkeypatch, tmpdir):
-    input_dockerfile_path = tmpdir.join('Dockerfile')
-    input_dockerfile_content = dedent(
+@pytest.mark.parametrize(
+    'input_dockerfile_content, expected_dockerfile_content, '
+    'skopeo_inspect_output, args', [
+    (
+        dedent(
+            """
+            FROM ubi8-minimal:8-released AS builder
+            RUN echo hello
+
+            #@follow_tag(ubi8-minimal:8-released)
+            FROM ubi8-minimal:8-released
+            RUN echo hi
+
+            #@follow_tag(quay.io/rh-osbs/ubi8-minimal:8-released)
+            FROM ubi8-minimal:8-released
+
+            RUN echo hello
+            """
+        ),
+        dedent(
+            """
+            FROM ubi8-minimal:8-released AS builder
+            RUN echo hello
+
+            #@follow_tag(ubi8-minimal:8-released)
+            FROM ubi8-minimal:8.0-204
+            RUN echo hi
+
+            #@follow_tag(quay.io/rh-osbs/ubi8-minimal:8-released)
+            FROM quay.io/rh-osbs/ubi8-minimal:8.0-204
+
+            RUN echo hello
+            """
+        ),
         """
-        FROM ubi8-minimal:8-released AS builder
-        RUN echo hello
-
-        #@follow_tag(ubi8-minimal:8-released)
-        FROM ubi8-minimal:8-released
-        RUN echo hi
-
-        #@follow_tag(quay.io/rh-osbs/ubi8-minimal:8-released)
-        FROM ubi8-minimal:8-released
-
-        RUN echo hello
-        """
-    )
-    input_dockerfile_path.write(input_dockerfile_content)
-
-    expected_dockerfile_content = dedent(
-        """
-        FROM ubi8-minimal:8-released AS builder
-        RUN echo hello
-
-        #@follow_tag(ubi8-minimal:8-released)
-        FROM ubi8-minimal:8.0-204
-        RUN echo hi
-
-        #@follow_tag(quay.io/rh-osbs/ubi8-minimal:8-released)
-        FROM quay.io/rh-osbs/ubi8-minimal:8.0-204
-
-        RUN echo hello
-        """
-    )
-
-    skopeo_inspect_output = """
-    {
-        "Labels": {
-            "name": "ubi8-minimal",
-            "release": "204",
-            "version": "8.0"
+        {
+            "Labels": {
+                "name": "ubi8-minimal",
+                "release": "204",
+                "version": "8.0"
+            }
         }
-    }
-    """
+        """,
+        []
+    ),
+    (
+        dedent(
+            """
+            #@follow_tag(registry.com/rh-osbs/cnv-hco-bundle-registry:v2.2.0)
+            FROM registry.com/rh-osbs/cnv-hco-bundle-registry:v2.2.0
+            RUN echo hi
+            """
+        ),
+        dedent(
+            """
+            #@follow_tag(registry.com/rh-osbs/cnv-hco-bundle-registry:v2.2.0)
+            FROM registry.com/rh-osbs/cnv-hco-bundle-registry:v2.2.0-100
+            RUN echo hi
+            """
+        ),
+        """
+        {
+            "Labels": {
+                "name": "cnv/hco-bundle-registry",
+                "release": "100",
+                "version": "v2.2.0"
+            }
+        }
+        """,
+        [
+            '--flat-nested-repositories'
+        ]
+    )
 
+])
+def test_base_image_update_full_run(
+    input_dockerfile_content,
+    expected_dockerfile_content,
+    skopeo_inspect_output,
+    args,
+    monkeypatch,
+    tmpdir
+):
+    input_dockerfile_path = tmpdir.join('Dockerfile')
+    input_dockerfile_path.write(input_dockerfile_content)
     skopeo_inspect_mock = MagicMock(return_value=skopeo_inspect_output)
     monkeypatch.setattr(
         dockerfile_utils, 'skopeo_inspect', skopeo_inspect_mock
     )
 
-    main(['parent-image-update', str(input_dockerfile_path)])
+    main(['parent-image-update', str(input_dockerfile_path)] + args)
     assert input_dockerfile_path.read() == expected_dockerfile_content
 
 
