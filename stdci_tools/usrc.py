@@ -24,6 +24,8 @@ from textwrap import dedent
 from pprint import pformat
 from operator import or_
 from functools import cmp_to_key, wraps
+from contextlib import contextmanager
+from collections import namedtuple
 try:
     from stdci_tools.pusher import (
         DEFAULT_PUSH_MAP, read_push_details, add_key_to_known_hosts
@@ -38,6 +40,10 @@ except ImportError as e:
         # avoid edge case
         DEFAULT_PUSH_MAP = \
             'THIS FEATURE IS DISABLED BECAUSE PUSHER WAS NOT IMPORTED'
+try:
+    from io import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 
 def only_if_imported_any(*modules):
@@ -66,15 +72,105 @@ def only_if_imported_any(*modules):
 
 
 UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
-UPSTREAM_SOURCES_PATH = os.path.join('automation', UPSTREAM_SOURCES_FILE)
+UPSTREAM_SOURCES_FILE_LOOKUP_DIRS = ('', 'automation')
 CACHE_NAME = 'usrc'
 POLICIES = ('static', 'tagged', 'latest')
 TagObject = namedtuple('TagObject', ['commit', 'annotated', 'name'])
+# UpstreamSourcesConfigPath allows us to keep track of configs and where
+# we found them
+UpstreamSourcesConfigPath = namedtuple(
+    'UpstreamSourcesConfigPath', ('stream', 'path')
+)
 logger = logging.getLogger(__name__)
 
 
 class UnkownDestFormatError(Exception):
     pass
+
+
+class UpstreamSourcesConfigNotFound(Exception):
+    pass
+
+
+@contextmanager
+def upstream_sources_config(**kwargs):
+    """Context manager to find the first upstream sources config. Currently,
+    two config sources are supported:
+    - filepath:   will load the config from the given filepath
+    - git object: will load the config from the given filepath at the specified
+                  commit.
+
+    Supported named args:
+    :param str commit: the commit to load the file from.
+    :param str mode:   the mode to load the file at.
+
+    If commit is specified, will use git object provider to lookup for the file
+    Otherwise, will use filepath. If mode is ommited, will use 'r' as default.
+    """
+    config_provider = filepath_config_provider
+    commit = kwargs.get('commit')
+    if commit:
+        config_provider = git_object_config_provider
+    elif not kwargs.get('mode'):
+        kwargs['mode'] = 'r'
+
+    for lookup_dir in UPSTREAM_SOURCES_FILE_LOOKUP_DIRS:
+        usrc_cfg = join(lookup_dir, UPSTREAM_SOURCES_FILE)
+        try:
+            with config_provider(usrc_cfg, **kwargs) as config_file:
+                logger.debug('using upstream sources config: %s', usrc_cfg)
+                yield UpstreamSourcesConfigPath(config_file, usrc_cfg)
+            break
+        except IOError as io_error:
+            # errno 2 => file not found
+            if io_error.errno != 2:
+                raise
+            logger.debug('not found upstream sources config at %s', usrc_cfg)
+        except GitProcessError:
+            logger.debug(
+                'not found upstream sources config from commit %s at %s',
+                commit, usrc_cfg
+            )
+    else:
+        raise UpstreamSourcesConfigNotFound()
+
+
+@contextmanager
+def filepath_config_provider(path, mode, **kwargs):
+    """Load a file from the given path with the requested mode.
+
+    This context manager is a shim to allow single interface between all config
+    providers.
+
+    :param str path:    path to the file we want to load
+    :param str mode:    mode to open the file with
+    :param dict kwargs: it's here just to fulfull the interface
+    """
+    with open(path, mode) as usrc_config:
+        yield usrc_config
+
+
+@contextmanager
+def git_object_config_provider(path, commit, **kwargs):
+    """Load a file from the given path at the given commit
+
+    This context manager is a shim to allow single interface between all config
+    providers.
+
+    :param str path:    path to the file we want to load
+    :param str mode:    mode to open the file with
+    :param dict kwargs: it's here just to fulfull the interface
+
+    Raises:
+        GitProcessError: if for any reason we failed to process the git object
+    """
+    # To avoid edge cases in the general config provider context manager,
+    # we always yield a TextIO-like object.
+    file_from_commit = StringIO(git_read_file(path, commit))
+    try:
+        yield file_from_commit
+    finally:
+        file_from_commit.close()
 
 
 def main():
@@ -248,9 +344,9 @@ def get_main(args):
 
 
 def update_main(args):
-    updates = update_upstream_sources()
+    updates, config_path = update_upstream_sources()
     if args.commit:
-        commit_upstream_sources_update(updates)
+        commit_upstream_sources_update(updates, config_path)
 
 
 def changed_files_main(args):
@@ -261,7 +357,7 @@ def changed_files_main(args):
 
 
 def modify_entries_main(args):
-    usrc = load_upstream_sources()
+    usrc, config_path = load_upstream_sources()
     usrc_to_set = (
         GitUpstreamSource.from_yaml_struct(yaml.safe_load(entry))
         for entry in args.entries
@@ -269,7 +365,7 @@ def modify_entries_main(args):
     modified_entries = set_upstream_source_entries(usrc, usrc_to_set)
     save_upstream_sources(modified_entries)
     if args.commit:
-        commit_upstream_sources_update(modified_entries)
+        commit_upstream_sources_update(modified_entries, config_path)
 
 
 def set_upstream_source_entries(usrc_orig, usrc_to_set):
@@ -806,30 +902,23 @@ def load_upstream_sources(commit=None):
                        unspecified, will load from $PWD even if uncommitted
     :rtype: tuple
     """
-    if commit is None:
-        try:
-            with open(UPSTREAM_SOURCES_PATH, 'r') as stream:
-                return parse_upstream_sources(stream)
-        except IOError:
-            logger.info("File '%s' cannot be opened", UPSTREAM_SOURCES_PATH)
-            return tuple()
-    else:
-        try:
-            stream = git_read_file(UPSTREAM_SOURCES_PATH, commit)
-            return parse_upstream_sources(stream)
-        except GitProcessError:
-            logger.info(
-                "File '%s' cannot be read from commit '%s'",
-                UPSTREAM_SOURCES_PATH, commit
+    try:
+        with upstream_sources_config(commit=commit) as config_path:
+            return (
+                parse_upstream_sources(config_path.stream, config_path.path),
+                config_path.path
             )
-            return tuple()
+    except UpstreamSourcesConfigNotFound:
+        # Non existent upstream sources config is not considered an error while
+        # an empty config can't be parsed and we consider it as an error.
+        return tuple(), ''
 
 
 class ConfigError(Exception):
     pass
 
 
-def parse_upstream_sources(stream, context=UPSTREAM_SOURCES_PATH):
+def parse_upstream_sources(stream, context):
     """Parse a given text stream and return upstream sources
 
     :param object stream: A string or a file object containing YAML text or
@@ -849,16 +938,17 @@ def parse_upstream_sources(stream, context=UPSTREAM_SOURCES_PATH):
     )
 
 
-def save_upstream_sources(upstream_sources):
+def save_upstream_sources(upstream_sources, config_path):
     """Save upstream objects to YAML
 
     :param Iterable upstream_sources: A collection of upstream source objects
+    :param str config_path:           Path to the upstream sources config
     """
     sources_doc = dict(
         git=[usrc.to_yaml_struct() for usrc in upstream_sources]
     )
-    with open(UPSTREAM_SOURCES_PATH, 'w') as stream:
-        yaml.safe_dump(sources_doc, stream, default_flow_style=False)
+    with open(config_path, 'w') as usrc_config:
+        yaml.safe_dump(sources_doc, usrc_config, default_flow_style=False)
 
 
 def get_upstream_sources(push_map):
@@ -867,7 +957,7 @@ def get_upstream_sources(push_map):
     :param str push_map: The path to a file containing information about remote
                          SCM servers that is needed to push changes to them.
     """
-    upstream_sources = load_upstream_sources()
+    upstream_sources, _ = load_upstream_sources()
     dst_path = os.getcwd()
 
     for usrc in upstream_sources:
@@ -884,8 +974,7 @@ def get_upstream_sources(push_map):
 def update_upstream_sources():
     """Update the commit hashes for US sources listed in upstream_sources.yaml
     """
-    upstream_sources = load_upstream_sources()
-
+    upstream_sources, config_path = load_upstream_sources()
     updated_sources, us2 = tee(usrc.updated() for usrc in upstream_sources)
     modified_sources, ms2 = tee(
         new for new, old in zip(us2, upstream_sources) if new != old
@@ -894,8 +983,8 @@ def update_upstream_sources():
     if not has_changed:
         return modified_sources
 
-    save_upstream_sources(updated_sources)
-    return modified_sources
+    save_upstream_sources(updated_sources, config_path)
+    return modified_sources, config_path
 
 
 def get_modified_files(new_commit=None, old_commit=None, resolve_links=None):
@@ -983,11 +1072,12 @@ def get_files_to_links_map(files, commit=None):
     return file_to_links
 
 
-def commit_upstream_sources_update(updates):
+def commit_upstream_sources_update(updates, config_path):
     """Commit updates made to the upstream_sources.yaml file
 
     :param Iterable updates: Iterator over upstream source objects representing
                              sources that were updated
+    :param str config_path:  Path to the config to commit
     """
     updates = list(updates)
     if not updates:
@@ -996,9 +1086,9 @@ def commit_upstream_sources_update(updates):
     if check_if_branch_exists('commit_branch'):
         git('branch', '-D', 'commit_branch')
     git('checkout', '-b', 'commit_branch')
-    with open(UPSTREAM_SOURCES_PATH, 'r') as stream:
+    with open(config_path, 'r') as stream:
         checksum = md5(stream.read().encode('utf-8')).hexdigest()
-    git('add', UPSTREAM_SOURCES_PATH)
+    git('add', config_path)
     commit_message = generate_update_commit_message(updates)
     commit_message = generate_gerrit_message(commit_message, checksum)
     git('commit', '-m', commit_message)
@@ -1100,7 +1190,7 @@ def ls_all_files(commit=None):
     """
     if commit is None:
         commit = 'HEAD'
-    upstream_sources = load_upstream_sources(commit)
+    upstream_sources, _ = load_upstream_sources(commit)
     files = dict()
     for usrc in upstream_sources:
         files.update(usrc.ls_files())

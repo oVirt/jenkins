@@ -25,7 +25,7 @@ from stdci_tools.usrc import (
     generate_update_commit_message, git_ls_files, git_read_file, ls_all_files,
     files_diff, get_modified_files, get_files_to_links_map, GitFile,
     UnkownDestFormatError, set_upstream_source_entries, modify_entries_main,
-    only_if_imported_any
+    only_if_imported_any, upstream_sources_config, UPSTREAM_SOURCES_FILE,
 )
 
 
@@ -65,6 +65,58 @@ def downstream_remote(gitrepo):
             'msg': 'First DS remote commit',
         }
     )
+
+
+@pytest.mark.parametrize('config_dir', [
+    '',
+    'automation',
+])
+def test_upstream_sources_config_filepath(monkeypatch, tmpdir, config_dir):
+    tmp_config_dir = tmpdir
+    if config_dir:
+        tmp_config_dir = tmpdir / config_dir
+        tmp_config_dir.mkdir()
+    config_file = tmp_config_dir / UPSTREAM_SOURCES_FILE
+    upstream_sources_text = 'bla bla bla'
+    config_file.write(upstream_sources_text)
+    monkeypatch.chdir(tmpdir)
+    sanity_tests_upstream_sources_config(config_dir, upstream_sources_text)
+
+
+@pytest.mark.parametrize('config_dir', [
+    '',
+    'automation',
+])
+def test_upstream_sources_config_git(
+    monkeypatch, gitrepo, git_last_sha, config_dir
+):
+    upstream_sources_text = 'bla bla bla'
+    repo = gitrepo(
+        'myrepo',
+        {
+            'msg': 'First commit',
+            'files': {
+                os.path.join('./', config_dir, UPSTREAM_SOURCES_FILE):
+                    'bla bla bla',
+            },
+        }
+    )
+    sha = git_last_sha(repo)
+    monkeypatch.chdir(repo)
+    sanity_tests_upstream_sources_config(
+        config_dir, upstream_sources_text, commit=sha)
+
+
+def sanity_tests_upstream_sources_config(
+    config_dir, expected_content, **params
+):
+    # verify that the content of the file is indeed what we wrote there
+    with upstream_sources_config(**params) as config_path:
+        assert config_path.path == os.path.join(
+            config_dir, UPSTREAM_SOURCES_FILE
+        )
+        assert config_path.stream.read() == expected_content
+    assert config_path.stream.closed
 
 
 @pytest.fixture
@@ -1030,7 +1082,8 @@ def test_update_upstream_sources(
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
     assert git_status(downstream) == ''
-    mod_list = update_upstream_sources()
+    mod_list, config_path = update_upstream_sources()
+    assert config_path == 'automation/upstream_sources.yaml'
     assert len(list(mod_list)) == 1
     assert not (downstream / 'upstream_file.txt').exists()
     assert (downstream / 'downstream_file.txt').isfile()
@@ -1075,10 +1128,10 @@ def test_commit_us_src_update(monkeypatch, updated_upstream, downstream, git):
     us_date = git('log', '-1', '--pretty=format:%ad', '--date=rfc').strip()
     us_author = git('log', '-1', '--pretty=format:%an').strip()
     monkeypatch.chdir(downstream)
-    updates = update_upstream_sources()
+    updates, used_config_path = update_upstream_sources()
     us_yaml = downstream / 'automation' / 'upstream_sources.yaml'
     us_yaml_md5 = md5(us_yaml.read().encode('utf-8')).hexdigest()
-    commit_upstream_sources_update(updates)
+    commit_upstream_sources_update(updates, used_config_path)
     log = git('log', '--pretty=format:%s').splitlines()
     assert len(log) == 2
     assert log == [
@@ -1124,7 +1177,7 @@ def test_commit_us_src_update(monkeypatch, updated_upstream, downstream, git):
 
 def test_commit_us_src_no_update(monkeypatch, downstream, git):
     monkeypatch.chdir(downstream)
-    commit_upstream_sources_update([])
+    commit_upstream_sources_update([], '')
     log = git('log', '--pretty=format:%s').splitlines()
     assert len(log) == 1
     assert log == ['First DS commit']
@@ -1399,7 +1452,7 @@ def test_ls_all_files(monkeypatch):
             },))
         ),
     )
-    load_usrc = MagicMock(side_effect=(upstream_sources,))
+    load_usrc = MagicMock(return_value=(upstream_sources, 'dummy_path'))
     git_ls_files = MagicMock(side_effect=({
         'file3.txt': (1234, 'file3_hash'),
         'overriden2.txt': (1234, 'overriding_hash2'),
@@ -1733,7 +1786,7 @@ def test_modify_entries(monkeypatch, usrc_orig, usrc_modify, should_commit):
     mock_args = MagicMock(
         entries=entry_property, commit=should_commit
     )
-    mock_load_usrc = MagicMock(return_value=usrc_orig)
+    mock_load_usrc = MagicMock(return_value=(usrc_orig, 'dummy-path'))
     monkeypatch.setattr('stdci_tools.usrc.load_upstream_sources', mock_load_usrc)
     mock_save_usrc = MagicMock()
     monkeypatch.setattr('stdci_tools.usrc.save_upstream_sources', mock_save_usrc)
@@ -1753,7 +1806,9 @@ def test_modify_entries(monkeypatch, usrc_orig, usrc_modify, should_commit):
     assert mock_args.entries.__iter__.call_count == 1
     mock_save_usrc.assert_called_with(sentinel.some_entries)
     if should_commit:
-        mock_commit_usrc.assert_called_once_with(sentinel.some_entries)
+        mock_commit_usrc.assert_called_once_with(
+            sentinel.some_entries, 'dummy-path'
+        )
     else:
         mock_commit_usrc.assert_not_called
 
