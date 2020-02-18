@@ -257,6 +257,8 @@
               repo_version: "{{ repo_version }}"
 
     - name: Route traffic to the repo image
+      vars:
+        host_fqdn: "resources-{{ openshift_project }}.{{ _openshift_apps_domain }}"
       k8s:
         state: present
         definition:
@@ -267,9 +269,10 @@
             namespace: "{{ openshift_project }}"
             annotations:
               "kubernetes.io/tls-acme": "true"
+              "kubernetes.io/tls-acme-secretname": "{{ host_fqdn }}-secret"
           spec:
             host:
-              "resources-{{ openshift_project }}.{{ _openshift_apps_domain }}"
+              "{{ host_fqdn }}"
             path: "/{{ _repo_name }}/{{ repo_version }}"
             port:
               targetPort: ui
@@ -300,6 +303,8 @@
               repo_version: "{{ repo_version }}"
 
     - name: Route traffic to the latest repo
+      vars:
+        host_fqdn: "resources-{{ openshift_project }}.{{ _openshift_apps_domain }}"
       k8s:
         state: present
         definition:
@@ -310,9 +315,10 @@
             namespace: "{{ openshift_project }}"
             annotations:
               "kubernetes.io/tls-acme": "true"
+              "kubernetes.io/tls-acme-secretname": "{{ host_fqdn }}-secret"
           spec:
             host:
-              "resources-{{ openshift_project }}.{{ _openshift_apps_domain }}"
+              "{{ host_fqdn }}"
             path: "/{{ _repo_name }}"
             port:
               targetPort: ui
