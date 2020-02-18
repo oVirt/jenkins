@@ -973,6 +973,10 @@ def get_upstream_sources(push_map):
 
 def update_upstream_sources():
     """Update the commit hashes for US sources listed in upstream_sources.yaml
+
+    :returns: Generator upstream_sources: A collection of upstream source
+        objects
+    :returns: str config_path: Path to the upstream sources config
     """
     upstream_sources, config_path = load_upstream_sources()
     updated_sources, us2 = tee(usrc.updated() for usrc in upstream_sources)
@@ -981,7 +985,7 @@ def update_upstream_sources():
     )
     has_changed = next((True for ms in ms2), False)
     if not has_changed:
-        return modified_sources
+        return modified_sources, config_path
 
     save_upstream_sources(updated_sources, config_path)
     return modified_sources, config_path

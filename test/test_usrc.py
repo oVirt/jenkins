@@ -1107,8 +1107,9 @@ def test_no_update_upstream_sources(
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
     assert git_status(downstream) == ''
-    mod_list = update_upstream_sources()
+    mod_list, config_path = update_upstream_sources()
     assert len(list(mod_list)) == 0
+    assert config_path == 'automation/upstream_sources.yaml'
     assert not (downstream / 'upstream_file.txt').exists()
     assert (downstream / 'downstream_file.txt').isfile()
     assert (downstream / 'downstream_file.txt').read() == 'Downstream content'
