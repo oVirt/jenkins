@@ -90,6 +90,7 @@
       - ovirt-engine-dashboard
       - ovirt-engine-extensions-api
       - ovirt-engine-extension-aaa-jdbc
+      - ovirt-engine-extension-aaa-ldap
       - ovirt-engine-metrics
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
