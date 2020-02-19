@@ -327,9 +327,9 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
             // Clear al left-over artifacts from previous builds
             dir(get_job_dir(job)) { deleteDir() }
             checkout_jenkins_repo()
-            project_lib.checkout_project(project)
             run_jjb_script('cleanup_slave.sh')
             run_jjb_script('global_setup.sh')
+            project_lib.checkout_project(project)
             withCredentials(
                 [file(credentialsId: 'ci_secrets_file', variable: 'CI_SECRETS_FILE')]
             ) {
