@@ -338,6 +338,22 @@ rollback_os_repos() {
     fi
 }
 
+rollback_known_hosts() {
+    local known_hosts="$HOME/.ssh/known_hosts"
+    rollback_file "$known_hosts"
+}
+
+rollback_file() {
+    local file="${1:?}"
+    local file_rbk="${file}.rbk"
+
+    [[ -f "$file" ]] && [[ -f "$file_rbk" ]] || return 0
+    echo "Rolling back uncommited file: $file"
+    sudo -n mv --force "$file_rbk" "$file" || return $?
+
+    return 0
+}
+
 cleanup_old_artifacts() {
     safe_remove "$WORKSPACE/exported-artifacts" &&
         mkdir "$WORKSPACE/exported-artifacts"
@@ -454,6 +470,7 @@ main() {
     sudo -n df -h || df -h || :
     echo "---------------------------------------------------------------"
     rollback_os_repos || failed=true
+    rollback_known_hosts || failed=true
     cleanup_postgres || failed=true
     cleanup_journal || failed=true
     cleanup_var || failed=true

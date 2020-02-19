@@ -27,6 +27,7 @@ main() {
     fi
     lago_setup || failed=true
     ensure_user_ssh_dir_permissions || failed=true
+    known_hosts || failed=true
 
     # If we failed in any step, abort to avoid breaking the host
     if $failed; then
@@ -400,6 +401,18 @@ ensure_user_ssh_dir_permissions() {
         verify_set_permissions 644 "$HOME/.ssh/known_hosts" || failed=1
     fi
     return $failed
+}
+
+known_hosts() {
+    local known_hosts="$WORKSPACE/jenkins/data/ssh_files/known_hosts"
+    local slave_known_hosts="$HOME/.ssh/known_hosts"
+
+    [[ -f "$known_hosts" ]] || return 0
+    install -m 0644 -b --suffix .rbk "$known_hosts" "$slave_known_hosts" \
+        && /usr/sbin/restorecon "$slave_known_hosts" \
+        || return $?
+
+    return 0
 }
 
 disable_dnf_makecache() {
