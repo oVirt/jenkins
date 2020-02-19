@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 """test_git_utils.py - Tests for git_utils.py
 """
+import os
 from textwrap import dedent
 from subprocess import CalledProcessError
 import pytest
-from stdci_libs.git_utils import GitProcessError, git_rev_parse, InvalidGitRef
+from stdci_libs.git_utils import (
+    GitProcessError, git_rev_parse, InvalidGitRef, prep_git_repo,
+    get_name_from_repo_url, CouldNotParseRepoURL
+)
 try:
     from unittest.mock import MagicMock, call, sentinel
 except ImportError:
@@ -64,3 +68,44 @@ def test_git_rev_parse(
     else:
         out = git_rev_parse(ref)
         assert out == git_repo_log()[exp_idx]
+
+
+def test_prep_git_repo(
+        monkeypatch, tmpdir, git_at, repo_with_patches, git_last_sha):
+    # we need this nested tmpdir because `repo_with_patches` exists in the
+    # default tmpdir and the new git repo we initialize will have the same name
+    tmpdir = tmpdir / 'tmpdir'
+    tmpdir.mkdir()
+    monkeypatch.chdir(tmpdir)
+    repo_url = str(repo_with_patches)
+    refspec = 'master'
+    git_func, last_sha = prep_git_repo(
+        tmpdir, repo_url, refspec, checkout=True)
+    # we can't use get-url because on centos7 the git version is too old
+    remote_url = git_func('remote', '-v').split()[1]
+    assert remote_url == repo_url, \
+        'expected git func to return the URL for repo_with_patches'
+    assert last_sha == git_rev_parse('HEAD', git_func), (
+        'expected to find the fetched sha at the HEAD'
+        ' of the checked out branch'
+    )
+
+
+@pytest.mark.parametrize('repo_url,expected_name', [
+    ('proto://some-scm.com/org/repo_name', 'repo_name'),
+    ('proto://some-scm.com/repo_name', 'repo_name'),
+    ('proto://some-scm.com/org/repo_name.git', 'repo_name'),
+    ('proto://some-scm.com/repo_name.git', 'repo_name'),
+])
+def test_get_name_from_repo_url(repo_url, expected_name):
+    assert get_name_from_repo_url(repo_url) == expected_name
+
+
+@pytest.mark.parametrize('repo_url', [
+
+    '', 'proto://', 'proto://scm-name.com/'
+
+])
+def test_get_name_from_repo_url_exception(repo_url):
+    with pytest.raises(CouldNotParseRepoURL):
+        get_name_from_repo_url(repo_url)
