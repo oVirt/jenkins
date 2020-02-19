@@ -6,7 +6,7 @@ import setuptools
 
 setuptools.setup(
     name="stdci_tools",
-    version="0.0.3",
+    version="0.0.4",
     author="oVirt CI team",
     author_email="infra@ovirt.org",
     description="oVirt Standard-CI tools",
@@ -21,7 +21,9 @@ setuptools.setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: POSIX :: Linux",
     ],
-    install_requires = ["six", "requests", "pyyaml", "jinja2", "pyxdg", "py"],
+    install_requires=[
+        "six", "requests", "pyyaml", "jinja2", "pyxdg", "py", "click"
+    ],
     entry_points={
         'console_scripts': [
             'usrc = stdci_tools.usrc:main',
@@ -29,8 +31,7 @@ setuptools.setup(
             'mirror_client = stdci_libs.mirror_client:main',
             'decorate = stdci_tools.decorate:decorate',
             'stdci_conf_check = stdci_tools.stdci_conf_check:main',
+            'usrc_updater = stdci_tools.usrc_updater:updater_main_cli',
         ]
     }
 )
-
-

@@ -181,6 +181,26 @@ def git_status(git_at):
     return _git_status
 
 
+@pytest.fixture
+def run_click_command(monkeypatch):
+    def _run_click_command(func, *args):
+        """Run a Click command in a test
+
+        Click commands raises a SystemExit error which makes the test to exit.
+        This wrapper will raise the SystemExist error only if the `func`
+        raised an exception or existed with a non zero status code.
+
+        :param click.BaseCommand.main func: a click command to run
+        :param Iterable args: arguments to pass to the function
+        """
+        try:
+            func(args=args)
+        except SystemExit as e:
+            if e.code != 0:
+                raise
+    return _run_click_command
+
+
 def pytest_collect_file(path, parent):
     """If the test file we find is in a directory path that contains a
     directory called 'test', check if the same path without the 'test'
