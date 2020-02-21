@@ -95,6 +95,7 @@
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
       - ovirt-engine-sdk
+      - ovirt-engine-sdk-java
       - ovirt-engine-sdk-ruby
       - ovirt-engine-ui-extensions
       - ovirt-engine-wildfly
