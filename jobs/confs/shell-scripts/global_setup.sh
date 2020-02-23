@@ -26,8 +26,8 @@ main() {
         log WARN "Skipping services setup - not enough sudo permissions"
     fi
     lago_setup || failed=true
-    ensure_user_ssh_dir_permissions || failed=true
     known_hosts || failed=true
+    ensure_user_ssh_dir_permissions || failed=true
 
     # If we failed in any step, abort to avoid breaking the host
     if $failed; then
@@ -405,14 +405,17 @@ ensure_user_ssh_dir_permissions() {
 
 known_hosts() {
     local known_hosts="$WORKSPACE/jenkins/data/ssh_files/known_hosts"
-    local slave_known_hosts="$HOME/.ssh/known_hosts"
+    local ssh_dir="$HOME/.ssh/"
 
     [[ -f "$known_hosts" ]] || return 0
-    install -m 0644 -b --suffix .rbk "$known_hosts" "$slave_known_hosts" \
-        && /usr/sbin/restorecon "$slave_known_hosts" \
-        || return $?
+    # For some reason jenkins seems to create .ssh/know_hosts as a directory
+    # when running in a container slave. We remove it.
+    [[ -d "$ssh_dir/known_hosts" ]] && rmdir "$ssh_dir/known_hosts"
+    install -m 0700 -d "$ssh_dir" \
+        && install -m 0644 -b --suffix .rbk "$known_hosts" "$ssh_dir" \
+        && /usr/sbin/restorecon -R "$ssh_dir"
+    return $?
 
-    return 0
 }
 
 disable_dnf_makecache() {
