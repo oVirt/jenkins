@@ -80,7 +80,21 @@ def test_upstream_sources_config_filepath(monkeypatch, tmpdir, config_dir):
     upstream_sources_text = 'bla bla bla'
     config_file.write(upstream_sources_text)
     monkeypatch.chdir(tmpdir)
-    sanity_tests_upstream_sources_config(config_dir, upstream_sources_text)
+    sanity_tests_upstream_sources_config(
+        os.path.join(config_dir, UPSTREAM_SOURCES_FILE),
+        upstream_sources_text
+    )
+
+
+def test_upstream_sources_config_custom_name(tmpdir):
+    custom_config = tmpdir / 'custom_us_config.yaml'
+    upstream_sources_text = 'bla bla bla'
+    custom_config.write(upstream_sources_text)
+    sanity_tests_upstream_sources_config(
+        str(custom_config),
+        upstream_sources_text,
+        custom_configs=('file_which_does_not_exist', str(custom_config))
+    )
 
 
 @pytest.mark.parametrize('config_dir', [
@@ -91,30 +105,26 @@ def test_upstream_sources_config_git(
     monkeypatch, gitrepo, git_last_sha, config_dir
 ):
     upstream_sources_text = 'bla bla bla'
+    expected_config_path = os.path.join(config_dir, UPSTREAM_SOURCES_FILE)
     repo = gitrepo(
         'myrepo',
         {
             'msg': 'First commit',
-            'files': {
-                os.path.join('./', config_dir, UPSTREAM_SOURCES_FILE):
-                    'bla bla bla',
-            },
+            'files': {expected_config_path: 'bla bla bla'}
         }
     )
     sha = git_last_sha(repo)
     monkeypatch.chdir(repo)
     sanity_tests_upstream_sources_config(
-        config_dir, upstream_sources_text, commit=sha)
+        expected_config_path, upstream_sources_text, commit=sha)
 
 
 def sanity_tests_upstream_sources_config(
-    config_dir, expected_content, **params
+    expected_config_path, expected_content, custom_configs=tuple(), **params
 ):
     # verify that the content of the file is indeed what we wrote there
-    with upstream_sources_config(**params) as config_path:
-        assert config_path.path == os.path.join(
-            config_dir, UPSTREAM_SOURCES_FILE
-        )
+    with upstream_sources_config(*custom_configs, **params) as config_path:
+        assert config_path.path == expected_config_path
         assert config_path.stream.read() == expected_content
     assert config_path.stream.closed
 

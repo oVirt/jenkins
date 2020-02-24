@@ -8,14 +8,24 @@ import argparse
 from itertools import chain
 
 from yaml import safe_load
+import sys
 
-
-DEFAULT_PATH_TO_USRC_YAML = 'automation/upstream_sources.yaml'
+try:
+    from stdci_tools.usrc import upstream_sources_config, UpstreamSourcesConfigNotFound
+except ImportError:
+    from usrc import upstream_sources_config, UpstreamSourcesConfigNotFound
 
 
 def main():
     args = parse_args()
-    usrc_yaml = load_upstream_sources_yaml(args.usrc_yaml)
+    try:
+        usrc_yaml = load_upstream_sources_yaml(args.usrc_yaml)
+    except UpstreamSourcesConfigNotFound as e:
+        if args.usrc_yaml:
+            raise e
+        else:
+            print(str(e), file=sys.stderr)
+            return 0
     environment_file = generate_environment_file(usrc_yaml)
     print(environment_file)
 
@@ -32,18 +42,22 @@ def parse_args():
         '--usrc-yaml',
         help=(
             'Specify a path to upstream_sources.yaml config. '
-            f'Defaults to {DEFAULT_PATH_TO_USRC_YAML}'
-        ),
-        default=DEFAULT_PATH_TO_USRC_YAML
+            f'If not specified the tool will try to lookup the config'
+        )
     )
     return parser.parse_args()
 
 
-def load_upstream_sources_yaml(path_to_usrc_yaml: str) -> dict:
-    """Load upstream sources yaml from the given path
+def load_upstream_sources_yaml(usrc_yaml: str = None) -> dict:
+    """Load upstream sources yaml
+
+    :param str usrc_yaml:  A path where the config should be loaded from.
+    If not specified, the config will be searched in the default
+    paths defined by usrc.
     """
-    with open(path_to_usrc_yaml, 'r') as usrc_yaml:
-        return safe_load(usrc_yaml)
+    usrc_yaml = [usrc_yaml] if usrc_yaml else []
+    with upstream_sources_config(*usrc_yaml, mode='r') as config:
+        return safe_load(config.stream)
 
 
 def generate_environment_file(usrc_config: dict) -> str:

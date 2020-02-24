@@ -93,12 +93,16 @@ class UpstreamSourcesConfigNotFound(Exception):
 
 
 @contextmanager
-def upstream_sources_config(**kwargs):
+def upstream_sources_config(*args, **kwargs):
     """Context manager to find the first upstream sources config. Currently,
     two config sources are supported:
     - filepath:   will load the config from the given filepath
     - git object: will load the config from the given filepath at the specified
                   commit.
+
+    Supported positional args:
+    One or more paths pointing to an upstream sources config. If specified, the
+    default locations for the upstream source config won't be considered.
 
     Supported named args:
     :param str commit: the commit to load the file from.
@@ -114,8 +118,13 @@ def upstream_sources_config(**kwargs):
     elif not kwargs.get('mode'):
         kwargs['mode'] = 'r'
 
-    for lookup_dir in UPSTREAM_SOURCES_FILE_LOOKUP_DIRS:
-        usrc_cfg = join(lookup_dir, UPSTREAM_SOURCES_FILE)
+    predefined_files = [
+        join(lookup_dir, UPSTREAM_SOURCES_FILE)
+        for lookup_dir in UPSTREAM_SOURCES_FILE_LOOKUP_DIRS
+    ]
+    possible_files = args or predefined_files
+
+    for usrc_cfg in possible_files:
         try:
             with config_provider(usrc_cfg, **kwargs) as config_file:
                 logger.debug('using upstream sources config: %s', usrc_cfg)
