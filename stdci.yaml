@@ -155,6 +155,7 @@ sub-stages:
           - automation/check-patch.{{ substage }}.*
           - mock_configs/epel-7-x86_64*.cfg
   - ost-container:
+      stage: check-patch
       runtime-requirements:
         support-nesting-level: 2
         isolation_level: container
