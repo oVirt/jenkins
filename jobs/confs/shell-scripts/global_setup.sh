@@ -516,7 +516,7 @@ replace_rmmod_in_container() {
         ## modules from the node
         verify_packages "kmod"
         rmmod_location="$(which rmmod)"
-	rmmod_new_location="$(which rmmod)_orig"
+        rmmod_new_location="$(which rmmod)_orig"
         if can_sudo "mv"; then
             if [ -f "$rmmod_location" ]; then
                 sudo -n mv "$rmmod_location"  "$rmmod_new_location"
