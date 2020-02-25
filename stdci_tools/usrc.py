@@ -89,7 +89,19 @@ class UnkownDestFormatError(Exception):
 
 
 class UpstreamSourcesConfigNotFound(Exception):
-    pass
+    """Raised when no config was found"""
+    def __init__(self, *args):
+        """
+        :param Iterable of str args: Configs that were not found
+        """
+        super(UpstreamSourcesConfigNotFound, self).__init__()
+        self.configs = args
+
+    def __str__(self):
+        return 'Did not find a config in any of: {}'\
+            .format(', '.join(self.configs))
+
+
 
 
 @contextmanager
@@ -141,7 +153,7 @@ def upstream_sources_config(*args, **kwargs):
                 commit, usrc_cfg
             )
     else:
-        raise UpstreamSourcesConfigNotFound()
+        raise UpstreamSourcesConfigNotFound(*possible_files)
 
 
 @contextmanager
