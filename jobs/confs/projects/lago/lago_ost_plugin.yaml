@@ -6,7 +6,6 @@
         - master:
             branch: master
       distro:
-        - el7
         - el8
       trigger: 'on-change'
       arch: x86_64

@@ -6,7 +6,6 @@
         - master:
             branch: master
       distro:
-        - el7
         - el8
       trigger: 'on-change'
       arch: x86_64
@@ -22,8 +21,6 @@
     name: lago_check-patch_standard
     stage: 'check-patch'
     distro:
-      - el7:
-          node-filter: '(nested) && {distro}'
       - el8:
           node-filter: '(nested) && fc30'
     jobs:
