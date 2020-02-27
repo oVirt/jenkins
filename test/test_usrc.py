@@ -13,9 +13,9 @@ from six.moves import map, builtins
 import yaml
 import re
 try:
-    from unittest.mock import MagicMock, call, sentinel
+    from unittest.mock import MagicMock, call, sentinel, create_autospec
 except ImportError:
-    from mock import MagicMock, call, sentinel
+    from mock import MagicMock, call, sentinel, create_autospec
 
 from stdci_libs.git_utils import git_rev_parse
 from stdci_tools import usrc
@@ -1782,14 +1782,15 @@ def test_set_upstream_source_entries(usrc, usrc_to_set, expected):
     ),
 ))
 def test_modify_entries(monkeypatch, usrc_orig, usrc_modify, should_commit):
+    config_path = 'dummy-path'
     entry_property = MagicMock()
     entry_property.__iter__ = MagicMock(return_value=iter(usrc_modify))
     mock_args = MagicMock(
         entries=entry_property, commit=should_commit
     )
-    mock_load_usrc = MagicMock(return_value=(usrc_orig, 'dummy-path'))
+    mock_load_usrc = MagicMock(return_value=(usrc_orig, config_path))
     monkeypatch.setattr('stdci_tools.usrc.load_upstream_sources', mock_load_usrc)
-    mock_save_usrc = MagicMock()
+    mock_save_usrc = create_autospec(usrc.save_upstream_sources)
     monkeypatch.setattr('stdci_tools.usrc.save_upstream_sources', mock_save_usrc)
     mock_commit_usrc = MagicMock()
     monkeypatch.setattr(
@@ -1805,10 +1806,10 @@ def test_modify_entries(monkeypatch, usrc_orig, usrc_modify, should_commit):
     modify_entries_main(mock_args)
     assert mock_load_usrc.call_count == 1
     assert mock_args.entries.__iter__.call_count == 1
-    mock_save_usrc.assert_called_with(sentinel.some_entries)
+    mock_save_usrc.assert_called_with(sentinel.some_entries, config_path)
     if should_commit:
         mock_commit_usrc.assert_called_once_with(
-            sentinel.some_entries, 'dummy-path'
+            sentinel.some_entries, config_path
         )
     else:
         mock_commit_usrc.assert_not_called

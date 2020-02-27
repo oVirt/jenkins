@@ -363,7 +363,7 @@ def modify_entries_main(args):
         for entry in args.entries
     )
     modified_entries = set_upstream_source_entries(usrc, usrc_to_set)
-    save_upstream_sources(modified_entries)
+    save_upstream_sources(modified_entries, config_path)
     if args.commit:
         commit_upstream_sources_update(modified_entries, config_path)
 
