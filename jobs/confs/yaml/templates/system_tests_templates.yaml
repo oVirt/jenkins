@@ -4,10 +4,11 @@
     parameters:
       - gerrit-params:
           branch: '{branch}'
+      - 'ost-input-customizations'
     properties:
       - inject: &standard-system-tests-properties-inject
-          properties-content: |
-            PROJECT: {project}
+          properties-content: !include-raw:
+            - includes/ost-env-inject.inc
       - build-discarder:
             days-to-keep: 10
     triggers:
@@ -62,7 +63,9 @@
             enabled: true
             option: project
             max-total: 10
-        - inject: *standard-system-tests-properties-inject
+        - inject:
+            properties-content: |
+              PROJECT: {project}
     node: '{node-filter}'
     scm:
       - gerrit-with-proto:
