@@ -14,7 +14,7 @@ import logging
 from subprocess import run
 
 from stdci_libs.git_utils import git
-from stdci_libs.stdci_logging import setup_console_logging
+from stdci_libs.stdci_logging import setup_logging
 from stdci_tools import usrc
 from stdci_libs.mirror_client import mirrors_from_uri, inject_yum_mirrors_file
 
@@ -28,7 +28,7 @@ GPG_TMP_HOME='/var/tmp/gpghome'
 logger = logging.getLogger(__name__)
 
 def decorate():
-    setup_logging()
+    setup_logging(debug=True, log=sys.stderr)
     clone_source_code()
     decrypt_secrets()
     inject_extra_sources()
@@ -36,10 +36,6 @@ def decorate():
     if script is None:
         return
     inject_mirrors(script)
-
-def setup_logging():
-    settings = Namespace(debug=True, log=sys.stderr)
-    setup_console_logging(settings)
 
 def clone_source_code():
     logger.info('Cloning source code')

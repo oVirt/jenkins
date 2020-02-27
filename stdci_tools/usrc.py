@@ -237,7 +237,7 @@ def parse_args():
             ' upstream_sources.yaml file'
         )
     )
-    update_parser.set_defaults(handler=update_main)
+    update_parser.set_defaults(handler=update_main_cli)
     update_parser.add_argument(
         '--commit', action='store_true',
         help=(
@@ -364,9 +364,22 @@ def get_main(args):
     get_upstream_sources(args.push_map)
 
 
-def update_main(args):
+def update_main_cli(args):
+    """CLI entry point for update_main.
+
+    :param argparse.Namespace args: Argument parsing results.
+    """
+    update_main(args.commit)
+
+
+def update_main(commit=False):
+    """Update upstream source references in the config file
+
+    :param bool commit: if set to True, the updated config file will
+                        be committed.
+    """
     updates, config_path = update_upstream_sources()
-    if args.commit:
+    if commit:
         commit_upstream_sources_update(updates, config_path)
 
 

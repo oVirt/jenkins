@@ -30,6 +30,7 @@ class PushDetails(object):
     """Class to represent configuration details about SCM hosts we want to
     communicate with
     """
+
     def __init__(
         self, push_url, host_key=None, merge_flags=None,
         maintainer_groups=None, maintainers=None, anonymous_clone_url=None,
@@ -348,7 +349,8 @@ def push_to_scm(
         dest_to_push_to = 'HEAD:refs/heads/{0}'.format(dst_branch)
     else:
         dest_to_push_to = 'HEAD:refs/for/{0}'.format(dst_branch)
-    logger.info("Push to: '%s' at '%s'", push_details.push_url, dest_to_push_to)
+    logger.info("Push to: '%s' at '%s'",
+                push_details.push_url, dest_to_push_to)
     git('push', push_details.push_url, dest_to_push_to)
 
 

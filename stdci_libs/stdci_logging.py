@@ -33,20 +33,31 @@ def add_logging_args(parser):
 
 
 def setup_console_logging(args, logger=None):
-    """Configure logging for when running as a console app
+    """This is the CLI entry point for setup_logging
 
     :param argparse.Namespace args: Argument parsing results for an
                                     ArgumentParser object to which
                                     add_logging_args had been applied.
-    :param logging.Logger logger:   (Optional) A logger to apply configuration
-                                    to. If unspecified, configuration will be
-                                    applied to the root logger.
+    """
+    setup_logging(args.debug, args.verbose, args.log, logger)
+
+
+def setup_logging(debug=False, verbose=False, log=None, logger=None):
+    """Configure logging for when running as a console app
+
+    :param bool debug:             If set to True, will provide debug logging output.
+    :param bool verbose:           If set to True, will provide verbose logging output.
+    :param str log:                If set, log the output to the specified file.
+                                   If unspecified, output to STDERR.
+    :param logging.Logger logger:  (Optional) A logger to apply configuration
+                                   to. If unspecified, configuration will be
+                                   applied to the root logger.
     """
     if logger is None:
         logger = logging.getLogger()
-    if args.debug:
+    if debug:
         level = logging.DEBUG
-    elif args.verbose:
+    elif verbose:
         level = logging.INFO
     else:
         level = logging.WARN
@@ -54,14 +65,14 @@ def setup_console_logging(args, logger=None):
     stderr_handler = logging.StreamHandler(sys.stderr)
     stderr_handler.setFormatter(ExceptionHider('%(message)s'))
     logger.addHandler(stderr_handler)
-    if args.log is None:
+    if log is None:
         pass
-    elif args.log == sys.stderr:
+    elif log == sys.stderr:
         stderr_handler.setFormatter(ExceptionSpreader(
             '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
         ))
     else:
-        file_handler = logging.handlers.WatchedFileHandler(args.log)
+        file_handler = logging.handlers.WatchedFileHandler(log)
         file_handler.setFormatter(ExceptionSpreader(
             '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
         ))
@@ -75,6 +86,7 @@ class BlockFormatter(logging.Formatter):
     """A log formatter that knows how to handle text blocks that are embedded
     in the log object
     """
+
     def format(self, record):
         """Called by the logging.Handler object to do the actual log formatting
 
@@ -147,6 +159,7 @@ class ExceptionSpreader(BlockFormatter):
     """A log formatter that takes care of properly formatting exception objects
     if they are attached to logs
     """
+
     def format(self, record):
         """Called by the logging.Handler object to do the actual log formatting
 
@@ -176,6 +189,7 @@ class ExceptionHider(BlockFormatter):
     """A log formatter that ensures that exception objects are not dumped into
     the logs
     """
+
     def format(self, record):
         """Called by the logging.Handler object to do the actual log formatting
 
