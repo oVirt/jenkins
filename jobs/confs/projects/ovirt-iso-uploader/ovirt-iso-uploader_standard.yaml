@@ -3,8 +3,6 @@
     project: ovirt-iso-uploader
     trigger: on-change
     version:
-      - master:
-          branch: master
       - '4.3':
           branch: ovirt-iso-uploader-4.3
     stage:
@@ -36,6 +34,5 @@
     name: ovirt-iso-uploader_build-artifacts-manual-any
     version:
       - '4.3'
-      - 'master'
     jobs:
       - '{project}_any_build-artifacts-manual'
