@@ -227,6 +227,21 @@ install_repo_pubkey() {
     fi
 }
 
+get_modulesmd_path() {
+    # parse repomd.xml to verify if it has a modules section
+    # if found - print out the file location
+    # otherwise - print a non-existing path
+    local repo_name="${1:?}"
+    filename=$(sed -e 's/xmlns=".*"//g' $MIRRORS_CACHE/$repo_name/repomd.xml |\
+        xmllint --xpath 'string(/repomd/data[@type="modules"]/location/@href)' - |\
+        grep -o [[:alnum:]_.-]*$)
+    if [[ -z "$filename" ]]; then
+        echo "/no/such/file"
+    else
+        echo "$MIRRORS_CACHE/$repo_name/$filename"
+    fi
+}
+
 perform_yum_sync() {
     local repo_name="${1:?}"
     local repo_archs="${2:?}"
@@ -238,7 +253,7 @@ perform_yum_sync() {
     for arch in $(IFS=,; echo $repo_archs) ; do
         echo "Syncing yum repo $repo_name for arch: $arch"
         run_reposync "$repo_name" "$arch" "$reposync_conf" \
-            --downloadcomps --gpgcheck
+            --downloadcomps --gpgcheck --download-metadata
     done
     [[ -f "$repo_mp/comps.xml" ]] && \
         repo_comps=("--groupfile=$repo_mp/comps.xml")
@@ -252,6 +267,16 @@ perform_yum_sync() {
         --retain-old-md="$OLD_MD_TO_KEEP" \
         "${repo_comps[@]}" \
         "$repo_mp"
+    # check if the repo has modules and if it does -
+    # inject modules.yaml.gz into newly generated metadata
+    modulesmd_path=$(get_modulesmd_path $repo_name)
+    if [[ -f "$modulesmd_path" ]]; then
+        echo "Module information found, updating metadata"
+        /bin/modifyrepo \
+            --mdtype=modules \
+            "$modulesmd_path" \
+            "$repo_mp"
+    fi
     /usr/sbin/restorecon -R "$repo_mp"
 }
 
