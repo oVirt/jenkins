@@ -27,7 +27,10 @@ logger = logging.getLogger()
 @click.argument('target-branch', envvar='REPO_PUSH_BRANCH', type=str)
 @click.argument('push-map', envvar='PUSHER_PUSH_MAP', type=str)
 @click.option('--verbose', '-v', help='Provide verbose output.', is_flag=True)
-@click.option('--debug', '-d', help='Provide debugging output.', is_flag=True)
+@click.option(
+    '--debug', '-d', help='Provide debugging output.',
+    type=bool, is_flag=True, envvar='DEBUG'
+)
 @click.option('--log', '-l', type=str,
               help=('If set, will log to the specified file.'
                     ' Otherwise, log to stderr.'))
