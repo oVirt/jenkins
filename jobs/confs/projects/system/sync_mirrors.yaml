@@ -10,7 +10,6 @@
       - 'glusterfs-6-el7'
       - 'sac-gluster-ansible-el7'
       - 'centos-ovirt-4.3-testing-el7'
-      - 'centos-ovirt-common-el7'
       - 'centos-ovirt-4.2-el7'
       - 'centos-opstools-testing-el7'
       - 'centos-opstools-release-el7'
