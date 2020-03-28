@@ -6,7 +6,6 @@
       - 'centos-extras-el7'
       - 'epel-el7'
       - 'glusterfs-3.12-el7'
-      - 'glusterfs-5-el7'
       - 'glusterfs-6-el7'
       - 'sac-gluster-ansible-el7'
       - 'centos-ovirt-4.3-testing-el7'
