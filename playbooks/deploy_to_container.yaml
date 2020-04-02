@@ -267,9 +267,6 @@
           metadata:
             name: "{{ deployment_name }}"
             namespace: "{{ openshift_project }}"
-            annotations:
-              "kubernetes.io/tls-acme": "true"
-              "kubernetes.io/tls-acme-secretname": "{{ host_fqdn }}-secret"
           spec:
             host:
               "{{ host_fqdn }}"
@@ -313,9 +310,6 @@
           metadata:
             name: "{{ latest_deployment_name }}"
             namespace: "{{ openshift_project }}"
-            annotations:
-              "kubernetes.io/tls-acme": "true"
-              "kubernetes.io/tls-acme-secretname": "{{ host_fqdn }}-secret"
           spec:
             host:
               "{{ host_fqdn }}"

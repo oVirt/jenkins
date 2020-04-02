@@ -109,8 +109,6 @@
           metadata:
             name: "{{master_name}}"
             namespace: "{{openshift_project}}"
-            annotations:
-              "kubernetes.io/tls-acme": "true"
           spec:
             host: ""
             port:
