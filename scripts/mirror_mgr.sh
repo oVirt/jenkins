@@ -417,6 +417,10 @@ mirror_cleanup() {
     if [[ ! "${recent_snapshots}" == *"$hardcoded_snapshot"* ]]; then
         recent_snapshots+="$hardcoded_snapshot"
     fi
+    if [ -z "$recent_snapshots" ]; then
+        echo "No snapshots were found, skipping cleanup"
+        return 0
+    fi
     find_referenced_pkgs "$recent_snapshots" "$pkgs_file"
     rm_unreferenced_pkgs "${MIRRORS_BASE_PREFIX}${repo}" "$pkgs_file"
     rm_old_snapshots "${MIRRORS_BASE_PREFIX}${repo}" "$recent_snapshots"
