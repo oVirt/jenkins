@@ -3,7 +3,11 @@
     repo:
       - 'centos-base-el8'
       - 'centos-extras-el8'
+      - 'centos-appstream-el8'
+      - 'centos-powertools-el8'
       - 'epel-el8'
+      - 'ovirt-master-centos-advanced-virtualization-el8'
+      - 'ovirt-master-centos-ovirt44-el8'
       - 'ovirt-master-epel-testing-el8'
       - 'ovirt-master-glusterfs-7-el8'
       - 'ovirt-master-glusterfs-7-noarch-el8'
