@@ -74,6 +74,7 @@ cmd_resync_yum_mirror() {
         "$repo_name" "$repo_archs" "$reposync_conf" sync_needed
 
     if [[ $sync_needed ]]; then
+        mirror_cleanup "$repo_name"
         install_repo_pubkey "$repo_name" "$reposync_conf"
         echo "Resyncing repo: $repo_name"
         perform_yum_sync "$repo_name" "$repo_archs" "$reposync_conf"
@@ -81,7 +82,6 @@ cmd_resync_yum_mirror() {
         echo "Local mirror seems to be up to date"
     fi
 
-    mirror_cleanup "$repo_name"
 
     # failsafe - if we don't have a latest.txt file, create the snapshot
     # even if the mirror wasn't updated
