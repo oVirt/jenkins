@@ -150,3 +150,17 @@
     email-to: 'rgolan@redhat.com'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
+
+- project:
+    <<: *system-tests-big-common
+    name: ovirt-system-tests-metrics
+    suite_type: metrics
+    project: 'ovirt-system-tests'
+    version:
+      - 4.3:
+          chroot_distro: el7
+    email-to: >
+      sradco@redhat.com,
+      eslutsky@redhat.com
+    jobs:
+        - '{project}_{suite_type}-suite-{version}'
