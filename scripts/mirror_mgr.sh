@@ -275,7 +275,7 @@ perform_yum_sync() {
         /bin/modifyrepo \
             --mdtype=modules \
             "$modulesmd_path" \
-            "$repo_mp"
+            "$repo_mp/repodata"
     fi
     /usr/sbin/restorecon -R "$repo_mp"
 }
