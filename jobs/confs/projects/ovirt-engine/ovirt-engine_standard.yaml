@@ -3,12 +3,8 @@
     project: ovirt-engine
     trigger: on-change
     version:
-      - '4.2':
-          branch: ovirt-engine-4.2
       - '4.3':
           branch: ovirt-engine-4.3
-      - '4.3.5.z':
-          branch: ovirt-engine-4.3.5.z
     distro:
       - el7
     arch: x86_64
