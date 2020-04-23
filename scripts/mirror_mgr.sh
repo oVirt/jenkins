@@ -70,6 +70,8 @@ cmd_resync_yum_mirror() {
 
     verify_repo_fs "$repo_name" yum
 
+    modify_reposync_conf "$repo_name" "$reposync_conf"
+
     check_yum_sync_needed \
         "$repo_name" "$repo_archs" "$reposync_conf" sync_needed
 
@@ -521,6 +523,18 @@ find_referenced_pkgs() {
     done
     cat "$repoquery_result" | sort -u | xargs -n1 > "$ref_pkgs"
     rm "$repoquery_result"
+}
+
+modify_reposync_conf() {
+    # Extract data from reposync.conf which is relevant
+    # only for the current repo.
+    #
+    local repo_name="${1:?}"
+    local reposync_conf="${2:?}"
+    local tmp_file="reposync.tmp"
+    awk -v RS='' -v ORS='\n\n' /"main"/ "$reposync_conf" > "$tmp_file"
+    awk -v RS='' -v ORS='\n\n' /"$repo_name"/ "$reposync_conf" >> "$tmp_file"
+    mv "$tmp_file" "$reposync_conf"
 }
 
 main "$@"
