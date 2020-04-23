@@ -7,6 +7,7 @@ RUN_SHELL="false"
 CLEANUP="true"
 MOCK_CONF_DIR="$(dirname "$(command -v "$0")")"
 MOCK="mock"
+MOCK_ISOLATION_OPT="--old-chroot"
 MOUNT_POINT="$PWD"
 FINAL_LOGS_DIR="exported-artifacts/mock_logs"
 TRY_PROXY="false"
@@ -564,14 +565,14 @@ init_chroot() {
     echo "========== Initializing chroot"
     cat <<EOC
     $MOCK \\
-        --old-chroot \\
+        $MOCK_ISOLATION_OPT \\
         --configdir="$conf_dir" \\
         --root="$chroot" \\
         --resultdir="$LOGS_DIR/init" \\
         --init
 EOC
     $MOCK \
-        --old-chroot \
+        $MOCK_ISOLATION_OPT \
         --configdir="$conf_dir" \
         --root="$chroot" \
         --resultdir="$LOGS_DIR/init" \
@@ -594,14 +595,14 @@ scrub_chroot() {
     echo "========== Scrubbing chroot"
     cat <<EOC
     $MOCK \\
-        --old-chroot \\
+        $MOCK_ISOLATION_OPT \\
         --configdir="$confdir" \\
         --root="$chroot" \\
         --resultdir="$LOGS_DIR/scrub" \\
         --scrub=chroot
 EOC
     $MOCK \
-        --old-chroot \
+        $MOCK_ISOLATION_OPT \
         --configdir="$confdir" \
         --root="$chroot" \
         --resultdir="$LOGS_DIR/scrub" \
@@ -742,7 +743,7 @@ run_shell() {
     echo "INFO The working directory is mounted at \$HOME, you can just run 'cd' to get there"
     cat <<EOC
     $MOCK \\
-        --old-chroot \\
+        $MOCK_ISOLATION_OPT \\
         --configdir="$mock_dir" \\
         --root="$mock_chroot" \\
         --resultdir="$LOGS_DIR/shell" \\
@@ -750,7 +751,7 @@ run_shell() {
         --shell '/bin/bash -l'
 EOC
     $MOCK \
-        --old-chroot \
+        $MOCK_ISOLATION_OPT \
         --configdir="$mock_dir" \
         --root="$mock_chroot" \
         --resultdir="$LOGS_DIR/shell" \
@@ -849,7 +850,7 @@ run_script_in_mock() {
 EOF
     cat <<EOF
     $MOCK \
-        --old-chroot \
+        $MOCK_ISOLATION_OPT \
         --root="${mock_chroot}" \
         --configdir="$mock_dir" \
         --no-clean \
@@ -858,7 +859,7 @@ EOF
         --shell '/bin/bash -l' <<< "$mock_shell_cmd"
 EOF
     $MOCK \
-        --old-chroot \
+        $MOCK_ISOLATION_OPT \
         --root="${mock_chroot}" \
         --configdir="$mock_dir" \
         --no-clean \
@@ -1058,6 +1059,14 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
             ;;
         esac
     done
+
+# If it's a new version of mock that supports the --isolation option
+# then we're going to use that instead of the --old-chroot
+    if $MOCK -h | grep -q -F -- "--isolation"
+    then
+        MOCK_ISOLATION_OPT="--isolation=simple"
+    fi
+
 
     mock_env="$(resolve_mock "${1:-$DEFAULT_MOCK_ENV}" "$MOCK_CONF_DIR")" \
     || {
