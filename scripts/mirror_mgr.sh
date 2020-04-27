@@ -234,11 +234,15 @@ get_modulesmd_path() {
     # if found - print out the file location
     # otherwise - print a non-existing path
     local repo_name="${1:?}"
+    # the below one-liner does the following actions to extract the file name:
+    #   sed     - remove xmlns schema definition to make the next step work
+    #   xmllint - prints out the path in the xml file
+    #   grep    - only matches symbols allowed in file names (alphanumeric, dash, underscore, dot)
     filename=$(sed -e 's/xmlns=".*"//g' $MIRRORS_CACHE/$repo_name/repomd.xml |\
         xmllint --xpath 'string(/repomd/data[@type="modules"]/location/@href)' - |\
         grep -o [[:alnum:]_.-]*$)
     if [[ -z "$filename" ]]; then
-        echo "/no/such/file"
+        false
     else
         echo "$MIRRORS_CACHE/$repo_name/$filename"
     fi
@@ -250,12 +254,22 @@ perform_yum_sync() {
     local reposync_conf="${3:?}"
     local repo_mp
     local repo_comps
+    local modulesmd_path
+    local sync_newest_only
 
     repo_mp="$MIRRORS_MP_BASE/yum/$repo_name/base"
+    # check if the repo has modules because then we need to change
+    # reposync options and later inject module metada
+    if $(get_modulesmd_path $repo_name); then
+        echo "Module information found, will fetch all package versions"
+    else
+        sync_newest_only="--newest-only"
+    fi
+    # run reposync
     for arch in $(IFS=,; echo $repo_archs) ; do
         echo "Syncing yum repo $repo_name for arch: $arch"
         run_reposync "$repo_name" "$arch" "$reposync_conf" \
-            --downloadcomps --gpgcheck --download-metadata
+            --downloadcomps --gpgcheck --download-metadata $sync_newest_only
     done
     [[ -f "$repo_mp/comps.xml" ]] && \
         repo_comps=("--groupfile=$repo_mp/comps.xml")
@@ -269,10 +283,8 @@ perform_yum_sync() {
         --retain-old-md="$OLD_MD_TO_KEEP" \
         "${repo_comps[@]}" \
         "$repo_mp"
-    # check if the repo has modules and if it does -
-    # inject modules.yaml.gz into newly generated metadata
-    modulesmd_path=$(get_modulesmd_path $repo_name)
-    if [[ -f "$modulesmd_path" ]]; then
+    # inject modules.yaml.gz into newly generated metadata if they exist
+    if [[ -f $(get_modulesmd_path $repo_name) ]]; then
         echo "Module information found, updating metadata"
         /bin/modifyrepo \
             --mdtype=modules \
@@ -294,7 +306,7 @@ run_reposync() {
         --arch="$repo_arch" \
         --cachedir="$MIRRORS_CACHE" \
         --download_path="$MIRRORS_MP_BASE/yum/$repo_name/base" \
-        --norepopath --newest-only \
+        --norepopath \
         "${extra_args[@]}"
 }
 
