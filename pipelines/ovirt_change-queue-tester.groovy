@@ -57,9 +57,7 @@ def run_ost_tests(change_data, ovirt_release) {
 }
 
 def get_available_ost_suites(ovirt_release) {
-    def suit_types_to_use = [
-        'basic', 'upgrade-from-release', 'upgrade-from-prevrelease'
-    ]
+    def suit_types_to_use = []
     def available_suits = []
     project_lib.checkout_project(ost_project)
     dir('ovirt-system-tests') {
