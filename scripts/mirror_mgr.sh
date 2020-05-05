@@ -151,7 +151,7 @@ cmd_write_latest_lists() {
     wait_for_lock "$lock_name"
     echo "Writing latest index files for $repo_type repos"
     # Start formatter processes in the background with named fifos for input
-    for format in yaml json py; do
+    for format in yaml json py html; do
         fifo="$(mktemp -u)"; mkfifo "$fifo"
         format_fifos+=("$fifo")
         latest_format_$format "$varname" < "$fifo" | \
@@ -343,6 +343,19 @@ latest_format_py() {
         echo "${indention}    '$repo_name': '$repo_url',"
     done
     echo "${indention}}"
+}
+
+latest_format_html() {
+    echo "<html><head>Latest repo snapshots</head><body>"
+    echo "<table border=1>"
+    echo "<tr><td><b>Repo Name</b></td><td><b>Repo URL</b></td></tr>"
+    while read repo_name repo_url; do
+        echo \<tr\>
+        echo \<td\>$repo_name\<\/td\> \<td\>$repo_url\<\/td\>
+        echo \<\/tr\>
+    done
+    echo "</table>"
+    echo "</body></html>"
 }
 
 latest_file() {
