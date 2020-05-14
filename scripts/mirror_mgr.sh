@@ -258,12 +258,12 @@ perform_yum_sync() {
     local sync_newest_only
 
     repo_mp="$MIRRORS_MP_BASE/yum/$repo_name/base"
-    # check if the repo has modules because then we need to change
-    # reposync options and later inject module metada
-    if $(get_modulesmd_path $repo_name); then
-        echo "Module information found, will fetch all package versions"
-    else
+    # Get the modules metadata path. If empty - only sync latest package version
+    # Otherwisw sync all packages since modular repos expect multiple versions to exist
+    if [ -z "$(get_modulesmd_path $repo_name)" ]; then
         sync_newest_only="--newest-only"
+    else
+        echo "Module information found, will fetch all package versions"
     fi
     # run reposync
     for arch in $(IFS=,; echo $repo_archs) ; do
@@ -284,7 +284,7 @@ perform_yum_sync() {
         "${repo_comps[@]}" \
         "$repo_mp"
     # inject modules.yaml.gz into newly generated metadata if they exist
-    if [[ -f $(get_modulesmd_path $repo_name) ]]; then
+    if [[ -f "$(get_modulesmd_path $repo_name)" ]]; then
         echo "Module information found, updating metadata"
         /bin/modifyrepo \
             --mdtype=modules \
