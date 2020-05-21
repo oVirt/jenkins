@@ -239,6 +239,9 @@ def get_node_label_for_project(project) {
         case ~/^(stage-.+|.+-staging_standard-.+)/:
             // Staging projects for testing only
             return 'staging_label'
+        case ~/^ovirt-system-tests/:
+            // This is for ost images
+            return 'templates'
         default:
             // We couldn't find a specific node label for $project
             return null
