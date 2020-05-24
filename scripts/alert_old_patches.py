@@ -69,11 +69,12 @@ def check_forgotten_patches(days, t_project):
             fp_number = data['number']
             fp_commit = data['currentPatchSet']['revision']
             fp_email = data['owner']['email']
-            if fp_number and fp_commit and fp_email:
+            fp_subject = data['subject']
+            if fp_number and fp_commit and fp_email and fp_subject:
                 if fp_email not in f_patches.keys():
-                    f_patches[fp_email] = [(fp_number, fp_commit)]
+                    f_patches[fp_email] = [(fp_number, fp_commit, fp_subject)]
                 else:
-                    f_patches[fp_email].append((fp_number, fp_commit))
+                    f_patches[fp_email].append((fp_number, fp_commit, fp_subject))
         except KeyError:
             pass
     return f_patches
@@ -98,7 +99,7 @@ def gen_warning_email_body(day, patches):
         "The following patches did not have any activity for over %d days, "
         "please consider nudging for more attention." % day)
     for patch in patches:
-        body += "\nhttp://gerrit.ovirt.org/%s" % patch[0]
+        body += "\nhttp://gerrit.ovirt.org/%s  -  %s" % (patch[0], patch[2])
     return body
 
 
@@ -114,7 +115,7 @@ def abandon_patch_and_gen_email_body(day, patches, project):
         except EnvironmentError:
             print("Error abandoning patch %s" % patch[0])
             pass
-        body += "\nhttp://gerrit.ovirt.org/%s" % patch[0]
+        body += "\nhttp://gerrit.ovirt.org/%s  -  %s" % (patch[0], patch[2])
     return body
 
 
@@ -122,7 +123,7 @@ def dry_run_message_gen(patches):
     "Generate dry run output message from list of patches"
     body = ""
     for patch in patches:
-        body += "http://gerrit.ovirt.org/%s\n" % patch[0]
+        body += "http://gerrit.ovirt.org/%s  -  %s\n" % (patch[0], patch[2])
     return body
 
 
