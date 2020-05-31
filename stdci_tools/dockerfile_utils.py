@@ -89,7 +89,7 @@ def main(args=None):
     except CalledProcessError as e:
         logger.exception(
             'Msg: %s\nSTDOUT: %s\nSTDERR: %s',
-            e.stdout, e.stderr, e.message
+            e.stdout, e.stderr, str(e)
         )
     except Exception as e:
         logger.exception("%s", str(e))
