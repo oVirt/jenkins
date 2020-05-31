@@ -14,7 +14,8 @@ from stdci_tools.dockerfile_utils import (
     FailedToParseDecoratorError, ImageAndFloatingRef, UpdateAction,
     get_decorated_commands, get_decorator, get_dfps,
     get_nvr_tag_from_inspect_struct, get_old_images_and_floating_refs,
-    get_update, update, main, run_command, add_registry_if_needed
+    get_update, update, main, run_command, add_registry_if_needed,
+    get_latest_image_by_sha
 )
 
 
@@ -414,8 +415,32 @@ def test_update_dry_run():
         [
             '--flat-nested-repositories'
         ]
+    ),
+    (
+        dedent(
+            """
+            #@follow_tag(cnv-hco-bundle-registry:v2.2.0)
+            FROM cnv-hco-bundle-registry:v2.2.0
+            RUN echo hi
+            """
+        ),
+        dedent(
+            """
+            #@follow_tag(cnv-hco-bundle-registry:v2.2.0)
+            FROM cnv-hco-bundle-registry@sha256:123
+            RUN echo hi
+            """
+        ),
+        """
+        {
+            "Name": "registry.com/rh-osbs/cnv-hco-bundle-registry",
+            "Digest": "sha256:123"
+        }
+        """,
+        [
+            '--use-sha'
+        ]
     )
-
 ])
 def test_base_image_update_full_run(
     input_dockerfile_content,
@@ -460,3 +485,16 @@ def test_run_command_which_fails_should_raise():
 ])
 def test_add_registry_if_needed(floating_ref, nvr_tag, expected):
     assert add_registry_if_needed(floating_ref, nvr_tag) == expected
+
+
+@pytest.mark.parametrize('inspect_struct, expected', [
+    (
+        {
+            'Name': 'registry.com/cnv-hco-bundle-registry',
+            'Digest': 'sha256:123',
+        },
+        'cnv-hco-bundle-registry@sha256:123'
+    )
+])
+def test_get_latest_image_by_sha(inspect_struct, expected):
+    assert get_latest_image_by_sha(inspect_struct) == expected

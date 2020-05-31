@@ -141,6 +141,13 @@ def parse_args(args=None):
         help='Flat nested repositories (replace / with -) for the images that'
              ' were discovered'
     )
+    parent_image_update_parser.add_argument(
+        '--use-sha',
+        action='store_true',
+        default=False,
+        help='Use the SHA sum of the latest image when'
+             ' injecting it to the Dockerfile'
+    )
 
     return parser.parse_args(args=args)
 
@@ -155,7 +162,8 @@ def parent_image_update_main(args):
                 dfps,
                 args.lookup_registry,
                 args.dry_run,
-                args.flat_nested_repositories
+                args.flat_nested_repositories,
+                args.use_sha
             )
         )
 
@@ -165,6 +173,7 @@ def update_dockerfiles(
     lookup_registry='',
     dry_run=False,
     flat_nested_repositories=False,
+    use_sha=False
 ):
     """Update the parent images in a Dockerfile
 
@@ -191,6 +200,7 @@ def update_dockerfiles(
         just return what will be updated
     :param flat_nested_repositories: If true, nested repositories will be
         flatten. For example "cnv/virt-api" will become "cnv-virt-api".
+    :param bool use_sha: If true inject the SHA sum of the latest image.
     :return:
     """
     dfp_to_oiaft = {
@@ -210,7 +220,8 @@ def update_dockerfiles(
     latest_images = get_latest_images(
         all_floating_refs,
         lookup_registry,
-        flat_nested_repositories
+        flat_nested_repositories,
+        use_sha
     )
 
     results = [
@@ -367,7 +378,7 @@ def get_decorator(value):
 
 
 def get_latest_images(
-    all_floating_refs, lookup_registry='', flat_nested_repositories=False
+    all_floating_refs, lookup_registry='', flat_nested_repositories=False, use_sha=False
 ):
     """Get the latest images for a list of floating tags
 
@@ -376,6 +387,7 @@ def get_latest_images(
         of images
     :param bool flat_nested_repositories: If true flat nested repositories in
         the discovered images
+    :param bool use_sha: If true return the SHA sum of the image
     :rtype: dict
     """
     floating_refs = set(all_floating_refs)
@@ -386,14 +398,15 @@ def get_latest_images(
         floating_ref: get_latest_image(
             floating_ref,
             lookup_registry,
-            flat_nested_repositories
+            flat_nested_repositories,
+            use_sha,
         )
         for floating_ref in floating_refs
     }
 
 
 def get_latest_image(
-    floating_ref, lookup_registry='', flat_nested_repositories=False
+    floating_ref, lookup_registry='', flat_nested_repositories=False, use_sha=False
 ):
     """Get the latest nvr from a floating ref
 
@@ -401,17 +414,36 @@ def get_latest_image(
     :param str lookup_registry: The registry that will be used
         for the lookup.
     :param bool flat_nested_repositories: If true flat nested repositories in
-        the discovered image
+        the discovered image,
+    :param bool use_sha: If true return the SHA sum of the image
     :return:
     """
     logger.info('Getting the latest version of %s', floating_ref)
     inspect = skopeo_inspect(join(lookup_registry, floating_ref))
-    nvr_tag = get_nvr_tag_from_inspect_struct(
-        json.loads(inspect),
-        flat_nested_repositories
-    )
+    inspect_struct = json.loads(inspect)
+    if use_sha:
+        static_ref = get_latest_image_by_sha(inspect_struct)
+    else:
+        static_ref = get_nvr_tag_from_inspect_struct(
+            inspect_struct,
+            flat_nested_repositories
+        )
 
-    return add_registry_if_needed(floating_ref, nvr_tag)
+    return add_registry_if_needed(floating_ref, static_ref)
+
+
+def get_latest_image_by_sha(inspect_struct):
+    """Get the a reference to an image using its sha sum
+
+    :param dict inspect_struct: Information about a container image
+        as returned from `skopeo inspect`
+    :rtype: str
+    """
+    digest = inspect_struct['Digest']
+    name = inspect_struct['Name']
+    repo = name.rsplit('/', 1)[-1]
+
+    return f'{repo}@{digest}'
 
 
 def add_registry_if_needed(floating_ref, nvr_tag):
