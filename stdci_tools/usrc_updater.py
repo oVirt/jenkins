@@ -12,7 +12,7 @@ from typing import Callable
 import click
 
 from stdci_libs.git_utils import prep_git_repo, get_name_from_repo_url
-from stdci_libs.stdci_logging import setup_logging
+from stdci_libs.common_cli import cli_with_logging_from_logger
 from stdci_tools.usrc import update_main as update_upstream_sources
 from stdci_tools.pusher import push_to_scm as push_upstream_sources
 from stdci_libs import file_utils
@@ -26,17 +26,10 @@ logger = logging.getLogger()
 @click.argument('refspec', envvar='REPO_REF', type=str)
 @click.argument('target-branch', envvar='REPO_PUSH_BRANCH', type=str)
 @click.argument('push-map', envvar='PUSHER_PUSH_MAP', type=str)
-@click.option('--verbose', '-v', help='Provide verbose output.', is_flag=True)
-@click.option(
-    '--debug', '-d', help='Provide debugging output.',
-    type=bool, is_flag=True, envvar='DEBUG'
-)
-@click.option('--log', '-l', type=str,
-              help=('If set, will log to the specified file.'
-                    ' Otherwise, log to stderr.'))
+@cli_with_logging_from_logger(logger)
 def updater_main_cli(
         repo_url: str, refspec: str, target_branch: str, push_map: str,
-        verbose: bool, debug: bool, log: str):
+):
     """run the upstream source update process
 
     The update process includes updating the commit reference on the upstream
@@ -45,7 +38,6 @@ def updater_main_cli(
     You can specify the positional arguments as environment variables or pass
     them as usual.
     """
-    setup_logging(debug=debug, verbose=verbose, log=log, logger=logger)
     return updater_main(repo_url, refspec, target_branch, push_map)
 
 
