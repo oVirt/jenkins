@@ -82,6 +82,7 @@
       - jenkins
       - mom
       - nsis-simple-service-plugin
+      - ost-images
       - otopi
       - ovirt-appliance
       - ovirt-demo-tool
