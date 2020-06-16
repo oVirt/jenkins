@@ -40,3 +40,11 @@
           branch: master
     jobs:
       - '{project}_{branch}_standard-poll-upstream-sources'
+
+- project:
+    name: ost-images_standard-poll-upstream-sources
+    project:
+      - ost-images:
+          branch: master
+    jobs:
+      - '{project}_{branch}_standard-poll-upstream-sources'
