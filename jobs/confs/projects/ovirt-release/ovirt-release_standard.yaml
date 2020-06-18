@@ -27,6 +27,5 @@
     project: ovirt-release
     stage: build-artifacts
     arch: x86_64
-    node-filter: fc29
     jobs:
       - '{project}_{version}_build-artifacts-{distro}-{arch}'
