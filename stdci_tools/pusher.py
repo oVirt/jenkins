@@ -328,7 +328,7 @@ def push_to_scm(
                               to them.
     :param bool direct:       If set to True, bypass review and directly merge
                               the patch.
-    :param str if_not_exists: If set to 'True' (the default), check remote for
+    :param bool if_not_exists: If set to 'True' (the default), check remote for
                               a similar patch before pushing, and don't push if
                               it exists.
     :param str unless_hash:   Given a Git hash value, or a commit ref, if HEAD
