@@ -57,7 +57,8 @@
       stirabos@redhat.com,
       irosenzw@redhat.com,
       yturgema@redhat.com,
-      eslutsky@redhat.com
+      eslutsky@redhat.com,
+      arachman@redhat.com
     jobs:
       - '{project}_{suite_type}-suite-{version}'
 
