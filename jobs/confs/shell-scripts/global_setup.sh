@@ -38,7 +38,6 @@ main() {
 }
 
 setup_os_repos() {
-    local os
     local arch
     local conf_file
 
@@ -274,7 +273,7 @@ extra_packages() {
         git mock sed bash procps-ng createrepo_c distribution-gpg-keys librbd1
         selinux-policy container-selinux
     )
-    if [[ -e '/usr/bin/dnf' ]]; then
+    if [[ "$os" =~ "fedora" ]]; then
         # Fedora-specific packages
         package_list+=(python{2,3}-{pyyaml,pyxdg,jinja2,six,py})
         if can_sudo dnf; then
@@ -286,8 +285,18 @@ extra_packages() {
             # https://bugzilla.redhat.com/show_bug.cgi?id=1724305
             package_list+=(nfs-utils libnfsidmap)
         fi
+    elif [[ "$os" =~ "centos8" ]]; then
+        package_list+=(python{2,3}-{pyyaml,jinja2,six,py})
+        # there is no python2-pyxdg and nosync packages atm.
+        package_list+=(python3-pyxdg)
+        if can_sudo dnf; then
+            package_list+=(
+                firewalld haveged libvirt qemu-kvm python3-paramiko
+                libselinux-utils kmod rpm-plugin-selinux
+            )
+        fi
     else
-        # CentOS-specific packages
+        # CentOS-7-specific packages
         package_list+=(
             python-paramiko PyYAML python2-pyxdg python-jinja2 python-py
             python-six python36-PyYAML python36-pyxdg rpm-libs
@@ -303,6 +312,10 @@ extra_packages() {
 }
 
 docker_setup () {
+    if [[ "$os" =~ "centos8" ]]; then
+        log INFO "Skipping docker_setup, docker is not supported"
+        return 0
+    fi
     #Install docker engine and start the service
     log INFO "Trying to setup Docker"
 

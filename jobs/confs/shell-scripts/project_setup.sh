@@ -40,7 +40,8 @@ filter_secret_data() {
 cleanup_docker () {
     local whitelisted_repos=( ${CACHED_DOCKER_REPOS:-centos fedora} )
 
-    if ! [[ -x /bin/docker ]]; then
+    # The check for podman is because it's create an alias to /bin/docker.
+    if ! [[ -x /bin/docker ]] || [[ -x /bin/podman ]]; then
         log WARN "Skipping Docker cleanup - Docker not installed"
         return 0
     fi
