@@ -86,6 +86,7 @@
       - otopi
       - ovirt-appliance
       - ovirt-demo-tool
+      - ovirt-dependencies
       - ovirt-dwh
       - ovirt-engine
       - ovirt-engine-api-explorer
