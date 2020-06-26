@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash -e
 # run_oc_playbook.sh - STDCI script for running playbooks that interact with
 #                      OpenShift
 #
