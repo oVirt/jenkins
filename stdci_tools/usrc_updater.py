@@ -13,6 +13,7 @@ import click
 
 from stdci_libs.git_utils import prep_git_repo, get_name_from_repo_url
 from stdci_libs.common_cli import cli_with_logging_from_logger
+from stdci_libs.actuators.updaters import updater_cli
 from stdci_tools.usrc import update_main as update_upstream_sources
 from stdci_tools.pusher import push_to_scm as push_upstream_sources
 from stdci_libs import file_utils
@@ -22,11 +23,8 @@ logger = logging.getLogger()
 
 
 @click.command()
-@click.argument('repo-url', envvar='REPO_URL', type=str)
-@click.argument('refspec', envvar='REPO_REF', type=str)
-@click.argument('target-branch', envvar='REPO_PUSH_BRANCH', type=str)
-@click.argument('push-map', envvar='PUSHER_PUSH_MAP', type=str)
 @cli_with_logging_from_logger(logger)
+@updater_cli
 def updater_main_cli(
         repo_url: str, refspec: str, target_branch: str, push_map: str,
 ):
