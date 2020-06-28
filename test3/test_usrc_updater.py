@@ -4,9 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 import yaml
 
-from stdci_tools.usrc_updater import (
-    updater_main_cli, run_upstream_source_updater
-)
+from stdci_tools.usrc_updater import updater_main_cli
 from stdci_libs.git_utils import git_rev_parse
 
 
@@ -42,26 +40,6 @@ def midstream_repo(gitrepo, upstream_repo):
             },
         }
     )
-
-
-def test_run_upstream_source_updater(midstream_repo, upstream_repo, git_at):
-    upstream_git = git_at(upstream_repo)
-    upstream_head_sha = git_rev_parse('HEAD', upstream_git)
-    midstream_git = git_at(midstream_repo)
-    midstream_head_sha = git_rev_parse('HEAD', midstream_git)
-    midstream_usrc_config = midstream_repo / 'upstream_sources.yaml'
-    run_upstream_source_updater(str(midstream_repo))
-    with midstream_usrc_config.open() as usrc_config_file:
-        usrc_yaml = yaml.safe_load(usrc_config_file)
-    assert usrc_yaml == {
-        'git': [{
-            'commit': upstream_head_sha,
-            'branch': 'master',
-            'url': str(upstream_repo),
-        }]
-    }
-    assert git_rev_parse('HEAD', midstream_git) != midstream_head_sha, \
-        'expected a new commit sha on the midstream repository'
 
 
 @pytest.mark.parametrize('call_with_env', [True, False])
