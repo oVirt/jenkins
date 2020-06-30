@@ -1,5 +1,6 @@
 - project:
     name: 'ovirt-engine_coverity-analysis'
+    git-proto: 'https'
     node-filter: 'el7'
     version:
       - master:
