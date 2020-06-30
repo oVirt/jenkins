@@ -11,9 +11,11 @@
       - '{project}_coverity-analysis':
           branch: 'master'
           git-server: '{git-server}'
+          git-proto: 'https'
       - 'jenkins':
           branch: 'master'
           git-server: '{git-server}'
+          git-proto: 'https'
     jdk: 'java-1.8.0-openjdk'
     builders:
       - shell: !include-raw: shell-scripts/coverity_analysis.sh
