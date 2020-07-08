@@ -25,7 +25,7 @@ from stdci_tools.usrc import (
     generate_update_commit_message, git_ls_files, git_read_file, ls_all_files,
     files_diff, get_modified_files, get_files_to_links_map, GitFile,
     UnkownDestFormatError, set_upstream_source_entries, modify_entries_main,
-    only_if_imported_any, upstream_sources_config, UPSTREAM_SOURCES_FILE,
+    only_if_imported_any, upstream_sources_config,
 )
 
 
@@ -67,21 +67,20 @@ def downstream_remote(gitrepo):
     )
 
 
-@pytest.mark.parametrize('config_dir', [
-    '',
-    'automation',
+@pytest.mark.parametrize('config_path', [
+    'upstream_sources.yaml',
+    'upstream_sources.yml',
+    'automation/upstream_sources.yaml',
+    'automation/upstream_sources.yml',
 ])
-def test_upstream_sources_config_filepath(monkeypatch, tmpdir, config_dir):
-    tmp_config_dir = tmpdir
-    if config_dir:
-        tmp_config_dir = tmpdir / config_dir
-        tmp_config_dir.mkdir()
-    config_file = tmp_config_dir / UPSTREAM_SOURCES_FILE
+def test_upstream_sources_config_filepath(monkeypatch, tmpdir, config_path):
+    config_file = tmpdir / config_path
     upstream_sources_text = 'bla bla bla'
+    config_file.dirpath().ensure_dir()
     config_file.write(upstream_sources_text)
     monkeypatch.chdir(tmpdir)
     sanity_tests_upstream_sources_config(
-        os.path.join(config_dir, UPSTREAM_SOURCES_FILE),
+        config_path,
         upstream_sources_text
     )
 
@@ -97,20 +96,22 @@ def test_upstream_sources_config_custom_name(tmpdir):
     )
 
 
-@pytest.mark.parametrize('config_dir', [
-    '',
-    'automation',
+@pytest.mark.parametrize('config_file', [
+    'upstream_sources.yaml',
+    'upstream_sources.yml',
+    'automation/upstream_sources.yaml',
+    'automation/upstream_sources.yml',
 ])
 def test_upstream_sources_config_git(
-    monkeypatch, gitrepo, git_last_sha, config_dir
+    monkeypatch, gitrepo, git_last_sha, config_file
 ):
     upstream_sources_text = 'bla bla bla'
-    expected_config_path = os.path.join(config_dir, UPSTREAM_SOURCES_FILE)
+    expected_config_path = config_file
     repo = gitrepo(
         'myrepo',
         {
             'msg': 'First commit',
-            'files': {expected_config_path: 'bla bla bla'}
+            'files': {config_file: 'bla bla bla'}
         }
     )
     sha = git_last_sha(repo)

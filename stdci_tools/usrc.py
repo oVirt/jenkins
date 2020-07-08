@@ -71,8 +71,13 @@ def only_if_imported_any(*modules):
     return original_or_error
 
 
-UPSTREAM_SOURCES_FILE = 'upstream_sources.yaml'
-UPSTREAM_SOURCES_FILE_LOOKUP_DIRS = ('', 'automation')
+# Files where upstream sources configuration can reside, ordered by priority
+UPSTREAM_SOURCES_FILES = (
+    'upstream_sources.yml',
+    'upstream_sources.yaml',
+    'automation/upstream_sources.yml',
+    'automation/upstream_sources.yaml',
+)
 CACHE_NAME = 'usrc'
 POLICIES = ('static', 'tagged', 'latest')
 TagObject = namedtuple('TagObject', ['commit', 'annotated', 'name'])
@@ -130,11 +135,7 @@ def upstream_sources_config(*args, **kwargs):
     elif not kwargs.get('mode'):
         kwargs['mode'] = 'r'
 
-    predefined_files = [
-        join(lookup_dir, UPSTREAM_SOURCES_FILE)
-        for lookup_dir in UPSTREAM_SOURCES_FILE_LOOKUP_DIRS
-    ]
-    possible_files = args or predefined_files
+    possible_files = args or UPSTREAM_SOURCES_FILES
 
     for usrc_cfg in possible_files:
         try:

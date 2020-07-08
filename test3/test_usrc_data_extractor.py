@@ -1,6 +1,5 @@
 import pytest
 from stdci_tools import usrc_data_extractor as ude
-from stdci_tools.usrc import UPSTREAM_SOURCES_FILE
 
 
 @pytest.mark.parametrize('repo_url,expected_project_name', (
@@ -218,7 +217,7 @@ def test_generate_environment_file_missing_git_entry_exception():
 
 @pytest.mark.parametrize('input', [None, 'my-config.yaml'])
 def test_load_upstream_sources_yaml(input, tmpdir, monkeypatch):
-    config_name = input or UPSTREAM_SOURCES_FILE
+    config_name = input or "upstream_sources.yaml"
     config_path = tmpdir / config_name
     config_path.write('key: value')
     monkeypatch.chdir(tmpdir)
