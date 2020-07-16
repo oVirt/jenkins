@@ -125,7 +125,7 @@
     version:
       - master:
           chroot_distro: el7
-    email-to: 'rgolan@redhat.com'
+    email-to: 'infra@ovirt.org'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
 
@@ -149,7 +149,7 @@
     version:
       - 4.2:
           chroot_distro: el7
-    email-to: 'rgolan@redhat.com'
+    email-to: 'infra@ovirt.org'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
 
