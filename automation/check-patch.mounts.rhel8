@@ -1,0 +1,2 @@
+/etc/pki/ca-trust
+/var/tmp/user_owned_dir:/var/tmp/user_owned_dir

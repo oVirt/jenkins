@@ -1,0 +1,13 @@
+python3-setuptools
+python3-requests
+python3-mock
+python3-six
+python3-jinja2
+python3-pip
+python3-PyYAML
+python3-pytest
+python3-pyxdg
+git
+xdg-utils
+xdg-user-dirs
+python3-paramiko

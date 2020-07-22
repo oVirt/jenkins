@@ -1,0 +1,3 @@
+epel,http://mirror.nonstop.co.il/epel/7/x86_64/
+ci-tools,http://resources.ovirt.org/repos/ci-tools/el7
+

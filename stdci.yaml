@@ -3,7 +3,16 @@ sub-stages:
   - default:
       arch:
         - x86_64:
-            distro: [el7, el8, fc29, fc30, fcraw]
+            distro:
+              - el7
+              - el8
+              - fc29
+              - fc30
+              - fcraw
+              - rhel7:
+                  runtime-requirements:
+                    host-distro: same
+              - rhel8
         - ppc64le:
             distro: [el7, el8]
         - s390x:

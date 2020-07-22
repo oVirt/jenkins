@@ -285,7 +285,7 @@ extra_packages() {
             # https://bugzilla.redhat.com/show_bug.cgi?id=1724305
             package_list+=(nfs-utils libnfsidmap)
         fi
-    elif [[ "$os" =~ "centos8" ]]; then
+    elif [[ "$os" =~ "centos8" ]] || [[ "$os" =~ "rhel8" ]]; then
         package_list+=(python{2,3}-{pyyaml,jinja2,six,py})
         # there is no python2-pyxdg and nosync packages atm.
         package_list+=(python3-pyxdg)
@@ -312,7 +312,7 @@ extra_packages() {
 }
 
 docker_setup () {
-    if [[ "$os" =~ "centos8" ]]; then
+    if [[ "$os" =~ "centos8" ]] || [[ "$os" =~ "rhel8" ]]; then
         log INFO "Skipping docker_setup, docker is not supported"
         return 0
     fi
