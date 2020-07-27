@@ -304,7 +304,7 @@ def get_std_ci_node_label(project, job) {
 @NonCPS
 def get_newer_distros_label(distro) {
     String[] host_distros = [
-        'el7', 'fc29', 'el8', 'fc30', 'fc31', 'fc32',
+        'el7', 'fc29', 'el8', 'fc30', 'fc31', 'fc32', 'rhel7', 'rhel8'
     ]
     int dist_idx = host_distros.findIndexOf { it == distro }
     if(dist_idx < 0) {
