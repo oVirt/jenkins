@@ -2,7 +2,7 @@
 - job:
     name: run-gate-job
     description: Trigger system gating job in Jenkins
-    pre-run: zuul-playbooks/expose_source.yaml
+    parent: base-gate-job
     run: zuul-playbooks/trigger_gate_job.yaml
     timeout: 10800
     extra-vars:
