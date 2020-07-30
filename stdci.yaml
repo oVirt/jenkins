@@ -34,6 +34,7 @@ sub-stages:
           - automation/check-patch.environment.yaml*
           - automation/build-artifacts.dummy-rpm.*
           - test-requirements.*
+          - pipelines/libs/stdci*
   - container-runner-test:
       container:
         image: docker.io/centos:7

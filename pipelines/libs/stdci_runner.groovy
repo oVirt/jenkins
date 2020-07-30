@@ -330,8 +330,10 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
             // Clear al left-over artifacts from previous builds
             dir(get_job_dir(job)) { deleteDir() }
             checkout_jenkins_repo()
-            run_jjb_script('cleanup_slave.sh')
-            run_jjb_script('global_setup.sh')
+            if (!env.RUNNING_IN_PSI?.toBoolean()) {
+                run_jjb_script('cleanup_slave.sh')
+                run_jjb_script('global_setup.sh')
+            }
             project_lib.checkout_project(project)
             withCredentials(
                 [file(credentialsId: 'ci_secrets_file', variable: 'CI_SECRETS_FILE')]
@@ -379,7 +381,9 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
         }
         // The only way we can get to these lines is if nothing threw any
         // exceptions so far. This means the job was successful.
-        run_jjb_script('global_setup_apply.sh')
+        if (!env.RUNNING_IN_PSI?.toBoolean()) {
+            run_jjb_script('global_setup_apply.sh')
+        }
         success = true
     } finally {
         if(success) {
