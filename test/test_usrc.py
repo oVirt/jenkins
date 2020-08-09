@@ -701,6 +701,32 @@ class TestGitUpstreamSource(object):
             'upstream_file.txt',
         ]
 
+    @pytest.mark.parametrize('pattern,exp_files', [
+        ('*.txt', ['upstream_file.txt']),
+        ('file*', ['file2', 'file3']),
+        (['file3', 'upstream_file.txt'], ['file3', 'upstream_file.txt']),
+    ])
+    def test_files_format_handler_with_filter(
+        self, upstream, downstream, git_last_sha, gerrit_push_map,
+        pattern, exp_files
+    ):
+        gus = GitUpstreamSource(
+            str(upstream), 'master', git_last_sha(upstream),
+            dest_formats={'files': {'filter': pattern}}
+        )
+        gus.get(str(downstream), gerrit_push_map)
+        out_files = sorted(f.basename for f in downstream.listdir())
+        ds_files = [
+            '.git',
+            'automation',
+            'changing_link',
+            'downstream_file.txt',
+            'link_to_upstream_link',
+            'overriden_file.txt',
+            'temp',
+        ]
+        assert out_files == sorted(ds_files + exp_files)
+
     def test_branch_format_handler(
         self, monkeypatch, upstream, downstream, downstream_remote,
         git_at, git_last_sha, gerrit_push_map

@@ -9,6 +9,7 @@ from os.path import normpath, join, dirname, abspath
 import logging
 import logging.handlers
 import yaml
+import fnmatch
 from copy import copy
 from hashlib import sha1, md5
 from xdg.BaseDirectory import xdg_cache_home
@@ -534,8 +535,26 @@ class GitUpstreamSource(object):
             struct['annotated_tag_only'] = 'yes'
         return struct
 
-    def _files_format_handler(self, dst_path, files_dest_dir=None, **kwargs):
-        """Get the upstream source into the given path
+    def _files_format_handler(
+        self, dst_path, files_dest_dir=None, filter=None, **kwargs
+    ):
+        """Get the upstream source files into the given path
+
+        :param str dst_path       The destination path where the downstream
+                                  repository clone is stored. This is passed
+                                  automatically by _call_format_handlers()
+        :param str files_dest_dir A path within dst_path to store the files in.
+                                  It can be optionally specified in YAML by the
+                                  users. Be default files are places in the
+                                  root of the downstream clone
+        :param str/list filter    One or more glob patterns to filter which
+                                  upstream files to get. In multiple patterns
+                                  are given in a list, the patterns are OR-ed,
+                                  this means that a file needs to match only
+                                  one of the patterns to be included.
+
+        The OR behaviour of patterns lists is meant to allow using simple lists
+        of file names if users need the kind of granularity.
         """
         dst_dir = files_dest_dir or self.files_dest_dir
         if dst_dir != '':
@@ -544,9 +563,22 @@ class GitUpstreamSource(object):
                 os.makedirs(dst_path)
             except OSError:
                 pass
+        if filter:
+            if isinstance(filter, string_types):
+                paths = ['--'] + fnmatch.filter(self.ls_files(), str(filter))
+            elif isinstance(filter, Iterable):
+                paths = set()
+                for subfil in filter:
+                    paths |= set(fnmatch.filter(self.ls_files(), str(subfil)))
+                paths = ['--'] + list(paths)
+            else:
+                paths = ['--'] + fnmatch.filter(self.ls_files(), str(filter))
+        else:
+            paths = []
         self._cache_git(
             '--work-tree=' + dst_path,
             'checkout', self.commit, '-f',
+            *paths
         )
 
     @only_if_imported_any('pusher', 'stdci_tools.pusher')
