@@ -672,6 +672,35 @@ class TestGitUpstreamSource(object):
         assert (downstream / 'overriden_file.txt').read() == \
             'Overridden content'
 
+    def test_files_format_handler(
+        self, upstream, downstream, git_last_sha, gerrit_push_map
+    ):
+        gus = GitUpstreamSource(
+            str(upstream), 'master', git_last_sha(upstream),
+            dest_formats={'files': None}
+        )
+        assert not (downstream / 'upstream_file.txt').exists()
+        gus.get(str(downstream), gerrit_push_map)
+        assert (downstream / 'upstream_file.txt').isfile()
+        assert (downstream / 'upstream_file.txt').read() == 'Upstream content'
+        assert (downstream / 'overriden_file.txt').isfile()
+        assert (downstream / 'overriden_file.txt').read() == \
+            'Overridden content'
+        out_files = sorted(f.basename for f in downstream.listdir())
+        assert out_files == [
+            '.git',
+            'automation',
+            'changing_link',
+            'downstream_file.txt',
+            'file2',
+            'file3',
+            'link_to_file',
+            'link_to_upstream_link',
+            'overriden_file.txt',
+            'temp',
+            'upstream_file.txt',
+        ]
+
     def test_branch_format_handler(
         self, monkeypatch, upstream, downstream, downstream_remote,
         git_at, git_last_sha, gerrit_push_map
