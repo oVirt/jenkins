@@ -8,7 +8,6 @@ sub-stages:
               - el8
               - fc29
               - fc30
-              - fcraw
               - rhel7:
                   runtime-requirements:
                     host-distro: same
@@ -125,7 +124,7 @@ sub-stages:
   - docker-build-test:
       arch:
         - x86_64:
-            distro: [el7, fc29, fc30, fcraw]
+            distro: [el7, fc29, fc30]
         - ppc64le:
             distro: el7
       runif:
@@ -140,7 +139,7 @@ sub-stages:
       stage: check-patch
       arch:
         - x86_64:
-            distro: [el7, el8, fc29, fc30, fcraw]
+            distro: [el7, el8, fc29, fc30]
         - ppc64le:
             distro: [el7, el8]
         - s390x:
