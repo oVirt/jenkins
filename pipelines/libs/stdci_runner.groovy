@@ -297,7 +297,11 @@ def get_std_ci_node_label(project, job) {
     if (job.arch != "x86_64") {
         label_conditions << job.arch
     }
-
+    if(env.RUNNING_IN_PSI?.toBoolean()) {
+        label_conditions << job.distro
+        label_conditions << 'psi'
+    }
+    label_conditions.unique()
     return label_conditions.join(' && ')
 }
 
@@ -311,6 +315,9 @@ def get_newer_distros_label(distro) {
         throw new Exception("Can't find newer distros for ${job.distro}")
     }
     String[] job_distros = host_distros[dist_idx..<host_distros.size()]
+    if(env.RUNNING_IN_PSI?.toBoolean()) {
+        return distro
+    }
     return "(${job_distros.join(' || ')})"
 }
 
@@ -330,7 +337,9 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
             // Clear al left-over artifacts from previous builds
             dir(get_job_dir(job)) { deleteDir() }
             checkout_jenkins_repo()
-            if (!env.RUNNING_IN_PSI?.toBoolean()) {
+            // The OST check is because currently we need to reprovision the server with mock until
+            // we will have beaker.
+            if (!env.RUNNING_IN_PSI?.toBoolean() || project.name.contains("ovirt-system-tests")) {
                 run_jjb_script('cleanup_slave.sh')
                 run_jjb_script('global_setup.sh')
             }
@@ -369,9 +378,16 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
                 mirrors_file = "${pwd()}/mirrors.yaml"
                 writeFile file: mirrors_file, text: mirrors
             }
-            run_std_ci_in_mock(
-                project, job, report, tfr, mirrors_file, extra_sources
-            )
+            if (!env.RUNNING_IN_PSI?.toBoolean() || project.name.contains("ovirt-system-tests")) {
+                run_std_ci_in_mock(
+                    project, job, report, tfr, mirrors_file, extra_sources
+                )
+            }
+            else {
+                run_std_ci_in_slave(
+                    project, job, report, tfr, mirrors_file, extra_sources
+                )
+            }
         } finally {
             report.status('PENDING', 'Collecting results')
             archiveArtifacts allowEmptyArchive: true, \
@@ -381,7 +397,7 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
         }
         // The only way we can get to these lines is if nothing threw any
         // exceptions so far. This means the job was successful.
-        if (!env.RUNNING_IN_PSI?.toBoolean()) {
+        if (!env.RUNNING_IN_PSI?.toBoolean() || project.name.contains("ovirt-system-tests")) {
             run_jjb_script('global_setup_apply.sh')
         }
         success = true
@@ -442,6 +458,61 @@ def run_std_ci_in_mock(
         }
         report.status('PENDING', 'Cleaning up')
         run_jjb_script('mock_cleanup.sh')
+    }
+}
+
+def run_std_ci_in_slave(project, job, report, tfr, mirrors_file, extra_sources) {
+    try {
+        dir(project.clone_dir_name) {
+            report.status('PENDING', 'Running test')
+            if(extra_sources) {
+                def extra_sources_file = "${pwd()}/extra_sources"
+                writeFile file: extra_sources_file, text: extra_sources
+                println "extra_sources file was created: ${extra_sources_file}"
+            }
+            run_code(job.script, job.distro, job.arch, mirrors_file)
+            invoke_pusher(
+                project, 'push',
+                args: [
+                    '--if-not-exists',
+                    "--unless-hash=${env.BUILD_TAG}",
+                    project.branch
+                ]
+            )
+        }
+    }
+    finally {
+        report.status('PENDING', 'Collecting results')
+        withCredentials([usernamePassword(
+            credentialsId: 'ci-containers_intermediate-repository',
+            passwordVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_PASSWORD',
+            usernameVariable: 'CI_CONTAINERS_INTERMEDIATE_REPO_USERNAME'
+        )]) {
+            withEnv([
+                "PROJECT=${project.name}",
+                "EXPORTED_ARTIFACTS=${env.WORKSPACE}/${get_job_dir(job)}",
+            ]) {
+                run_jjb_script('collect_artifacts.sh')
+            }
+        }
+    }
+}
+
+def run_code(script, distro, arch, mirrors=null) {
+    if(mirrors == null) {
+        mirrors = env.CI_MIRRORS_URL
+    }
+    mirrors_arg=''
+    if(mirrors != null) {
+        mirrors_arg = "--try-mirrors '$mirrors'"
+    }
+    timeout(time: 180) {
+        sh """
+            ../jenkins/jobs/confs/shell-scripts/run_code.sh \\
+                --execute-script "$script" \\
+                --secrets-file "$WORKSPACE/std_ci_secrets.yaml" \\
+                $mirrors_arg
+        """
     }
 }
 

@@ -9,7 +9,9 @@ sub-stages:
               - rhel7:
                   runtime-requirements:
                     host-distro: same
-              - rhel8
+              - rhel8:
+                  runtime-requirements:
+                    host-distro: same
         - ppc64le:
             distro: [el7, el8]
         - s390x:

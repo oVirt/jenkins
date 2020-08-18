@@ -25,8 +25,12 @@ main() {
         test_rpmbuild "$@"
     fi
     test_secrets_and_credentials
-    test_mock_runner_mounts
-    test_mock_runner_fd_leak
+    if [[ "${RUNNING_IN_PSI}" != "true" ]]; then
+        test_mock_runner_mounts
+        test_mock_runner_fd_leak
+    else
+        test_podman_privileged
+    fi
     test_mock_runner_hardwired_env
     test_ci_toolbox
 }
@@ -159,12 +163,12 @@ test_mock_runner_fd_leak() {
 }
 
 test_mock_runner_hardwired_env() {
-    readonly HW_ENV_VARS=(
+    readonly HW_ENV_VARS_TO_CHECK=(
         GIT_COMMITTER_{NAME,EMAIL}
         BUILD_{NUMBER,ID,DISPLAY_NAME,TAG,URL} JOB_{{,BASE_}NAME,URL}
         NODE_{NAME,LABELS} WORKSPACE JENKINS_URL GERRIT_BRANCH
     )
-    for var_name in "${HW_ENV_VARS[@]}"; do
+    for var_name in "${HW_ENV_VARS_TO_CHECK[@]}"; do
         local var_value="${!var_name}"
         echo "$var_name: $var_value"
         [[ $var_value ]] || return 1
@@ -200,6 +204,12 @@ test_ci_toolbox_in_path() {
     type -P dummy.sh && { echo "${FUNCNAME[0]} SUCCESS"; return 0; }
     echo "${FUNCNAME[0]} FAILED - ci toolbox is not in the PATH"
     return 1
+}
+
+test_podman_privileged() {
+    podman run --privileged registry.access.redhat.com/ubi8/ubi:8.1 || return 1
+    echo "${FUNCNAME[0]} SUCCESS"
+    return 0
 }
 
 main "$@"
