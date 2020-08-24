@@ -13,49 +13,25 @@ from stdci_tools.dockerfile_utils import (
     DecoratedCmd, Decorator, FailedToGetLatestVersionError,
     FailedToParseDecoratorError, ImageAndFloatingRef, UpdateAction,
     get_decorated_commands, get_decorator, get_dfps,
-    get_nvr_tag_from_inspect_struct, get_old_images_and_floating_refs,
-    get_update, update, main, run_command, add_registry_if_needed,
-    get_latest_image_by_sha
+    get_tag_from_inspect_struct, get_old_images_and_floating_refs,
+    get_update, update, main, run_command, get_latest_image_by_sha,
+    replace_tag_with_static_tag, replace_tag_with_sha
 )
 
 
-@pytest.mark.parametrize('inspect, flat, expected', [
+@pytest.mark.parametrize('inspect, expected', [
     (
         {
             'Labels': {
-                'name': 'virt-api',
                 'version': 'v2.1.0',
                 'release': '1',
             }
         },
-        False,
-        'virt-api:v2.1.0-1'
+        'v2.1.0-1'
     ),
-    (
-        {
-            'Labels': {
-                'name': 'cnv/virt-api',
-                'version': 'v2.1.0',
-                'release': '1',
-            }
-        },
-        False,
-        'cnv/virt-api:v2.1.0-1'
-    ),
-    (
-        {
-            'Labels': {
-                'name': 'cnv/virt-api',
-                'version': 'v2.1.0',
-                'release': '1',
-            }
-        },
-        True,
-        'cnv-virt-api:v2.1.0-1'
-    )
 ])
-def test_get_nvr_tag_from_inspect_struct(inspect, flat, expected):
-    assert get_nvr_tag_from_inspect_struct(inspect, flat) == expected
+def test_get_nvr_tag_from_inspect_struct(inspect, expected):
+    assert get_tag_from_inspect_struct(inspect) == expected
 
 
 @pytest.mark.parametrize('struct', [
@@ -66,9 +42,9 @@ def test_get_nvr_tag_from_inspect_struct(inspect, flat, expected):
     {'Labels': None},
     {'Labels': []}
 ])
-def test_get_latest_image_from_inspect_struct_should_raise(struct):
+def test_get_get_tag_from_inspect_struct_should_raise(struct):
     with pytest.raises(FailedToGetLatestVersionError):
-        get_nvr_tag_from_inspect_struct(struct)
+        get_tag_from_inspect_struct(struct)
 
 
 def test_get_dfps(monkeypatch):
@@ -412,9 +388,7 @@ def test_update_dry_run():
             }
         }
         """,
-        [
-            '--flat-nested-repositories'
-        ]
+        []
     ),
     (
         dedent(
@@ -440,6 +414,56 @@ def test_update_dry_run():
         [
             '--use-sha'
         ]
+    ),
+    (
+        dedent(
+            """
+            #@follow_tag(registry.redhat.io/ubi8/ubi-minimal:8.2)
+            FROM registry.redhat.io/ubi8/ubi-minimal:8.2
+            RUN echo hi
+            """
+        ),
+        dedent(
+            """
+            #@follow_tag(registry.redhat.io/ubi8/ubi-minimal:8.2)
+            FROM registry.redhat.io/ubi8/ubi-minimal:8.2-345
+            RUN echo hi
+            """
+        ),
+        """
+        {
+            "Labels": {
+                "release": "345",
+                "version": "8.2"
+            }
+        }
+        """,
+        []
+    ),
+    (
+        dedent(
+            """
+            #@follow_tag(registry.redhat.io/openshift4/ose-ansible-operator:v4.5.0)
+            FROM registry.redhat.io/openshift4/ose-ansible-operator:v4.5.0
+            RUN echo hi
+            """
+        ),
+        dedent(
+            """
+            #@follow_tag(registry.redhat.io/openshift4/ose-ansible-operator:v4.5.0)
+            FROM registry.redhat.io/openshift4/ose-ansible-operator:v4.5.0-202008100413.p0
+            RUN echo hi
+            """
+        ),
+        """
+        {
+            "Labels": {
+                "release": "202008100413.p0",
+                "version": "v4.5.0"
+            }
+        }
+        """,
+        []
     )
 ])
 def test_base_image_update_full_run(
@@ -466,35 +490,46 @@ def test_run_command_which_fails_should_raise():
         run_command(['false'])
 
 
-@pytest.mark.parametrize('floating_ref, nvr_tag, expected', [
-    (
-        'registry.com/rh-osbs/cnv-hco-bundle-registry:v2.2.0',
-        'cnv-hco-bundle-registry:v2.2.0-274',
-        'registry.com/rh-osbs/cnv-hco-bundle-registry:v2.2.0-274'
-    ),
-    (
-        'cnv-hco-bundle-registry:v2.2.0',
-        'cnv-hco-bundle-registry:v2.2.0-274',
-        'cnv-hco-bundle-registry:v2.2.0-274'
-    ),
-    (
-        'registry.com/cnv-hco-bundle-registry:v2.2.0',
-        'cnv-hco-bundle-registry:v2.2.0-274',
-        'registry.com/cnv-hco-bundle-registry:v2.2.0-274'
-    )
-])
-def test_add_registry_if_needed(floating_ref, nvr_tag, expected):
-    assert add_registry_if_needed(floating_ref, nvr_tag) == expected
-
-
 @pytest.mark.parametrize('inspect_struct, expected', [
     (
         {
             'Name': 'registry.com/cnv-hco-bundle-registry',
             'Digest': 'sha256:123',
         },
-        'cnv-hco-bundle-registry@sha256:123'
+        'sha256:123'
     )
 ])
 def test_get_latest_image_by_sha(inspect_struct, expected):
     assert get_latest_image_by_sha(inspect_struct) == expected
+
+
+@pytest.mark.parametrize('floating_ref, tag, expected', [
+    (
+        'registry.redhat.io/ubi8/ubi-minimal:8.2',
+        '8.2-345',
+        'registry.redhat.io/ubi8/ubi-minimal:8.2-345',
+    ),
+    (
+        'registry.redhat.io/ubi8/ubi-minimal',
+        '8.2-345',
+        'registry.redhat.io/ubi8/ubi-minimal:8.2-345',
+    )
+])
+def test_replace_tag_with_static_tag(floating_ref, tag, expected):
+    assert replace_tag_with_static_tag(floating_ref, tag) == expected
+
+
+@pytest.mark.parametrize('floating_ref, sha, expected', [
+    (
+        'registry.redhat.io/ubi8/ubi-minimal:8.2',
+        'sha256:123',
+        'registry.redhat.io/ubi8/ubi-minimal@sha256:123',
+    ),
+    (
+        'registry.redhat.io/ubi8/ubi-minimal',
+        'sha256:123',
+        'registry.redhat.io/ubi8/ubi-minimal@sha256:123',
+    )
+])
+def test_replace_tag_with_sha(floating_ref, sha, expected):
+    assert replace_tag_with_sha(floating_ref, sha) == expected

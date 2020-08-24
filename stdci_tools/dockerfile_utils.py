@@ -136,12 +136,6 @@ def parse_args(args=None):
         help='Do not update anything, just print what will be updated'
     )
     parent_image_update_parser.add_argument(
-        '--flat-nested-repositories',
-        action='store_true',
-        help='Flat nested repositories (replace / with -) for the images that'
-             ' were discovered'
-    )
-    parent_image_update_parser.add_argument(
         '--use-sha',
         action='store_true',
         default=False,
@@ -162,7 +156,6 @@ def parent_image_update_main(args):
                 dfps,
                 args.lookup_registry,
                 args.dry_run,
-                args.flat_nested_repositories,
                 args.use_sha
             )
         )
@@ -172,7 +165,6 @@ def update_dockerfiles(
     dfps,
     lookup_registry='',
     dry_run=False,
-    flat_nested_repositories=False,
     use_sha=False
 ):
     """Update the parent images in a Dockerfile
@@ -198,8 +190,6 @@ def update_dockerfiles(
         pulling image information.
     :param bool dry_run: If true, don't update the Dockerfiles,
         just return what will be updated
-    :param flat_nested_repositories: If true, nested repositories will be
-        flatten. For example "cnv/virt-api" will become "cnv-virt-api".
     :param bool use_sha: If true inject the SHA sum of the latest image.
     :return:
     """
@@ -220,7 +210,6 @@ def update_dockerfiles(
     latest_images = get_latest_images(
         all_floating_refs,
         lookup_registry,
-        flat_nested_repositories,
         use_sha
     )
 
@@ -378,15 +367,13 @@ def get_decorator(value):
 
 
 def get_latest_images(
-    all_floating_refs, lookup_registry='', flat_nested_repositories=False, use_sha=False
+    all_floating_refs, lookup_registry='', use_sha=False
 ):
     """Get the latest images for a list of floating tags
 
     :param iterable all_floating_refs:
     :param str lookup_registry: The registry that will be used for the lookup
         of images
-    :param bool flat_nested_repositories: If true flat nested repositories in
-        the discovered images
     :param bool use_sha: If true return the SHA sum of the image
     :rtype: dict
     """
@@ -398,23 +385,18 @@ def get_latest_images(
         floating_ref: get_latest_image(
             floating_ref,
             lookup_registry,
-            flat_nested_repositories,
             use_sha,
         )
         for floating_ref in floating_refs
     }
 
 
-def get_latest_image(
-    floating_ref, lookup_registry='', flat_nested_repositories=False, use_sha=False
-):
+def get_latest_image(floating_ref, lookup_registry='', use_sha=False):
     """Get the latest nvr from a floating ref
 
     :param str floating_ref
     :param str lookup_registry: The registry that will be used
         for the lookup.
-    :param bool flat_nested_repositories: If true flat nested repositories in
-        the discovered image,
     :param bool use_sha: If true return the SHA sum of the image
     :return:
     """
@@ -422,69 +404,59 @@ def get_latest_image(
     inspect = skopeo_inspect(join(lookup_registry, floating_ref))
     inspect_struct = json.loads(inspect)
     if use_sha:
-        static_ref = get_latest_image_by_sha(inspect_struct)
-    else:
-        static_ref = get_nvr_tag_from_inspect_struct(
-            inspect_struct,
-            flat_nested_repositories
-        )
+        sha = get_latest_image_by_sha(inspect_struct)
+        return replace_tag_with_sha(floating_ref, sha)
 
-    return add_registry_if_needed(floating_ref, static_ref)
+    tag = get_tag_from_inspect_struct(inspect_struct)
+    return replace_tag_with_static_tag(floating_ref, tag)
+
+
+def replace_tag_with_static_tag(floating_ref, tag):
+    """Replace the tag in an image reference with a different tag
+
+    :param str floating_ref: An image reference
+    :param str tag: The tag that should be added to the image
+        reference
+    :rtype: str
+    """
+    repo_and_reg = floating_ref.split(':')[0]
+    return f'{repo_and_reg}:{tag}'
+
+
+def replace_tag_with_sha(floating_ref, sha):
+    """Replace the tag in an image reference with a sha sum
+
+    :param str floating_ref: An image reference
+    :param str sha: The sha sum that should be added to the image
+    in the form
+    (e.g sha256:372622021a90893d9e25c298e045c804388c7666f3e756cd48f75d20172d9e55)
+    :rtype: str
+    """
+    repo_and_reg = floating_ref.split(':')[0]
+    return f'{repo_and_reg}@{sha}'
 
 
 def get_latest_image_by_sha(inspect_struct):
-    """Get the a reference to an image using its sha sum
+    """Get the sha sum of a container image
 
     :param dict inspect_struct: Information about a container image
         as returned from `skopeo inspect`
     :rtype: str
     """
-    digest = inspect_struct['Digest']
-    name = inspect_struct['Name']
-    repo = name.rsplit('/', 1)[-1]
-
-    return f'{repo}@{digest}'
+    return inspect_struct['Digest']
 
 
-def add_registry_if_needed(floating_ref, nvr_tag):
-    """Add a registry prefix to a tag
-
-    If a floating reference had a registry prefix in it, we should
-    add it to the nvr_tag. This way the image reference that will
-    be injected to the FROM instruction will have the same registry
-    as the floating reference.
-
-    :param str floating_ref: A floating reference as appears in the decorator
-    :param str nvr_tag: The nvr tag the was found in the image that was pointed
-        by floating_ref
-    :rtype: str
-    """
-    if '/' not in floating_ref:
-        return nvr_tag
-
-    prefix = floating_ref.rsplit('/', 1)[0]
-
-    return join(prefix, nvr_tag)
-
-
-def get_nvr_tag_from_inspect_struct(struct, flat_nested_repositories=False):
-    """Get the nvr tag of a component from it's inspect struct
+def get_tag_from_inspect_struct(struct):
+    """Get the tag of a component from it's inspect struct
 
     An inspect struct is the parsed output of 'skopeo inspect'
     Generally it's a dict that contains a 'Labels' key that maps
     to a dict.
 
-    A nvr tag is an image refrence that is composed from it's
-    nvr.
-
-    e.g:
-
-    nvr -> ubi8-minimal-8.1-279
-    nvr tag -> ubi8-minimal:8.1-279
+    Given the nvr "ubi8-minimal-8.1-279", the resulting tag will be
+    "8.1-279"
 
     :param dict struct: Information about a container image
-    :param bool flat_nested_repositories: If true flat nested repositories in
-        the discovered image. Will transform "cnv/virt-api" to "cnv-virt-api".
     :rtype: str
     """
     labels = struct.get('Labels')
@@ -496,7 +468,7 @@ def get_nvr_tag_from_inspect_struct(struct, flat_nested_repositories=False):
 
     required_labels = {}
     missing_labels = []
-    for label in ('name', 'version', 'release'):
+    for label in ('version', 'release'):
         if labels.get(label):
             required_labels[label] = labels[label]
         else:
@@ -508,10 +480,7 @@ def get_nvr_tag_from_inspect_struct(struct, flat_nested_repositories=False):
             .format(missing_labels)
         )
 
-    if flat_nested_repositories:
-        required_labels['name'] = required_labels['name'].replace('/', '-')
-
-    return '{name}:{version}-{release}'.format(**required_labels)
+    return '{version}-{release}'.format(**required_labels)
 
 
 @contextmanager
