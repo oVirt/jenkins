@@ -8,15 +8,6 @@
       - '{project}_{branch}_standard-poll-upstream-sources'
 
 - project:
-    name: ovirt-engine-metrics_standard-poll-upstream-sources
-    project:
-      - ovirt-engine-metrics
-    branch:
-      - master
-    jobs:
-      - '{project}_{branch}_standard-poll-upstream-sources'
-
-- project:
     name: vdsm_standard-poll-upstream-sources
     project:
       - vdsm
