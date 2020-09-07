@@ -89,6 +89,8 @@
       - ovirt-dependencies
       - ovirt-dwh
       - ovirt-engine
+      - ovirt-engine-api-metamodel
+      - ovirt-engine-api-model
       - ovirt-engine-api-explorer
       - ovirt-engine-dashboard
       - ovirt-engine-extensions-api
