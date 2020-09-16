@@ -4,7 +4,7 @@
 import argparse
 import json
 import logging
-import os
+from os import environ
 import re
 from collections import namedtuple
 from collections.abc import Mapping
@@ -117,6 +117,10 @@ def parse_args(args=None):
                 The image in the FROM instruction will be replaced
                 by the NVR of the current image that is tagged with the tag in
                 the follow_tag decorator.
+                
+                A Docker config file with tokens to the container registries
+                can be specified using the "REGISTRY_AUTH_FILE" environment
+                variable.
             """
         )
     )
@@ -504,12 +508,17 @@ def get_dfps(dockerfiles):
 
 
 def skopeo_inspect(pull_url, transport='docker://', tls_verify=False):
-    return run_command([
+    cmd = [
         'skopeo',
         'inspect',
         '' if tls_verify else '--tls-verify=false',
         '{}{}'.format(transport, pull_url)
-    ])
+    ]
+    authfile = environ.get('REGISTRY_AUTH_FILE')
+    if authfile:
+        cmd += ['--authfile', authfile]
+
+    return run_command(cmd)
 
 
 def update(

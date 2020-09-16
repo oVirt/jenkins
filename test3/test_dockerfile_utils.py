@@ -6,7 +6,7 @@ from textwrap import dedent
 import dockerfile_parse
 import pytest
 from dockerfile_parse import constants as dfp_constants
-from unittest.mock import MagicMock, call, sentinel
+from unittest.mock import MagicMock, call, sentinel, create_autospec
 
 from stdci_tools import dockerfile_utils
 from stdci_tools.dockerfile_utils import (
@@ -15,7 +15,7 @@ from stdci_tools.dockerfile_utils import (
     get_decorated_commands, get_decorator, get_dfps,
     get_tag_from_inspect_struct, get_old_images_and_floating_refs,
     get_update, update, main, run_command, get_latest_image_by_sha,
-    replace_tag_with_static_tag, replace_tag_with_sha
+    replace_tag_with_static_tag, replace_tag_with_sha, skopeo_inspect
 )
 
 
@@ -533,3 +533,58 @@ def test_replace_tag_with_static_tag(floating_ref, tag, expected):
 ])
 def test_replace_tag_with_sha(floating_ref, sha, expected):
     assert replace_tag_with_sha(floating_ref, sha) == expected
+
+
+@pytest.mark.parametrize('pull_url, kwargs, authfile, expected_command', [
+    (
+        'rhel:latest',
+        {},
+        None,
+        [
+            'skopeo',
+            'inspect',
+            '--tls-verify=false'
+            'docker://rhel:latest',
+        ],
+    ),
+    (
+        'rhel:latest',
+        {'tls_verify': True},
+        None,
+        [
+            'skopeo',
+            'inspect',
+            'docker://rhel:latest',
+        ],
+    ),
+    (
+        'rhel:latest',
+        {'tls_verify': True},
+        '/mnt/auth.json',
+        [
+            'skopeo',
+            'inspect',
+            'docker://rhel:latest',
+            '--authfile',
+            '/mnt/auth.json',
+        ],
+    ),
+])
+def test_skopeo_inspect(
+    pull_url,
+    kwargs,
+    authfile,
+    expected_command,
+    monkeypatch
+):
+    run_command_mock = create_autospec(run_command)
+    monkeypatch.setattr(
+        dockerfile_utils,
+        'run_command',
+        run_command_mock
+    )
+    if authfile is not None:
+        monkeypatch.setenv('REGISTRY_AUTH_FILE', authfile)
+
+    skopeo_inspect(pull_url, **kwargs)
+    run_command_mock.assert_called_once()
