@@ -543,7 +543,7 @@ def test_replace_tag_with_sha(floating_ref, sha, expected):
         [
             'skopeo',
             'inspect',
-            '--tls-verify=false'
+            '--tls-verify=false',
             'docker://rhel:latest',
         ],
     ),
@@ -554,6 +554,7 @@ def test_replace_tag_with_sha(floating_ref, sha, expected):
         [
             'skopeo',
             'inspect',
+            '',
             'docker://rhel:latest',
         ],
     ),
@@ -564,9 +565,10 @@ def test_replace_tag_with_sha(floating_ref, sha, expected):
         [
             'skopeo',
             'inspect',
-            'docker://rhel:latest',
+            '',
             '--authfile',
             '/mnt/auth.json',
+            'docker://rhel:latest',
         ],
     ),
 ])
@@ -587,4 +589,4 @@ def test_skopeo_inspect(
         monkeypatch.setenv('REGISTRY_AUTH_FILE', authfile)
 
     skopeo_inspect(pull_url, **kwargs)
-    run_command_mock.assert_called_once()
+    run_command_mock.assert_called_once_with(expected_command)

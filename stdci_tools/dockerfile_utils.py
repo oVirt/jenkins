@@ -512,11 +512,12 @@ def skopeo_inspect(pull_url, transport='docker://', tls_verify=False):
         'skopeo',
         'inspect',
         '' if tls_verify else '--tls-verify=false',
-        '{}{}'.format(transport, pull_url)
     ]
     authfile = environ.get('REGISTRY_AUTH_FILE')
     if authfile:
         cmd += ['--authfile', authfile]
+
+    cmd += ['{}{}'.format(transport, pull_url)]
 
     return run_command(cmd)
 
