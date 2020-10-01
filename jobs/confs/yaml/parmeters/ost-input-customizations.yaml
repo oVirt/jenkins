@@ -11,7 +11,10 @@
              * Jenkins Build url:<br>
                  e.g., http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild/<br>
              * Yum repo: \"rec:yum_repo_url\"<br>
-                 e.g., <b>rec</b>:http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild/artifact/<br>"
+                 e.g., <b>rec</b>:http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild/artifact/<br>
+             * Specific rpm:<br>
+                 e.g., http://path.to.specific.rpm/rpm_name.rpm<br>
+                 e.g., http://path.to.list.of.rpms/<br>"
       - choice:
           name: FALLBACK_REPO
           choices:
