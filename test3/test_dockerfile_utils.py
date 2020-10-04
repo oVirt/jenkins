@@ -587,6 +587,9 @@ def test_skopeo_inspect(
     )
     if authfile is not None:
         monkeypatch.setenv('REGISTRY_AUTH_FILE', authfile)
+    else:
+        # Make sure that the env vars defined in CI doesn't affect the test
+        monkeypatch.delenv('REGISTRY_AUTH_FILE', raising=False)
 
     skopeo_inspect(pull_url, **kwargs)
     run_command_mock.assert_called_once_with(expected_command)
