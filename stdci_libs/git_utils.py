@@ -6,6 +6,10 @@ from __future__ import absolute_import
 from subprocess import Popen, STDOUT, PIPE, CalledProcessError
 from collections import namedtuple
 from functools import partial
+from hashlib import md5
+from six.moves import filter
+from six import iteritems
+from stdci_libs import file_utils
 try:
     from urllib.parse import urlsplit
 except ImportError:
@@ -21,17 +25,174 @@ logger = logging.getLogger(__name__)
 class GitProcessError(CalledProcessError):
     pass
 
+def commit_files(
+    files, branch=None, commit_msg=None,
+    add_change_id=True, add_headers=None, repo_dir='.', change_id_headers=None
+):
+    """
+    executes staging and committing with specified params
+
+    :param list<str> files a list of git command line args
+    :param str branch: git branch to be on
+    :param str commit_msg: message body(w/o any header) for the commit msg
+    :param bool add_change_id: if Change-Id should be appended to commit msg
+    :param str repo_dir: dir to stay on when executing git commands
+    :param list<str> change_id_headers: a list of change_id that need to be appended
+    to commit msg
+
+    raises IOError when files to be committed cannot be accessed
+    :rtype: list a list of changed files
+:   returns: output or error of the command
+    """
+    if repo_dir and repo_dir.strip():
+        file_utils.workdir(repo_dir.strip())
+
+    if change_id_headers:
+        change_id_headers = set(change_id_headers)
+    else: change_id_headers = set()
+
+    if add_change_id:
+        change_id_headers.add('Change-Id')
+
+    if len(git('log', '--oneline').splitlines()):
+        git('reset', 'HEAD')
+
+    git('add', *filter(os.path.exists, files))
+    changed_files = staged_files()
+    if changed_files:
+        if branch:
+            git('checkout', '-B', branch)
+        git('commit', '-m', commit_message(
+            changed_files, commit_msg, change_id_headers, add_headers
+        ))
+
+    return changed_files
+
+def staged_files():
+    """
+    gets a list of staged files in current index
+
+    rtype: list<str> staged files
+    """
+    return git('diff', '--staged', '--name-only').splitlines()
+
+def commit_message(
+    changed_files=None, commit_message=None,
+    change_id_headers=None, extra_headers=None
+):
+    """
+    generates commit message
+
+    :param list<str> changed_files: paths of changed files
+    :param str commit_message: msg body(w/o any header) for the commit
+    :param list<str> change_id_headers: a list of change_id need to be appended
+                                        to commit msg
+    :param list<str> extra_headers: a list of extra headers (e.x. `Signed-off-by:`)
+                                    need to be appended to commit msg
+
+    :rtype: str
+:   returns: generated commit msg
+    """
+    if commit_message:
+        commit_message = str(commit_message).strip()
+    if not commit_message:
+        commit_message = commit_title(changed_files)
+        if len(changed_files) > 1:
+            commit_message += '\n\nChanged files:\n'
+            commit_message += '\n'.join(
+                '- ' + fil for fil in changed_files
+            )
+    headers = commit_headers(
+        changed_files, change_id_headers, extra_headers
+    )
+    if headers:
+        commit_message += '\n'
+        commit_message += headers
+    return commit_message
+
+def commit_title(changed_files, max_title=60):
+    """
+    generates commit title for a git commit msg
+
+    :param list<str> changed_files: file paths of changed files
+    :param int max_titile: maximum length for commit title
+
+    :rtype: str
+:   returns: commit title
+    """
+    if len(changed_files) != 1:
+        return 'Changed {} files'.format(len(changed_files))
+    title = 'Changed: {}'.format(changed_files[0])
+    if len(title) <= max_title:
+        return title
+    title = 'Changed: {}'.format(os.path.basename(changed_files[0]))
+    if len(title) <= max_title:
+        return title
+    return 'Changed one file'
+
+
+def commit_headers(changed_files, change_id_headers, extra_headers):
+    """
+    generates commit headers with line breaks
+
+    :param list<str> changed_files: file paths of changed files
+    :param list<str> change_id_headers: a list of change_id need to be appended
+                                        to commit msg
+    :param list<str> extra_headers: a list of extra headers (e.x. `Signed-off-by:`)
+                                    need to be appended to commit msg
+
+    :rtype: str
+:   returns: line-breaked commit headers
+    """
+    headers = ''
+    if extra_headers:
+        for hdr, val in sorted(iteritems(extra_headers)):
+            headers += '\n{}: {}'.format(hdr, val)
+    if changed_files and change_id_headers:
+        change_id_set = False
+        change_id = 'I' + files_checksum(changed_files)
+        for hdr in sorted(set(change_id_headers)):
+            if hdr == 'Change-Id':
+                change_id_set = True
+                continue
+            headers += '\n{}: {}'.format(hdr, change_id)
+        # Ensure that 'Change-Id' is the last header we set because Gerrit
+        # needs it to be on the very last line of the commit message
+        if change_id_set:
+            headers += '\nChange-Id: {}'.format(change_id)
+    return headers
+
+
+def files_checksum(changed_files):
+    """
+    generates md5 checksum for a list of files
+
+    :param list<str>:changed_files: paths for changed files
+
+    :rtype: str
+    returns: checksum what will be used as change-Id representing changed files
+    """
+    digest = md5()
+    for fil in sorted(set(changed_files)):
+        digest.update(fil.encode('utf-8'))
+        with open(fil, 'rb') as f:
+            digest.update(f.read())
+    return digest.hexdigest()
+
+
 
 def git(*args, **kwargs):
     """
     Util function to execute git commands
 
-    :param list *args:         A list of git command line args
-    :param bool append_stderr: If set to true, append STDERR to the output
+    :param list *args: a list of git command line args
+    :param bool append_stderr: if set to true, append STDERR to the output
 
-    Executes git commands and return output. Raise GitProcessError if Git fails
+    Executes git commands and return output.
 
-    :rtype: string
+    raise GitProcessError: if git fails
+
+    :rtype: str
     :returns: output or error of the command
     """
     git_command = ['git']
@@ -64,7 +225,7 @@ class InvalidGitRef(Exception):
 def git_rev_parse(ref, git_func=git):
     """Parse a git ref and return the equivalent hash
 
-    :param str ref: A git commit reference to parse (branch name, tag, etc.)
+    :param str ref: a git commit reference to parse (branch name, tag, etc.)
     :param Callable git_func: (optional) A git function to use instead of the
                               default one: git
 
@@ -125,7 +286,7 @@ def get_name_from_repo_url(repo_url):
 
     :param str repo_url: the URL of the repository
 
-    :rasises ValueError: when it fails to parse the URL and extract the repo
+    :raises ValueError: when it fails to parse the URL and extract the repo
                          name from it
     :returns: the repo name
     """

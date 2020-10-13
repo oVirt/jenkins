@@ -6,7 +6,7 @@ import os
 
 
 @contextmanager
-def workdir(path: str):
+def workdir(path):
     """A context manager to change the working directory
     """
     previous_workdir = os.getcwd()
