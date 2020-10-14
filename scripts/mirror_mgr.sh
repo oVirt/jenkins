@@ -254,7 +254,6 @@ perform_yum_sync() {
     local reposync_conf="${3:?}"
     local repo_mp
     local repo_comps
-    local modulesmd_path
     local sync_newest_only
 
     repo_mp="$MIRRORS_MP_BASE/yum/$repo_name/base"
@@ -288,7 +287,7 @@ perform_yum_sync() {
         echo "Module information found, updating metadata"
         /bin/modifyrepo \
             --mdtype=modules \
-            "$modulesmd_path" \
+            "$(get_modulesmd_path $repo_name)" \
             "$repo_mp/repodata"
     fi
     /usr/sbin/restorecon -R "$repo_mp"
