@@ -173,11 +173,8 @@
     name: ovirt-system-tests-nightly
     suite_type:
       - basic
-      - upgrade-from-release
-      - upgrade-from-prevrelease
     project: ovirt-system-tests
     version:
-      - 4.3
       - master
     chroot_distro: el7
     email-to: infra@ovirt.org
