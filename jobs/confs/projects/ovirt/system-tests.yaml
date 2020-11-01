@@ -113,6 +113,7 @@
     email-to: >
       sabose@redhat.com,
       godas@redhat.com,
+      dparth@redhat.com,
       kmajumde@redhat.com
     jobs:
         - '{project}_{suite_type}-suite-{version}'
