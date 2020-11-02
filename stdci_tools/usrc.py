@@ -90,6 +90,12 @@ UpstreamSourcesConfigPath = namedtuple(
 logger = logging.getLogger(__name__)
 
 
+# Hooks
+POST_UPDATE_HOOK = 'usrc-post-update-hook'
+
+# Env vars names
+USRC_CONFIG_PATH = 'USRC_CONFIG_PATH'
+
 class UnkownDestFormatError(Exception):
     pass
 
@@ -374,6 +380,83 @@ def update_main_cli(args):
     update_main(args.commit)
 
 
+class HookCaller(object):
+    """Call hooks and record their output
+
+    Attributes:
+        :param: str _config_path: Path to an upstram sources config.
+        :param: List[Tuple[str, str]]: Path to a hook script and its STDOUT.
+    """
+    def __init__(self, config_path):
+        self._config_path = config_path
+        self._calls = []
+
+    def __call__(self, hook_name):
+        """Run a hook script
+
+        The hook will be searched in the directory that contains
+        the upstream-sources config.
+
+        In case that the hook changes the upstream-sources config,
+        It's up to the user to make sure the config stays valid after
+        changing it. Even if the hook crashes during execution.
+
+        It's expected that the hook will have execution permission set.
+
+        For convenience, the path of the upstream-source config is
+        included in an environment variable.
+
+        :param str config_path: Path to the upstream_sources config
+        :param str hook_name: The file name of the hook that should be run
+        :return tuple[bool, str]: True if the hook was called and the stdout
+            of the hook script
+        """
+        hook_path = self.load_hook(hook_name)
+        if not hook_path:
+            return
+
+        env = {USRC_CONFIG_PATH: os.path.realpath(self._config_path)}
+        env.update(os.environ)
+        stdout = run_cmd([hook_path], env=env)
+        self._calls.append((hook_path, stdout))
+
+    def to_commit_msg(self):
+        """Generate a commit message from the hook's call history
+
+        The message will contain the name of the hook and its STDOUT.
+        :rtype: str
+        """
+        if not self._calls:
+            return ''
+
+        lines = ['Hooks Output:']
+        for hook, stdout in self._calls:
+            lines.append(hook)
+            out = stdout.strip()
+            if out:
+                lines.append(out)
+            lines.append('')
+
+        return '\n'.join(lines)
+
+    def load_hook(self, hook_name):
+        """Return a path to a hook script
+
+        The hook script will be searched in the directory
+        of `usrc_config_path`.
+
+        :param str usrc_config_path: Path to the upstream_sources config
+        :param str hook_name: The file name of the hook that should be run
+        :return str or None: path to the script or None if it doesn't exist.
+        """
+        config_dir = os.path.dirname(self._config_path) or '.'
+        hook_path = os.path.join(config_dir, hook_name)
+        if os.path.exists(hook_path):
+            return hook_path
+
+        return None
+
+
 def update_main(commit=False):
     """Update upstream source references in the config file
 
@@ -381,8 +464,43 @@ def update_main(commit=False):
                         be committed.
     """
     updates, config_path = update_upstream_sources()
+    hook_caller = HookCaller(config_path)
+    hook_caller(POST_UPDATE_HOOK)
     if commit:
-        commit_upstream_sources_update(updates, config_path)
+        commit_upstream_sources_update(
+            updates,
+            config_path,
+            hook_caller.to_commit_msg(),
+        )
+
+
+def run_cmd(cmd, **kwargs):
+    """Run command in a subprocess
+
+    :param list cmd: a list with the command and its arguments
+    :param dict kwargs: Additional kwargs that will be passed to Popen
+    :return str: The stdout of the command.
+    :raise: RuntimeError in case the command fails, or any other exception
+        that can be raised by Popen.
+    """
+    default_kwargs = {'stdout': PIPE, 'stderr': PIPE}
+    default_kwargs.update(kwargs)
+    process = Popen(cmd, **default_kwargs)
+    output, error = process.communicate()
+    retcode = process.poll()
+    if error is None:
+        error = ''
+    else:
+        error = error.decode('utf-8')
+    output = output.decode('utf-8')
+    logger.debug('Process exited with status: %d', retcode, extra={'blocks': (
+        ('stderr', error), ('stdout', output)
+    )},)
+
+    if retcode:
+        raise CalledProcessError(retcode, cmd)
+
+    return output
 
 
 def changed_files_main(args):
@@ -1143,15 +1261,16 @@ def get_files_to_links_map(files, commit=None):
     return file_to_links
 
 
-def commit_upstream_sources_update(updates, config_path):
+def commit_upstream_sources_update(updates, config_path, hooks_message=''):
     """Commit updates made to the upstream_sources.yaml file
 
     :param Iterable updates: Iterator over upstream source objects representing
                              sources that were updated
     :param str config_path:  Path to the config to commit
+    :param str hooks_message: Output from the hook scripts that should be
+                              appended to the commit message
     """
-    updates = list(updates)
-    if not updates:
+    if not git_file_modified(config_path):
         # Skip committing if upstream_sources.yaml not changed
         return
     if check_if_branch_exists('commit_branch'):
@@ -1161,6 +1280,8 @@ def commit_upstream_sources_update(updates, config_path):
         checksum = md5(stream.read().encode('utf-8')).hexdigest()
     git('add', config_path)
     commit_message = generate_update_commit_message(updates)
+    if hooks_message:
+        commit_message = '{}{}\n'.format(commit_message, hooks_message)
     commit_message = generate_gerrit_message(commit_message, checksum)
     git('commit', '-m', commit_message)
 
@@ -1174,7 +1295,14 @@ def generate_update_commit_message(updates):
     :returns: commit message with update information
     """
     updates = list(updates)
-    if len(updates) == 1:
+    if len(updates) == 0:
+        message = dedent(
+            '''
+            Updated upstream sources
+
+            '''
+        )
+    elif len(updates) == 1:
         message = dedent(
             '''
             Updated US source to: {commit_hash:.7} {commit_title}
@@ -1387,6 +1515,25 @@ def git_read_file(path, commit=None, git_func=None):
     if git_func is None:
         git_func = git
     return git_func('cat-file', '-p', '{0}:{1}'.format(commit, path))
+
+
+def git_file_modified(file_path):
+    """Check if a file in the index was modified
+
+    This function will work only for files that their content
+    was modified. Deletion, renaming isn't supported by this function.
+
+    :param str file_path: Path to a file
+    :rtype: bool
+    """
+    try:
+        git('diff', '--exit-code', '--name-only', file_path)
+    except GitProcessError as e:
+        if e.returncode == 1:
+            return True
+        raise
+
+    return False
 
 
 class GitProcessError(CalledProcessError):

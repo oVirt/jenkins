@@ -7,11 +7,12 @@ from types import GeneratorType
 from hashlib import md5
 import os
 import inspect
-from subprocess import CalledProcessError
+from subprocess import CalledProcessError, Popen, PIPE
 from six import iteritems
 from six.moves import map, builtins
 import yaml
 import re
+import sys
 try:
     from unittest.mock import MagicMock, call, sentinel, create_autospec
 except ImportError:
@@ -65,6 +66,20 @@ def downstream_remote(gitrepo):
             'msg': 'First DS remote commit',
         }
     )
+
+
+@pytest.fixture
+def hook_caller_mock(monkeypatch):
+    mock_obj = create_autospec(usrc.HookCaller)
+    monkeypatch.setattr(usrc, 'HookCaller', mock_obj)
+    return mock_obj
+
+
+@pytest.fixture
+def run_cmd_mock(monkeypatch):
+    mock_obj = create_autospec(usrc.run_cmd)
+    monkeypatch.setattr(usrc, 'run_cmd', mock_obj)
+    return mock_obj
 
 
 @pytest.mark.parametrize('config_path', [
@@ -1189,7 +1204,20 @@ def test_no_update_upstream_sources(
     assert (downstream / 'overriden_file.txt').read() == 'Overriding content'
 
 
-def test_commit_us_src_update(monkeypatch, updated_upstream, downstream, git):
+@pytest.mark.parametrize('hooks_message', [
+    '',
+    dedent(
+        """
+        This is a multiline
+
+        hook script
+        STDOUT
+        """
+    )
+])
+def test_commit_us_src_update(
+    monkeypatch, updated_upstream, downstream, git, hooks_message
+):
     monkeypatch.chdir(updated_upstream)
     us_sha = git('log', '-1', '--pretty=format:%H').strip()
     us_date = git('log', '-1', '--pretty=format:%ad', '--date=rfc').strip()
@@ -1198,7 +1226,7 @@ def test_commit_us_src_update(monkeypatch, updated_upstream, downstream, git):
     updates, used_config_path = update_upstream_sources()
     us_yaml = downstream / 'automation' / 'upstream_sources.yaml'
     us_yaml_md5 = md5(us_yaml.read().encode('utf-8')).hexdigest()
-    commit_upstream_sources_update(updates, used_config_path)
+    commit_upstream_sources_update(updates, used_config_path, hooks_message)
     log = git('log', '--pretty=format:%s').splitlines()
     assert len(log) == 2
     assert log == [
@@ -1210,7 +1238,7 @@ def test_commit_us_src_update(monkeypatch, updated_upstream, downstream, git):
         (ln for ln in log.splitlines() if ln.startswith('Change-Id: ')), ''
     )
     _, chid = chid_hdr.split(': ', 1)
-    assert log == dedent(
+    expected = dedent(
         '''
         Updated upstream source commit.
         Commit details follow:
@@ -1227,7 +1255,7 @@ def test_commit_us_src_update(monkeypatch, updated_upstream, downstream, git):
             change description text.
 
             and_some: header
-
+        {hooks_message}
         x-md5: {xmd5}
         Change-Id: {chid}
         '''
@@ -1239,12 +1267,15 @@ def test_commit_us_src_update(monkeypatch, updated_upstream, downstream, git):
         date=us_date,
         xmd5=us_yaml_md5,
         chid=chid,
+        hooks_message=hooks_message,
     )
+
+    assert log == expected
 
 
 def test_commit_us_src_no_update(monkeypatch, downstream, git):
     monkeypatch.chdir(downstream)
-    commit_upstream_sources_update([], '')
+    commit_upstream_sources_update([], 'automation/upstream_sources.yaml')
     log = git('log', '--pretty=format:%s').splitlines()
     assert len(log) == 1
     assert log == ['First DS commit']
@@ -1362,6 +1393,15 @@ def test_commit_us_src_no_update(monkeypatch, downstream, git):
 
             '''
         ).lstrip(),
+    ),
+    (
+        [],
+        dedent(
+            '''
+            Updated upstream sources
+
+            '''
+        )
     ),
 ])
 def test_generate_update_commit_message(updates, expected):
@@ -1915,3 +1955,249 @@ def test_only_if_imported_any(modules, should_raise):
             )
     else:
         assert test_function(1, 2, 3) == 'test-result'
+
+
+@pytest.mark.parametrize('commit', [True, False])
+def test_update_main(commit, monkeypatch, hook_caller_mock):
+    fake_updates = sentinel.updates
+    fake_config = sentinel.config_path
+    fake_hooks_output = 'dummy stdout'
+    update_upstream_sources_mock = create_autospec(update_upstream_sources)
+    update_upstream_sources_mock.return_value = (fake_updates, fake_config)
+    monkeypatch.setattr(
+        usrc,
+        'update_upstream_sources',
+        update_upstream_sources_mock,
+    )
+    commit_upstream_sources_update_mock =\
+        create_autospec(commit_upstream_sources_update)
+    monkeypatch.setattr(
+        usrc,
+        'commit_upstream_sources_update',
+        commit_upstream_sources_update_mock,
+    )
+
+    hook_caller_mock.return_value.to_commit_msg.return_value = fake_hooks_output
+    usrc.update_main(commit)
+    assert update_upstream_sources_mock.call_count == 1
+    hook_caller_mock.assert_called_once_with(fake_config)
+    hook_caller_mock.return_value.assert_called_once_with(
+        usrc.POST_UPDATE_HOOK
+    )
+    if commit:
+        commit_upstream_sources_update_mock.assert_called_once_with(
+            fake_updates,
+            fake_config,
+            fake_hooks_output,
+        )
+    else:
+        assert commit_upstream_sources_update_mock.call_count == 0
+
+
+class TestHookCaller(object):
+    def test_skip_running_not_implemented_hook(
+        self, tmpdir, monkeypatch, run_cmd_mock
+    ):
+        monkeypatch.chdir(tmpdir)
+        hook_caller = usrc.HookCaller('upstream_source.yaml')
+        hook_caller('hook')
+        assert len(hook_caller._calls) == 0
+        assert run_cmd_mock.call_count == 0
+
+    def test_run_hook(self, run_cmd_mock, monkeypatch):
+        fake_hook = sentinel.hook
+        fake_stdout = sentinel.stdout
+        run_cmd_mock.return_value = fake_stdout
+        fake_usrc_config = os.path.realpath('upstream_sources.yaml')
+        predefined_env_key = 'key'
+        predefined_env_val = 'val'
+        monkeypatch.setenv(predefined_env_key, predefined_env_val)
+        hook_caller = usrc.HookCaller(fake_usrc_config)
+        hook_caller.load_hook = lambda hook_name: sentinel.hook
+
+        hook_caller(fake_hook)
+        assert hook_caller._calls == [(fake_hook, fake_stdout)]
+        assert run_cmd_mock.call_count == 1
+        call_kwargs = run_cmd_mock.call_args[1]
+        call_env = call_kwargs['env']
+        assert call_env[usrc.USRC_CONFIG_PATH] == fake_usrc_config
+        assert call_env[predefined_env_key] == predefined_env_val
+
+    @pytest.mark.parametrize('usrc_config_path, hook_name, hook_dir, expected', [
+        (
+            'upstream-sources.yaml',
+            'hook.sh',
+            '.',
+            './hook.sh',
+        ),
+        (
+            'automation/upstream-sources.yaml',
+            'hook.sh',
+            'automation',
+            'automation/hook.sh',
+        )
+    ])
+    def test_load_hook(
+        self, usrc_config_path, hook_name, hook_dir,
+        expected, tmpdir, monkeypatch,
+    ):
+        monkeypatch.chdir(tmpdir)
+        hook_path = tmpdir / hook_dir / hook_name
+        hook_path.ensure()
+
+        hook_caller = usrc.HookCaller(usrc_config_path)
+        assert hook_caller.load_hook(hook_name) == expected
+
+    def test_run_hook_should_raise(self, run_cmd_mock):
+        hook_caller = usrc.HookCaller('upstream_sources.yaml')
+        load_hook_mock = create_autospec(hook_caller.load_hook)
+        load_hook_mock.return_value = sentinel.hook
+        hook_caller.load_hook = load_hook_mock
+        run_cmd_mock.side_effect = CalledProcessError(1, 'some_script.sh')
+
+        with pytest.raises(CalledProcessError):
+            hook_caller(sentinel.hook)
+
+        load_hook_mock.assert_called_once_with(sentinel.hook)
+
+    @pytest.mark.parametrize('calls, expected', [
+        ([], ''),
+        (
+            [
+                (
+                    'hook.py',
+                    'line1\nline2\n'
+                )
+            ],
+            dedent(
+                """\
+                Hooks Output:
+                hook.py
+                line1
+                line2
+                """
+            )
+        ),
+        (
+            [
+                (
+                    'hook.py',
+                    'line1\nline2\n'
+                ),
+                (
+                    'hook2.py',
+                    'line1\nline2\n'
+                )
+            ],
+            dedent(
+                """\
+                Hooks Output:
+                hook.py
+                line1
+                line2
+
+                hook2.py
+                line1
+                line2
+                """
+            )
+        ),
+        (
+            [
+                (
+                    'hook.py',
+                    ''
+                ),
+                (
+                    'hook2.py',
+                    'line1\nline2\n'
+                )
+            ],
+            dedent(
+                """\
+                Hooks Output:
+                hook.py
+
+                hook2.py
+                line1
+                line2
+                """
+            )
+        ),
+        (
+            [
+                (
+                    'hook.py',
+                    ''
+                ),
+                (
+                    'hook2.py',
+                    ''
+                )
+            ],
+            dedent(
+                """\
+                Hooks Output:
+                hook.py
+
+                hook2.py
+                """
+            )
+        ),
+    ])
+    def test_hook_caller_to_commit_msg(self, calls, expected):
+        hook_caller = usrc.HookCaller('upstream_sources.yaml')
+        hook_caller._calls = calls
+        assert hook_caller.to_commit_msg() == expected
+
+
+@pytest.mark.parametrize('exit_code, out, exception', [
+    (0, 'hello world', None),
+    (1, '', CalledProcessError)
+])
+def test_run_cmd(exit_code, out, exception):
+    python = sys.executable
+    python_cmd = 'print("{out}"); exit({exit_code})'.format(
+        out=out,
+        exit_code=exit_code,
+    )
+    cmd = [python, '-c', python_cmd]
+    if exception:
+        with pytest.raises(exception):
+            usrc.run_cmd(cmd)
+    else:
+        assert usrc.run_cmd(cmd).strip() == out
+
+
+def test_run_cmd_additional_kwargs(monkeypatch):
+    popen_mock = create_autospec(Popen)
+    popen_mock.return_value.communicate.return_value = (b'', b'')
+    popen_mock.return_value.poll.return_value = 0
+    monkeypatch.setattr(usrc, 'Popen', popen_mock)
+    cmd_list = ['echo', 'hi']
+    env = {'DUMMY': 'DUMMY'}
+    usrc.run_cmd(cmd_list, env=env)
+    popen_mock.assert_called_once_with(
+        cmd_list,
+        stdout=PIPE,
+        stderr=PIPE,
+        env=env,
+    )
+
+
+@pytest.mark.parametrize('changed', [True, False])
+def test_git_file_changed(monkeypatch, downstream, changed):
+    monkeypatch.chdir(downstream)
+    config = 'automation/upstream_sources.yaml'
+    if changed:
+        with open(config, mode='a') as fd:
+            fd.write('# Hello')
+    ret = usrc.git_file_modified(config)
+    assert ret == changed
+
+
+def test_git_file_modified_should_raise(monkeypatch, tmpdir):
+    monkeypatch.chdir(tmpdir)
+    # We are in an empty directory now
+    with pytest.raises(GitProcessError):
+        usrc.git_file_modified('automation/upstream_sources.yaml')
