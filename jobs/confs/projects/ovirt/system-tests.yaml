@@ -109,6 +109,7 @@
       - master:
           chroot_distro: el7
       - 4.3:
+          branch: ovirt-engine-4.3
           chroot_distro: el7
     email-to: >
       sabose@redhat.com,
