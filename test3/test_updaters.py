@@ -27,6 +27,8 @@ def add_line_to_file_updater(filename: str, content: str):
         fd.write('\n')
         fd.write(content)
 
+    git('config', 'user.name', 'test user')
+    git('config', 'user.email', 'test@example.com')
     git('add', filename)
     git('commit', '-m', f'added a line to {filename}')
 
