@@ -12,12 +12,9 @@
     distro:
       - el7
       - el8
-      - fc30
     exclude:
       - {version: '4.3', distro: el8}
-      - {version: '4.3', distro: fc30}
       - {version: '4.2', distro: el8}
-      - {version: '4.2', distro: fc30}
 
 - project:
     <<: *base-commons
