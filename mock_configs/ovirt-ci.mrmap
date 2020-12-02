@@ -2,8 +2,4 @@ el7:epel-7-x86_64
 el7:epel-7-ppc64le
 el8:epel-8-x86_64
 el8:epel-8-ppc64le
-fc29:fedora-29-x86_64
-fc30:fedora-30-x86_64
 fcraw:fedora-rawhide-x86_64
-fc29:fedora-29-s390x
-fc30:fedora-30-s390x

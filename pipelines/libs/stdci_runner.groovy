@@ -292,7 +292,7 @@ def get_std_ci_node_label(project, job) {
     }
     // Only run FCRAW jobs on FC >= 29 slaves
     if(job.distro == 'fcraw') {
-        label_conditions << get_newer_distros_label('fc29')
+        label_conditions << get_newer_distros_label('el8')
     }
     if (job.arch != "x86_64") {
         label_conditions << job.arch
@@ -304,7 +304,7 @@ def get_std_ci_node_label(project, job) {
 @NonCPS
 def get_newer_distros_label(distro) {
     String[] host_distros = [
-        'el7', 'fc29', 'el8', 'fc30', 'fc31', 'fc32', 'rhel7', 'rhel8'
+        'el7', 'rhel7', 'el8', 'rhel8', 'fc32'
     ]
     int dist_idx = host_distros.findIndexOf { it == distro }
     if(dist_idx < 0) {

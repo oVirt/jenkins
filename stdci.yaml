@@ -6,8 +6,6 @@ sub-stages:
             distro:
               - el7
               - el8
-              - fc29
-              - fc30
               - rhel7:
                   runtime-requirements:
                     host-distro: same
@@ -15,7 +13,8 @@ sub-stages:
         - ppc64le:
             distro: [el7, el8]
         - s390x:
-            distro: [fc29, fc30]
+            distro:
+              - el7
             script:
               fromfile: automation/check-patch-s390x.sh
             stage: check-patch
@@ -124,9 +123,11 @@ sub-stages:
   - docker-build-test:
       arch:
         - x86_64:
-            distro: [el7, fc29, fc30]
+            distro:
+              - el7
         - ppc64le:
-            distro: el7
+            distro:
+              - el7
       runif:
         file-changed:
           - stdci_tools/docker_cleanup.py
@@ -139,11 +140,12 @@ sub-stages:
       stage: check-patch
       arch:
         - x86_64:
-            distro: [el7, el8, fc29, fc30]
+            distro: [el7, el8]
         - ppc64le:
             distro: [el7, el8]
         - s390x:
-            distro: [fc29, fc30]
+            distro:
+              - el7
       runif:
         file-changed:
           - stdci_libs/*.py
