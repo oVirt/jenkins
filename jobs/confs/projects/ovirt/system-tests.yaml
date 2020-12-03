@@ -23,8 +23,6 @@
     version:
       - master:
           chroot_distro: el7
-      - 4.3:
-          chroot_distro: el7
     email-to: >
       eraviv@redhat.com,
       edwardh@redhat.com,
@@ -43,13 +41,10 @@
       - he-basic-role-remote
     project: 'ovirt-system-tests'
     version:
-      - 4.3:
-          chroot_distro: el7
       - master:
           chroot_distro: el7
     exclude:
       - {suite_type: he-basic-ansible, version: master}
-      - {suite_type: he-basic-ansible, version: 4.3}
 
     email-to: >
       didi@redhat.com,
@@ -128,44 +123,6 @@
       - master:
           chroot_distro: el7
     email-to: 'infra@ovirt.org'
-    jobs:
-        - '{project}_{suite_type}-suite-{version}'
-
-- project:
-    <<: *system-tests-common
-    name: ovirt-system-compat-suite
-    suite_type:
-      - compat-4.3
-    project: 'ovirt-system-tests'
-    version:
-      - master:
-          chroot_distro: el7
-    jobs:
-        - '{project}_{suite_type}-suite-{version}'
-
-- project:
-    <<: *system-tests-big-common
-    name: openshift-on-ovirt-suite
-    suite_type: openshift-on-ovirt
-    project: 'ovirt-system-tests'
-    version:
-      - 4.2:
-          chroot_distro: el7
-    email-to: 'infra@ovirt.org'
-    jobs:
-        - '{project}_{suite_type}-suite-{version}'
-
-- project:
-    <<: *system-tests-big-common
-    name: ovirt-system-tests-metrics
-    suite_type: metrics
-    project: 'ovirt-system-tests'
-    version:
-      - 4.3:
-          chroot_distro: el7
-    email-to: >
-      sradco@redhat.com,
-      eslutsky@redhat.com
     jobs:
         - '{project}_{suite_type}-suite-{version}'
 
