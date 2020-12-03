@@ -162,17 +162,5 @@ sub-stages:
           - scripts/ci_toolbox/*
           - automation/check-patch.{{ substage }}.*
           - mock_configs/epel-7-x86_64*.cfg
-  - ost-container:
-      stage: check-patch
-      runtime-requirements:
-        support-nesting-level: 2
-        isolation_level: container
-      script:
-        fromfile: automation/check-patch.sh
-      runif:
-        file-changed:
-          - jobs/confs/shell-scripts/global_setup*
-          - data/slave-repos/*
-          - mock_configs/epel-7-x86_64*
 release-branches:
   'master': 'dummy-master'

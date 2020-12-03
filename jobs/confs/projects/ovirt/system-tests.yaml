@@ -95,7 +95,7 @@
     name: ovirt-system-tests_manual
     project: 'ovirt-system-tests'
     ost-flavour: 'ovirt'
-    node-filter: integ-tests-container
+    node-filter: integ-tests && el8
     jobs:
       - '{project}_manual'
 
