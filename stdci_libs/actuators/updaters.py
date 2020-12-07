@@ -7,7 +7,7 @@ import os
 from typing import Callable
 
 
-from stdci_libs.git_utils import prep_git_repo, get_name_from_repo_url
+from stdci_libs.git_utils import prep_git_repo, get_name_from_repo_url, commit_files
 from stdci_tools.pusher import push_to_scm as push_upstream_sources
 from stdci_libs import file_utils
 
@@ -71,6 +71,7 @@ def updater_main(
     push_map: str,
     updater_func: Callable[[], None],
     logger: Logger,
+    execute_commit: bool = False,
 ):
     """Run the actual logic to update the upstream source and push the changes
 
@@ -88,6 +89,8 @@ def updater_main(
     _, fetch_sha = prep_git_repo(repo_root, repo_url, refspec, checkout=True)
     with file_utils.workdir(repo_root):
         ret = updater_func()
+        if execute_commit:
+            commit_files(['.'])
         push_upstream_sources(
             dst_branch=target_branch,
             push_map=push_map,

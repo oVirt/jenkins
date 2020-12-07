@@ -33,12 +33,45 @@ def add_line_to_file_updater(filename: str, content: str):
     git('commit', '-m', f'added a line to {filename}')
 
 
+def add_line_to_file_updater_no_commit(filename: str, content: str):
+    with open(filename, mode='a', encoding='utf-8') as fd:
+        fd.write('\n')
+        fd.write(content)
+
+    git('config', 'user.name', 'test user')
+    git('config', 'user.email', 'test@example.com')
+
+
+@pytest.mark.parametrize('updater_func, commit_files, expected_lines', [
+        (
+            partial(
+                add_line_to_file_updater,
+                filename='some_file',
+                content='line2'
+            ),
+            False,
+            ['line1', 'line2']
+        ),
+        (
+            partial(
+                add_line_to_file_updater_no_commit,
+                filename='some_file',
+                content='line2'
+            ),
+            True,
+            ['line1', 'line2']
+        )
+    ]
+)
 def test_updater_main(
     tmpdir,
     midstream_repo,
     monkeypatch,
     gerrit_push_map,
-    git_at
+    git_at,
+    updater_func,
+    commit_files,
+    expected_lines
 ):
     # A different directory is needed since the "midstream_repo"
     # "Which represents the remote repo is cloned into "tmpdir"
@@ -57,14 +90,10 @@ def test_updater_main(
         refspec='refs/heads/master',
         target_branch='master',
         push_map=str(gerrit_push_map),
-        updater_func=partial(
-            add_line_to_file_updater,
-            filename='some_file',
-            content='line2'
-        ),
+        updater_func=updater_func,
+        execute_commit=commit_files,
         logger=logging.getLogger(),
     )
-    expected_lines = ['line1', 'line2']
     midstream_git = git_at(midstream_repo)
     actual_lines = midstream_git(
         'show', 'refs/for/master:some_file'
@@ -113,3 +142,4 @@ def test_committing_updater(monkeypatch):
         updater_func=fake_updater,
         logger=fake_looger
     )
+
