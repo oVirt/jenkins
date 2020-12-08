@@ -11,7 +11,7 @@ from stdci_libs.git_utils import (
     commit_files, staged_files, commit_message,
     commit_title, commit_headers, files_checksum,
     GitProcessError, git_rev_parse, InvalidGitRef, prep_git_repo,
-    get_name_from_repo_url, CouldNotParseRepoURL
+    get_name_from_repo_url, CouldNotParseRepoURL, get_repo_root
 )
 try:
     from unittest.mock import MagicMock, call, sentinel
@@ -407,3 +407,9 @@ def test_files_checksum(repo):
     (repo / 'file1').write('New content')
     checksum_1_c2 = files_checksum(['file1'])
     assert checksum_1_c2 == checksum_1_c
+
+def test_get_repo_root(monkeypatch, repo_with_patches):
+    monkeypatch.chdir(repo_with_patches)
+    repo = get_repo_root()
+    assert os.path.isdir(os.path.join(repo,".git")) == True
+

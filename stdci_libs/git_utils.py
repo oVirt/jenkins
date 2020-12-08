@@ -242,6 +242,14 @@ def git_rev_parse(ref, git_func=git):
             raise
 
 
+def get_repo_root():
+    """Returns absolute path to the root of the repository
+
+    :rtype: str
+    """
+    return os.path.abspath(git("rev-parse", "--show-toplevel").strip())
+
+
 def prep_git_repo(path, url, refspec=None, checkout=False):
     """Initialize git repo at the specified path and add a remote.
 
