@@ -100,6 +100,20 @@
 - job-template:
     <<: *basic_system_tests
     name: '{project}_{suite_type}-suite-{version}_nightly'
+    node-filter: integ-tests && el8
+    triggers:
+      - timed: '0 1,3,5 * * *'
+    parameters:
+      - gerrit-params:
+          branch: '{branch}'
+      - text:
+          name: CUSTOM_REPOS
+          default: 'https://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/el8/'
+
+
+- job-template:
+    <<: *basic_system_tests
+    name: '{project}_{suite_type}-suite-{version}_el7-nightly'
     node-filter: integ-tests
     triggers:
       - timed: '0 1,3,5 * * *'
@@ -109,3 +123,5 @@
       - text:
           name: CUSTOM_REPOS
           default: 'rec:https://resources.ovirt.org/pub/ovirt-{version}-snapshot/'
+
+
