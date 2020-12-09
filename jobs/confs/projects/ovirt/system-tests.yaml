@@ -2,13 +2,15 @@
     name: 'system_tests-placeholder-name'
     system_tests--key: &system-tests-common
       project: ovirt
-      node-filter: integ-tests-container
       branch: master
       version:
         - 4.3:
             chroot_distro: el7
+            node-filter: integ-tests-container
+            branch: ovirt-engine-4.3
         - master:
-            chroot_distro: el7
+            chroot_distro: el8
+            node-filter: integ-tests && el8
       email-to: infra@ovirt.org
     system_tests-big--key: &system-tests-big-common
       <<: *system-tests-common
@@ -42,7 +44,8 @@
     project: 'ovirt-system-tests'
     version:
       - master:
-          chroot_distro: el7
+          chroot_distro: el8
+          node-filter: integ-tests && el8
     exclude:
       - {suite_type: he-basic-ansible, version: master}
 
@@ -121,7 +124,8 @@
     project: 'ovirt-system-tests'
     version:
       - master:
-          chroot_distro: el7
+          chroot_distro: el8
+          node-filter: integ-tests && el8
     email-to: 'infra@ovirt.org'
     jobs:
         - '{project}_{suite_type}-suite-{version}'
@@ -133,8 +137,22 @@
       - basic
     project: ovirt-system-tests
     version:
-      - master
-    chroot_distro: el7
+      - master:
+          chroot_distro: el8
     email-to: infra@ovirt.org
     jobs:
       - '{project}_{suite_type}-suite-{version}_nightly'
+
+- project:
+    <<: *system-tests-common
+    name: ovirt-system-tests-el7-nightly
+    suite_type:
+      - basic
+    project: ovirt-system-tests
+    version:
+      - 4.3:
+          branch: ovirt-engine-4.3
+    chroot_distro: el7
+    email-to: infra@ovirt.org
+    jobs:
+      - '{project}_{suite_type}-suite-{version}_el7-nightly'
