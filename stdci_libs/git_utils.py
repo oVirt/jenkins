@@ -10,9 +10,10 @@ from hashlib import md5
 from six.moves import filter
 from six import iteritems
 from stdci_libs import file_utils
-try:
+import sys
+if sys.version_info[0] >= 3:
     from urllib.parse import urlsplit
-except ImportError:
+else:
     # python2 compatability
     from urlparse import urlsplit
 import logging
