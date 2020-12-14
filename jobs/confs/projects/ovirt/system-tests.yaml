@@ -24,7 +24,8 @@
     project: ovirt-system-tests
     version:
       - master:
-          chroot_distro: el7
+          chroot_distro: el8
+          node-filter: integ-tests && el8
     email-to: >
       eraviv@redhat.com,
       edwardh@redhat.com,
