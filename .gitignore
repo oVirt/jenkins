@@ -17,3 +17,5 @@ src/
 .pytest_cache/
 .kube/
 *.retry
+pyproject.toml
+stdci_tools.egg-info/
