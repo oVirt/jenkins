@@ -81,7 +81,7 @@ class PodSpecs:
             thread.stage, thread.substage, thread.distro, thread.arch
         ])).lower()
         # Ensure pod name is DNS compliant as required by K8s
-        pod_name = re.sub('[^a-z0-9-\.]+', '-', pod_name)
+        pod_name = re.sub(r'[^a-z0-9-\.]+', '-', pod_name)
         return pod_name
 
     def _mk_container_spec(self, container_opt, name):

@@ -257,7 +257,7 @@ def _normalize_timeout(thread):
     """
     timeout_cfg = thread.options.get('timeout', 'unlimited')
     timeout_str = remove_case_and_signs(timeout_cfg)
-    timeout_str = re.sub('(\s+)', '', timeout_str)
+    timeout_str = re.sub(r'(\s+)', '', timeout_str)
 
     if timeout_str in ('unlimited', 'never', 'no', ''):
         return 'unlimited'
