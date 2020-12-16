@@ -6,7 +6,7 @@ from __future__ import absolute_import
 from subprocess import Popen, STDOUT, PIPE, CalledProcessError
 from collections import namedtuple
 from functools import partial
-from hashlib import md5
+from hashlib import sha1
 from six.moves import filter
 from six import iteritems
 from stdci_libs import file_utils
@@ -166,14 +166,14 @@ def commit_headers(changed_files, change_id_headers, extra_headers):
 
 def files_checksum(changed_files):
     """
-    generates md5 checksum for a list of files
+    generates sha1 checksum for a list of files
 
     :param list<str>:changed_files: paths for changed files
 
     :rtype: str
     returns: checksum what will be used as change-Id representing changed files
     """
-    digest = md5()
+    digest = sha1()
     for fil in sorted(set(changed_files)):
         digest.update(fil.encode('utf-8'))
         with open(fil, 'rb') as f:
