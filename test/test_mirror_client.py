@@ -169,7 +169,7 @@ def expected_repos_proxied_cfg():
     ).lstrip()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def mirror_server(mirrors_dict):
     mirror_file_path = '/mirrors.json'
     mirror_corrupt_file_path = '/corrupt_mirrors.json'
