@@ -10,6 +10,7 @@ from textwrap import dedent
 import py
 from subprocess import run, PIPE
 
+import stdci_tools
 from stdci_tools.decorate import decorate
 
 @pytest.fixture
@@ -239,10 +240,15 @@ def workspace(monkeypatch, tmpdir):
     (None, 'el7', False, set()),
 ])
 def test_decorate(
-    monkeypatch, workspace, downstream, mirrors_cfg, yumrepos_normal,
+    monkeypatch, workspace, downstream, mirrors_cfg, yumrepos_normal, tmpdir,
     yumrepos_injected, extra_sources, exported_artifacts, std_ci_script,
     std_ci_distro, exp_script_executable, exp_injected_files,
 ):
+    test_gpg_home = (tmpdir / "gpghometest")
+    test_gpg_home.ensure_dir()
+    monkeypatch.setattr(stdci_tools.decorate, 'GPG_TMP_HOME',
+                        str(test_gpg_home))
+
     if std_ci_script is None:
         monkeypatch.delenv('STD_CI_SCRIPT', raising=False)
         monkeypatch.delenv('STD_CI_DISTRO', raising=False)
