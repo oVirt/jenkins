@@ -19,7 +19,7 @@
     email-to: 'infra@ovirt.org'
     git-config-name: 'jenkins CI'
     git-config-email: 'jenkins@ovirt.org'
-    system-tests-chroot-distro: el7
+    system-tests-chroot-distro: el8
     arch: x86_64
     distro: el7
     properties:
