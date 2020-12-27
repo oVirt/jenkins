@@ -1,6 +1,6 @@
 """Tools for writing actuators"""
 
-from click import argument
+from click import argument, option
 
 
 """A path to a push map file"""
@@ -18,3 +18,8 @@ refspec_arg = argument('refspec', envvar='REPO_REF', type=str)
 
 """A git repository to clone"""
 repo_url_arg = argument('repo-url', envvar='REPO_URL', type=str)
+
+
+"""A flag to add 'automerge' in commit header"""
+automerge_opt = option('--automerge', envvar='AUTOMERGE', is_flag=True)
+

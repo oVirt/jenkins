@@ -15,7 +15,7 @@ from stdci_libs.actuators.common import (
     repo_url_arg,
     refspec_arg,
     target_branch_arg,
-    push_map_arg
+    push_map_arg,
 )
 from stdci_libs.common_cli import compose_decorators
 
@@ -43,7 +43,7 @@ def committing_updater(func: Callable) -> Callable:
         refspec: str,
         target_branch: str,
         push_map: str,
-        **kwargs,
+        **kwargs
     ):
         """
         For the description about the arguments please look at
@@ -72,6 +72,7 @@ def updater_main(
     updater_func: Callable[[], None],
     logger: Logger,
     execute_commit: bool = False,
+    automerge: bool = False
 ):
     """Run the actual logic to update the upstream source and push the changes
 
@@ -82,6 +83,9 @@ def updater_main(
     :param updater_func: A callable that is called with the root of the
         repository as the first argument and run the actual update.
     :param logger: logger instance that will be used to log messages
+    :param execute_commit: Apply commit after running the updater func
+    :param automerge: Enable automerge in commit message (applicable only
+        when execute_commit is set to true).
     """
     repo_name = get_name_from_repo_url(repo_url)
     repo_root = os.path.join(os.getcwd(), repo_name)
@@ -90,7 +94,13 @@ def updater_main(
     with file_utils.workdir(repo_root):
         ret = updater_func()
         if execute_commit:
-            commit_files(['.'])
+            add_headers = {}
+            if automerge:
+                add_headers["automerge"] = "yes"
+            commit_files(
+                ["."],
+                add_headers=add_headers
+            )
         push_upstream_sources(
             dst_branch=target_branch,
             push_map=push_map,
