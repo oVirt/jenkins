@@ -122,7 +122,7 @@ def test_updater_main(
         actual_message_lines = midstream_git(
             'log',  '-1', '--pretty=format:%b', 'refs/for/master'
         ).splitlines()
-        headers = {}
+        headers = {"x-md5": ".+"}
         if automerge:
             headers["automerge"] = 'yes'
 

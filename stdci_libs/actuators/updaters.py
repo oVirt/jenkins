@@ -99,6 +99,7 @@ def updater_main(
                 add_headers["automerge"] = "yes"
             commit_files(
                 ["."],
+                change_id_headers=["x-md5"],
                 add_headers=add_headers
             )
         push_upstream_sources(
