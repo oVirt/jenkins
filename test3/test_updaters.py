@@ -8,7 +8,11 @@ import pytest
 
 from stdci_libs.git_utils import git
 import stdci_libs.actuators.updaters
-from stdci_libs.actuators.updaters import updater_main, committing_updater
+from stdci_libs.actuators.updaters import (
+    updater_main,
+    committing_updater,
+    updater_cli
+)
 from stdci_libs.actuators.common import automerge_opt
 
 
@@ -215,3 +219,45 @@ def test_automerge_opt(monkeypatch, run_click_command, call_with_env, automerge)
 
     mock_dummy_func.assert_called_once_with(**expected_kwargs)
 
+
+@pytest.mark.parametrize('call_with_env', [True, False])
+def test_updater_cli(monkeypatch, run_click_command, call_with_env):
+    fake_repo_url = 'cpaas-product-repo-url.git'
+    fake_refspec = 'refs/heads/master'
+    fake_target_branch = 'other_branch'
+    fake_push_map = 'git-push-url-map.yaml'
+
+    expected_kwargs = {
+        'repo_url': fake_repo_url,
+        'refspec': fake_refspec,
+        'target_branch': fake_target_branch,
+        'push_map': fake_push_map
+    }
+
+    def dummy_func(*args, **kwargs):
+        pass
+
+    mock_dummy_func = create_autospec(dummy_func)
+   
+    @command()
+    @updater_cli
+    def dummy_updater_cli(*args, **kwargs):
+        mock_dummy_func(*args, **kwargs)
+
+    
+    if call_with_env:
+        monkeypatch.setenv('REPO_URL', fake_repo_url)
+        monkeypatch.setenv('REPO_REF', fake_refspec)
+        monkeypatch.setenv('REPO_PUSH_BRANCH', fake_target_branch)
+        monkeypatch.setenv('PUSHER_PUSH_MAP', fake_push_map)
+        run_click_command(dummy_updater_cli)
+    else:
+        run_click_command(
+            dummy_updater_cli,
+            fake_repo_url,
+            fake_refspec,
+            fake_target_branch,
+            fake_push_map
+        )
+
+    mock_dummy_func.assert_called_once_with(**expected_kwargs)
