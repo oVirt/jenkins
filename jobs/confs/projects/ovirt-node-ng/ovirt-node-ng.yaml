@@ -16,6 +16,6 @@
     arch:
       - x86_64
     node-filter: 'el7 && 80gb-disk'
-    email-to: 'yturgema@redhat.com'
+    email-to: 'lveyde@redhat.com'
     jobs:
         - '{project}_{version}_build-artifacts-{distro}-{arch}{_big_artifacts}'
