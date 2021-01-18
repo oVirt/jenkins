@@ -14,7 +14,6 @@
       - 'ovirt-master-virtio-win-latest-el8'
       - 'ovirt-master-copr-sbonazzo-collection-el8'
       - 'ovirt-master-copr-ovsdbapp-el8'
-      - 'ovirt-master-copr-NetworkManager-1.22-el8'
       - 'ovirt-master-copr-AdvancedVirtualization-el8'
       - 'sac-gluster-ansible-el8'
       - 'centos-base-el7'
