@@ -10,6 +10,7 @@
       - 'ovirt-master-centos-ovirt44-el8'
       - 'ovirt-master-epel-testing-el8'
       - 'ovirt-master-glusterfs-7-testing-el8'
+      - 'ovirt-master-glusterfs-8-testing-el8'
       - 'ovirt-master-virtio-win-latest-el8'
       - 'ovirt-master-copr-sbonazzo-collection-el8'
       - 'ovirt-master-copr-ovsdbapp-el8'
