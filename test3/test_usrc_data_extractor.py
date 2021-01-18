@@ -49,39 +49,42 @@ def test_project_name_from_repo_url_exception():
     (
         {
             'branch': 'some-branch',
-            'commit': 'some-commit-id',
+            'commit': '0123456789abcdef',
             'url': 'https://seom-repo/org/project-name'
         },
         False,
         (
             'CI_PROJECT_NAME_UPSTREAM_BRANCH=some-branch\n'
-            'CI_PROJECT_NAME_UPSTREAM_COMMIT=some-commit-id\n'
+            'CI_PROJECT_NAME_UPSTREAM_COMMIT=0123456789abcdef\n'
+            'CI_PROJECT_NAME_UPSTREAM_SHORT_COMMIT=0123456\n'
             'CI_PROJECT_NAME_UPSTREAM_URL=https://seom-repo/org/project-name\n'
         )
     ),
     (
         {
             'branch': 'some-BRANCH.1.2.3',
-            'commit': 'some-commit-ID.1.2.3',
+            'commit': '0123456789ABCDEF',
             'url': 'https://seom-repo/org/project-NAME'
         },
         False,
         (
             'CI_PROJECT_NAME_UPSTREAM_BRANCH=some-BRANCH.1.2.3\n'
-            'CI_PROJECT_NAME_UPSTREAM_COMMIT=some-commit-ID.1.2.3\n'
+            'CI_PROJECT_NAME_UPSTREAM_COMMIT=0123456789ABCDEF\n'
+            'CI_PROJECT_NAME_UPSTREAM_SHORT_COMMIT=0123456\n'
             'CI_PROJECT_NAME_UPSTREAM_URL=https://seom-repo/org/project-NAME\n'
         )
     ),
     (
         {
             'branch': 'some-BRANCH.1.2.3',
-            'commit': 'some-commit-ID.1.2.3',
+            'commit': '0123456789ABCDEF',
             'url': 'https://seom-repo/org/project-NAME'
         },
         True,
         (
             'CI_UPSTREAM_BRANCH=some-BRANCH.1.2.3\n'
-            'CI_UPSTREAM_COMMIT=some-commit-ID.1.2.3\n'
+            'CI_UPSTREAM_COMMIT=0123456789ABCDEF\n'
+            'CI_UPSTREAM_SHORT_COMMIT=0123456\n'
             'CI_UPSTREAM_URL=https://seom-repo/org/project-NAME\n'
         )
     ),
@@ -128,33 +131,37 @@ def test_generate_entry_for_upstream_source_exception(cfg_entry, missing_entry):
             'git': [
                 {
                     'branch': 'branch-1',
-                    'commit': 'commit-1',
+                    'commit': 'commit123',
                     'url': 'https://seom-repo/org/project-1'
                 },
                 {
                     'branch': 'branch-2',
-                    'commit': 'commit-2',
+                    'commit': 'commit234',
                     'url': 'https://seom-repo/org/project-2'
                 },
                 {
                     'branch': 'branch-3',
-                    'commit': 'commit-3',
+                    'commit': 'commit345',
                     'url': 'https://seom-repo/project-3'
                 },
             ]
         },
         (
             'CI_PROJECT_1_UPSTREAM_BRANCH=branch-1\n'
-            'CI_PROJECT_1_UPSTREAM_COMMIT=commit-1\n'
+            'CI_PROJECT_1_UPSTREAM_COMMIT=commit123\n'
+            'CI_PROJECT_1_UPSTREAM_SHORT_COMMIT=commit1\n'
             'CI_PROJECT_1_UPSTREAM_URL=https://seom-repo/org/project-1\n'
             'CI_PROJECT_2_UPSTREAM_BRANCH=branch-2\n'
-            'CI_PROJECT_2_UPSTREAM_COMMIT=commit-2\n'
+            'CI_PROJECT_2_UPSTREAM_COMMIT=commit234\n'
+            'CI_PROJECT_2_UPSTREAM_SHORT_COMMIT=commit2\n'
             'CI_PROJECT_2_UPSTREAM_URL=https://seom-repo/org/project-2\n'
             'CI_PROJECT_3_UPSTREAM_BRANCH=branch-3\n'
-            'CI_PROJECT_3_UPSTREAM_COMMIT=commit-3\n'
+            'CI_PROJECT_3_UPSTREAM_COMMIT=commit345\n'
+            'CI_PROJECT_3_UPSTREAM_SHORT_COMMIT=commit3\n'
             'CI_PROJECT_3_UPSTREAM_URL=https://seom-repo/project-3\n'
             'CI_UPSTREAM_BRANCH=branch-1\n'
-            'CI_UPSTREAM_COMMIT=commit-1\n'
+            'CI_UPSTREAM_COMMIT=commit123\n'
+            'CI_UPSTREAM_SHORT_COMMIT=commit1\n'
             'CI_UPSTREAM_URL=https://seom-repo/org/project-1\n'
         )
     ),
@@ -163,33 +170,37 @@ def test_generate_entry_for_upstream_source_exception(cfg_entry, missing_entry):
             'git': [
                 {
                     'branch': 'branch-1',
-                    'commit': 'commit-1',
+                    'commit': 'commit123',
                     'url': 'https://seom-repo/org/project-1'
                 },
                 {
                     'branch': 'branch-2',
-                    'commit': 'commit-2',
+                    'commit': 'commit234',
                     'url': 'https://seom-repo/org/project-2'
                 },
                 {
                     'branch': 'branch-3',
-                    'commit': 'commit-3',
+                    'commit': 'commit345',
                     'url': 'https://seom-repo/org/project-1'
                 },
             ]
         },
         (
             'CI_PROJECT_1_UPSTREAM_BRANCH=branch-1\n'
-            'CI_PROJECT_1_UPSTREAM_COMMIT=commit-1\n'
+            'CI_PROJECT_1_UPSTREAM_COMMIT=commit123\n'
+            'CI_PROJECT_1_UPSTREAM_SHORT_COMMIT=commit1\n'
             'CI_PROJECT_1_UPSTREAM_URL=https://seom-repo/org/project-1\n'
             'CI_PROJECT_2_UPSTREAM_BRANCH=branch-2\n'
-            'CI_PROJECT_2_UPSTREAM_COMMIT=commit-2\n'
+            'CI_PROJECT_2_UPSTREAM_COMMIT=commit234\n'
+            'CI_PROJECT_2_UPSTREAM_SHORT_COMMIT=commit2\n'
             'CI_PROJECT_2_UPSTREAM_URL=https://seom-repo/org/project-2\n'
             'CI_PROJECT_1_UPSTREAM_BRANCH=branch-3\n'
-            'CI_PROJECT_1_UPSTREAM_COMMIT=commit-3\n'
+            'CI_PROJECT_1_UPSTREAM_COMMIT=commit345\n'
+            'CI_PROJECT_1_UPSTREAM_SHORT_COMMIT=commit3\n'
             'CI_PROJECT_1_UPSTREAM_URL=https://seom-repo/org/project-1\n'
             'CI_UPSTREAM_BRANCH=branch-1\n'
-            'CI_UPSTREAM_COMMIT=commit-1\n'
+            'CI_UPSTREAM_COMMIT=commit123\n'
+            'CI_UPSTREAM_SHORT_COMMIT=commit1\n'
             'CI_UPSTREAM_URL=https://seom-repo/org/project-1\n'
         )
     ),

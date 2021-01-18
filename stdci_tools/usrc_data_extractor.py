@@ -63,11 +63,11 @@ def load_upstream_sources_yaml(usrc_yaml: str = None) -> dict:
 def generate_environment_file(usrc_config: dict) -> str:
     """Given a upstream sources config, generate an environment file.
 
-    Every upstream source entry in the config yields 3 environment variables:
-    CI_{US_PROJECT_NAME}_UPSTREAM_{COMMIT|BRANCH|URL}. Also, for backward
-    compatability with older version of similar automation, for the first
-    upstream source entry in the list, generate 3 legacy environment variables:
-    CI_UPSTREAM{COMMIT|BRANCH|URL} (w/o the project name).
+    Every upstream source entry in the config yields 4 environment variables:
+    CI_{US_PROJECT_NAME}_UPSTREAM_{COMMIT|SHORT_COMMIT|BRANCH|URL}. Also, for
+    backward compatability with older version of similar automation, for the
+    first upstream source entry in the list, generate 4 legacy environment
+    variables: CI_UPSTREAM_{COMMIT|SHORT_COMMIT|BRANCH|URL} (w/o project name).
 
     :param dict usrc_config: upstream sources config
     :returns: a string representation of an environment file
@@ -127,6 +127,7 @@ def generate_entry_for_upstream_source(
     return (
         f'CI_{var_name}UPSTREAM_BRANCH={branch}\n'
         f'CI_{var_name}UPSTREAM_COMMIT={commit}\n'
+        f'CI_{var_name}UPSTREAM_SHORT_COMMIT={commit[0:7]}\n'
         f'CI_{var_name}UPSTREAM_URL={url}\n'
     )
 
