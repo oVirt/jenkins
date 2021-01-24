@@ -63,7 +63,7 @@ test_standard_ci() {
 install_python_test_deps() {
     local python_cmd="${1:?}"
 
-    "$python_cmd" -m pip install -U pip
+    "$python_cmd" -m pip install -U "pip==20.3.3"
     "$python_cmd" -m pip install -r 'test-requirements.lock'
 }
 
