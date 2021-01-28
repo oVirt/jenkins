@@ -7,6 +7,7 @@ import groovy.transform.Field
 @Field def checkout_jenkins_repo
 @Field def loader_node
 @Field def withHook
+@Field def node
 
 class TestFailedRef implements Serializable {
     // Flag used to indicate that the actual test failed and not something else
@@ -57,8 +58,8 @@ def run_std_ci_jobs(project, jobs, mirrors=null, extra_sources=null) {
     if(jobs) {
         for(job in jobs) {
             branches[get_job_name(job)] = mk_std_ci_runner(
-                report.mk_thread_reporter(job), project, job, mirrors,
-                job?.extra_sources ?: extra_sources
+                report.mk_thread_reporter(job), project, job,
+                mirrors, job?.extra_sources ?: extra_sources
             )
         }
         parallel branches
@@ -303,6 +304,9 @@ def get_std_ci_node_label(project, job) {
         if(job.runtime_reqs?.supportnestinglevel <= 1) {
             label_conditions << 'virtual'
         }
+        if(job.beaker_label) {
+            label_conditions << job.beaker_label
+        }
     }
     label_conditions.unique()
     return label_conditions.join(' && ')
@@ -329,7 +333,7 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
     Boolean success = false
     try {
         try {
-            def node = node_lib.get_current_pipeline_node_details()
+            node = node_lib.get_current_pipeline_node_details()
             print("Running on node: $node.name ($node.labels)")
             if(job.runtime_reqs?.isolationlevel == 'container') {
                 sh """
@@ -392,6 +396,18 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
                 )
             }
         } finally {
+            if (node.name.contains("bkr")) {
+                sh(
+                    label: 'Returning host to beaker',
+                    returnStdout: true,
+                    script: """
+                        while [[ ! -f /usr/bin/return2beaker.sh ]]; do
+                            sleep 60
+                        done
+                        /usr/bin/return2beaker.sh
+                    """.stripIndent()
+                )
+            }
             report.status('PENDING', 'Collecting results')
             archiveArtifacts allowEmptyArchive: true, \
                 artifacts: "${get_job_dir(job)}/**"

@@ -12,6 +12,7 @@ sub-stages:
                   runtime-requirements:
                     host_distro: newer
               - rhel7
+              - el8
               - rhel8
         - ppc64le:
             distro: [el7, el8]
@@ -169,5 +170,14 @@ sub-stages:
           - scripts/ci_toolbox/*
           - automation/check-patch.{{ substage }}.*
           - mock_configs/epel-7-x86_64*.cfg
+  - beaker-integration:
+      runif:
+        file-changed:
+          - data/slave-repos/beaker-rhel8.xml
+      script:
+        fromfile: automation/check-patch.sh
+      distro: rhel8
+      runtime-requirements:
+        support-nesting-level: 2
 release-branches:
   'master': 'dummy-master'

@@ -23,6 +23,9 @@ def on_load(loader){
 @Field def queues
 @Field def previous_build
 @Field Boolean wait_for_previous_build
+@Field Boolean call_beaker = false
+@Field def beaker_hosts_counter
+@Field def beaker_hosts
 
 def loader_main(loader) {
     stage('Detecting STD-CI jobs') {
@@ -64,6 +67,34 @@ def loader_main(loader) {
                 "\n- ${stdci_runner_lib.get_job_name(job)}"
             }.join()
             print(job_list)
+            if(env.RUNNING_IN_PSI?.toBoolean()) {
+                beaker_hosts_counter = 0
+                for(job in jobs) {
+                    String node_label = stdci_runner_lib.get_std_ci_node_label(project, job)
+                    if(node_label.contains("integ-tests")) {
+                        call_beaker = true
+                        // Counting the number of hosts needed by the jobs.
+                        beaker_hosts_counter+=1
+                    }
+                }
+
+            }
+        }
+    }
+    if(call_beaker?.toBoolean()) {
+        stage('Invoking beaker hosts') {
+            node('el7') {
+                invoke_beaker(beaker_hosts_counter)
+                for(host in beaker_hosts) {
+                    for(job in jobs) {
+                        String node_label = stdci_runner_lib.get_std_ci_node_label(project, job)
+                        if(node_label.contains("integ-tests") && job?.beaker_label == null) {
+                            job.beaker_label = host
+                            break
+                        }
+                    }
+                }
+            }
         }
     }
     if(!queues.empty) {
@@ -126,14 +157,34 @@ def main() {
         return
     }
     tag_poll_job(jobs)
-    stage('Invoking jobs') {
-        stdci_runner_lib.run_std_ci_jobs(project, jobs)
+    try {
+        stage('Invoking jobs') {
+            stdci_runner_lib.run_std_ci_jobs(project, jobs)
+        }
+    }
+    finally {
+        if(call_beaker?.toBoolean()) {
+            stage('Removing beaker hosts from jenkins') {
+                node('master') {
+                    hudson.model.Hudson.instance.slaves.each {
+                        for(host in beaker_hosts) {
+                            if(it.name.contains(host)) {
+                                println "Deleting ${it.name}"
+                                it.getComputer().doDoDelete()
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     if(!queues.empty && job_properties.is_gated_project) {
         stage('Deploying to gated repo') {
             deploy_to_gated(project, queues)
         }
     }
+    println("call_beaker is set to: ${call_beaker}")
+
 }
 
 @NonCPS
@@ -399,7 +450,105 @@ def save_gate_info(is_gated_project, queues) {
     modify_build_parameter('GATE_DEPLOYMENTS', value)
 }
 
-
+def invoke_beaker(beaker_hosts_counter) {
+    withCredentials(
+        [
+            usernamePassword(credentialsId: 'jenkins_user', usernameVariable: 'JENKINS_USERNAME', passwordVariable: 'JENKINS_PASSWORD'),
+            file(credentialsId: 'keytab_file_creds', variable: 'STDCI_DS_KEYTAB'),
+            string(credentialsId: 'keytab-username', variable: 'STDCI_DS_USERNAME'),
+            file(credentialsId: 'redhat_internal_ca', variable: 'STDCI_DS_CA_FILE'),
+            file(credentialsId: 'beaker_client', variable: 'BEAKER_CONF'),
+            string(credentialsId: 'beaker_url', variable: 'BEAKER_URL'),
+            file(credentialsId: 'beaker_repos', variable:  'BEAKER_REPOS')
+        ]
+    ){
+        sh(
+            label: 'Configuring worker for beaker',
+            returnStdout: true,
+            script: """
+                cat <<EOF > /tmp/yum.conf
+                [beaker-client]
+                name=Beaker Client - CentOS\$releasever
+                baseurl=https://beaker-project.org/yum/client/CentOS7/
+                enabled=1
+                gpgcheck=0
+                EOF
+                repo="\$(cat /tmp/yum.conf)"
+                echo "\${repo}" | sudo -n tee -a /etc/yum.conf
+                sudo -n yum install -y -q krb5-workstation beaker-client git jq python-lxml 1>&2
+                sudo cp "\$STDCI_DS_CA_FILE" "\$BEAKER_CONF" /etc/beaker/.
+                sudo -n chown "\$USER":"\$USER" /etc/beaker/*
+            """.stripIndent()
+        )
+        def krbccname=sh(
+            label: 'Login with Kerberos and installing beaker',
+            returnStdout: true,
+            script: """
+                KRB5CCNAME="\$(mktemp \$WORKSPACE/.krbcc.XXXXXX)"
+                REAL_KEYTAB="\$WORKSPACE/krb5.keytab"
+                touch \$REAL_KEYTAB
+                chmod 600 "\$REAL_KEYTAB"
+                chmod 600 "\$KRB5CCNAME"
+                /usr/bin/base64 -d "\$STDCI_DS_KEYTAB" > "\$REAL_KEYTAB"
+                /usr/bin/kinit "\$STDCI_DS_USERNAME" -k -t "\$REAL_KEYTAB"
+                sudo -n shred -u "\$STDCI_DS_KEYTAB" "\$REAL_KEYTAB"
+                echo -n "\$KRB5CCNAME"
+            """.stripIndent()
+        )
+        String refspec = 'refs/changes/09/113809/34'
+        sh(
+            label: 'Setting jenkins repo',
+            returnStdout: true,
+            script: """
+                git init jenkins && cd jenkins
+                git fetch -u https://gerrit.ovirt.org/jenkins +$refspec:myhead
+                git checkout myhead
+                git reset --hard HEAD
+                git clean -fdx
+            """.stripIndent()
+        )
+        withEnv(["BEAKERS_HOSTS_COUNTER=$beaker_hosts_counter"]) {
+            sh(
+                script: """
+                    python "$WORKSPACE"/jenkins/stdci_libs/inject_repos.py \
+                    -f "${BEAKER_REPOS}" \
+                    -b "$WORKSPACE"/jenkins/data/slave-repos/beaker-rhel8.xml
+                """.stripIndent()
+            )
+            String jenkins_url = env.JENKINS_URL.substring(0, env.JENKINS_URL.length() - 1)
+            beaker_hosts=sh(
+                label: 'Invoking beaker system to reserve a server',
+                returnStdout: true,
+                script: """
+                    beaker_url=\$BEAKER_URL
+                    sed -i "s/JENKINS-USER/${JENKINS_USERNAME}/" jenkins/data/slave-repos/beaker-rhel8.xml
+                    sed -i "s/JENKINS-PASS/${JENKINS_PASSWORD}/" jenkins/data/slave-repos/beaker-rhel8.xml
+                    sed -i "s#JENKINS-URL#${jenkins_url}#" jenkins/data/slave-repos/beaker-rhel8.xml
+                    beaker_hosts=()
+                    for i in `seq 1 \$BEAKERS_HOSTS_COUNTER`; do
+                        job_number=\$(bkr job-submit jenkins/data/slave-repos/beaker-rhel8.xml | tr -dc '0-9')
+                        host=\$(curl -k \$beaker_url/\$job_number -H "Accept: application/json" | jq .recipesets[0].machine_recipes[0].resource.fqdn)
+                        while [[ ! \$host =~ "bkr" ]]; do
+                            sleep 60
+                            host=\$(curl -k \$beaker_url/\$job_number -H "Accept: application/json" | jq .recipesets[0].machine_recipes[0].resource.fqdn)
+                        done
+                        host=\${host%%.*}
+                        beaker_hosts+=(\$host)
+                    done
+                    echo -n \${beaker_hosts[@]}
+                """.stripIndent()
+            )
+            beaker_hosts = beaker_hosts.replace("\"", "").tokenize()
+            println(beaker_hosts)
+        }
+        withEnv(["KRB5CCNAME=$krbccname"]) {
+            sh(
+                label: 'Logout from Kerberos',
+                script: "kdestroy"
+            )
+        }
+    }
+}
 // We need to return 'this' so the actual pipeline job can invoke functions from
 // this script
 return this
