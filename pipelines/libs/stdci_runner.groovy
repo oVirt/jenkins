@@ -300,6 +300,9 @@ def get_std_ci_node_label(project, job) {
     if(env.RUNNING_IN_PSI?.toBoolean()) {
         label_conditions << job.distro
         label_conditions << 'psi'
+        if(job.runtime_reqs?.supportnestinglevel <= 1) {
+            label_conditions << 'virtual'
+        }
     }
     label_conditions.unique()
     return label_conditions.join(' && ')
