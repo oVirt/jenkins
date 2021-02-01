@@ -114,19 +114,6 @@
 
 - project:
     <<: *system-tests-common
-    name: ovirt-system-performance-suite
-    suite_type: performance
-    project: 'ovirt-system-tests'
-    version:
-      - master:
-          chroot_distro: el8
-          node-filter: integ-tests && el8
-    email-to: 'infra@ovirt.org'
-    jobs:
-        - '{project}_{suite_type}-suite-{version}'
-
-- project:
-    <<: *system-tests-common
     name: ovirt-system-tests-nightly
     suite_type:
       - basic
