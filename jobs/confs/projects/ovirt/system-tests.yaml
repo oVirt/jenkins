@@ -38,42 +38,17 @@
     name: ovirt-system-he-tests
     suite_type:
       - he-basic
-      - he-basic-iscsi
-      - he-basic-ansible
       - he-node-ng
-      - he-basic-role-remote
     project: 'ovirt-system-tests'
     version:
       - master:
           chroot_distro: el8
           node-filter: integ-tests && el8
-    exclude:
-      - {suite_type: he-basic-ansible, version: master}
-
     email-to: >
       didi@redhat.com,
       lveyde@redhat.com,
-      stirabos@redhat.com,
-      irosenzw@redhat.com,
-      yturgema@redhat.com,
       eslutsky@redhat.com,
       arachman@redhat.com
-    jobs:
-      - '{project}_{suite_type}-suite-{version}'
-
-# Hosted engine ipv6 system tests
-- project:
-    <<: *system-tests-common
-    name: ovirt-system-he_ipv6-tests
-    suite_type:
-        - he-basic-ipv6
-    project: 'ovirt-system-tests'
-    version:
-      - master:
-          chroot_distro: el7
-    email-to: >
-      amusil@redhat.com,
-      stirabos@redhat.com,
     jobs:
       - '{project}_{suite_type}-suite-{version}'
 
