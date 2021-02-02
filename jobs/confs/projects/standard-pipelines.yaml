@@ -80,6 +80,7 @@
       - ioprocess
       - java-client-kubevirt
       - jenkins
+      - lago-ost
       - mom
       - nsis-simple-service-plugin
       - ost-images
