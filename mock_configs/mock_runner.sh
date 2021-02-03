@@ -369,6 +369,7 @@ enabled=1
 gpgcheck=0
 baseurl=$repo_url
 name="Custom $repo_name"
+module_hotfixes=1
 
 EOR
     done
