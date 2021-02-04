@@ -5,6 +5,7 @@ MOCK_CONF_DIR="$(dirname "$(which "$0")")/../../../mock_configs"
 PACKAGES=(
     firewalld  libvirt qemu-kvm
     libselinux-utils kmod rpm-plugin-selinux
+    distribution-gpg-keys
 )
 TRY_MIRRORS=""
 REPO_INSTALLER=""
@@ -401,6 +402,9 @@ run_script() {
         $(get_data_from_file "$script" packages "$distro")
         "${PACKAGES[@]}"
     )
+    if [[ "$distro" =~ el8 ]]; then
+        packages+=(podman)
+    fi
     inject_repos "$distro" "${script}" "${packages[@]}"
     systemctl start libvirtd
 

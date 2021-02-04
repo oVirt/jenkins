@@ -1,1 +1,2 @@
 epel,http://epel.mirror.wearetriple.com/8/Everything/x86_64/
+rhel-8-cbr,http://download.eng.tlv.redhat.com/rhel-8/nightly/RHEL-8/latest-RHEL-8/compose/CRB/x86_64/os/
