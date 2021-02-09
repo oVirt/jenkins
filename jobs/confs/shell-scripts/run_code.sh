@@ -401,8 +401,8 @@ run_script() {
         $(get_data_from_file "$script" packages "$distro")
         "${PACKAGES[@]}"
     )
-    if [[ "$distro" =~ el8 ]]; then
-        packages+=(podman distribution-gpg-keys)
+    if [[ "$distro" == el8 ]]; then
+        packages+=(podman)
     fi
     inject_repos "$distro" "${script}" "${packages[@]}"
     systemctl start libvirtd
