@@ -85,6 +85,7 @@ DEFAULT_RUNTIME_REQUIREMENTS = {
     'hostdistro': 'any',
     'isolationlevel': 'virtual',
     'sriovnic': False,
+    'jenkinsmaster': 'all',
 }
 
 

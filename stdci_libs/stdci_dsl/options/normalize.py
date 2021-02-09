@@ -204,7 +204,17 @@ _RUNTIME_REQUIREMENTS_TRANSLATONS = {
         '0': False,
         'false': False,
         False: False,
-    }
+    },
+    'jenkinsmaster': {
+        'psi': 'psi',
+        'PSI': 'psi',
+        'us': 'upstream',
+        'US': 'upstream',
+        'upstream': 'upstream',
+        'UPSTREAM': 'upstream',
+        'all': 'all',
+        'both': 'all',
+    },
 }
 
 
@@ -221,7 +231,6 @@ def _normalize_runtime_requirements(thread):
         raise ConfigurationSyntaxError(
             'Runtime requirements must be a map. Not {0}'.format(type(rtr))
         )
-
     normalized = {}
     for config, translations in iteritems(_RUNTIME_REQUIREMENTS_TRANSLATONS):
         normalized[config] = translations.get(

@@ -60,6 +60,8 @@ _KEY_NAME_TRANSLATIONS = {
     'entrypoint': 'command',
     'workingdirectory': 'workingdir',
     'workdir': 'workingdir',
+    'jenkins_master': 'jenkinsmaster',
+    'jenkinsmaster': 'jenkinsmaster',
 }
 
 

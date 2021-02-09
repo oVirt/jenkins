@@ -157,6 +157,7 @@ def test_normalize_reporting_config(thread, expected):
                 'hostdistro': 'any',
                 'isolationlevel': 'virtual',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -171,6 +172,7 @@ def test_normalize_reporting_config(thread, expected):
                 'hostdistro': 'any',
                 'isolationlevel': 'virtual',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -184,6 +186,7 @@ def test_normalize_reporting_config(thread, expected):
                 'hostdistro': 'any',
                 'isolationlevel': 'virtual',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -197,6 +200,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'container',
                 'supportnestinglevel': 0,
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -210,6 +214,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'virtual',
                 'supportnestinglevel': 0,
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -224,6 +229,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'container',
                 'supportnestinglevel': 0,
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -238,6 +244,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'container',
                 'hostdistro': 'any',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -253,6 +260,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'container',
                 'hostdistro': 'newer',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -268,6 +276,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 1,
                 'hostdistro': 'any',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -283,6 +292,7 @@ def test_normalize_reporting_config(thread, expected):
                 'supportnestinglevel': 0,
                 'hostdistro': 'any',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -296,6 +306,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -309,6 +320,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -322,6 +334,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -335,6 +348,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -348,6 +362,7 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -362,6 +377,7 @@ def test_normalize_reporting_config(thread, expected):
                 'hostdistro': 'any',
                 'projectspecificnode': True,
                 'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
         (
@@ -375,6 +391,63 @@ def test_normalize_reporting_config(thread, expected):
                 'isolationlevel': 'virtual',
                 'hostdistro': 'any',
                 'sriovnic': True,
+                'jenkinsmaster': 'all',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'jenkinsmaster': 'psi',
+                }
+            }),
+            {
+                'supportnestinglevel': 0,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+                'sriovnic': False,
+                'jenkinsmaster': 'psi',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'jenkinsmaster': 'upstream',
+                }
+            }),
+            {
+                'supportnestinglevel': 0,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+                'sriovnic': False,
+                'jenkinsmaster': 'upstream',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'jenkinsmaster': 'US',
+                }
+            }),
+            {
+                'supportnestinglevel': 0,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+                'sriovnic': False,
+                'jenkinsmaster': 'upstream',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'jenkinsmaster': 'both',
+                }
+            }),
+            {
+                'supportnestinglevel': 0,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+                'sriovnic': False,
+                'jenkinsmaster': 'all',
             }
         ),
     ]
@@ -708,6 +781,7 @@ def test_get_merged_options(options1, options2, expected):
                             'hostdistro': 'any',
                             'isolationlevel': 'virtual',
                             'sriovnic': False,
+                            'jenkinsmaster': 'all',
                         },
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
@@ -775,6 +849,7 @@ def test_get_merged_options(options1, options2, expected):
                             'hostdistro': 'any',
                             'isolationlevel': 'virtual',
                             'sriovnic': False,
+                            'jenkinsmaster': 'all',
                         },
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},
@@ -817,6 +892,7 @@ def test_get_merged_options(options1, options2, expected):
                             'hostdistro': 'any',
                             'isolationlevel': 'virtual',
                             'sriovnic': False,
+                            'jenkinsmaster': 'all',
                         },
                         'mounts': {'fromfile': 'path_to_file'},
                         'releasebranches': {},

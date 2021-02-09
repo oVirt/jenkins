@@ -651,6 +651,10 @@ def remove_blacklisted_jobs(jobs) {
     jobs.removeAll { job ->
         (job.arch in blacklisted_archs) || (job.distro in blacklisted_distros)
     }
+    jobs.removeAll { job ->
+        (job.runtime_reqs?.jenkinsmaster == 'psi' && !env.RUNNING_IN_PSI?.toBoolean()) ||
+        (job.runtime_reqs?.jenkinsmaster == 'upstream' && env.RUNNING_IN_PSI?.toBoolean())
+    }
 }
 
 

@@ -5,7 +5,9 @@ sub-stages:
         - x86_64:
             distro:
               - el7
-              - el8
+              - el8:
+                  runtime-requirements:
+                    jenkins_master: psi
               - rhel7
               - rhel8
         - ppc64le:
