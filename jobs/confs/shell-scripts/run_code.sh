@@ -147,6 +147,8 @@ inject_repos() {
         env_conf \
         env_conf_file \
         env_file \
+        repo_conf \
+        extra_user_repos \
         vars_list=()
 
     repos=($(get_data_from_file "$script" repos "$distro"))
