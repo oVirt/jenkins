@@ -5,16 +5,16 @@
           name: CUSTOM_REPOS
           default: ''
           description:
-            "<b>You can add multiple Jenkins build urls/Yum repos,
-            one per line.</b><br>
-            <u>Supported formats are:</u><br>
-             * Jenkins Build url:<br>
-                 e.g., http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild/<br>
-             * Yum repo: \"rec:yum_repo_url\"<br>
-                 e.g., <b>rec</b>:http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild/artifact/<br>
-             * Specific rpm:<br>
-                 e.g., http://path.to.specific.rpm/rpm_name.rpm<br>
-                 e.g., http://path.to.list.of.rpms/<br>"
+            "<b>You can add multiple dnf repos, one per line.</b><br>
+            <b>The URLs need to point to a path that contains a 'repodata' folder!</b><br>
+            <b>If your packages are older than the ones in \"tested\" repository [1], they won't be used!</b><br>
+            <u>Valid URL examples:</u><br>
+             * Dnf repository in a jenkins job:<br>
+               e.g., https://jenkins.ovirt.org/job/ovirt-engine_standard-check-patch/10658/artifact/check-patch.el8.x86_64/<br>
+             * A copr dnf repository:<br>
+               e.g., https://copr-be.cloud.fedoraproject.org/results/tinez/ost-stuff/epel-8-x86_64/<br>
+            <u>\"Simple\" jenkins urls like https://jenkins.ovirt.org/job/ovirt-engine_standard-check-patch/10658/ are not working ATM!</u><br>
+            [1] https://resources.ovirt.org/repos/ovirt/tested/master/rpm/el8/"
       - choice:
           name: FALLBACK_REPO
           choices:
