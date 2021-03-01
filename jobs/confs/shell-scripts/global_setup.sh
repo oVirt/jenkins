@@ -22,6 +22,7 @@ main() {
         setup_postfix || failed=true
         disable_dnf_makecache || failed=true
         docker_setup || failed=true
+        podman_setup || failed=true
     else
         log WARN "Skipping services setup - not enough sudo permissions"
     fi
@@ -309,6 +310,25 @@ extra_packages() {
         fi
     fi
     verify_packages "${package_list[@]}"
+}
+
+podman_setup() {
+    if [[ "$os" =~ "centos7" ]] || [[ "$os" =~ "rhel7" ]]; then
+        log INFO "Skipping podman_setup, docker is supported for it."
+        return 0
+    fi
+    log INFO "Setting podman"
+    if ! [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]]; then
+        verify_packages podman || return 1
+    fi
+    log INFO "$(podman --version)"
+    sudo -n systemctl enable --now podman.socket
+    if ! sudo -n systemctl start podman; then
+        sudo -n systemctl status podman || :
+        sudo -n journalctl --no-pager -x -e -u podman || :
+        log ERROR "Failed to start podman service"
+        return 1
+    fi
 }
 
 docker_setup () {
