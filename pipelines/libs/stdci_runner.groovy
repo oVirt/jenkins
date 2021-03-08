@@ -346,7 +346,7 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
             checkout_jenkins_repo()
             // The OST check is because currently we need to reprovision the server with mock until
             // we will have beaker.
-            if (!env.RUNNING_IN_PSI?.toBoolean() || project.name.contains("ovirt-system-tests")) {
+            if (!env.RUNNING_IN_PSI?.toBoolean()) {
                 run_jjb_script('cleanup_slave.sh')
                 run_jjb_script('global_setup.sh')
             }
@@ -385,7 +385,7 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
                 mirrors_file = "${pwd()}/mirrors.yaml"
                 writeFile file: mirrors_file, text: mirrors
             }
-            if (!env.RUNNING_IN_PSI?.toBoolean() || project.name.contains("ovirt-system-tests")) {
+            if (!env.RUNNING_IN_PSI?.toBoolean()) {
                 run_std_ci_in_mock(
                     project, job, report, tfr, mirrors_file, extra_sources
                 )
@@ -416,7 +416,7 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
         }
         // The only way we can get to these lines is if nothing threw any
         // exceptions so far. This means the job was successful.
-        if (!env.RUNNING_IN_PSI?.toBoolean() || project.name.contains("ovirt-system-tests")) {
+        if (!env.RUNNING_IN_PSI?.toBoolean()) {
             run_jjb_script('global_setup_apply.sh')
         }
         success = true

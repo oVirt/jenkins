@@ -113,6 +113,37 @@ EOH
     return 0
 }
 
+verify_ipv6() {
+    # check if any routes received via router advertisements are in place
+    if [[ "$(/sbin/ip -6 route list proto ra)" ]]; then
+        # create a list of interfaces with such routes to check accept_ra value
+        local iflist="$(/sbin/ip -6 route list proto ra | grep -oP '(?<=dev )(\w+)' | sort | uniq)"
+        for ifname in $iflist; do
+            local ra_conf_path="/proc/sys/net/ipv6/conf/$ifname/accept_ra"
+            if [[ -f "$ra_conf_path" ]]; then
+                if [[ "$(cat $ra_conf_path)" -ne "2" ]]; then
+                    echo "setting accept_ra=2 on $ifname"
+                    /sbin/sysctl net.ipv6.conf.$ifname.accept_ra=2
+                    if [[ "$(cat $ra_conf_path)" -ne "2" ]]; then
+                        echo "Falied to configure accept_ra to 2 on $ifname"
+                        return 1
+                    fi
+                else
+                    echo "RA routes detected on $ifname but accept_ra!=2"
+                    echo "this may cause libvirt issues. Unable to fix, ignoring."
+                fi
+            fi
+        done
+    fi
+    return 0
+}
+
+setup_qemu() {
+    usermod -a -G "$USER" qemu
+    chmod o+x /root/workspace
+    install -m 0644 -d /var/lib/lago
+}
+
 get_data_from_file() {
     local script="${1?}"
     local ftype="${2?}"
@@ -550,6 +581,8 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
             ;;
         esac
     done
+    verify_ipv6
+    setup_qemu
     source /etc/os-release
     os="${ID:?}${VERSION_ID:?}"
     # Removing any dots after the version id - e.g: centos7.8
