@@ -106,9 +106,6 @@
     parameters:
       - gerrit-params:
           branch: '{branch}'
-      - text:
-          name: CUSTOM_REPOS
-          default: 'https://resources.ovirt.org/pub/ovirt-{version}-snapshot/rpm/el8/'
 
 
 - job-template:
