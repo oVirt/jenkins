@@ -31,3 +31,11 @@
           branch: master
     jobs:
       - '{project}_{branch}_standard-poll-upstream-sources'
+
+- project:
+    name: ovirt-appliance_standard-poll-upstream-sources
+    project:
+      - ovirt-appliance:
+          branch: master
+    jobs:
+      - '{project}_{branch}_standard-poll-upstream-sources'
