@@ -105,7 +105,7 @@
           chroot_distro: el8
           node-filter: integ-tests && el8
     email-to: >
-      nlevy@redhat.com,
+      didi@redhat.com,
       sbonazzo@redhat.com,
       lveyde@redhat.com,
       arachman@redhat.com
