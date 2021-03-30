@@ -32,7 +32,7 @@ def main() {
             if(checkoutData.CODE_FROM_EVENT) {
                 echo "Code loaded from STDCI repo event"
             }
-            if (!env?.NODE_IS_EPHEMERAL?.toBoolean()) {
+            if (!env?.NODE_IS_EPHEMERAL?.toBoolean() && !env?.RUNNING_IN_PSI.toBoolean()) {
                 run_jjb_script('cleanup_slave.sh')
                 run_jjb_script('global_setup.sh')
             }
