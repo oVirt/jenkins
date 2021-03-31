@@ -206,8 +206,10 @@ _RUNTIME_REQUIREMENTS_TRANSLATONS = {
         False: False,
     },
     'jenkinsmaster': {
+        'psi.redhat.com': 'psi',
         'psi': 'psi',
         'PSI': 'psi',
+        'ovirt.org': 'upstream',
         'us': 'upstream',
         'US': 'upstream',
         'upstream': 'upstream',

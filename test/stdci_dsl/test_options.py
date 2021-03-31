@@ -450,6 +450,34 @@ def test_normalize_reporting_config(thread, expected):
                 'jenkinsmaster': 'all',
             }
         ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'jenkinsmaster': 'ovirt.org',
+                }
+            }),
+            {
+                'supportnestinglevel': 0,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+                'sriovnic': False,
+                'jenkinsmaster': 'upstream',
+            }
+        ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'jenkinsmaster': 'psi.redhat.com',
+                }
+            }),
+            {
+                'supportnestinglevel': 0,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'any',
+                'sriovnic': False,
+                'jenkinsmaster': 'psi',
+            }
+        ),
     ]
 )
 def test_normalize_runtime_requirements(thread, expected):
