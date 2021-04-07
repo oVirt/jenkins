@@ -8,6 +8,9 @@ sub-stages:
               - el8:
                   runtime-requirements:
                     jenkins_master: psi
+              - el8stream:
+                  runtime-requirements:
+                    host_distro: newer
               - rhel7
               - rhel8
         - ppc64le:

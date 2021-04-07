@@ -2,4 +2,5 @@ el7:epel-7-x86_64
 el7:epel-7-ppc64le
 el8:epel-8-x86_64
 el8:epel-8-ppc64le
+el8stream:centos-stream-8-x86_64
 fcraw:fedora-rawhide-x86_64
