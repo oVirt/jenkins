@@ -127,15 +127,6 @@
       - '{project}_standard-gerrit-jobs'
 
 - project:
-    name: nmstate-standard-pipelines-github
-    github-auth-id: github-auth-token
-    org: nmstate
-    project:
-      - nmstate
-    jobs:
-      - '{org}_{project}_standard-gh-jobs'
-
-- project:
     name: openshift-installer-standard-pipelines-github-aborting
     github-auth-id: github-auth-token
     abort-on-update: true
