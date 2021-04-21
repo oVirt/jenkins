@@ -149,8 +149,6 @@ def loader_pod_spec(code) {
         namespace: env.OPENSHIFT_PROJECT,
         nodeSelector: 'type=vm,zone=ci',
         serviceAccount: 'jenkins-loader-node',
-        runAsUser: env.STD_CI_JOB_UID,
-        runAsGroup: env.STD_CI_JOB_UID,
         containers: [
             containerTemplate(
                 name: 'jnlp',
