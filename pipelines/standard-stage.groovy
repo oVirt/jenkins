@@ -495,7 +495,7 @@ def invoke_beaker(beaker_hosts_counter) {
                 echo -n "\$KRB5CCNAME"
             """.stripIndent()
         )
-        String refspec = 'refs/changes/09/113809/34'
+        String refspec = 'refs/heads/master'
         sh(
             label: 'Setting jenkins repo',
             returnStdout: true,
