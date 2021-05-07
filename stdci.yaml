@@ -16,7 +16,7 @@ sub-stages:
               - el8
               - rhel8
         - ppc64le:
-            distro: [el7, el8]
+            distro: [el7, el8, el8stream]
         - s390x:
             distro:
               - el7
