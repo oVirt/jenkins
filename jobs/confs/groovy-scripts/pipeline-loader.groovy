@@ -6,6 +6,7 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 
 def pipeline
+def running_in_psi = false
 
 if(env.RUNNING_IN_LOADER?.toBoolean()) {
     // This code runs if this file was loaded as pipeline
@@ -32,7 +33,7 @@ def main() {
             if(checkoutData.CODE_FROM_EVENT) {
                 echo "Code loaded from STDCI repo event"
             }
-            if (!env?.NODE_IS_EPHEMERAL?.toBoolean() && !env?.RUNNING_IN_PSI.toBoolean()) {
+            if (!env?.NODE_IS_EPHEMERAL?.toBoolean()) {
                 run_jjb_script('cleanup_slave.sh')
                 run_jjb_script('global_setup.sh')
             }
@@ -124,9 +125,12 @@ def loader_node(Map options=null, Closure code) {
             }
         }
     } else {
+        if(env?.RUNNING_IN_PSI?.toBoolean()) {
+            running_in_psi = true
+        }
         // We preserve older functionality for un-containerized loaders
         node(env.LOADER_NODE_LABEL) {
-            withEnv(["NODE_IS_EPHEMERAL=false"]) {
+            withEnv(["NODE_IS_EPHEMERAL=$running_in_psi"]) {
                 code()
             }
         }
