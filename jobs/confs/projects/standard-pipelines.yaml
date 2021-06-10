@@ -110,6 +110,7 @@
       - ovirt-node-coreos
       - ovirt-node-ng
       - ovirt-node-ng-image
+      - ovirt-openvswitch
       - ovirt-provider-ovn
       - ovirt-release
       - ovirt-setup-lib
