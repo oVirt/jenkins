@@ -77,7 +77,7 @@ set -o nounset -o errexit -o pipefail
 # Check crumb
 COOKIE_JAR="/tmp/cookies"
 echo "Checking for CSRF..."
-CRUMB=$(curl --fail -0 --cookie-jar $COOKIE_JAR -u "${JENKINS_USERNAME}:${JENKINS_PASSWORD}" ''${JENKINS_URL}'/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)' 2>/dev/null || echo "N/A")
+CRUMB=$(curl --insecure --fail -0 --cookie-jar $COOKIE_JAR -u "${JENKINS_USERNAME}:${JENKINS_PASSWORD}" ''${JENKINS_URL}'/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)' 2>/dev/null || echo "N/A")
 if [[ ${CRUMB} != "N/A" ]]; then
   echo "CSRF Enabled."
 else
@@ -85,7 +85,7 @@ else
 fi
 
 # Create node (doCreateItem)
-RESPONSE=$(curl --cookie $COOKIE_JAR -L -s -o /dev/null -w "%{http_code}" -u "${JENKINS_USERNAME}:${JENKINS_PASSWORD}" -H "Content-Type:application/x-www-form-urlencoded" -H "$CRUMB" -X POST -d 'json={"name": "'"$NODE_NAME"'", "nodeDescription": "'"$DESC"'", "numExecutors": "'"$EXECUTORS"'", "remoteFS": "'"$NODE_SLAVE_HOME"'", "labelString": "'"$LABELS"'", "mode": "EXCLUSIVE", "": ["hudson.plugins.sshslaves.SSHLauncher", "hudson.slaves.RetentionStrategy$Always"], "launcher": {"stapler-class": "hudson.plugins.sshslaves.SSHLauncher", "$class": "hudson.plugins.sshslaves.SSHLauncher", "host": "'"$SSH_HOST"'", "credentialsId": "'"$CRED_ID"'", "port": "'"$SSH_PORT"'", "javaPath": "", "jvmOptions": "", "prefixStartSlaveCmd": "", "suffixStartSlaveCmd": "", "launchTimeoutSeconds": "", "maxNumRetries": "", "retryWaitTime": ""}, "retentionStrategy": {"stapler-class": "hudson.slaves.RetentionStrategy$Always", "$class": "hudson.slaves.RetentionStrategy$Always"}, "nodeProperties": {"stapler-class-bag": "true"}, "type": "hudson.slaves.DumbSlave", "crumb": "'"$CRUMB"'"}' "${JENKINS_URL}/computer/doCreateItem?name=${NODE_NAME}&type=hudson.slaves.DumbSlave")
+RESPONSE=$(curl --insecure --cookie $COOKIE_JAR -L -s -o /dev/null -w "%{http_code}" -u "${JENKINS_USERNAME}:${JENKINS_PASSWORD}" -H "Content-Type:application/x-www-form-urlencoded" -H "$CRUMB" -X POST -d 'json={"name": "'"$NODE_NAME"'", "nodeDescription": "'"$DESC"'", "numExecutors": "'"$EXECUTORS"'", "remoteFS": "'"$NODE_SLAVE_HOME"'", "labelString": "'"$LABELS"'", "mode": "EXCLUSIVE", "": ["hudson.plugins.sshslaves.SSHLauncher", "hudson.slaves.RetentionStrategy$Always"], "launcher": {"stapler-class": "hudson.plugins.sshslaves.SSHLauncher", "$class": "hudson.plugins.sshslaves.SSHLauncher", "host": "'"$SSH_HOST"'", "credentialsId": "'"$CRED_ID"'", "port": "'"$SSH_PORT"'", "javaPath": "", "jvmOptions": "", "prefixStartSlaveCmd": "", "suffixStartSlaveCmd": "", "launchTimeoutSeconds": "", "maxNumRetries": "", "retryWaitTime": ""}, "retentionStrategy": {"stapler-class": "hudson.slaves.RetentionStrategy$Always", "$class": "hudson.slaves.RetentionStrategy$Always"}, "nodeProperties": {"stapler-class-bag": "true"}, "type": "hudson.slaves.DumbSlave", "crumb": "'"$CRUMB"'"}' "${JENKINS_URL}/computer/doCreateItem?name=${NODE_NAME}&type=hudson.slaves.DumbSlave")
 
 if [[ ${RESPONSE} == "200" ]]; then
   echo "SUCCESS"
