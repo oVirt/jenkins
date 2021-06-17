@@ -119,7 +119,6 @@ verify_ipv6() {
 }
 
 setup_qemu() {
-    usermod -a -G "$USER" qemu
     chmod o+x /root/workspace
     install -m 0644 -d /var/lib/lago
 }
