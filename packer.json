@@ -1,0 +1,32 @@
+{
+    "variables": {
+    "username": "{{env `OS_USERNAME`}}",
+    "password": "{{env `OS_PASSWORD`}}",
+    "domain_name": "{{env `OS_DOMAIN_NAME`}}",
+    "identity_endpoint": "{{env `OS_AUTH_URL`}}",
+    "region": "{{env `OS_REGION_NAME`}}"
+  },
+
+    "builders": [
+        {
+            "type": "openstack",
+	    "ssh_username": "centos",
+            "source_image": "<IMAGE_ID>",
+	    "image_name": "<ARTIFACT_NAME>",
+            "flavor": "e7ca6bcd-e582-4468-a1fb-2543190b366f",
+            "ssh_ip_version": "4",
+            "networks": [
+                "186a5fd1-13c6-433e-bfaa-a5018e7d4210"
+            ],
+            "insecure": true
+        }
+    ],
+    "provisioners": [
+        {
+            "execute_command": "sudo sh -eux '{{.Path}}'",
+            "script": "<SCRIPT>",
+            "type": "shell"
+        }
+    ]
+}
+

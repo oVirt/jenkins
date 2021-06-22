@@ -16,6 +16,7 @@ python36-pip
 python36-requests
 git
 docker
+podman
 python2-pyxdg
 python36-pyxdg
 xdg-utils

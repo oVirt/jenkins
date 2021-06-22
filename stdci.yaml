@@ -26,7 +26,7 @@ sub-stages:
       runif:
         file-changed:
           - jobs/confs/shell-scripts/global_setup*
-          - data/slave-repos/*
+          - data/slave-repos/*.conf
           - mock_configs/*
           - stdci_libs/*.py
           - test/*.py
@@ -181,5 +181,16 @@ sub-stages:
       distro: rhel8
       runtime-requirements:
         support-nesting-level: 2
+  - packer_builder:
+      runif:
+        file-changed:
+          - data/slave-repos/centos*.json
+          - data/slave-repos/el*.sh
+          - automation/check-patch.{{ substage }}.*
+      script:
+        fromfile: automation/check-patch.{{ substage }}.sh
+      runtime-requirements:
+        jenkins_master: psi
+      distro: [el7, el8, el8stream]
 release-branches:
   'master': 'dummy-master'

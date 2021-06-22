@@ -1,6 +1,7 @@
 PyYAML
 docker
 git
+podman
 pytest
 python-jinja2
 python-mock

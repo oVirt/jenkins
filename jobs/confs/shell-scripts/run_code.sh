@@ -181,12 +181,17 @@ inject_repos() {
     done
     # create_variables "${env_file}"
     # Overwrite the yum / dnf conf.
-    if [[ $os =~ rhel7 ]]; then
+    if [[ $os =~ rhel7 ]] || [[ $os =~ centos7 ]]; then
         REPO_INSTALLER="yum"
         REPO_CONF_FILE="/etc/yum.conf"
     else
         REPO_CONF_FILE="/etc/dnf/dnf.conf"
         REPO_INSTALLER="dnf"
+        if [[ $NAME =~ 'Stream' ]]; then
+            dnf config-manager --set-enabled powertools
+        else
+            dnf config-manager --set-enabled PowerTools
+        fi
     fi
     #Overwrite repo config file.
     last_gen_repo_name=0

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 shopt -s extglob nullglob
 
 DEFAULT_SCRIPT=automation/build-artifacts.sh
