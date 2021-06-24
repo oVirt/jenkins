@@ -83,15 +83,13 @@ def loader_main(loader) {
     }
     if(call_beaker?.toBoolean()) {
         stage('Invoking beaker hosts') {
-            node('el7') {
-                invoke_beaker(beaker_hosts_counter)
-                for(host in beaker_hosts) {
-                    for(job in jobs) {
-                        String node_label = stdci_runner_lib.get_std_ci_node_label(project, job)
-                        if(node_label.contains("integ-tests") && job?.beaker_label == null) {
-                            job.beaker_label = host
-                            break
-                        }
+            invoke_beaker(beaker_hosts_counter)
+            for(host in beaker_hosts) {
+                for(job in jobs) {
+                    String node_label = stdci_runner_lib.get_std_ci_node_label(project, job)
+                    if(node_label.contains("integ-tests") && job?.beaker_label == null) {
+                        job.beaker_label = host
+                        break
                     }
                 }
             }

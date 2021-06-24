@@ -175,6 +175,7 @@ sub-stages:
       runif:
         file-changed:
           - data/slave-repos/beaker-rhel8.xml
+          - pipelines/standard-stage.groovy
       script:
         fromfile: automation/check-patch.sh
       distro: rhel8
