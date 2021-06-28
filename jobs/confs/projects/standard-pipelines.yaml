@@ -55,6 +55,15 @@
       - '{org}_{project}_standard-gh-jobs'
 
 - project:
+    name: virtio-win-guest-tools-installer
+    github-auth-id: github-auth-token
+    org: virtio-win
+    project:
+      - virtio-win-guest-tools-installer
+    jobs:
+      - '{org}_{project}_standard-gh-jobs'
+
+- project:
     name: oVirt-standard-pipelines-gerrit
     gerrit-server: 'gerrit.ovirt.org'
     project:
