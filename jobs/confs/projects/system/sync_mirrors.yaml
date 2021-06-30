@@ -1,6 +1,10 @@
 - project:
     name: system-sync_mirrors
     repo:
+      - 'centos-base-el8stream'
+      - 'centos-stream-el8stream'
+      - 'centos-extra-el8stream'
+      - 'centos-powertools-el8stream'
       - 'centos-base-el8'
       - 'centos-extras-el8'
       - 'centos-appstream-el8'
