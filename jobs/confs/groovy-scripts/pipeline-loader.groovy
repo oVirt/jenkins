@@ -6,7 +6,7 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 
 def pipeline
-def running_in_psi = false
+@Field def running_in_psi = false
 
 if(env.RUNNING_IN_LOADER?.toBoolean()) {
     // This code runs if this file was loaded as pipeline
