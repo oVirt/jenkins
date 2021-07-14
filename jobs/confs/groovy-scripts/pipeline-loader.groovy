@@ -293,6 +293,7 @@ def checkout_repo(
     }
     def remotes = mk_git_remotes(refspec, url, 'myhead') + (extra_remotes ?: [])
     dir(clone_dir_name) {
+        cleanWs()
         checkoutData = checkout(
             changelog: false, poll: false, scm: [
                 $class: 'GitSCM',
