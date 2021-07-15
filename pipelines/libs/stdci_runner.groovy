@@ -412,7 +412,7 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
             archiveArtifacts allowEmptyArchive: true, \
                 artifacts: "${get_job_dir(job)}/**"
             junit keepLongStdio: true, allowEmptyResults: true, \
-                testResults: "${get_job_dir(job)}/**/*xml"
+                testResults: "${get_job_dir(job)}/**/*test*xml"
         }
         // The only way we can get to these lines is if nothing threw any
         // exceptions so far. This means the job was successful.
