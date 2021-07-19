@@ -25,6 +25,7 @@
       - ovirt-engine-sdk-go
       - ovirt-openshift-extensions
       - ovirt-web-ui
+      - python-ovirt-engine-sdk4
       - terraform-provider-ovirt
       - v2v-conversion-host
       - wix-toolset-binaries
