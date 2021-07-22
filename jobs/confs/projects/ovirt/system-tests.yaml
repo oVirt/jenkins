@@ -84,6 +84,7 @@
       godas@redhat.com,
       dparth@redhat.com,
       kmajumde@redhat.com
+      rchikatw@redhat.com
     jobs:
         - '{project}_{suite_type}-suite-{version}'
 
