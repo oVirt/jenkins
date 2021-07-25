@@ -189,7 +189,7 @@ inject_repos() {
         REPO_INSTALLER="dnf"
         if [[ $NAME =~ 'Stream' ]]; then
             dnf config-manager --set-enabled powertools
-        else
+        elif [[ $os =~ 'centos8' ]]; then
             dnf config-manager --set-enabled PowerTools
         fi
     fi
