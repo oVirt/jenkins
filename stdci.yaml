@@ -12,6 +12,10 @@ sub-stages:
                   runtime-requirements:
                     host_distro: newer
                     jenkins_master: upstream
+              - el9stream:
+                  runtime-requirements:
+                    host_distro: newer
+                    jenkins_master: upstream
               - rhel7
               - el8
               - rhel8

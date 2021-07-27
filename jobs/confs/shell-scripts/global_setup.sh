@@ -257,7 +257,7 @@ verify_ipv6() {
 
 release_rpms() {
     source /etc/os-release
-    if [[ "${ID:-}" != centos ]]; then
+    if [[ "${ID:-}" != centos ]] || [[ "$os" =~ 'centos9' ]]; then
         # we only try to install release RPMs on CentOS
         return
     fi
@@ -286,17 +286,7 @@ extra_packages() {
             # https://bugzilla.redhat.com/show_bug.cgi?id=1724305
             package_list+=(nfs-utils libnfsidmap)
         fi
-    elif [[ "$os" =~ "centos8" ]] || [[ "$os" =~ "rhel8" ]]; then
-        package_list+=(python{2,3}-{pyyaml,jinja2,six,py})
-        # there is no python2-pyxdg and nosync packages atm.
-        package_list+=(python3-pyxdg)
-        if can_sudo dnf; then
-            package_list+=(
-                firewalld haveged libvirt qemu-kvm python3-paramiko
-                libselinux-utils kmod rpm-plugin-selinux
-            )
-        fi
-    else
+    elif [[ "$os" =~ "centos7" ]]; then
         # CentOS-7-specific packages
         package_list+=(
             python-paramiko PyYAML python2-pyxdg python-jinja2 python-py
@@ -306,6 +296,14 @@ extra_packages() {
             package_list+=(
                 firewalld haveged libvirt qemu-kvm-rhev
                 nosync libselinux-utils kmod
+            )
+        fi
+    else
+        package_list+=(python3-{pyyaml,jinja2,six,py,pyxdg})
+        if can_sudo dnf; then
+            package_list+=(
+                firewalld haveged libvirt qemu-kvm python3-paramiko
+                libselinux-utils kmod rpm-plugin-selinux
             )
         fi
     fi
@@ -332,7 +330,7 @@ podman_setup() {
 }
 
 docker_setup () {
-    if [[ "$os" =~ "centos8" ]] || [[ "$os" =~ "rhel8" ]]; then
+    if [[ "$os" != "centos7" ]]; then
         log INFO "Skipping docker_setup, docker is not supported"
         return 0
     fi
