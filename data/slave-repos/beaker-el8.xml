@@ -24,8 +24,6 @@ dnf install -y "${package_list[@]}"
 alternatives --set python /usr/bin/python3
 
 dnf clean all
-dnf config-manager --set-disabled beaker-AppStream
-
 # OST related configurations
 usermod -a -G root qemu
 chmod o+x /root
@@ -98,6 +96,8 @@ fi
         </ks_append>
       </ks_appends>
       <repos>
+        <repo name="epel8" url="http://epel.mirror.wearetriple.com/8/Everything/x86_64/"/>
+        <repo name="powertools" url="http://mirror.centos.org/centos-8/8/PowerTools/x86_64/os/"/>
       </repos>
       <distroRequires>
         <and>

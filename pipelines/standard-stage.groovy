@@ -24,7 +24,7 @@ def on_load(loader){
 @Field def previous_build
 @Field Boolean wait_for_previous_build
 @Field Boolean call_beaker = false
-@Field def beaker_hosts_counter
+@Field def rhel8_hosts
 @Field def beaker_hosts
 @Field def el8_hosts
 
@@ -69,17 +69,20 @@ def loader_main(loader) {
             }.join()
             print(job_list)
             if(env.RUNNING_IN_PSI?.toBoolean()) {
-                beaker_hosts_counter = 0
+                rhel8_hosts = 0
                 el8_hosts = 0
                 for(job in jobs) {
                     String node_label = stdci_runner_lib.get_std_ci_node_label(project, job)
                     if(node_label.contains("integ-tests")) {
                         call_beaker = true
                         // Counting the number of hosts needed by the jobs.
-                        beaker_hosts_counter+=1
-                    }
-                    if(node_label.equals("el8")) {
-                        el8_hosts+=1
+                        if(job.distro.equals("el8")) {
+                            println(job.distro)
+                            el8_hosts+=1
+                        } else {
+                            rhel8_hosts+=1
+                        }
+                        
                     }
                 }
             }
@@ -87,7 +90,7 @@ def loader_main(loader) {
     }
     if(call_beaker?.toBoolean()) {
         stage('Invoking beaker hosts') {
-            invoke_beaker(beaker_hosts_counter, el8_hosts)
+            invoke_beaker(rhel8_hosts, el8_hosts)
             for(host in beaker_hosts) {
                 for(job in jobs) {
                     String node_label = stdci_runner_lib.get_std_ci_node_label(project, job)
@@ -452,7 +455,7 @@ def save_gate_info(is_gated_project, queues) {
     modify_build_parameter('GATE_DEPLOYMENTS', value)
 }
 
-def invoke_beaker(beaker_hosts_counter, el8_hosts) {
+def invoke_beaker(rhel8_hosts, el8_hosts) {
     withCredentials(
         [
             usernamePassword(credentialsId: 'jenkins_user', usernameVariable: 'JENKINS_USERNAME', passwordVariable: 'JENKINS_PASSWORD'),
@@ -497,20 +500,8 @@ def invoke_beaker(beaker_hosts_counter, el8_hosts) {
                 echo -n "\$KRB5CCNAME"
             """.stripIndent()
         )
-        String refspec = env.STDCI_SCM_REFSPEC ?: 'refs/heads/master'
-        sh(
-            label: 'Setting jenkins repo',
-            returnStdout: true,
-            script: """
-                git init jenkins && cd jenkins
-                git fetch -u https://gerrit.ovirt.org/jenkins +$refspec:myhead
-                git checkout myhead
-                git reset --hard HEAD
-                git clean -fdx
-            """.stripIndent()
-        )
         withEnv([
-            "BEAKERS_HOSTS_COUNTER=$beaker_hosts_counter",
+            "RHEL8_HOSTS_COUNTER=$rhel8_hosts",
             "EL8_HOSTS_COUNTER=$el8_hosts"
         ]) {
             sh(
@@ -526,17 +517,14 @@ def invoke_beaker(beaker_hosts_counter, el8_hosts) {
                 returnStdout: true,
                 script: """
                     beaker_url=\$BEAKER_URL
-                    sed -i "s/JENKINS-USER/${JENKINS_USERNAME}/" jenkins/data/slave-repos/beaker*.xml
-                    sed -i "s/JENKINS-PASS/${JENKINS_PASSWORD}/" jenkins/data/slave-repos/beaker*.xml
-                    sed -i "s#JENKINS-URL#${jenkins_url}#" jenkins/data/slave-repos/beaker*.xml
+                    for bkr_file in jenkins/data/slave-repos/beaker*.xml; do
+                        sed -i "s/JENKINS-USER/${JENKINS_USERNAME}/" \$bkr_file
+                        sed -i "s/JENKINS-PASS/${JENKINS_PASSWORD}/" \$bkr_file
+                        sed -i "s#JENKINS-URL#${jenkins_url}#" \$bkr_file
+                    done
                     beaker_hosts=()
-                    for i in `seq 1 \$BEAKERS_HOSTS_COUNTER`; do
-                        if [[ \$EL8_HOSTS_COUNTER -gt 0 ]]; then
-                            job_number=\$(bkr job-submit jenkins/data/slave-repos/beaker-el8.xml | tr -dc '0-9')
-                            \$EL8_HOSTS_COUNTER = \$EL8_HOSTS_COUNTER - 1
-                        else
-                            job_number=\$(bkr job-submit jenkins/data/slave-repos/beaker-rhel8.xml | tr -dc '0-9')
-                        fi
+                    for i in `seq 1 \$RHEL8_HOSTS_COUNTER`; do
+                        job_number=\$(bkr job-submit jenkins/data/slave-repos/beaker-rhel8.xml | tr -dc '0-9')
                         host=\$(curl -k \$beaker_url/\$job_number -H "Accept: application/json" | jq .recipesets[0].machine_recipes[0].resource.fqdn)
                         while [[ ! \$host =~ "bkr" ]]; do
                             sleep 60
@@ -544,6 +532,16 @@ def invoke_beaker(beaker_hosts_counter, el8_hosts) {
                         done
                         host=\${host%%.*}
                         beaker_hosts+=(\$host)
+                    for i in `seq 1 \$EL8_HOSTS_COUNTER`; do
+                        job_number=\$(bkr job-submit jenkins/data/slave-repos/beaker-el8.xml | tr -dc '0-9')
+                        host=\$(curl -k \$beaker_url/\$job_number -H "Accept: application/json" | jq .recipesets[0].machine_recipes[0].resource.fqdn)
+                        while [[ ! \$host =~ "bkr" ]]; do
+                            sleep 60
+                            host=\$(curl -k \$beaker_url/\$job_number -H "Accept: application/json" | jq .recipesets[0].machine_recipes[0].resource.fqdn)
+                        done
+                        host=\${host%%.*}
+                        beaker_hosts+=(\$host)                    
+                    done
                     done
                     echo -n \${beaker_hosts[@]}
                 """.stripIndent()

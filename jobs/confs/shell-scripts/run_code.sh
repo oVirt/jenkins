@@ -188,9 +188,9 @@ inject_repos() {
         REPO_CONF_FILE="/etc/dnf/dnf.conf"
         REPO_INSTALLER="dnf"
         if [[ $NAME =~ 'Stream' ]]; then
-            dnf config-manager --set-enabled powertools
+            dnf config-manager --set-enabled powertools || echo "Powertools is not available"
         elif [[ $os =~ 'centos8' ]]; then
-            dnf config-manager --set-enabled PowerTools
+            dnf config-manager --set-enabled PowerTools || echo "Powertools is not available"
         fi
     fi
     #Overwrite repo config file.

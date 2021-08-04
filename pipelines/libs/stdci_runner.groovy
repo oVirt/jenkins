@@ -398,16 +398,23 @@ def run_std_ci_on_node(report, project, job, mirrors=null, extra_sources=null) {
             }
         } finally {
             if (node.name.contains("bkr")) {
-                sh(
-                    label: 'Returning host to beaker',
-                    returnStdout: true,
-                    script: """
-                        while [[ ! -f /usr/bin/return2beaker.sh ]]; do
-                            sleep 60
-                        done
-                        /usr/bin/return2beaker.sh
-                    """.stripIndent()
-                )
+                try {
+                    timeout(time: 20) {
+                        sh(
+                            label: 'Returning host to beaker',
+                            returnStdout: true,
+                            script: """
+                                while [[ ! -f /usr/bin/return2beaker.sh ]]; do
+                                    sleep 60
+                                done
+                                /usr/bin/return2beaker.sh
+                            """.stripIndent()
+                        )
+                    }
+                }
+                finally {
+                    println("Lost connection with the beaker server, removing it from jenkins.")
+                }
             }
             report.status('PENDING', 'Collecting results')
             archiveArtifacts allowEmptyArchive: true, \
