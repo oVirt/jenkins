@@ -26,6 +26,7 @@ def on_load(loader){
 @Field Boolean call_beaker = false
 @Field def beaker_hosts_counter
 @Field def beaker_hosts
+@Field def el8_hosts
 
 def loader_main(loader) {
     stage('Detecting STD-CI jobs') {
@@ -69,6 +70,7 @@ def loader_main(loader) {
             print(job_list)
             if(env.RUNNING_IN_PSI?.toBoolean()) {
                 beaker_hosts_counter = 0
+                el8_hosts = 0
                 for(job in jobs) {
                     String node_label = stdci_runner_lib.get_std_ci_node_label(project, job)
                     if(node_label.contains("integ-tests")) {
@@ -76,14 +78,16 @@ def loader_main(loader) {
                         // Counting the number of hosts needed by the jobs.
                         beaker_hosts_counter+=1
                     }
+                    if(node_label.equals("el8")) {
+                        el8_hosts+=1
+                    }
                 }
-
             }
         }
     }
     if(call_beaker?.toBoolean()) {
         stage('Invoking beaker hosts') {
-            invoke_beaker(beaker_hosts_counter)
+            invoke_beaker(beaker_hosts_counter, el8_hosts)
             for(host in beaker_hosts) {
                 for(job in jobs) {
                     String node_label = stdci_runner_lib.get_std_ci_node_label(project, job)
@@ -448,7 +452,7 @@ def save_gate_info(is_gated_project, queues) {
     modify_build_parameter('GATE_DEPLOYMENTS', value)
 }
 
-def invoke_beaker(beaker_hosts_counter) {
+def invoke_beaker(beaker_hosts_counter, el8_hosts) {
     withCredentials(
         [
             usernamePassword(credentialsId: 'jenkins_user', usernameVariable: 'JENKINS_USERNAME', passwordVariable: 'JENKINS_PASSWORD'),
@@ -493,7 +497,7 @@ def invoke_beaker(beaker_hosts_counter) {
                 echo -n "\$KRB5CCNAME"
             """.stripIndent()
         )
-        String refspec = 'refs/heads/master'
+        String refspec = env.STDCI_SCM_REFSPEC ?: 'refs/heads/master'
         sh(
             label: 'Setting jenkins repo',
             returnStdout: true,
@@ -505,7 +509,10 @@ def invoke_beaker(beaker_hosts_counter) {
                 git clean -fdx
             """.stripIndent()
         )
-        withEnv(["BEAKERS_HOSTS_COUNTER=$beaker_hosts_counter"]) {
+        withEnv([
+            "BEAKERS_HOSTS_COUNTER=$beaker_hosts_counter",
+            "EL8_HOSTS_COUNTER=$el8_hosts"
+        ]) {
             sh(
                 script: """
                     python "$WORKSPACE"/jenkins/stdci_libs/inject_repos.py \
@@ -519,12 +526,17 @@ def invoke_beaker(beaker_hosts_counter) {
                 returnStdout: true,
                 script: """
                     beaker_url=\$BEAKER_URL
-                    sed -i "s/JENKINS-USER/${JENKINS_USERNAME}/" jenkins/data/slave-repos/beaker-rhel8.xml
-                    sed -i "s/JENKINS-PASS/${JENKINS_PASSWORD}/" jenkins/data/slave-repos/beaker-rhel8.xml
-                    sed -i "s#JENKINS-URL#${jenkins_url}#" jenkins/data/slave-repos/beaker-rhel8.xml
+                    sed -i "s/JENKINS-USER/${JENKINS_USERNAME}/" jenkins/data/slave-repos/beaker*.xml
+                    sed -i "s/JENKINS-PASS/${JENKINS_PASSWORD}/" jenkins/data/slave-repos/beaker*.xml
+                    sed -i "s#JENKINS-URL#${jenkins_url}#" jenkins/data/slave-repos/beaker*.xml
                     beaker_hosts=()
                     for i in `seq 1 \$BEAKERS_HOSTS_COUNTER`; do
-                        job_number=\$(bkr job-submit jenkins/data/slave-repos/beaker-rhel8.xml | tr -dc '0-9')
+                        if [[ \$EL8_HOSTS_COUNTER -gt 0 ]]; then
+                            job_number=\$(bkr job-submit jenkins/data/slave-repos/beaker-el8.xml | tr -dc '0-9')
+                            \$EL8_HOSTS_COUNTER = \$EL8_HOSTS_COUNTER - 1
+                        else
+                            job_number=\$(bkr job-submit jenkins/data/slave-repos/beaker-rhel8.xml | tr -dc '0-9')
+                        fi
                         host=\$(curl -k \$beaker_url/\$job_number -H "Accept: application/json" | jq .recipesets[0].machine_recipes[0].resource.fqdn)
                         while [[ ! \$host =~ "bkr" ]]; do
                             sleep 60

@@ -174,13 +174,14 @@ sub-stages:
   - beaker-integration:
       runif:
         file-changed:
-          - data/slave-repos/beaker-rhel8.xml
+          - data/slave-repos/beaker*.xml
           - pipelines/standard-stage.groovy
       script:
         fromfile: automation/check-patch.sh
-      distro: rhel8
+      distro: [rhel8, el8]
       runtime-requirements:
         support-nesting-level: 2
+        jenkins_master: psi
   - packer_builder:
       runif:
         file-changed:
