@@ -177,6 +177,12 @@ _RUNTIME_REQUIREMENTS_TRANSLATONS = {
         'same': 'same',
         'newer': 'newer',
         'better': 'newer',
+        'el8': 'el8',
+        'centos8': 'el8',
+        'el8stream': 'el8stream',
+        'centos8stream': 'el8stream',
+        'el9stream': 'el9stream',
+        'centos9stream': 'el9stream'
     },
     'supportnestinglevel': {
         '0': 0,

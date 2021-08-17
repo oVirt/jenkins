@@ -478,6 +478,20 @@ def test_normalize_reporting_config(thread, expected):
                 'jenkinsmaster': 'psi',
             }
         ),
+        (
+            JobThread('check-patch', 'default', 'el7', 'x86_64', {
+                'runtimerequirements': {
+                    'hostdistro': 'el8',
+                }
+            }),
+            {
+                'supportnestinglevel': 0,
+                'isolationlevel': 'virtual',
+                'hostdistro': 'el8',
+                'sriovnic': False,
+                'jenkinsmaster': 'all',
+            }
+        ),
     ]
 )
 def test_normalize_runtime_requirements(thread, expected):

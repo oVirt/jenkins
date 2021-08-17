@@ -287,9 +287,10 @@ def get_std_ci_node_label(project, job) {
     }
     if(job.runtime_reqs?.hostdistro =~ /^(?i)same$/) {
         label_conditions << job.distro
-    }
-    if(job.runtime_reqs?.hostdistro =~ /^(?i)newer$/) {
+    } else if(job.runtime_reqs?.hostdistro =~ /^(?i)newer$/) {
         label_conditions << get_newer_distros_label(job.distro)
+    } else if(!job.runtime_reqs?.hostdistro.equals('any')) {
+        label_conditions << job.runtime_reqs?.hostdistro
     }
     // Only run FCRAW jobs on FC >= 29 slaves
     if(job.distro == 'fcraw') {
