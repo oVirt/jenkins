@@ -114,7 +114,6 @@ fi
         </and>
       </hostRequires>
       <partitions/>
-      <task name="/distribution/check-install" role="SERVERS"/>
       <task name="/distribution/reservesys" role="SERVERS">
         <params>
           <param name="RESERVETIME" value="10800"/>

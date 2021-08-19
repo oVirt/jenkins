@@ -18,7 +18,7 @@ package_list=(
   python3-setuptools xdg-user-dirs xdg-utils qemu-kvm
 )
 package_list+=(python{2,3}-{pyyaml,jinja2,six,py})
-
+dnf config-manager --set-enabled powertools
 dnf install -y "${package_list[@]}"
 
 alternatives --set python /usr/bin/python3
@@ -97,7 +97,6 @@ fi
       </ks_appends>
       <repos>
         <repo name="epel8" url="http://epel.mirror.wearetriple.com/8/Everything/x86_64/"/>
-        <repo name="powertools" url="http://mirror.centos.org/centos-8/8/PowerTools/x86_64/os/"/>
       </repos>
       <distroRequires>
         <and>
@@ -114,7 +113,6 @@ fi
         </and>
       </hostRequires>
       <partitions/>
-      <task name="/distribution/check-install" role="SERVERS"/>
       <task name="/distribution/reservesys" role="SERVERS">
         <params>
           <param name="RESERVETIME" value="10800"/>

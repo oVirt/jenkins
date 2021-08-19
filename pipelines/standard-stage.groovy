@@ -95,8 +95,11 @@ def loader_main(loader) {
                 for(job in jobs) {
                     String node_label = stdci_runner_lib.get_std_ci_node_label(project, job)
                     if(node_label.contains("integ-tests") && job?.beaker_label == null) {
-                        job.beaker_label = host
-                        break
+                        println(host.getClass())
+                        if(host.split(':')[1].equals(job.distro)) {
+                            job.beaker_label = host.split(':')[0]
+                            break
+                        }
                     }
                 }
             }
@@ -531,7 +534,8 @@ def invoke_beaker(rhel8_hosts, el8_hosts) {
                             host=\$(curl -k \$beaker_url/\$job_number -H "Accept: application/json" | jq .recipesets[0].machine_recipes[0].resource.fqdn)
                         done
                         host=\${host%%.*}
-                        beaker_hosts+=(\$host)
+                        beaker_hosts+=(\$host:rhel8)
+                    done
                     for i in `seq 1 \$EL8_HOSTS_COUNTER`; do
                         job_number=\$(bkr job-submit jenkins/data/slave-repos/beaker-el8.xml | tr -dc '0-9')
                         host=\$(curl -k \$beaker_url/\$job_number -H "Accept: application/json" | jq .recipesets[0].machine_recipes[0].resource.fqdn)
@@ -540,8 +544,7 @@ def invoke_beaker(rhel8_hosts, el8_hosts) {
                             host=\$(curl -k \$beaker_url/\$job_number -H "Accept: application/json" | jq .recipesets[0].machine_recipes[0].resource.fqdn)
                         done
                         host=\${host%%.*}
-                        beaker_hosts+=(\$host)                    
-                    done
+                        beaker_hosts+=(\$host:el8)
                     done
                     echo -n \${beaker_hosts[@]}
                 """.stripIndent()
