@@ -10,7 +10,7 @@ sub-stages:
                     jenkins_master: psi
               - el8stream:
                   runtime-requirements:
-                    host_distro: newer
+                    host_distro: el8
                     jenkins_master: upstream
               - el9stream:
                   runtime-requirements:
