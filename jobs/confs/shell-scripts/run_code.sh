@@ -208,7 +208,7 @@ inject_repos() {
         fi
         # this is here because for the init we can't use /etc/yum/vars or
         # something, as it's not there yet
-        repo_url="${repo_url//\$distro/$dist_label}"
+        repo_url="${repo_url//\$distro/$distro}"
         echo "Adding repo $repo_name -> $repo_url" >&2
         cat >>"$user_conf" <<EOR
 [$repo_name]
