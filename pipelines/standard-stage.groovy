@@ -176,7 +176,7 @@ def main() {
                 node('master') {
                     hudson.model.Hudson.instance.slaves.each {
                         for(host in beaker_hosts) {
-                            if(it.name.contains(host)) {
+                            if(it.name.contains(host.split(':')[0])) {
                                 println "Deleting ${it.name}"
                                 it.getComputer().doDoDelete()
                             }
