@@ -5,11 +5,8 @@ python3-requests
 python3-mock
 python3-jinja2
 python3-six
-python3-PyYAML
+python3-pyyaml
 git
 python3-pyxdg
 xdg-utils
 xdg-user-dirs
-# Currently no paramiko in centos8
-# https://koji.fedoraproject.org/koji/buildinfo?buildID=1389182
-# python3-paramiko
