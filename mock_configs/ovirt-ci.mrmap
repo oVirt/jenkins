@@ -5,4 +5,5 @@ el8:epel-8-ppc64le
 el8stream:centos-stream-8-x86_64
 el8stream:centos-stream-8-ppc64le
 el9stream:centos-stream-9-x86_64
+el9stream:centos-stream-9-s390x
 fcraw:fedora-rawhide-x86_64
