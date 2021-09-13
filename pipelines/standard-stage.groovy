@@ -82,7 +82,7 @@ def loader_main(loader) {
                         } else {
                             rhel8_hosts+=1
                         }
-                        
+
                     }
                 }
             }
@@ -185,6 +185,48 @@ def main() {
                 }
             }
         }
+            // copy el8 jenkins artifacts from psi to us
+        stage('Copying artifacts to us') {
+            node('master') {
+                println("Jenkins parameters:")
+                println("Jenkins BUILD_NUMBER: ${env.BUILD_NUMBER}")
+                println("Jenkins JOB_BASE_NAME: ${env.JOB_BASE_NAME}")
+                println("Jenkins JOB_NAME: ${env.JOB_NAME}")
+                println("Gerrit GERRIT_PATCHSET_NUMBER: ${env.GERRIT_PATCHSET_NUMBER}")
+                println("Gerrit GERRIT_CHANGE_NUMBER: ${env.GERRIT_CHANGE_NUMBER}")
+                println("Gerrit GERRIT_PATCHSET_REVISION: ${env.GERRIT_PATCHSET_REVISION}")
+                if (env.RUNNING_IN_PSI?.toBoolean()) {
+                    script: sh """#!/bin/bash -x
+                            ci_copied_data_flag=0
+                            ci_log_user="ci-logs"
+                            ci_log_host="buildlogs.ovirt.org"
+                            ci_log_path="/var/www/html/ci-logs/jobs/\${JOB_NAME}/builds/\${BUILD_NUMBER}/archive"
+                            ci_jenkins_path="/var/lib/jenkins/jobs/\${JOB_NAME}/builds/\${BUILD_NUMBER}/archive"
+                            cd "\${ci_jenkins_path}"
+                            if [[ \${JOB_NAME} =~ "ovirt-system-tests" ]]; then
+                                job_dir_created=0
+                                for platform in */; do
+                                    platform="\${platform%/*}"
+                                    if [[ \$platform =~ ".el8.x86_64" ]]; then
+                                        if [[ \$job_dir_created == 0 ]]; then
+                                            ssh "\${ci_log_user}@\${ci_log_host}" "mkdir -p \${ci_log_path}"
+                                            job_dir_created=1
+                                        fi
+                                        echo "PLATFORM: \$platform"
+                                        echo "Starting copying data"
+                                        scp -r "\${ci_jenkins_path}/\${platform}" "\${ci_log_user}@\${ci_log_host}:\${ci_log_path}"
+                                        echo "Finished copying data"
+                                        ci_copied_data_flag=1
+                                    fi
+                                done
+                                if [[ \$job_dir_created ]]; then
+                                    ssh -p 29418 jenkins-psi2@gerrit.ovirt.org gerrit review \${GERRIT_CHANGE_NUMBER},\${GERRIT_PATCHSET_NUMBER} --message "http://\${ci_log_host}/ci-logs/jobs/\${JOB_NAME}/builds/\${BUILD_NUMBER}"
+                                fi
+                            fi
+                    """
+                }
+            }
+        }
     }
     if(!queues.empty && job_properties.is_gated_project) {
         stage('Deploying to gated repo') {
@@ -192,7 +234,6 @@ def main() {
         }
     }
     println("call_beaker is set to: ${call_beaker}")
-
 }
 
 @NonCPS
@@ -397,7 +438,7 @@ def copy_previos_build_artifacts(previous_build) {
     if(previous_build.result != 'SUCCESS') {
         error 'Previous build failed'
     }
-    echo "Getting artifacts from previous build instead of building"
+    echo "Check Getting artifacts from previous build instead of building"
     dir('imported-artifacts') {
         deleteDir()
         copyArtifacts(
