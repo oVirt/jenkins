@@ -1042,7 +1042,7 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 TRY_PROXY="true"
                 shift
             ;;
-            -P|--try-mirrors)
+            -M|--try-mirrors)
                 TRY_MIRRORS="$2"
                 shift 2
             ;;
