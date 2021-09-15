@@ -1,13 +1,5 @@
 ---
 - project-template:
-    name: ost-gated-project
-    gate-patch: &ost_gate_jobs
-      queue: ovirt
-      jobs:
-        - ost-gate
-    gate-patch-emulator: *ost_gate_jobs
-
-- project-template:
     name: jenkins-gated-project
     gate-patch: &jenkins_gate_jobs
       queue: dummy

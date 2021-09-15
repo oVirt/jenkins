@@ -12,7 +12,6 @@ all:
             zuul_jobs_project: ovirt-zuul-config
             zuul_projects:
               - jenkins
-              - ovirt-system-tests
               - infra-docs
               - ovirt-provider-ovn
         staging:
