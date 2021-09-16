@@ -11,6 +11,10 @@ umount_everyhting_inside() {
         $(mount | awk '{ print $3 }' | egrep "^$mydir" | sort -r)
     )
     local inner_dir
+    if ! can_sudo umount; then
+        echo "Skipping umount - no sudo permissions"
+        return
+    fi
     for inner_dir in "${inner_dirs[@]}"; do
         sudo -n umount --lazy "$inner_dir" \
         && echo "    Umounted $inner_dir" \
@@ -29,11 +33,11 @@ safe_remove() {
         umount_everyhting_inside "$dir" \
         || return 1
         rm -Rf "$dir" || {
-            [[ -d "$dir" ]] && sudo -n rm -Rf "$dir"
+            [[ -d "$dir" ]] && sudo -n rm -Rf "$dir" || echo "Can't sudo rm $dir"
         }
     else
         rm -f "$dir" || {
-            [[ -e "$dir" ]] && sudo -n rm -f "$dir"
+            [[ -e "$dir" ]] && sudo -n rm -f "$dir" || echo "Can't sudo rm $dir"
         }
     fi
     return 0
@@ -325,6 +329,11 @@ rollback_os_repos() {
     local failed=false
     local yum_conf
 
+    if ! can_sudo mv; then
+        log WARN "Skipping Rolling back uncommitted OS repo update ; no sudo permissions for mv"
+        return 0
+    fi
+
     for yum_conf in /etc{{/yum,}/yum.conf,/dnf/dnf.conf}; do
         [[ -f "$yum_conf" ]] || continue
         [[ -f "${yum_conf}.rbk" ]] || continue
@@ -348,6 +357,12 @@ rollback_file() {
     local file_rbk="${file}.rbk"
 
     [[ -f "$file" ]] && [[ -f "$file_rbk" ]] || return 0
+
+    if ! can_sudo mv; then
+        log WARN "Skipping Rolling back uncommited file: $file ; no sudo permissions for mv"
+        return 0
+    fi
+
     echo "Rolling back uncommited file: $file"
     sudo -n mv --force "$file_rbk" "$file" || return $?
 
@@ -467,7 +482,11 @@ main() {
     echo "###############################################################"
     echo "#    Cleaning up slave                                        #"
     echo "###############################################################"
-    sudo -n df -h || df -h || :
+    if ! can_sudo df; then
+        echo "Skipping df - no sudo permissions"
+    else
+        sudo -n df -h || df -h || :
+    fi
     echo "---------------------------------------------------------------"
     rollback_os_repos || failed=true
     rollback_known_hosts || failed=true
@@ -485,7 +504,11 @@ main() {
     cleanup_dev_shm || failed=true
     cleanup_mock || failed=true
     echo "---------------------------------------------------------------"
-    sudo -n df -h || df -h || :
+    if ! can_sudo df; then
+        echo "Skipping df - no sudo permissions"
+    else
+        sudo -n df -h || df -h || :
+    fi
     if $failed; then
         echo "###############################################################"
         echo "#    Slave cleanup done: Some steps FAILED!                   #"
