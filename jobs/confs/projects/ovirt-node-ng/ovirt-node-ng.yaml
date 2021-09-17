@@ -10,12 +10,15 @@
           branch: master
     stage: build-artifacts
     distro:
-      - el8
+      - el8:
+          node-filter: 'el7 && 80gb-disk'
+      - el9stream:
+          runtime-requirements:
+            host_distro: newer
     trigger: 'timed'
     trigger-times: 'H H(5-8) * * *'
     arch:
       - x86_64
-    node-filter: 'el7 && 80gb-disk'
     email-to: 'lveyde@redhat.com'
     jobs:
         - '{project}_{version}_build-artifacts-{distro}-{arch}{_big_artifacts}'
