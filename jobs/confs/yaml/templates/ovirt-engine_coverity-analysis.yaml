@@ -16,6 +16,6 @@
           branch: 'master'
           git-server: '{git-server}'
           git-proto: 'https'
-    jdk: 'java-1.8.0-openjdk'
+    jdk: 'java-11-openjdk'
     builders:
       - shell: !include-raw: shell-scripts/coverity_analysis.sh
