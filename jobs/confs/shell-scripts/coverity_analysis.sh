@@ -20,26 +20,29 @@ rm -rf "{{$WORKSPACE}}"/"cov-analysis-linux64-*"
 tar -xvf  coverity_tool.tgz
 
 projects="\
+backend/manager/extensions-tool,\
 backend/manager/modules/aaa,\
+backend/manager/modules/auth-plugin,\
 backend/manager/modules/bll,\
 backend/manager/modules/branding,\
+backend/manager/modules/builtin-extensions,\
 backend/manager/modules/common,\
 backend/manager/modules/compat,\
 backend/manager/modules/dal,\
-backend/manager/modules/root,\
-backend/manager/modules/scheduler,\
-backend/manager/modules/searchbackend,\
-backend/manager/modules/utils,\
-backend/manager/modules/vdsbroker,\
-backend/manager/modules/auth-plugin,\
-backend/manager/modules/builtin-extensions,\
 backend/manager/modules/enginesso,\
 backend/manager/modules/extensions-api-root,\
 backend/manager/modules/extensions-manager,\
-backend/manager/modules/nmicrobenchmarks,\
+backend/manager/modules/microbenchmarks,\
 backend/manager/modules/restapi,\
+backend/manager/modules/root,\
+backend/manager/modules/scheduler,\
+backend/manager/modules/searchbackend,\
 backend/manager/modules/services,\
-backend/manager/modules/uutils,
+backend/manager/modules/utils,\
+backend/manager/modules/uutils,\
+backend/manager/modules/vdsbroker,\
+backend/manager/sso-client-registration-tool,\
+backend/manager/tools
 "
 pushd ovirt-engine
 ../cov-analysis-linux64-*/bin/cov-build \
