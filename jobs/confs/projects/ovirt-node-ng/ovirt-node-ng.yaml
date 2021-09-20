@@ -13,6 +13,7 @@
       - el8:
           node-filter: 'el7 && 80gb-disk'
       - el9stream:
+          node-filter: 'el9stream'
           runtime-requirements:
             host_distro: newer
     trigger: 'timed'
