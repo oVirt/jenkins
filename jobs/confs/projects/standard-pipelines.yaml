@@ -108,7 +108,6 @@
       - ovirt-engine-wildfly
       - ovirt-engine-yarn
       - ovirt-host
-      - ovirt-host-deploy
       - ovirt-hosted-engine-ha
       - ovirt-hosted-engine-setup
       - ovirt-imageio

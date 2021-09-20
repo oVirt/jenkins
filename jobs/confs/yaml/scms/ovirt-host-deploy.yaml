@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-host-deploy-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-host-deploy
-          git-server: '{git-server}'
