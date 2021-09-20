@@ -17,7 +17,7 @@
           runtime-requirements:
             host_distro: newer
     trigger: 'timed'
-    trigger-times: 'H H(5-8) * * *'
+    trigger-times: '0 23 * * *'
     arch:
       - x86_64
     email-to: 'lveyde@redhat.com'
