@@ -1,6 +1,8 @@
 #!/bin/bash -xe
 echo "shell-scripts/coverity_analysis.sh"
 
+dnf install java-11-openjdk-devel maven
+
 mkdir -p "${{WORKSPACE}}/tmp"
 export TMPDIR="${{WORKSPACE}}/tmp"
 
