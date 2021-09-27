@@ -8,20 +8,11 @@
           branch: master
           trigger: 'timed'
           trigger-times: '@daily'
-      - '4.3':
-          branch: ovirt-4.3
-          trigger: 'timed'
-          trigger-times: '@daily'
     arch:
       - x86_64
     distro:
-      - el7
       - el8
-    exclude:
-      - { version: '4.3', distro: el8 }
-      - { version: 'master', distro: el7 }
     node-filter: 'el7 && 80gb-disk'
     email-to: 'lveyde@redhat.com'
     jobs:
       - 'ovirt-appliance_{version}_build-artifacts-{distro}-{arch}'
-
