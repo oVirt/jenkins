@@ -87,8 +87,16 @@ def mk_mock_std_ci_runner(report, project, job, mirrors=null, extra_sources=null
         } else {
             print "This script required nodes with label: $node_label"
         }
-        node(node_label) {
-            run_std_ci_on_node(report, project, job, mirrors, extra_sources)
+        if(node_label.contains("bkr")) {
+            timeout(time: 200) {
+                node(node_label) {
+                    run_std_ci_on_node(report, project, job, mirrors, extra_sources)
+                }
+            }
+        } else {
+            node(node_label) {
+                run_std_ci_on_node(report, project, job, mirrors, extra_sources)
+            }
         }
     }
 }
