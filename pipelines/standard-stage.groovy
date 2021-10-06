@@ -234,17 +234,10 @@ def get_stage_gerrit() {
 
 def set_gerrit_trigger_voting(project, stage_name) {
     if(stage_name != "check-patch") { return }
-    if(!env.RUNNING_IN_PSI?.toBoolean()) {
-        modify_build_parameter(
+    modify_build_parameter(
         "GERRIT_TRIGGER_CI_VOTE_LABEL",
         "--label Continuous-Integration=<CODE_REVIEW>"
-        )
-    } else {
-        modify_build_parameter(
-            "GERRIT_TRIGGER_CI_VOTE_LABEL",
-            "--label RHEL-Continuous-Integration=<CODE_REVIEW>"
-        )
-    }
+    )
 }
 
 def set_gerrit_automerge(project, stage_name) {
