@@ -16,6 +16,8 @@ package_list=(
   libselinux-utils kmod rpm-plugin-selinux java-1.8.0-openjdk-devel
   python3-pyxdg python2-pip podman python3-pip python3-pytest
   python3-setuptools xdg-user-dirs xdg-utils qemu-kvm
+  autoconf automake libcurl-devel libxml2-devel gcc openssl-devel
+  python3-devel rpm-build virt-install
 )
 package_list+=(python{2,3}-{pyyaml,jinja2,six,py})
 dnf config-manager --set-enabled powertools
