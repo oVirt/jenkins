@@ -148,7 +148,7 @@ user_configuration() {
         if ! groups | grep -q '\bmock\b'; then
             log ERROR "$USER user is not part of the mock group"
             if can_sudo usermod; then
-                if sudo -n usermod -a -G mock $USER; then
+                if sudo -n usermod -a -G mock "$USER"; then
                     log INFO "mock group membership added, agent restart required"
                 else
                     log ERROR "Failed to set mock group membership"
@@ -204,7 +204,7 @@ nested_kvm() {
     [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]] && return 0
     #enable nested KVM on Intel if missing
     #check if our hardware has Intel VT, skip otherwise
-    if [[ "$(cat /proc/cpuinfo | grep vmx)" ]]; then
+    if grep -q vmx /proc/cpuinfo ; then
         #check if nested is already enabled
         if ! is_nested_kvm_enabled; then
             #check if sudo is available
@@ -232,9 +232,11 @@ verify_ipv6() {
     # check if any routes received via router advertisements are in place
     if [[ "$(/sbin/ip -6 route list proto ra)" ]]; then
         # create a list of interfaces with such routes to check accept_ra value
-        local iflist="$(/sbin/ip -6 route list proto ra | grep -oP '(?<=dev )(\w+)' | sort | uniq)"
+        local iflist
+        iflist="$(/sbin/ip -6 route list proto ra | grep -oP '(?<=dev )(\w+)' | sort | uniq)"
         for ifname in $iflist; do
-            local ra_conf_path="/proc/sys/net/ipv6/conf/$ifname/accept_ra"
+            local ra_conf_path
+            ra_conf_path="/proc/sys/net/ipv6/conf/$ifname/accept_ra"
             if [[ -f "$ra_conf_path" ]]; then
                 if [[ "$(cat $ra_conf_path)" -ne "2" ]]; then
                     if can_sudo /sbin/sysctl; then
@@ -316,7 +318,7 @@ podman_setup() {
         return 0
     fi
     log INFO "Setting podman"
-    if ! [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]]; then
+    if [[ -z "$STDCI_SLAVE_CONTAINER_NAME" ]]; then
         verify_packages podman || return 1
     fi
     log INFO "$(podman --version)"
@@ -337,7 +339,7 @@ docker_setup () {
     #Install docker engine and start the service
     log INFO "Trying to setup Docker"
 
-    if ! [[ -n "$STDCI_SLAVE_CONTAINER_NAME" ]]; then
+    if [[ -z "$STDCI_SLAVE_CONTAINER_NAME" ]]; then
         verify_packages docker || return 1
     fi
 
@@ -505,7 +507,8 @@ verify_set_permissions() {
     local target_permissions="${1:?Error. file permissions must be provided (OCTAL)}"
     local path_to_set="${2:?Error. path must be provided}"
 
-    local access="$(stat -c %a "$path_to_set")"
+    local access
+    access="$(stat -c %a "$path_to_set")"
     if [[ "$access" != "$target_permissions" ]]; then
         if ! can_sudo chmod; then
             log ERROR "Wrong access right to $path_to_set - no permissions to fix."
