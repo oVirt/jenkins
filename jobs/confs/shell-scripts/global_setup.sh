@@ -278,7 +278,7 @@ extra_packages() {
     )
     if [[ "$os" =~ "fedora" ]]; then
         # Fedora-specific packages
-        package_list+=(python{2,3}-{pyyaml,pyxdg,jinja2,six,py})
+        package_list+=(python3-{pyyaml,pyxdg,jinja2,six,py})
         if can_sudo dnf; then
             package_list+=(
                 firewalld haveged libvirt qemu-kvm python3-paramiko
