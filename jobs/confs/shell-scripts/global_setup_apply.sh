@@ -50,4 +50,18 @@ can_sudo() {
     done
 }
 
+log() {
+    local level="${1:?}"
+    shift
+    local message="$*"
+    local prefix
+
+    if [[ ${#FUNCNAME[@]} -gt 1 ]]; then
+        prefix="global_setup_apply[${FUNCNAME[1]}]"
+    else
+        prefix="global_setup_apply"
+    fi
+    echo "$prefix $level: $message"
+}
+
 main "@$"
