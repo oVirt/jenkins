@@ -10,6 +10,10 @@ main() {
 }
 
 apply_os_repos() {
+    if ! can_sudo mv; then
+        log WARN "Skipping Applying OS repo updates"
+        return 0
+    fi
     for yum_conf in /etc{{/yum,}/yum.conf,/dnf/dnf.conf}; do
         [[ -f "$yum_conf" ]] || continue
         [[ -f "${yum_conf}.rbk" ]] || continue
@@ -29,8 +33,21 @@ apply_file() {
     local old_file="${file}.old"
 
     [[ -f "$file" ]] && [[ -f "$rbk_file" ]] || return 0
+
+    if ! can_sudo mv; then
+        log WARN "Can't keep configuration file $file"
+        return 0
+    fi
     echo "Keeping configuration file $file"
     sudo -n mv --force "$rbk_file" "$old_file"
+}
+
+can_sudo() {
+    local cmd
+
+    for cmd in "$@"; do
+        sudo -nl "$cmd" >& /dev/null || return 1
+    done
 }
 
 main "@$"
