@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 echo "shell-scripts/cleanup_slave.sh"
 
 WORKSPACE="${WORKSPACE?}"
@@ -488,21 +488,21 @@ main() {
         sudo -n df -h || df -h || :
     fi
     echo "---------------------------------------------------------------"
-    rollback_os_repos || failed=true
-    rollback_known_hosts || failed=true
-    cleanup_postgres || failed=true
-    cleanup_journal || failed=true
-    cleanup_var || failed=true
-    cleanup_logs || failed=true
-    cleanup_workspaces "$workspace" || failed=true
-    cleanup_home || failed=true
-    cleanup_loop_devices || failed=true
-    cleanup_lago || failed=true
-    cleanup_libvirt || failed=true
-    kill_lago_processes || failed=true
-    cleanup_old_artifacts || failed=true
-    cleanup_dev_shm || failed=true
-    cleanup_mock || failed=true
+    rollback_os_repos && echo "OK" || failed=true && echo "Failed"
+    rollback_known_hosts  && echo "OK" || failed=true && echo "Failed"
+    cleanup_postgres  && echo "OK" || failed=true && echo "Failed"
+    cleanup_journal  && echo "OK" || failed=true && echo "Failed"
+    cleanup_var  && echo "OK" || failed=true && echo "Failed"
+    cleanup_logs  && echo "OK" || failed=true && echo "Failed"
+    cleanup_workspaces "$workspace"  && echo "OK" || failed=true && echo "Failed"
+    cleanup_home  && echo "OK" || failed=true && echo "Failed"
+    cleanup_loop_devices  && echo "OK" || failed=true && echo "Failed"
+    cleanup_lago  && echo "OK" || failed=true && echo "Failed"
+    cleanup_libvirt  && echo "OK" || failed=true && echo "Failed"
+    kill_lago_processes  && echo "OK" || failed=true && echo "Failed"
+    cleanup_old_artifacts  && echo "OK" || failed=true && echo "Failed"
+    cleanup_dev_shm  && echo "OK" || failed=true && echo "Failed"
+    cleanup_mock  && echo "OK" || failed=true && echo "Failed"
     echo "---------------------------------------------------------------"
     if ! can_sudo df; then
         echo "Skipping df - no sudo permissions"
