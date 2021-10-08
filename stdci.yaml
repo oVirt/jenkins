@@ -23,7 +23,7 @@ sub-stages:
             distro: [el7, el8, el8stream]
         - s390x:
             distro:
-              - el7
+              - el9stream
             script:
               fromfile: automation/check-patch-s390x.sh
             stage: check-patch
@@ -156,7 +156,7 @@ sub-stages:
             distro: [el7, el8]
         - s390x:
             distro:
-              - el7
+              - el9stream
       runif:
         file-changed:
           - stdci_libs/*.py
