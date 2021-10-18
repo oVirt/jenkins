@@ -8,6 +8,10 @@
           branch: master
           trigger: 'timed'
           trigger-times: '@daily'
+      - '4.4':
+          branch: ovirt-4.4
+          trigger: 'timed'
+          trigger-times: '@daily'
     arch:
       - x86_64
     distro:
