@@ -8,6 +8,8 @@
     version:
       - master:
           branch: master
+      - '4.4':
+          branch: ovirt-4.4
     stage: build-artifacts
     distro:
       - el8:
@@ -16,6 +18,8 @@
           node-filter: 'el9stream'
           runtime-requirements:
             host_distro: newer
+    exclude:
+      - { version: '4.4', distro: el9stream }
     trigger: 'timed'
     trigger-times: '0 23 * * *'
     arch:
