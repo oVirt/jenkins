@@ -198,13 +198,13 @@ def main() {
                 if (env.RUNNING_IN_PSI?.toBoolean()) {
                     script: sh """#!/bin/bash -x
                             ci_copied_data_flag=0
+                            job_dir_created=0
                             ci_log_user="ci-logs"
                             ci_log_host="buildlogs.ovirt.org"
                             ci_log_path="/var/www/html/ci-logs/jobs/\${JOB_NAME}/builds/\${BUILD_NUMBER}/archive"
                             ci_jenkins_path="/var/lib/jenkins/jobs/\${JOB_NAME}/builds/\${BUILD_NUMBER}/archive"
                             cd "\${ci_jenkins_path}"
                             if [[ \${JOB_NAME} =~ "ovirt-system-tests" ]]; then
-                                job_dir_created=0
                                 for platform in */; do
                                     platform="\${platform%/*}"
                                     if [[ \$platform =~ ".el8.x86_64" ]]; then
@@ -220,7 +220,7 @@ def main() {
                                         ci_copied_data_flag=1
                                     fi
                                 done
-                                if [[ \$job_dir_created ]]; then
+                                if [[ \$job_dir_created == 1 ]]; then
                                     ssh -p 29418 jenkins-psi2@gerrit.ovirt.org gerrit review \${GERRIT_CHANGE_NUMBER},\${GERRIT_PATCHSET_NUMBER} --message "http://\${ci_log_host}/ci-logs/jobs/\${JOB_NAME}/builds/\${BUILD_NUMBER}"
                                 fi
                             fi
