@@ -215,7 +215,7 @@ def main() {
                                         echo "PLATFORM: \$platform"
                                         echo "Starting copying data"
                                         scp -r "\${ci_jenkins_path}/\${platform}" "\${ci_log_user}@\${ci_log_host}:\${ci_log_path}"
-                                        ssh "\${ci_log_user}@\${ci_log_host}" "chmod -R a+r \${ci_log_path}"
+                                        ssh "\${ci_log_user}@\${ci_log_host}" "chmod -R a+r \${ci_log_path}; /home/ci-logs/regex-change/change_string.sh \${ci_log_path}"
                                         echo "Finished copying data"
                                         ci_copied_data_flag=1
                                     fi
