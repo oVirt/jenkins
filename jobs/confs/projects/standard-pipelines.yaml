@@ -24,7 +24,6 @@
       - ovirt-cockpit-sso
       - ovirt-engine-sdk-go
       - ovirt-openshift-extensions
-      - ovirt-release
       - ovirt-web-ui
       - python-ovirt-engine-sdk4
       - terraform-provider-ovirt
