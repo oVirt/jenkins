@@ -26,7 +26,7 @@
 #   RewriteRule "^/repos/yum/([^/]+)/([0-9-]+)/repodata/(.*)$" "/repos/yum/$1/base/repodata/$3" [R]
 #
 MIRRORS_MP_BASE="${MIRRORS_MP_BASE:-/var/www/html/repos}"
-MIRRORS_HTTP_BASE="${MIRRORS_HTTP_BASE:-http://mirrors.phx.ovirt.org/repos}"
+MIRRORS_HTTP_BASE="${MIRRORS_HTTP_BASE:-http://mirrors-wdc.ovirt.org/repos}"
 MIRRORS_CACHE="${MIRRORS_CACHE:-$HOME/mirrors_cache}"
 YUM_PATH="/yum/"
 MIRRORS_BASE_PREFIX="${MIRRORS_MP_BASE}${YUM_PATH}"
@@ -303,8 +303,8 @@ run_reposync() {
         --config="$reposync_conf" \
         --repoid="$repo_name" \
         --arch="$repo_arch" \
-        --cachedir="$MIRRORS_CACHE" \
-        --download_path="$MIRRORS_MP_BASE/yum/$repo_name/base" \
+        --metadata-path="$MIRRORS_CACHE" \
+        --download-path="$MIRRORS_MP_BASE/yum/$repo_name/base" \
         --norepopath \
         "${extra_args[@]}"
 }

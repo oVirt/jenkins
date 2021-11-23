@@ -227,7 +227,7 @@ def inject_yum_mirrors_file_by_pattern(
 
 
 def mirrors_from_http(
-    url='http://mirrors.phx.ovirt.org/repos/yum/all_latest.json',
+    url='http://mirrors-wdc.ovirt.org/repos/yum/all_latest.json',
     json_varname='latest_ci_repos',
     allow_proxy=False,
     none_value=None
