@@ -12,11 +12,3 @@
     arch: x86_64
     jobs:
         - 'jenkins_{version}_{stage}-{distro}-{arch}'
-
-- project:
-    <<: *basic-params
-    name: jenkins_checks_ppc64le
-    arch: ppc64le
-    distro:
-      - el7:
-          node-filter: ppc64le
