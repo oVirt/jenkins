@@ -1,8 +1,0 @@
-- project:
-    name: ovirt-system-tests_manual
-    git-server: 'gerrit.ovirt.org'
-    project: 'ovirt-system-tests'
-    ost-flavour: 'ovirt'
-    node-filter: integ-tests-container
-    jobs:
-      - '{project}_manual'
