@@ -26,7 +26,7 @@ def loader_main(loader) {
 
 def main() {
     env.STD_CI_JOB_UID = get_job_uid()
-    loader_node(enable_nfs: (env.LOADER_ENABLE_NFS?.toBoolean() ?: true)) {
+    loader_node(enable_nfs: (env.LOADER_ENABLE_NFS?.toBoolean() ?: false)) {
         stage('loading code') {
             dir("exported-artifacts") { deleteDir() }
             def checkoutData = checkout_jenkins_repo()
@@ -142,7 +142,7 @@ def loader_pod_spec(code) {
     // written, to maintain compatibility, over time we should migrate to a
     // default value that is defined in JJB.
     def default_image = \
-        "docker.io/ovirtinfra/el7-loader-node:e786721a956a3e261142d6ff7614117e3f6f302b"
+        "quay.io/ovirtinfra/el8-loader-node"
     def image = env.LOADER_IMAGE ?: default_image
     def pod_label = pod_label_from(env.BUILD_TAG)
     podTemplate(
@@ -151,7 +151,6 @@ def loader_pod_spec(code) {
         // Specify POD label manually to support older K8s plugin versions
         label: pod_label,
         namespace: env.OPENSHIFT_PROJECT,
-        nodeSelector: 'type=vm,zone=ci',
         serviceAccount: 'jenkins-loader-node',
         containers: [
             containerTemplate(
