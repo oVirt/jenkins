@@ -36,3 +36,4 @@
     abort-on-update: ''
     loader-node-label: 'loader-container'
     openshift-project: stdci-production
+    container-cloud: 'kubernetes'
