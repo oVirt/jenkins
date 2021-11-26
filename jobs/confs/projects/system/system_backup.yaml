@@ -2,7 +2,7 @@
 # 1) create ssh site in jenkins global configuration, this is ssh_local
 # 2) ensure that site has duplicity installed
 # 3) add here a new project with the apropriate directory structure, i.e.:
-#    ssh://jenkins-backup@backup.phx.ovirt.org/{hostname}/duplicity
+#    ssh://jenkins-backup@backup-wdc.ovirt.org/{hostname}/duplicity
 #    the directory will be auto-created.
 # 4) for more details see 'man duplicity'
 #
@@ -17,7 +17,7 @@
           ssh_local: 'backup_jenkins_ovirt_org'
           backup_dir: '/var/lib/data/jenkins'
           exclude_list: '**.temp2,**/.git/**,**.jar,**/exported-artifacts/**,**/workspace/**,jobs/**/exported-artifacts/**,**.iso,**.rpm,jobs/**/builds/**/archive/**'
-          ssh_remote: 'sftp://jenkins-backup@backup.phx.ovirt.org/jenkins_ovirt_org/duplicity'
+          ssh_remote: 'sftp://jenkins-backup@backup-wdc.ovirt.org/jenkins_ovirt_org/duplicity'
           uuid: '386bae3f-f3b7-4778-a317-224d0f9a090c'
           to_keep: '180'
           full: '30'
