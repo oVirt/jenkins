@@ -97,6 +97,7 @@
       - ovirt-engine-extension-aaa-ldap
       - ovirt-engine-extension-aaa-misc
       - ovirt-engine-extension-logger-log4j
+      - ovirt-engine-keycloak
       - ovirt-engine-metrics
       - ovirt-engine-nodejs
       - ovirt-engine-nodejs-modules
