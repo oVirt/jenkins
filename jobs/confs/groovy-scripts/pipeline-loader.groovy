@@ -26,7 +26,7 @@ def loader_main(loader) {
 
 def main() {
     env.STD_CI_JOB_UID = get_job_uid()
-    loader_node(enable_nfs: (env.LOADER_ENABLE_NFS?.toBoolean() ?: false)) {
+    loader_node() {
         stage('loading code') {
             dir("exported-artifacts") { deleteDir() }
             def checkoutData = checkout_jenkins_repo()
