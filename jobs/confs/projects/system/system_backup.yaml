@@ -15,7 +15,7 @@
     hostname:
       - jenkins_ovirt_org:
           ssh_local: 'backup_jenkins_ovirt_org'
-          backup_dir: '/var/lib/data/jenkins'
+          backup_dir: '/var/lib/jenkins'
           exclude_list: '**.temp2,**/.git/**,**.jar,**/exported-artifacts/**,**/workspace/**,jobs/**/exported-artifacts/**,**.iso,**.rpm,jobs/**/builds/**/archive/**'
           ssh_remote: 'sftp://jenkins-backup@backup-wdc.ovirt.org/jenkins_ovirt_org/duplicity'
           uuid: '386bae3f-f3b7-4778-a317-224d0f9a090c'
