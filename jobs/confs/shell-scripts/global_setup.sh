@@ -301,7 +301,11 @@ extra_packages() {
             )
         fi
     else
-        package_list+=(python3-{pyyaml,jinja2,six,py,pyxdg})
+        if [[ "$os" =~ 'centos9' ]]; then
+            package_list+=(python3-{pyyaml,jinja2,six,pyxdg})
+        else
+            package_list+=(python-{pyyaml,jinja2,six,pyxdg})
+        fi
         if can_sudo dnf; then
             package_list+=(
                 firewalld haveged libvirt qemu-kvm python3-paramiko
