@@ -292,7 +292,7 @@ extra_packages() {
         # CentOS-7-specific packages
         package_list+=(
             python-paramiko PyYAML python2-pyxdg python-jinja2 python-py
-            python-six python36-PyYAML python36-pyxdg rpm-libs ca-certifactes
+            python-six python36-PyYAML python36-pyxdg rpm-libs ca-certificates
         )
         if can_sudo yum; then
             package_list+=(
