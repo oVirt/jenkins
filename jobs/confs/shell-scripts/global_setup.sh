@@ -292,7 +292,7 @@ extra_packages() {
         # CentOS-7-specific packages
         package_list+=(
             python-paramiko PyYAML python2-pyxdg python-jinja2 python-py
-            python-six python36-PyYAML python36-pyxdg rpm-libs
+            python-six python36-PyYAML python36-pyxdg rpm-libs ca-certifactes
         )
         if can_sudo yum; then
             package_list+=(
@@ -301,11 +301,8 @@ extra_packages() {
             )
         fi
     else
-        if [[ "$os" =~ 'centos9' ]]; then
-            package_list+=(python3-{pyyaml,jinja2,six,pyxdg})
-        else
-            package_list+=(python-{pyyaml,jinja2,six,pyxdg})
-        fi
+        # CentOS-8 + CentOS-9-specific packages
+        package_list+=(python3-{pyyaml,jinja2,six,pyxdg})
         if can_sudo dnf; then
             package_list+=(
                 firewalld haveged libvirt qemu-kvm python3-paramiko
