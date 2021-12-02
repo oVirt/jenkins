@@ -158,7 +158,7 @@ def loader_pod_spec(code) {
                 image: image,
                 alwaysPullImage: false,
                 ttyEnabled: true,
-                resourceLimitMemory: '384Mi',
+                resourceLimitMemory: '2178Mi',
                 resourceRequestMemory: '384Mi',
             )
         ],
