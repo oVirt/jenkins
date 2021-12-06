@@ -2,7 +2,6 @@
     name: publish-rpms-nightly
     release:
       - master
-      - '4.3'
       - '4.4'
     jobs:
       - 'ovirt_{release}_publish-rpms_nightly'
