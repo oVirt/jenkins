@@ -128,7 +128,6 @@
       - pywin32-py2.7
       - releng-tools
       - repoman
-      - safelease
       - vdsm
       - vdsm-jsonrpc-java
     jobs:
