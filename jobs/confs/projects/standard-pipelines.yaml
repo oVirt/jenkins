@@ -11,7 +11,6 @@
     project:
       - ovirt-ansible
       - ovirt-ansible-cluster-upgrade
-      - ovirt-ansible-collection
       - ovirt-ansible-disaster-recovery
       - ovirt-ansible-engine-setup
       - ovirt-ansible-hosted-engine-setup
