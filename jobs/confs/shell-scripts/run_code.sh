@@ -98,6 +98,9 @@ help() {
             Path to secrets file
             (default is \${xdg_home}/ci_secrets_file.yaml)
 
+        --with-repo-inject
+            Path to repo inject file
+
     Example:
 
     To run the build script on the default environment:
@@ -224,6 +227,8 @@ EOR
     extra_user_repos=$(cat "${user_conf}")
     echo -e "${repo_conf}\n${extra_user_repos}" > "/tmp/${REPO_CONF_FILE##*/}"
     cp "/tmp/${REPO_CONF_FILE##*/}" "${REPO_CONF_FILE}"
+    # update repos
+    inject_fixed_repo "$distro"
     # Install all user packages.
     "${REPO_INSTALLER}" install -y "${packages[@]}"
 
@@ -398,6 +403,34 @@ prepare_code_mnt() {
     done
 }
 
+inject_fixed_repo(){
+    local distro="${1?}"
+    local script_dir=$(dirname "$0")
+    echo "script_dir: $script_dir"
+    local repo_regex_file="$REPO_INJECT"
+    local old_repo
+    local new_repo
+    set -x
+    while IFS='|' read -r old_repo new_repo
+    do
+        local yum_dir="/etc/yum.repos.d"
+        local yum_conf="/etc/yum.conf"
+        if [[ "$distro" =~ "rhel" ]]; then
+            {
+                if [[ "$distro" == "rhel7" ]]; then
+                    sed -i -e "s/$old_repo/$new_repo/g" "$yum_conf"
+                fi
+                if [[ "$distro" != "rhel7" ]]; then
+                    local dnf_conf="/etc/dnf/dnf.conf"
+                    sed -i -e "s/$old_repo/$new_repo/g" "$dnf_conf"
+                fi
+                find "$yum_dir" -type f -name "*.repo" -exec sed -i "s|$old_repo|$new_repo|g" {} \;
+            } 2> /dev/null
+        fi
+    done < "$repo_regex_file"
+    set +x
+}
+
 run_script() {
     local distro="${1?}"
     local cleanup="${2?}"
@@ -479,6 +512,8 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
     long_opts+=",try-proxy"
     short_opts+=",P"
 
+    long_opts+=",with-repo-inject:"
+
     long_opts+=",try-mirrors:"
     short_opts+=",M:"
 
@@ -554,6 +589,11 @@ if ! [[ "$0" =~ ^.*/bash$ ]]; then
                 SECRETS_FILE="$2"
                 shift 2
             ;;
+            --with-repo-inject)
+                REPO_INJECT="$2"
+                shift 2
+            ;;
+
             -t|--timeout-duration)
                 TIMEOUT_DURATION="$2"
                 shift 2

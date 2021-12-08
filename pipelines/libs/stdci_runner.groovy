@@ -536,7 +536,33 @@ def run_std_ci_in_slave(project, job, report, tfr, mirrors_file, extra_sources) 
     }
 }
 
+boolean fileCredentialsExist(String id) {
+    try {
+        withCredentials([file(credentialsId: id, variable: 'irrelevant')]) {
+            true
+        }
+    } catch (_) {
+        false
+    }
+}
+
 def run_code(script, distro, arch, mirrors=null) {
+   if (fileCredentialsExist('repo_injection')) {
+       withCredentials(
+           [
+              file(credentialsId: 'repo_injection', variable: 'REPO_INJECTION')
+           ]
+       ){
+            repo_inject = env.REPO_INJECTION
+            sh "cp $REPO_INJECTION  $WORKSPACE/repo_change_string.txt"
+       }
+    }
+
+    repo_inject_arg=''
+    if(repo_inject != null) {
+        repo_inject_arg = "--with-repo-inject ${env.WORKSPACE}/repo_change_string.txt"
+    }
+
     if(mirrors == null) {
         mirrors = env.CI_MIRRORS_URL
     }
@@ -549,6 +575,7 @@ def run_code(script, distro, arch, mirrors=null) {
             ../jenkins/jobs/confs/shell-scripts/run_code.sh \\
                 --execute-script "$script" \\
                 --secrets-file "$WORKSPACE/std_ci_secrets.yaml" \\
+                $repo_inject_arg \\
                 $mirrors_arg
         """
     }
