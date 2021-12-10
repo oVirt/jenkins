@@ -1,6 +1,0 @@
-- scm:
-    name: ovirt-log-collector-gerrit
-    scm:
-      - gerrit:
-          project: ovirt-log-collector
-          git-server: '{git-server}'
