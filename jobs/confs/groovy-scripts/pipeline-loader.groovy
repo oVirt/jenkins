@@ -301,7 +301,7 @@ def checkout_repo(
                 extensions: [
                     [$class: 'CleanBeforeCheckout'],
                     [$class: 'PerBuildTag'],
-                    [$class: 'CloneOption', timeout: 20, honorRefspec: true],
+                    [$class: 'CloneOption', timeout: 30, honorRefspec: true],
                     [$class: 'UserIdentity',
                         email: env.GIT_AUTHOR_NAME,
                         name: env.GIT_AUTHOR_EMAIL
