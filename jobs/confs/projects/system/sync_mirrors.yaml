@@ -25,8 +25,6 @@
       - 'epel-el7'
       - 'glusterfs-6-el7'
       - 'sac-gluster-ansible-el7'
-      - 'centos-ovirt-4.3-testing-el7'
-      - 'centos-ovirt-4.2-el7'
       - 'centos-opstools-testing-el7'
       - 'centos-opstools-release-el7'
       - 'centos-qemu-ev-testing-el7'
@@ -34,13 +32,6 @@
       - 'centos-kvm-common-el7'
       - 'mock-copr-el7'
       - 'centos-sclo-rh-release'
-      - 'centos-updates-7.6-el7'
-      - 'centos-base-7.6-el7'
-      - 'centos-extras-7.6-el7'
-      - 'centos-ovirt-4.2-7.6-el7'
-      - 'centos-qemu-ev-release-7.6-el7'
-      - 'centos-opstools-release-7.6-el7'
-      - 'centos-sclo-rh-release-7.6-el7'
     arch: x86_64
     jobs:
       - 'system-sync_mirrors-{repo}-{arch}'
