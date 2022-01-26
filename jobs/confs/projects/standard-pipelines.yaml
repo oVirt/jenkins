@@ -83,7 +83,6 @@
       - nsis-simple-service-plugin
       - ost-images
       - otopi
-      - ovirt-appliance
       - ovirt-dependencies
       - ovirt-dwh
       - ovirt-engine
